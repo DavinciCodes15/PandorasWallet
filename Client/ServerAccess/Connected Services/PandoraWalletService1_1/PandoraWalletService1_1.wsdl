@@ -1,0 +1,888 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="Logon">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aEmail" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aUserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aPassword" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LogonResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="LogonResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="PandoraResult">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="result" />
+          <s:element minOccurs="0" maxOccurs="1" name="ErrorMsg" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="IsConnected">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="IsConnectedResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="IsConnectedResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetServerId">
+        <s:complexType />
+      </s:element>
+      <s:element name="GetServerIdResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetServerIdResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Logoff">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LogoffResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="LogoffResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUserStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUserStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUserStatusResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyList">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aStartId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyListResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetCurrencyListResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrency">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetCurrencyResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyIcon">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyIconResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetCurrencyIconResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyStatusList">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="aStartId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyStatusListResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetCurrencyStatusListResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBlockHeight">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBlockHeightResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetBlockHeightResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddMonitoredAccount">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+            <s:element minOccurs="0" maxOccurs="1" name="aAddress" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddMonitoredAccountResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="AddMonitoredAccountResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMonitoredAcccounts">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="aStartCurrencyAccountId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetMonitoredAcccountsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetMonitoredAcccountsResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RemoveMonitoredAccount">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyAccountId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RemoveMonitoredAccountResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="RemoveMonitoredAccountResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionRecords">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="aStartTxRecordId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionRecordsResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetTransactionRecordsResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckAddressValidity">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+            <s:element minOccurs="0" maxOccurs="1" name="aBase58CheckAddress" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CheckAddressValidityResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CheckAddressValidityResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="StartGetTransactionToSign">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aTransationData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="StartGetTransactionToSignResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="StartGetTransactionToSignResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EndGetTransactionToSign">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aGetTxToSignHandle" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="EndGetTransactionToSignResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="EndGetTransactionToSignResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendTransaction">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+            <s:element minOccurs="0" maxOccurs="1" name="aSignedTxData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SendTransactionResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="SendTransactionResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="IsTransactionSent">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aSendTxHandle" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="IsTransactionSentResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="IsTransactionSentResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionId">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aSendTxHandle" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetTransactionIdResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetTransactionIdResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="LogonSoapIn">
+    <wsdl:part name="parameters" element="tns:Logon" />
+  </wsdl:message>
+  <wsdl:message name="LogonSoapOut">
+    <wsdl:part name="parameters" element="tns:LogonResponse" />
+  </wsdl:message>
+  <wsdl:message name="IsConnectedSoapIn">
+    <wsdl:part name="parameters" element="tns:IsConnected" />
+  </wsdl:message>
+  <wsdl:message name="IsConnectedSoapOut">
+    <wsdl:part name="parameters" element="tns:IsConnectedResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetServerIdSoapIn">
+    <wsdl:part name="parameters" element="tns:GetServerId" />
+  </wsdl:message>
+  <wsdl:message name="GetServerIdSoapOut">
+    <wsdl:part name="parameters" element="tns:GetServerIdResponse" />
+  </wsdl:message>
+  <wsdl:message name="LogoffSoapIn">
+    <wsdl:part name="parameters" element="tns:Logoff" />
+  </wsdl:message>
+  <wsdl:message name="LogoffSoapOut">
+    <wsdl:part name="parameters" element="tns:LogoffResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetUserStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUserStatus" />
+  </wsdl:message>
+  <wsdl:message name="GetUserStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUserStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyListSoapIn">
+    <wsdl:part name="parameters" element="tns:GetCurrencyList" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyListSoapOut">
+    <wsdl:part name="parameters" element="tns:GetCurrencyListResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencySoapIn">
+    <wsdl:part name="parameters" element="tns:GetCurrency" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencySoapOut">
+    <wsdl:part name="parameters" element="tns:GetCurrencyResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyIconSoapIn">
+    <wsdl:part name="parameters" element="tns:GetCurrencyIcon" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyIconSoapOut">
+    <wsdl:part name="parameters" element="tns:GetCurrencyIconResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyStatusListSoapIn">
+    <wsdl:part name="parameters" element="tns:GetCurrencyStatusList" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyStatusListSoapOut">
+    <wsdl:part name="parameters" element="tns:GetCurrencyStatusListResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetBlockHeightSoapIn">
+    <wsdl:part name="parameters" element="tns:GetBlockHeight" />
+  </wsdl:message>
+  <wsdl:message name="GetBlockHeightSoapOut">
+    <wsdl:part name="parameters" element="tns:GetBlockHeightResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddMonitoredAccountSoapIn">
+    <wsdl:part name="parameters" element="tns:AddMonitoredAccount" />
+  </wsdl:message>
+  <wsdl:message name="AddMonitoredAccountSoapOut">
+    <wsdl:part name="parameters" element="tns:AddMonitoredAccountResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetMonitoredAcccountsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetMonitoredAcccounts" />
+  </wsdl:message>
+  <wsdl:message name="GetMonitoredAcccountsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetMonitoredAcccountsResponse" />
+  </wsdl:message>
+  <wsdl:message name="RemoveMonitoredAccountSoapIn">
+    <wsdl:part name="parameters" element="tns:RemoveMonitoredAccount" />
+  </wsdl:message>
+  <wsdl:message name="RemoveMonitoredAccountSoapOut">
+    <wsdl:part name="parameters" element="tns:RemoveMonitoredAccountResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionRecordsSoapIn">
+    <wsdl:part name="parameters" element="tns:GetTransactionRecords" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionRecordsSoapOut">
+    <wsdl:part name="parameters" element="tns:GetTransactionRecordsResponse" />
+  </wsdl:message>
+  <wsdl:message name="CheckAddressValiditySoapIn">
+    <wsdl:part name="parameters" element="tns:CheckAddressValidity" />
+  </wsdl:message>
+  <wsdl:message name="CheckAddressValiditySoapOut">
+    <wsdl:part name="parameters" element="tns:CheckAddressValidityResponse" />
+  </wsdl:message>
+  <wsdl:message name="StartGetTransactionToSignSoapIn">
+    <wsdl:part name="parameters" element="tns:StartGetTransactionToSign" />
+  </wsdl:message>
+  <wsdl:message name="StartGetTransactionToSignSoapOut">
+    <wsdl:part name="parameters" element="tns:StartGetTransactionToSignResponse" />
+  </wsdl:message>
+  <wsdl:message name="EndGetTransactionToSignSoapIn">
+    <wsdl:part name="parameters" element="tns:EndGetTransactionToSign" />
+  </wsdl:message>
+  <wsdl:message name="EndGetTransactionToSignSoapOut">
+    <wsdl:part name="parameters" element="tns:EndGetTransactionToSignResponse" />
+  </wsdl:message>
+  <wsdl:message name="SendTransactionSoapIn">
+    <wsdl:part name="parameters" element="tns:SendTransaction" />
+  </wsdl:message>
+  <wsdl:message name="SendTransactionSoapOut">
+    <wsdl:part name="parameters" element="tns:SendTransactionResponse" />
+  </wsdl:message>
+  <wsdl:message name="IsTransactionSentSoapIn">
+    <wsdl:part name="parameters" element="tns:IsTransactionSent" />
+  </wsdl:message>
+  <wsdl:message name="IsTransactionSentSoapOut">
+    <wsdl:part name="parameters" element="tns:IsTransactionSentResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionIdSoapIn">
+    <wsdl:part name="parameters" element="tns:GetTransactionId" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionIdSoapOut">
+    <wsdl:part name="parameters" element="tns:GetTransactionIdResponse" />
+  </wsdl:message>
+  <wsdl:portType name="PandoraWalletService1_1Soap">
+    <wsdl:operation name="Logon">
+      <wsdl:input message="tns:LogonSoapIn" />
+      <wsdl:output message="tns:LogonSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="IsConnected">
+      <wsdl:input message="tns:IsConnectedSoapIn" />
+      <wsdl:output message="tns:IsConnectedSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServerId">
+      <wsdl:input message="tns:GetServerIdSoapIn" />
+      <wsdl:output message="tns:GetServerIdSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Logoff">
+      <wsdl:input message="tns:LogoffSoapIn" />
+      <wsdl:output message="tns:LogoffSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUserStatus">
+      <wsdl:input message="tns:GetUserStatusSoapIn" />
+      <wsdl:output message="tns:GetUserStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyList">
+      <wsdl:input message="tns:GetCurrencyListSoapIn" />
+      <wsdl:output message="tns:GetCurrencyListSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrency">
+      <wsdl:input message="tns:GetCurrencySoapIn" />
+      <wsdl:output message="tns:GetCurrencySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyIcon">
+      <wsdl:input message="tns:GetCurrencyIconSoapIn" />
+      <wsdl:output message="tns:GetCurrencyIconSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyStatusList">
+      <wsdl:input message="tns:GetCurrencyStatusListSoapIn" />
+      <wsdl:output message="tns:GetCurrencyStatusListSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBlockHeight">
+      <wsdl:input message="tns:GetBlockHeightSoapIn" />
+      <wsdl:output message="tns:GetBlockHeightSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddMonitoredAccount">
+      <wsdl:input message="tns:AddMonitoredAccountSoapIn" />
+      <wsdl:output message="tns:AddMonitoredAccountSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMonitoredAcccounts">
+      <wsdl:input message="tns:GetMonitoredAcccountsSoapIn" />
+      <wsdl:output message="tns:GetMonitoredAcccountsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RemoveMonitoredAccount">
+      <wsdl:input message="tns:RemoveMonitoredAccountSoapIn" />
+      <wsdl:output message="tns:RemoveMonitoredAccountSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionRecords">
+      <wsdl:input message="tns:GetTransactionRecordsSoapIn" />
+      <wsdl:output message="tns:GetTransactionRecordsSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckAddressValidity">
+      <wsdl:input message="tns:CheckAddressValiditySoapIn" />
+      <wsdl:output message="tns:CheckAddressValiditySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="StartGetTransactionToSign">
+      <wsdl:input message="tns:StartGetTransactionToSignSoapIn" />
+      <wsdl:output message="tns:StartGetTransactionToSignSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EndGetTransactionToSign">
+      <wsdl:input message="tns:EndGetTransactionToSignSoapIn" />
+      <wsdl:output message="tns:EndGetTransactionToSignSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendTransaction">
+      <wsdl:input message="tns:SendTransactionSoapIn" />
+      <wsdl:output message="tns:SendTransactionSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="IsTransactionSent">
+      <wsdl:input message="tns:IsTransactionSentSoapIn" />
+      <wsdl:output message="tns:IsTransactionSentSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionId">
+      <wsdl:input message="tns:GetTransactionIdSoapIn" />
+      <wsdl:output message="tns:GetTransactionIdSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PandoraWalletService1_1Soap" type="tns:PandoraWalletService1_1Soap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Logon">
+      <soap:operation soapAction="http://tempuri.org/Logon" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IsConnected">
+      <soap:operation soapAction="http://tempuri.org/IsConnected" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServerId">
+      <soap:operation soapAction="http://tempuri.org/GetServerId" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Logoff">
+      <soap:operation soapAction="http://tempuri.org/Logoff" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUserStatus">
+      <soap:operation soapAction="http://tempuri.org/GetUserStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyList">
+      <soap:operation soapAction="http://tempuri.org/GetCurrencyList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrency">
+      <soap:operation soapAction="http://tempuri.org/GetCurrency" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyIcon">
+      <soap:operation soapAction="http://tempuri.org/GetCurrencyIcon" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyStatusList">
+      <soap:operation soapAction="http://tempuri.org/GetCurrencyStatusList" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBlockHeight">
+      <soap:operation soapAction="http://tempuri.org/GetBlockHeight" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddMonitoredAccount">
+      <soap:operation soapAction="http://tempuri.org/AddMonitoredAccount" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMonitoredAcccounts">
+      <soap:operation soapAction="http://tempuri.org/GetMonitoredAcccounts" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoveMonitoredAccount">
+      <soap:operation soapAction="http://tempuri.org/RemoveMonitoredAccount" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionRecords">
+      <soap:operation soapAction="http://tempuri.org/GetTransactionRecords" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckAddressValidity">
+      <soap:operation soapAction="http://tempuri.org/CheckAddressValidity" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StartGetTransactionToSign">
+      <soap:operation soapAction="http://tempuri.org/StartGetTransactionToSign" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EndGetTransactionToSign">
+      <soap:operation soapAction="http://tempuri.org/EndGetTransactionToSign" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendTransaction">
+      <soap:operation soapAction="http://tempuri.org/SendTransaction" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IsTransactionSent">
+      <soap:operation soapAction="http://tempuri.org/IsTransactionSent" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionId">
+      <soap:operation soapAction="http://tempuri.org/GetTransactionId" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PandoraWalletService1_1Soap12" type="tns:PandoraWalletService1_1Soap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Logon">
+      <soap12:operation soapAction="http://tempuri.org/Logon" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IsConnected">
+      <soap12:operation soapAction="http://tempuri.org/IsConnected" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServerId">
+      <soap12:operation soapAction="http://tempuri.org/GetServerId" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Logoff">
+      <soap12:operation soapAction="http://tempuri.org/Logoff" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUserStatus">
+      <soap12:operation soapAction="http://tempuri.org/GetUserStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyList">
+      <soap12:operation soapAction="http://tempuri.org/GetCurrencyList" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrency">
+      <soap12:operation soapAction="http://tempuri.org/GetCurrency" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyIcon">
+      <soap12:operation soapAction="http://tempuri.org/GetCurrencyIcon" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyStatusList">
+      <soap12:operation soapAction="http://tempuri.org/GetCurrencyStatusList" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBlockHeight">
+      <soap12:operation soapAction="http://tempuri.org/GetBlockHeight" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddMonitoredAccount">
+      <soap12:operation soapAction="http://tempuri.org/AddMonitoredAccount" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMonitoredAcccounts">
+      <soap12:operation soapAction="http://tempuri.org/GetMonitoredAcccounts" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoveMonitoredAccount">
+      <soap12:operation soapAction="http://tempuri.org/RemoveMonitoredAccount" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionRecords">
+      <soap12:operation soapAction="http://tempuri.org/GetTransactionRecords" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckAddressValidity">
+      <soap12:operation soapAction="http://tempuri.org/CheckAddressValidity" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StartGetTransactionToSign">
+      <soap12:operation soapAction="http://tempuri.org/StartGetTransactionToSign" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EndGetTransactionToSign">
+      <soap12:operation soapAction="http://tempuri.org/EndGetTransactionToSign" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendTransaction">
+      <soap12:operation soapAction="http://tempuri.org/SendTransaction" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IsTransactionSent">
+      <soap12:operation soapAction="http://tempuri.org/IsTransactionSent" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionId">
+      <soap12:operation soapAction="http://tempuri.org/GetTransactionId" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PandoraWalletService1_1">
+    <wsdl:port name="PandoraWalletService1_1Soap" binding="tns:PandoraWalletService1_1Soap">
+      <soap:address location="http://localhost:20159/PandoraWalletService1_1.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PandoraWalletService1_1Soap12" binding="tns:PandoraWalletService1_1Soap12">
+      <soap12:address location="http://localhost:20159/PandoraWalletService1_1.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

@@ -1,0 +1,357 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{0E7309A6-B089-43BC-8F90-466661A46EA4}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Pandora.Client.PandorasWallet</RootNamespace>
+    <AssemblyName>PandorasWallet</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>D4E067242C94CA009F8A125FB3AAE08EC0A2E785</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Pandora.Server.CoinManager_Key.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>PandorasWallet.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(SolutionDir)PandoraTempKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Resources\cancel.png" />
+    <None Include="Resources\ok.png" />
+    <None Include="Resources\Puzzle-128px.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.1\System.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite, Version=1.0.109.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Data.SQLite.Core.1.0.109.2\lib\net46\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.EF6, Version=1.0.109.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Data.SQLite.EF6.1.0.109.0\lib\net46\System.Data.SQLite.EF6.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq, Version=1.0.109.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\System.Data.SQLite.Linq.1.0.109.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>11.0.1</Version>
+    </PackageReference>
+    <Compile Include="$(SolutionDir)VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+      <Visible>true</Visible>
+    </Compile>
+    <Compile Include="CurrencyView.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CurrencyView.Designer.cs">
+      <DependentUpon>CurrencyView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\AboutBox.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AboutBox.Designer.cs">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\AddCoinSelector.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\AddCoinSelector.Designer.cs">
+      <DependentUpon>AddCoinSelector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\DefaultCoinSelector.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\DefaultCoinSelector.Designer.cs">
+      <DependentUpon>DefaultCoinSelector.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\LoginExchanger.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\LoginExchanger.Designer.cs">
+      <DependentUpon>LoginExchanger.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\RestoreWalletDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\RestoreWalletDialog.Designer.cs">
+      <DependentUpon>RestoreWalletDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\BaseWizzard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\BaseWizzard.Designer.cs">
+      <DependentUpon>BaseWizzard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SettingsDialog.Designer.cs">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\WalletPasswordDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\WalletPasswordDialog.Designer.cs">
+      <DependentUpon>WalletPasswordDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MenuButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PandoraClientControl.cs" />
+    <Compile Include="PandoraClientMainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PandoraClientMainWindow.designer.cs">
+      <DependentUpon>PandoraClientMainWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PandoraEnchangeControl.cs" />
+    <Compile Include="StatusControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="StatusControl.Designer.cs">
+      <DependentUpon>StatusControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PandoraRestoreControl.cs" />
+    <Compile Include="TwelveWords.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TwelveWords.Designer.cs">
+      <DependentUpon>TwelveWords.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\PandorasEncryptor.cs" />
+    <Compile Include="PandorasExt.cs" />
+    <Compile Include="Utils\WordList.cs" />
+    <Compile Include="Wallet\BalanceViewModel.cs" />
+    <Compile Include="Wallet\ClientExceptions.cs" />
+    <Compile Include="Dialogs\BaseDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\BaseDialog.Designer.cs">
+      <DependentUpon>BaseDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SendingTxDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SendingTxDialog.Designer.cs">
+      <DependentUpon>SendingTxDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SendTransactionDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SendTransactionDialog.Designer.cs">
+      <DependentUpon>SendTransactionDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ConnectDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\ConnectDialog.Designer.cs">
+      <DependentUpon>ConnectDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\PandoraLog.cs" />
+    <Compile Include="ServerAccess\DBManager.cs" />
+    <Compile Include="ServerAccess\PandorasCache.cs" />
+    <Compile Include="ServerAccess\PandorasServer.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\SettingsManager.cs" />
+    <Compile Include="Wallet\PandoraWallet .cs" />
+    <Compile Include="Wallet\TransactionViewModel.cs" />
+    <EmbeddedResource Include="CurrencyView.resx">
+      <DependentUpon>CurrencyView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\AboutBox.resx">
+      <DependentUpon>AboutBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\AddCoinSelector.resx">
+      <DependentUpon>AddCoinSelector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\ConnectDialog.resx">
+      <DependentUpon>ConnectDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\BaseDialog.resx">
+      <DependentUpon>BaseDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\DefaultCoinSelector.resx">
+      <DependentUpon>DefaultCoinSelector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\LoginExchanger.resx">
+      <DependentUpon>LoginExchanger.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\RestoreWalletDialog.resx">
+      <DependentUpon>RestoreWalletDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\BaseWizzard.resx">
+      <DependentUpon>BaseWizzard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\SettingsDialog.resx">
+      <DependentUpon>SettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\WalletPasswordDialog.resx">
+      <DependentUpon>WalletPasswordDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MenuButton.resx">
+      <DependentUpon>MenuButton.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PandoraClientMainWindow.resx">
+      <DependentUpon>PandoraClientMainWindow.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\SendingTxDialog.resx">
+      <DependentUpon>SendingTxDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\SendTransactionDialog.resx">
+      <DependentUpon>SendTransactionDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="StatusControl.resx">
+      <DependentUpon>StatusControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TwelveWords.resx">
+      <DependentUpon>TwelveWords.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\goldbars.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PandorasWallet.ico" />
+    <Content Include="Resources\16x16%28Pandora%29.ico" />
+    <Content Include="Resources\300x300%28pandora%29-01.png" />
+    <Content Include="Resources\32x32%28Pandora%29 1.ico" />
+    <None Include="Resources\Bang.png" />
+    <None Include="Resources\if_102_111044.png" />
+    <None Include="Resources\if_103_111043.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libs\CryptSharp\CryptSharp.csproj">
+      <Project>{5e33051d-1471-4e5a-b94e-bd0e8ffff99e}</Project>
+      <Name>CryptSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Crypto\Pandora.Client.Crypto.csproj">
+      <Project>{74bf1128-0e40-4d89-814b-9b7565c211b8}</Project>
+      <Name>Pandora.Client.Crypto</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Exchange\Pandora.Client.Exchange\Pandora.Client.Exchange.csproj">
+      <Project>{22483063-f3be-4f4f-b2d4-d2c0aa9fda82}</Project>
+      <Name>Pandora.Client.Exchange</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Universal\Pandora.Client.Universal.csproj">
+      <Project>{e798fc0d-eafd-49a9-b5fb-5391ad59364f}</Project>
+      <Name>Pandora.Client.Universal</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ServerAccess\Pandora.Client.ServerAccess.csproj">
+      <Project>{9dee773e-3023-46fe-945b-aff5974d1170}</Project>
+      <Name>Pandora.Client.ServerAccess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ClientLib\Pandora.Client.ClientLib.csproj">
+      <Project>{196973bd-a463-4897-ac95-e537cc85ef33}</Project>
+      <Name>Pandora.Client.ClientLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\packages\System.Data.SQLite.Core.1.0.108.0\build\net45\System.Data.SQLite.Core.targets" Condition="Exists('$(SolutionDir)\packages\System.Data.SQLite.Core.1.0.108.0\build\net45\System.Data.SQLite.Core.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\packages\System.Data.SQLite.Core.1.0.108.0\build\net45\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\System.Data.SQLite.Core.1.0.108.0\build\net45\System.Data.SQLite.Core.targets'))" />
+    <Error Condition="!Exists('..\..\packages\System.Data.SQLite.Core.1.0.109.2\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\System.Data.SQLite.Core.1.0.109.2\build\net46\System.Data.SQLite.Core.targets'))" />
+  </Target>
+  <Import Project="..\..\packages\System.Data.SQLite.Core.1.0.109.2\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\..\packages\System.Data.SQLite.Core.1.0.109.2\build\net46\System.Data.SQLite.Core.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

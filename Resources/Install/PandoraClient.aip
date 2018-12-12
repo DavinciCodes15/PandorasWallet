@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<DOCUMENT Type="Advanced Installer" CreateVersion="15.1" version="15.5.1" PreviousModules="simple" Modules="enterprise" RootPath="." Language="en" Id="{011E0EA6-A7D2-4072-BB19-019DD7A57009}">
+  <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
+    <ROW Name="HiddenItems" Value="MsiJavaComponent;MsiExtComponent;MsiDriverPackagesComponent;MsiClassComponent;MsiOdbcDataSrcComponent;SharePointSlnComponent;SilverlightSlnComponent;AppXAppDetailsComponent;AppXCapabilitiesComponent;AppXDependenciesComponent;AppXProductDetailsComponent;AppXVisualAssetsComponent;AppXAppDeclarationsComponent;AppXUriRulesComponent;FixupComponent"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
+    <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
+    <ROW Property="AI_PREDEF_LCONDS_PROPS" Value="AI_DETECTED_INTERNET_CONNECTION"/>
+    <ROW Property="ALLUSERS" Value="1"/>
+    <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
+    <ROW Property="ARPPRODUCTICON" Value="PandorasWallet_1.exe" Type="8"/>
+    <ROW Property="DBName" Value="Pandora"/>
+    <ROW Property="DBPassword" Value="support"/>
+    <ROW Property="DBServer" Value="ontime\davinciaxosoft"/>
+    <ROW Property="DBUser" Value="cat"/>
+    <ROW Property="InstanceId" Value="#0"/>
+    <ROW Property="Manufacturer" Value="Davinci Codes"/>
+    <ROW Property="ProductCode" Value="1033:{46CD3C52-86D7-40A2-83E5-AA253A74D2C5} " Type="16"/>
+    <ROW Property="ProductLanguage" Value="1033"/>
+    <ROW Property="ProductName" Value="Pandoras Wallet"/>
+    <ROW Property="ProductVersion" Value="1.0.0" Type="32"/>
+    <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
+    <ROW Property="UpgradeCode" Value="{5E9C071C-BE57-468E-BACB-6A3C81D2C5A7}"/>
+    <ROW Property="WindowsType9X" MultiBuildValue="DefaultBuild:Windows 9x/ME#MsiBuild:Windows 9x/ME" ValueLocId="-"/>
+    <ROW Property="WindowsType9XDisplay" MultiBuildValue="DefaultBuild:Windows 9x/ME#MsiBuild:Windows 9x/ME" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT" MultiBuildValue="DefaultBuild:Windows 9x/ME/NT/2000/XP/Vista/Windows 7/Windows 8 x86/Windows 8.1 x86/Windows 10 x86" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT40" MultiBuildValue="DefaultBuild:Windows NT 4.0#MsiBuild:Windows NT 4.0" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT40Display" MultiBuildValue="DefaultBuild:Windows NT 4.0#MsiBuild:Windows NT 4.0" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT50" MultiBuildValue="DefaultBuild:Windows 2000#MsiBuild:Windows 2000" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT50Display" MultiBuildValue="DefaultBuild:Windows 2000#MsiBuild:Windows 2000" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT5X" MultiBuildValue="DefaultBuild:Windows XP/2003 RTM, Windows XP/2003 SP1, Windows XP SP2 x86#MsiBuild:Windows XP/2003 RTM, Windows XP/2003 SP1, Windows XP SP2 x86" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT5XDisplay" MultiBuildValue="DefaultBuild:Windows XP/2003 RTM, Windows XP/2003 SP1, Windows XP SP2 x86#MsiBuild:Windows XP/2003 RTM, Windows XP/2003 SP1, Windows XP SP2 x86" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT64" MultiBuildValue="DefaultBuild:Windows XP SP2 x64, Windows Server 2003 SP2 x64, Windows Vista x64, Windows Server 2008 x64, Windows 7 x64, Windows Server 2008 R2 x64, Windows 8 x64" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNT64Display" MultiBuildValue="DefaultBuild:Windows XP SP2 x64, Windows Server 2003 SP2 x64, Windows Vista x64, Windows Server 2008 x64, Windows 7 x64, Windows Server 2008 R2 x64, Windows 8 x64" ValueLocId="-"/>
+    <ROW Property="WindowsTypeNTDisplay" MultiBuildValue="DefaultBuild:32-bit Windows versions" ValueLocId="-"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiDirsComponent">
+    <ROW Directory="APPDIR" Directory_Parent="TARGETDIR" DefaultDir="APPDIR:." IsPseudoRoot="1"/>
+    <ROW Directory="Assets" Directory_Parent="TARGETDIR" DefaultDir="Assets" IsPseudoRoot="1"/>
+    <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
+    <ROW Directory="Log_Dir" Directory_Parent="APPDIR" DefaultDir="Log"/>
+    <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
+    <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
+    <ROW Directory="x64_Dir" Directory_Parent="APPDIR" DefaultDir="x64"/>
+    <ROW Directory="x86_Dir" Directory_Parent="APPDIR" DefaultDir="x86"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
+    <ROW Component="Assets" ComponentId="{F1D1FC4D-D54C-4931-AE5A-2718C17849EE}" Directory_="Assets" Attributes="0"/>
+    <ROW Component="CryptSharp.dll" ComponentId="{A68B0A6A-FE00-4955-A3E5-EC235B9E71EC}" Directory_="APPDIR" Attributes="0" KeyPath="CryptSharp.dll"/>
+    <ROW Component="Log" ComponentId="{056457DC-DD09-4001-AF52-DF20D77F7E6A}" Directory_="Log_Dir" Attributes="0"/>
+    <ROW Component="Microsoft.AspNet.SignalR.Client.dll" ComponentId="{FA1858C6-C03E-4512-9F46-815F53C60D49}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.AspNet.SignalR.Client.dll"/>
+    <ROW Component="Newtonsoft.Json.dll" ComponentId="{4865941B-CEF0-4031-8C1D-B2706000BC6F}" Directory_="APPDIR" Attributes="0" KeyPath="Newtonsoft.Json.dll"/>
+    <ROW Component="Pandora.Client.ClientLib.dll" ComponentId="{09E42C15-D0E5-4115-A92D-8AF1DE219BA4}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.ClientLib.dll"/>
+    <ROW Component="Pandora.Client.Crypto.dll" ComponentId="{3E12F171-DC1D-4221-92D0-943845B0DF83}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Crypto.dll"/>
+    <ROW Component="Pandora.Client.Exchange.JKrof.dll" ComponentId="{D36C7A1A-2218-4F91-BBF0-5EF27131BBA9}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.JKrof.dll"/>
+    <ROW Component="Pandora.Client.Exchange.dll" ComponentId="{5DF341F9-7D11-4FB7-8BD1-F4EDF8A7A439}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.dll"/>
+    <ROW Component="Pandora.Client.ServerAccess.dll" ComponentId="{9EABB609-B5C3-48B8-82FD-9602211E03AB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.ServerAccess.dll"/>
+    <ROW Component="Pandora.Client.Universal.dll" ComponentId="{0A7F2746-683E-4F7E-A716-338FF00DACB2}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Universal.dll"/>
+    <ROW Component="PandorasWallet.exe" ComponentId="{383C312B-05D9-46BE-A6BB-6265AC37C88A}" Directory_="APPDIR" Attributes="0" KeyPath="PandorasWallet.exe"/>
+    <ROW Component="ProductInformation" ComponentId="{9A30C750-3C4C-4952-85DE-1D3B88868BFF}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
+    <ROW Component="SHORTCUTDIR" ComponentId="{DBE0CF84-23F0-4C22-992A-9D7340550501}" Directory_="SHORTCUTDIR" Attributes="0"/>
+    <ROW Component="SQLite.Interop.dll" ComponentId="{5F98BFC1-0AB8-44A8-824F-3BD9347D879A}" Directory_="x64_Dir" Attributes="256" KeyPath="SQLite.Interop.dll"/>
+    <ROW Component="SQLite.Interop.dll_1" ComponentId="{9BF7E384-C766-4F27-8AC9-810B6431E370}" Directory_="x86_Dir" Attributes="0" KeyPath="SQLite.Interop.dll_1"/>
+    <ROW Component="SuperSocket.ClientEngine.dll" ComponentId="{588814F4-9243-4471-87F4-94C3D1A387EF}" Directory_="APPDIR" Attributes="0" KeyPath="SuperSocket.ClientEngine.dll"/>
+    <ROW Component="System.Buffers.dll" ComponentId="{69082ADA-B53D-41C9-A174-06A9C067352D}" Directory_="APPDIR" Attributes="0" KeyPath="System.Buffers.dll"/>
+    <ROW Component="System.Collections.Specialized.dll" ComponentId="{D7AB946B-C93D-4D0C-AD92-CA9FD1CBEC7B}" Directory_="APPDIR" Attributes="0" KeyPath="System.Collections.Specialized.dll"/>
+    <ROW Component="System.Data.SQLite.EF6.dll" ComponentId="{4A436E7D-F4F0-43AC-8E68-DF83278DF67B}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.EF6.dll"/>
+    <ROW Component="System.Data.SQLite.Linq.dll" ComponentId="{F526FE59-6CB2-42BC-BF3C-A89F5333863A}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.Linq.dll"/>
+    <ROW Component="System.Data.SQLite.dll" ComponentId="{AC6A0D92-7401-4240-ADDB-95D14E99AB81}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.dll"/>
+    <ROW Component="System.Data.SQLite.dll.config" ComponentId="{EBD31742-19E5-4390-98EA-0C11D0CECEE6}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.dll.config" Type="0"/>
+    <ROW Component="System.Net.NameResolution.dll" ComponentId="{1AB62839-E8B6-4081-983A-1CE80A00DF19}" Directory_="APPDIR" Attributes="0" KeyPath="System.Net.NameResolution.dll"/>
+    <ROW Component="System.Net.Security.dll" ComponentId="{4F3A477A-944D-427F-8E63-E7D5EA41353D}" Directory_="APPDIR" Attributes="0" KeyPath="System.Net.Security.dll"/>
+    <ROW Component="System.Net.Sockets.dll" ComponentId="{EB909E62-3AD9-4B57-9C0C-48654434B8DA}" Directory_="APPDIR" Attributes="0" KeyPath="System.Net.Sockets.dll"/>
+    <ROW Component="System.Security.Cryptography.Algorithms.dll" ComponentId="{7721D8F7-4654-4F68-B048-98EC23C0A39B}" Directory_="APPDIR" Attributes="0" KeyPath="System.Security.Cryptography.Algorithms.dll"/>
+    <ROW Component="System.Security.Cryptography.Encoding.dll" ComponentId="{3444E7CC-0177-4F91-B696-4A11F7E588E1}" Directory_="APPDIR" Attributes="0" KeyPath="System.Security.Cryptography.Encoding.dll"/>
+    <ROW Component="System.Security.Cryptography.Primitives.dll" ComponentId="{93111244-363B-4FC5-81C3-9A1347D70D4D}" Directory_="APPDIR" Attributes="0" KeyPath="System.Security.Cryptography.Primitives.dll"/>
+    <ROW Component="System.Security.Cryptography.X509Certificates.dll" ComponentId="{172779A4-E6A0-4BD2-AFE8-3CD2A26968B3}" Directory_="APPDIR" Attributes="0" KeyPath="System.Security.Cryptography.X509Certificates.dll"/>
+    <ROW Component="WebSocket4Net.dll" ComponentId="{854CFFE8-1F3D-4E8E-BEA2-18E683782480}" Directory_="APPDIR" Attributes="0" KeyPath="WebSocket4Net.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
+    <ROW Feature="ClientsFeature" Title="MainClients" Description="Pandora Client Server Setup" Display="3" Level="1" Directory_="APPDIR" Attributes="0" Components="Assets CryptSharp.dll Log Microsoft.AspNet.SignalR.Client.dll Newtonsoft.Json.dll Pandora.Client.ClientLib.dll Pandora.Client.Crypto.dll Pandora.Client.Exchange.JKrof.dll Pandora.Client.Exchange.dll Pandora.Client.ServerAccess.dll Pandora.Client.Universal.dll PandorasWallet.exe ProductInformation SHORTCUTDIR SQLite.Interop.dll SQLite.Interop.dll_1 SuperSocket.ClientEngine.dll System.Buffers.dll System.Collections.Specialized.dll System.Data.SQLite.EF6.dll System.Data.SQLite.Linq.dll System.Data.SQLite.dll System.Data.SQLite.dll.config System.Net.NameResolution.dll System.Net.Security.dll System.Net.Sockets.dll System.Security.Cryptography.Algorithms.dll System.Security.Cryptography.Encoding.dll System.Security.Cryptography.Primitives.dll System.Security.Cryptography.X509Certificates.dll WebSocket4Net.dll"/>
+    <ATTRIBUTE name="CurrentFeature" value="ClientsFeature"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
+    <ROW File="CryptSharp.dll" Component_="CryptSharp.dll" FileName="CRYPTS~1.DLL|CryptSharp.dll" Attributes="0" SourcePath="..\..\bin\Release\CryptSharp.dll" SelfReg="false" NextFile="Microsoft.AspNet.SignalR.Client.dll"/>
+    <ROW File="Microsoft.AspNet.SignalR.Client.dll" Component_="Microsoft.AspNet.SignalR.Client.dll" FileName="MICROS~1.DLL|Microsoft.AspNet.SignalR.Client.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.AspNet.SignalR.Client.dll" SelfReg="false" NextFile="Newtonsoft.Json.dll"/>
+    <ROW File="Newtonsoft.Json.dll" Component_="Newtonsoft.Json.dll" FileName="NEWTON~1.DLL|Newtonsoft.Json.dll" Attributes="0" SourcePath="..\..\bin\Release\Newtonsoft.Json.dll" SelfReg="false" NextFile="Pandora.Client.ClientLib.dll"/>
+    <ROW File="Pandora.Client.ClientLib.dll" Component_="Pandora.Client.ClientLib.dll" FileName="PANDOR~1.DLL|Pandora.Client.ClientLib.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ClientLib.dll" SelfReg="false" NextFile="Pandora.Client.Crypto.dll"/>
+    <ROW File="Pandora.Client.Crypto.dll" Component_="Pandora.Client.Crypto.dll" FileName="PANDOR~2.DLL|Pandora.Client.Crypto.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Crypto.dll" SelfReg="false" NextFile="Pandora.Client.Exchange.dll"/>
+    <ROW File="Pandora.Client.Exchange.JKrof.dll" Component_="Pandora.Client.Exchange.JKrof.dll" FileName="PANDOR~4.DLL|Pandora.Client.Exchange.JKrof.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.JKrof.dll" SelfReg="false" NextFile="Pandora.Client.ServerAccess.dll"/>
+    <ROW File="Pandora.Client.Exchange.dll" Component_="Pandora.Client.Exchange.dll" FileName="PANDOR~3.DLL|Pandora.Client.Exchange.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.dll" SelfReg="false" NextFile="Pandora.Client.Exchange.JKrof.dll"/>
+    <ROW File="Pandora.Client.Exchange.dll.config" Component_="System.Data.SQLite.dll.config" FileName="PANDOR~1.CON|Pandora.Client.Exchange.dll.config" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.dll.config" SelfReg="false" NextFile="Pandora.Client.ServerAccess.dll.config"/>
+    <ROW File="Pandora.Client.ServerAccess.dll" Component_="Pandora.Client.ServerAccess.dll" FileName="PANDOR~5.DLL|Pandora.Client.ServerAccess.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ServerAccess.dll" SelfReg="false" NextFile="Pandora.Client.Universal.dll"/>
+    <ROW File="Pandora.Client.ServerAccess.dll.config" Component_="System.Data.SQLite.dll.config" FileName="PANDOR~2.CON|Pandora.Client.ServerAccess.dll.config" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ServerAccess.dll.config" SelfReg="false"/>
+    <ROW File="Pandora.Client.Universal.dll" Component_="Pandora.Client.Universal.dll" FileName="PANDOR~6.DLL|Pandora.Client.Universal.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Universal.dll" SelfReg="false" NextFile="SuperSocket.ClientEngine.dll"/>
+    <ROW File="PandorasWallet.exe" Component_="PandorasWallet.exe" FileName="PANDOR~1.EXE|PandorasWallet.exe" Attributes="0" SourcePath="..\..\bin\Release\PandorasWallet.exe" SelfReg="false" NextFile="SQLite.Interop.dll" DigSign="true"/>
+    <ROW File="SQLite.Interop.dll" Component_="SQLite.Interop.dll" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="0" SourcePath="..\..\bin\Release\x64\SQLite.Interop.dll" SelfReg="false" NextFile="SQLite.Interop.dll_1"/>
+    <ROW File="SQLite.Interop.dll_1" Component_="SQLite.Interop.dll_1" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="512" SourcePath="..\..\bin\Release\x86\SQLite.Interop.dll" SelfReg="false" NextFile="System.Data.SQLite.dll.config"/>
+    <ROW File="SuperSocket.ClientEngine.dll" Component_="SuperSocket.ClientEngine.dll" FileName="SUPERS~1.DLL|SuperSocket.ClientEngine.dll" Attributes="0" SourcePath="..\..\bin\Release\SuperSocket.ClientEngine.dll" SelfReg="false" NextFile="System.Buffers.dll"/>
+    <ROW File="System.Buffers.dll" Component_="System.Buffers.dll" FileName="SYSTEM~3.DLL|System.Buffers.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Buffers.dll" SelfReg="false" NextFile="System.Collections.Specialized.dll"/>
+    <ROW File="System.Collections.Specialized.dll" Component_="System.Collections.Specialized.dll" FileName="SYSTEM~4.DLL|System.Collections.Specialized.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Collections.Specialized.dll" SelfReg="false" NextFile="System.Data.SQLite.dll"/>
+    <ROW File="System.Data.SQLite.EF6.dll" Component_="System.Data.SQLite.EF6.dll" FileName="SYSTEM~6.DLL|System.Data.SQLite.EF6.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.EF6.dll" SelfReg="false" NextFile="System.Data.SQLite.Linq.dll"/>
+    <ROW File="System.Data.SQLite.Linq.dll" Component_="System.Data.SQLite.Linq.dll" FileName="SYSTEM~7.DLL|System.Data.SQLite.Linq.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.Linq.dll" SelfReg="false" NextFile="System.Net.NameResolution.dll"/>
+    <ROW File="System.Data.SQLite.dll" Component_="System.Data.SQLite.dll" FileName="SYSTEM~5.DLL|System.Data.SQLite.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll" SelfReg="false" NextFile="System.Data.SQLite.EF6.dll"/>
+    <ROW File="System.Data.SQLite.dll.config" Component_="System.Data.SQLite.dll.config" FileName="SYSTEM~1.CON|System.Data.SQLite.dll.config" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll.config" SelfReg="false" NextFile="System.Security.Cryptography.Primitives.dll"/>
+    <ROW File="System.Net.NameResolution.dll" Component_="System.Net.NameResolution.dll" FileName="SYSTEM~8.DLL|System.Net.NameResolution.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.NameResolution.dll" SelfReg="false" NextFile="System.Net.Security.dll"/>
+    <ROW File="System.Net.Security.dll" Component_="System.Net.Security.dll" FileName="SYSTEM~9.DLL|System.Net.Security.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Security.dll" SelfReg="false" NextFile="System.Net.Sockets.dll"/>
+    <ROW File="System.Net.Sockets.dll" Component_="System.Net.Sockets.dll" FileName="SYSTE~10.DLL|System.Net.Sockets.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Sockets.dll" SelfReg="false" NextFile="System.Security.Cryptography.Algorithms.dll"/>
+    <ROW File="System.Security.Cryptography.Algorithms.dll" Component_="System.Security.Cryptography.Algorithms.dll" FileName="SYSTE~11.DLL|System.Security.Cryptography.Algorithms.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Algorithms.dll" SelfReg="false" NextFile="System.Security.Cryptography.Encoding.dll"/>
+    <ROW File="System.Security.Cryptography.Encoding.dll" Component_="System.Security.Cryptography.Encoding.dll" FileName="SYSTE~12.DLL|System.Security.Cryptography.Encoding.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Encoding.dll" SelfReg="false" NextFile="Pandora.Client.Exchange.dll.config"/>
+    <ROW File="System.Security.Cryptography.Primitives.dll" Component_="System.Security.Cryptography.Primitives.dll" FileName="SYSTEM~1.DLL|System.Security.Cryptography.Primitives.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Primitives.dll" SelfReg="false" NextFile="System.Security.Cryptography.X509Certificates.dll"/>
+    <ROW File="System.Security.Cryptography.X509Certificates.dll" Component_="System.Security.Cryptography.X509Certificates.dll" FileName="SYSTEM~2.DLL|System.Security.Cryptography.X509Certificates.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.X509Certificates.dll" SelfReg="false" NextFile="WebSocket4Net.dll"/>
+    <ROW File="WebSocket4Net.dll" Component_="WebSocket4Net.dll" FileName="WEBSOC~1.DLL|WebSocket4Net.dll" Attributes="0" SourcePath="..\..\bin\Release\WebSocket4Net.dll" SelfReg="false" NextFile="CryptSharp.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
+    <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="2"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BootstrapperUISequenceComponent">
+    <ROW Action="AI_DetectSoftware" Sequence="101"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.BuildComponent">
+    <ROW BuildKey="DefaultBuild" BuildName="DefaultBuild" BuildOrder="1" BuildType="1" PackageFolder="..\..\bin\Setup" Languages="en" InstallationType="4" CabsLocation="1" PackageType="1" ExtUI="true" UseLargeSchema="true"/>
+    <ROW BuildKey="MsiBuild" BuildName="MsiBuild" BuildOrder="2" BuildType="1" PackageFolder="..\..\bin\Setup" PackageFileName="PandorasClient" Languages="en" InstallationType="4" UseLargeSchema="true"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.DictionaryComponent">
+    <ROW Path="&lt;AI_DICTS&gt;ui.ail"/>
+    <ROW Path="&lt;AI_DICTS&gt;ui_en.ail"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.DigCertStoreComponent">
+    <ROW TimeStampUrl="http://timestamp.digicert.com" SignerDescription="[|ProductName]" SignOptions="7" SignTool="0" UseSha256="1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
+    <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
+    <ROW Fragment="MaintenanceTypeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\MaintenanceTypeDlg.aip"/>
+    <ROW Fragment="MaintenanceWelcomeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\MaintenanceWelcomeDlg.aip"/>
+    <ROW Fragment="SequenceDialogs.aip" Path="&lt;AI_THEMES&gt;classic\fragments\SequenceDialogs.aip"/>
+    <ROW Fragment="Sequences.aip" Path="&lt;AI_FRAGS&gt;Sequences.aip"/>
+    <ROW Fragment="SetupTypeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\SetupTypeDlg.aip"/>
+    <ROW Fragment="StaticUIStrings.aip" Path="&lt;AI_FRAGS&gt;StaticUIStrings.aip"/>
+    <ROW Fragment="UI.aip" Path="&lt;AI_THEMES&gt;classic\fragments\UI.aip"/>
+    <ROW Fragment="Validation.aip" Path="&lt;AI_FRAGS&gt;Validation.aip"/>
+    <ROW Fragment="VerifyRemoveDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\VerifyRemoveDlg.aip"/>
+    <ROW Fragment="VerifyRepairDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\VerifyRepairDlg.aip"/>
+    <ROW Fragment="WelcomeDlg.aip" Path="&lt;AI_THEMES&gt;classic\fragments\WelcomeDlg.aip"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiActionTextComponent">
+    <ROW Action="AI_XmlCommit" Description="Committing XML file configurations." DescriptionLocId="ActionText.Description.AI_XmlCommit" Template="Committing XML file configurations." TemplateLocId="ActionText.Template.AI_XmlCommit"/>
+    <ROW Action="AI_XmlConfig" Description="Executing XML file configurations" DescriptionLocId="ActionText.Description.AI_XmlConfig" Template="Configuring XML file: &quot;[1]&quot;" TemplateLocId="ActionText.Template.AI_XmlConfig"/>
+    <ROW Action="AI_XmlInstall" Description="Generating actions to configure XML files" DescriptionLocId="ActionText.Description.AI_XmlInstall"/>
+    <ROW Action="AI_XmlRemove" Description="Executing XML file configurations" DescriptionLocId="ActionText.Description.AI_XmlRemove" Template="Configuring XML file: &quot;[1]&quot;" TemplateLocId="ActionText.Template.AI_XmlRemove"/>
+    <ROW Action="AI_XmlRollback" Description="Rolling back XML file configurations." DescriptionLocId="ActionText.Description.AI_XmlRollback" Template="Rolling back XML file configurations." TemplateLocId="ActionText.Template.AI_XmlRollback"/>
+    <ROW Action="AI_XmlUninstall" Description="Generating actions to configure XML files" DescriptionLocId="ActionText.Description.AI_XmlUninstall"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
+    <ROW Name="SoftwareDetector.dll" SourcePath="&lt;AI_CUSTACTS&gt;SoftwareDetector.dll"/>
+    <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
+    <ROW Name="userAccounts.dll" SourcePath="&lt;AI_CUSTACTS&gt;userAccounts.dll"/>
+    <ROW Name="xmlCfg.dll" SourcePath="&lt;AI_CUSTACTS&gt;xmlCfg.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiControlEventComponent">
+    <ROW Dialog_="WelcomeDlg" Control_="Next" Event="NewDialog" Argument="SetupTypeDlg" Condition="AI_INSTALL" Ordering="1"/>
+    <ROW Dialog_="MaintenanceWelcomeDlg" Control_="Next" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="99"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_MAINT" Ordering="198"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_MAINT" Ordering="204"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_INSTALL" Ordering="197"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="SetupTypeDlg" Condition="AI_INSTALL" Ordering="201"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_MAINT" Ordering="101"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="ChangeButton" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_MAINT" Ordering="501"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceWelcomeDlg" Condition="AI_MAINT" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="RemoveButton" Event="NewDialog" Argument="VerifyRemoveDlg" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="601"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="1"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control_="RepairButton" Event="NewDialog" Argument="VerifyRepairDlg" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="601"/>
+    <ROW Dialog_="VerifyRepairDlg" Control_="Back" Event="NewDialog" Argument="MaintenanceTypeDlg" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="1"/>
+    <ROW Dialog_="VerifyRepairDlg" Control_="Repair" Event="EndDialog" Argument="Return" Condition="AI_MAINT AND InstallMode=&quot;Repair&quot;" Ordering="399" Options="1"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control_="Remove" Event="EndDialog" Argument="Return" Condition="AI_MAINT AND InstallMode=&quot;Remove&quot;" Ordering="299" Options="1"/>
+    <ROW Dialog_="PatchWelcomeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_PATCH" Ordering="201"/>
+    <ROW Dialog_="ResumeDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_RESUME" Ordering="299"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Install" Event="EndDialog" Argument="Return" Condition="AI_PATCH" Ordering="199"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="PatchWelcomeDlg" Condition="AI_PATCH" Ordering="205"/>
+    <ROW Dialog_="SetupTypeDlg" Control_="TypicalButton" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_INSTALL" Ordering="201"/>
+    <ROW Dialog_="SetupTypeDlg" Control_="Back" Event="NewDialog" Argument="WelcomeDlg" Condition="AI_INSTALL" Ordering="102"/>
+    <ROW Dialog_="SetupTypeDlg" Control_="CompleteButton" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_INSTALL AND InstallMode=InstallModeComplete" Ordering="201"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="SetupTypeDlg" Condition="AI_INSTALL AND InstallMode=InstallModeComplete" Ordering="203"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Next" Event="NewDialog" Argument="VerifyReadyDlg" Condition="AI_INSTALL AND InstallMode=InstallModeCustom" Ordering="102"/>
+    <ROW Dialog_="VerifyReadyDlg" Control_="Back" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_INSTALL AND InstallMode=InstallModeCustom" Ordering="202"/>
+    <ROW Dialog_="SetupTypeDlg" Control_="CustomButton" Event="NewDialog" Argument="CustomizeDlg" Condition="AI_INSTALL AND InstallMode=InstallModeCustom" Ordering="101"/>
+    <ROW Dialog_="CustomizeDlg" Control_="Back" Event="NewDialog" Argument="SetupTypeDlg" Condition="AI_INSTALL AND InstallMode=InstallModeCustom" Ordering="2"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCreateFolderComponent">
+    <ROW Directory_="SHORTCUTDIR" Component_="SHORTCUTDIR" ManualDelete="false"/>
+    <ROW Directory_="Log_Dir" Component_="Log" ManualDelete="false"/>
+    <ROW Directory_="Assets" Component_="Assets" ManualDelete="false"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
+    <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Type="51" Source="AI_SETUPEXEPATH_ORIGINAL" Target="[AI_SETUPEXEPATH]"/>
+    <ROW Action="AI_ConfigPermissions" Type="1" Source="userAccounts.dll" Target="OnConfigPermissions" AdditionalSeq="AI_DATA_SETTER_3"/>
+    <ROW Action="AI_DATA_SETTER" Type="51" Source="CustomActionData" Target="[~]"/>
+    <ROW Action="AI_DATA_SETTER_1" Type="51" Source="CustomActionData" Target="[~]"/>
+    <ROW Action="AI_DATA_SETTER_3" Type="51" Source="CustomActionData" Target="[~]"/>
+    <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
+    <ROW Action="AI_DetectSoftware" Type="257" Source="SoftwareDetector.dll" Target="OnDetectSoftware"/>
+    <ROW Action="AI_DpiContentScale" Type="1" Source="aicustact.dll" Target="DpiContentScale"/>
+    <ROW Action="AI_EnableDebugLog" Type="321" Source="aicustact.dll" Target="EnableDebugLog"/>
+    <ROW Action="AI_InstallModeCheck" Type="1" Source="aicustact.dll" Target="UpdateInstallMode" WithoutSeq="true"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
+    <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Type="51" Source="AI_SETUPEXEPATH" Target="[AI_SETUPEXEPATH_ORIGINAL]"/>
+    <ROW Action="AI_RESTORE_LOCATION" Type="65" Source="aicustact.dll" Target="RestoreLocation"/>
+    <ROW Action="AI_ResolveKnownFolders" Type="1" Source="aicustact.dll" Target="AI_ResolveKnownFolders"/>
+    <ROW Action="AI_ResolveLocalizedCredentials" Type="1" Source="aicustact.dll" Target="GetLocalizedCredentials"/>
+    <ROW Action="AI_SHOW_LOG" Type="65" Source="aicustact.dll" Target="LaunchLogFile" WithoutSeq="true"/>
+    <ROW Action="AI_STORE_LOCATION" Type="51" Source="ARPINSTALLLOCATION" Target="[APPDIR]"/>
+    <ROW Action="AI_SetPermissions" Type="11265" Source="userAccounts.dll" Target="OnSetPermissions" WithoutSeq="true"/>
+    <ROW Action="AI_XmlCommit" Type="11777" Source="xmlCfg.dll" Target="OnXmlCommit" WithoutSeq="true"/>
+    <ROW Action="AI_XmlConfig" Type="11265" Source="xmlCfg.dll" Target="OnXmlConfig" WithoutSeq="true"/>
+    <ROW Action="AI_XmlInstall" Type="1" Source="xmlCfg.dll" Target="OnXmlInstall" AdditionalSeq="AI_DATA_SETTER"/>
+    <ROW Action="AI_XmlRemove" Type="11265" Source="xmlCfg.dll" Target="OnXmlRemove" WithoutSeq="true"/>
+    <ROW Action="AI_XmlRollback" Type="11521" Source="xmlCfg.dll" Target="OnXmlRollback" WithoutSeq="true"/>
+    <ROW Action="AI_XmlUninstall" Type="1" Source="xmlCfg.dll" Target="OnXmlUninstall" AdditionalSeq="AI_DATA_SETTER_1"/>
+    <ROW Action="SET_APPDIR" Type="307" Source="APPDIR" Target="[ProgramFilesFolder][Manufacturer]\[ProductName]"/>
+    <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
+    <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
+    <ROW Name="PandorasWallet_1.exe" SourcePath="..\Icons\Pandora&apos;s Wallet.ico" Index="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstExSeqComponent">
+    <ROW Action="AI_DOWNGRADE" Condition="AI_NEWERPRODUCTFOUND AND (UILevel &lt;&gt; 5)" Sequence="210"/>
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
+    <ROW Action="AI_STORE_LOCATION" Condition="(Not Installed) OR REINSTALL" Sequence="1501"/>
+    <ROW Action="AI_PREPARE_UPGRADE" Condition="AI_UPGRADE=&quot;No&quot; AND (Not Installed)" Sequence="1399"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="54"/>
+    <ROW Action="AI_EnableDebugLog" Sequence="53"/>
+    <ROW Action="AI_DetectSoftware" Sequence="101"/>
+    <ROW Action="AI_ResolveLocalizedCredentials" Sequence="51"/>
+    <ROW Action="AI_ConfigPermissions" Condition="REMOVE &lt;&gt; &quot;ALL&quot;" Sequence="5852"/>
+    <ROW Action="AI_DATA_SETTER_3" Condition="REMOVE &lt;&gt; &quot;ALL&quot;" Sequence="5851"/>
+    <ROW Action="AI_XmlInstall" Condition="(REMOVE &lt;&gt; &quot;ALL&quot;)" Sequence="5102"/>
+    <ROW Action="AI_DATA_SETTER" Condition="(REMOVE &lt;&gt; &quot;ALL&quot;)" Sequence="5101"/>
+    <ROW Action="AI_XmlUninstall" Condition="(REMOVE)" Sequence="3102"/>
+    <ROW Action="AI_DATA_SETTER_1" Condition="(REMOVE)" Sequence="3101"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
+    <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="54"/>
+    <ROW Action="AI_DpiContentScale" Sequence="53"/>
+    <ROW Action="AI_EnableDebugLog" Sequence="52"/>
+    <ROW Action="AI_BACKUP_AI_SETUPEXEPATH" Sequence="99"/>
+    <ROW Action="AI_RESTORE_AI_SETUPEXEPATH" Condition="AI_SETUPEXEPATH_ORIGINAL" Sequence="102"/>
+    <ROW Action="AI_DetectSoftware" Sequence="101"/>
+    <ROW Action="AI_ResolveLocalizedCredentials" Sequence="51"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiLaunchConditionsComponent">
+    <ROW Condition="( Version9X OR ( NOT VersionNT64 ) OR ( VersionNT64 AND ((VersionNT64 &lt;&gt; 502) OR (ServicePackLevel &lt;&gt; 2) OR (MsiNTProductType &lt;&gt; 1)) AND ((VersionNT64 &lt;&gt; 502) OR (ServicePackLevel &lt;&gt; 2) OR (MsiNTProductType = 1)) AND ((VersionNT64 &lt;&gt; 600) OR (MsiNTProductType &lt;&gt; 1)) AND ((VersionNT64 &lt;&gt; 600) OR (MsiNTProductType = 1)) AND ((VersionNT64 &lt;&gt; 601) OR (MsiNTProductType &lt;&gt; 1)) AND ((VersionNT64 &lt;&gt; 601) OR (MsiNTProductType = 1)) AND ((VersionNT64 &lt;&gt; 602) OR (MsiNTProductType &lt;&gt; 1)) ) )" Description="[ProductName] cannot be installed on the following Windows versions: [WindowsTypeNT64Display]." DescriptionLocId="AI.LaunchCondition.NoSpecificNT64" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="( Version9X OR VersionNT64 )" Description="[ProductName] cannot be installed on [WindowsTypeNTDisplay]." DescriptionLocId="AI.LaunchCondition.NoNT" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="(VersionNT &lt;&gt; 400)" Description="[ProductName] cannot be installed on [WindowsTypeNT40Display]." DescriptionLocId="AI.LaunchCondition.NoNT40" IsPredefined="true" Builds="DefaultBuild;MsiBuild"/>
+    <ROW Condition="(VersionNT &lt;&gt; 500)" Description="[ProductName] cannot be installed on [WindowsTypeNT50Display]." DescriptionLocId="AI.LaunchCondition.NoNT50" IsPredefined="true" Builds="DefaultBuild;MsiBuild"/>
+    <ROW Condition="(VersionNT64 OR ((VersionNT &lt;&gt; 501) OR (ServicePackLevel = 3))) AND ((VersionNT &lt;&gt; 502) OR (ServicePackLevel = 2))" Description="[ProductName] cannot be installed on [WindowsTypeNT5XDisplay]." DescriptionLocId="AI.LaunchCondition.NoNT5X" IsPredefined="true" Builds="DefaultBuild;MsiBuild"/>
+    <ROW Condition="AI_DETECTED_INTERNET_CONNECTION" Description="[ProductName] requires an active Internet connection for installation. Please check your network configuration and proxy settings." DescriptionLocId="AI.LaunchCondition.Internet" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="SETUPEXEDIR OR (REMOVE=&quot;ALL&quot;)" Description="This package can only be run from a bootstrapper." DescriptionLocId="AI.LaunchCondition.RequireBootstrapper" IsPredefined="true" Builds="DefaultBuild"/>
+    <ROW Condition="VersionNT" Description="[ProductName] cannot be installed on [WindowsType9XDisplay]." DescriptionLocId="AI.LaunchCondition.No9X" IsPredefined="true" Builds="DefaultBuild;MsiBuild"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiLockPermComponent">
+    <ROW LockObject="Log_Dir" Table="CreateFolder" User="[GRP_EVERYONE]" Permission="1880096767" Flags="0"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiRegsComponent">
+    <ROW Registry="Path" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Path" Value="[APPDIR]" Component_="ProductInformation"/>
+    <ROW Registry="Version" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Version" Value="[ProductVersion]" Component_="ProductInformation"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
+    <ROW Shortcut="PandorasWallet" Directory_="SHORTCUTDIR" Name="PANDOR~1|Pandora&apos;s Wallet" Component_="PandorasWallet.exe" Target="[#PandorasWallet.exe]" Description="Pandora&apos;s Wallet" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="PandorasWallet_1" Directory_="DesktopFolder" Name="PANDOR~1|Pandora&apos;s Wallet" Component_="PandorasWallet.exe" Target="[#PandorasWallet.exe]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
+    <ATTRIBUTE name="UsedTheme" value="classic"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiUpgradeComponent">
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="0.0.1" VersionMax="[|ProductVersion]" Attributes="257" ActionProperty="OLDPRODUCTS"/>
+    <ROW UpgradeCode="[|UpgradeCode]" VersionMin="[|ProductVersion]" Attributes="2" ActionProperty="AI_NEWERPRODUCTFOUND"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.XmlAttributeComponent">
+    <ROW XmlAttribute="allowExeDefinition" XmlElement="section_1" Name="allowExeDefinition" Flags="14" Order="2" Value="MachineToLocalUser"/>
+    <ROW XmlAttribute="allowExeDefinition_1" XmlElement="section_2" Name="allowExeDefinition" Flags="14" Order="2" Value="MachineToLocalUser"/>
+    <ROW XmlAttribute="culture" XmlElement="assemblyIdentity" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="description" XmlElement="add" Name="description" Flags="14" Order="2" Value=".NET Framework Data Provider for SQLite (Entity Framework 6)"/>
+    <ROW XmlAttribute="description_1" XmlElement="add_1" Name="description" Flags="14" Order="2" Value=".NET Framework Data Provider for SQLite"/>
+    <ROW XmlAttribute="invariant" XmlElement="remove" Name="invariant" Flags="14" Order="0" Value="System.Data.SQLite.EF6"/>
+    <ROW XmlAttribute="invariantName" XmlElement="provider" Name="invariantName" Flags="14" Order="0" Value="System.Data.SqlClient"/>
+    <ROW XmlAttribute="invariantName_1" XmlElement="provider_1" Name="invariantName" Flags="14" Order="0" Value="System.Data.SQLite.EF6"/>
+    <ROW XmlAttribute="invariant_1" XmlElement="add" Name="invariant" Flags="14" Order="1" Value="System.Data.SQLite.EF6"/>
+    <ROW XmlAttribute="invariant_2" XmlElement="remove_1" Name="invariant" Flags="14" Order="0" Value="System.Data.SQLite"/>
+    <ROW XmlAttribute="invariant_3" XmlElement="add_1" Name="invariant" Flags="14" Order="1" Value="System.Data.SQLite"/>
+    <ROW XmlAttribute="name" XmlElement="section" Name="name" Flags="15" Order="0" Value="entityFramework"/>
+    <ROW XmlAttribute="name_1" XmlElement="sectionGroup" Name="name" Flags="15" Order="0" Value="userSettings"/>
+    <ROW XmlAttribute="name_10" XmlElement="setting_6" Name="name" Flags="15" Order="0" Value="Username"/>
+    <ROW XmlAttribute="name_11" XmlElement="setting_7" Name="name" Flags="15" Order="0" Value="ChosenCoins"/>
+    <ROW XmlAttribute="name_12" XmlElement="add" Name="name" Flags="15" Order="0" Value="SQLite Data Provider (Entity Framework 6)"/>
+    <ROW XmlAttribute="name_13" XmlElement="add_1" Name="name" Flags="15" Order="0" Value="SQLite Data Provider"/>
+    <ROW XmlAttribute="name_14" XmlElement="assemblyIdentity" Name="name" Flags="15" Order="0" Value="Newtonsoft.Json"/>
+    <ROW XmlAttribute="name_2" XmlElement="section_1" Name="name" Flags="15" Order="0" Value="Pandora.Client.PandorasWallet.Properties.Settings"/>
+    <ROW XmlAttribute="name_3" XmlElement="section_2" Name="name" Flags="15" Order="0" Value="Pandora.Client.Properties.Settings"/>
+    <ROW XmlAttribute="name_4" XmlElement="setting" Name="name" Flags="15" Order="0" Value="Port"/>
+    <ROW XmlAttribute="name_5" XmlElement="setting_1" Name="name" Flags="15" Order="0" Value="ServerName"/>
+    <ROW XmlAttribute="name_6" XmlElement="setting_2" Name="name" Flags="15" Order="0" Value="DataPath"/>
+    <ROW XmlAttribute="name_7" XmlElement="setting_3" Name="name" Flags="15" Order="0" Value="EncyptedConnection"/>
+    <ROW XmlAttribute="name_8" XmlElement="setting_4" Name="name" Flags="15" Order="0" Value="Coin"/>
+    <ROW XmlAttribute="name_9" XmlElement="setting_5" Name="name" Flags="15" Order="0" Value="Email"/>
+    <ROW XmlAttribute="newVersion" XmlElement="bindingRedirect" Name="newVersion" Flags="14" Order="1" Value="11.0.0.0"/>
+    <ROW XmlAttribute="oldVersion" XmlElement="bindingRedirect" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-11.0.0.0"/>
+    <ROW XmlAttribute="publicKeyToken" XmlElement="assemblyIdentity" Name="publicKeyToken" Flags="14" Order="1" Value="30ad4fe6b2a6aeed"/>
+    <ROW XmlAttribute="requirePermission" XmlElement="section" Name="requirePermission" Flags="14" Order="2" Value="false"/>
+    <ROW XmlAttribute="requirePermission_1" XmlElement="section_1" Name="requirePermission" Flags="14" Order="3" Value="false"/>
+    <ROW XmlAttribute="requirePermission_2" XmlElement="section_2" Name="requirePermission" Flags="14" Order="3" Value="false"/>
+    <ROW XmlAttribute="serializeAs" XmlElement="setting" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="serializeAs_1" XmlElement="setting_1" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="serializeAs_2" XmlElement="setting_2" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="serializeAs_3" XmlElement="setting_3" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="serializeAs_4" XmlElement="setting_4" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="serializeAs_5" XmlElement="setting_5" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="serializeAs_6" XmlElement="setting_6" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="serializeAs_7" XmlElement="setting_7" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="sku" XmlElement="supportedRuntime" Name="sku" Flags="14" Order="1" Value=".NETFramework,Version=v4.6.1"/>
+    <ROW XmlAttribute="type" XmlElement="section" Name="type" Flags="14" Order="1" Value="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
+    <ROW XmlAttribute="type_1" XmlElement="sectionGroup" Name="type" Flags="14" Order="1" Value="System.Configuration.UserSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
+    <ROW XmlAttribute="type_2" XmlElement="section_1" Name="type" Flags="14" Order="1" Value="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
+    <ROW XmlAttribute="type_3" XmlElement="section_2" Name="type" Flags="14" Order="1" Value="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
+    <ROW XmlAttribute="type_4" XmlElement="defaultConnectionFactory" Name="type" Flags="14" Order="0" Value="System.Data.Entity.Infrastructure.LocalDbConnectionFactory, EntityFramework"/>
+    <ROW XmlAttribute="type_5" XmlElement="provider" Name="type" Flags="14" Order="1" Value="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer"/>
+    <ROW XmlAttribute="type_6" XmlElement="provider_1" Name="type" Flags="14" Order="1" Value="System.Data.SQLite.EF6.SQLiteProviderServices, System.Data.SQLite.EF6"/>
+    <ROW XmlAttribute="type_7" XmlElement="add" Name="type" Flags="14" Order="3" Value="System.Data.SQLite.EF6.SQLiteProviderFactory, System.Data.SQLite.EF6"/>
+    <ROW XmlAttribute="type_8" XmlElement="add_1" Name="type" Flags="14" Order="3" Value="System.Data.SQLite.SQLiteFactory, System.Data.SQLite"/>
+    <ROW XmlAttribute="value" XmlElement="parameter" Name="value" Flags="14" Order="0" Value="v13.0"/>
+    <ROW XmlAttribute="version" XmlElement="supportedRuntime" Name="version" Flags="14" Order="0" Value="v4.0"/>
+    <ROW XmlAttribute="xmlns" XmlElement="assemblyBinding" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
+    <ROW XmlElement="Comment" ParentElement="configSections" Name="Comment" Condition="1" Order="2" Flags="1" Text=" For more information on Entity Framework configuration, visit http://go.microsoft.com/fwlink/?LinkID=237468 "/>
+    <ROW XmlElement="DbProviderFactories" ParentElement="system.data" Name="DbProviderFactories" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="Pandora.Client.PandorasWallet.Prope" ParentElement="userSettings" Name="Pandora.Client.PandorasWallet.Properties.Settings" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="add" ParentElement="DbProviderFactories" Name="add" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="add_1" ParentElement="DbProviderFactories" Name="add" Condition="1" Order="3" Flags="14"/>
+    <ROW XmlElement="assemblyBinding" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity" ParentElement="dependentAssembly" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="bindingRedirect" ParentElement="dependentAssembly" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindings" ParentElement="system.serviceModel" Name="bindings" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="client" ParentElement="system.serviceModel" Name="client" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="configSections" ParentElement="configuration" Name="configSections" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="configuration" Name="configuration" Condition="1" Order="0" Flags="30"/>
+    <ROW XmlElement="defaultConnectionFactory" ParentElement="entityFramework" Name="defaultConnectionFactory" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly" ParentElement="assemblyBinding" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="entityFramework" ParentElement="configuration" Name="entityFramework" Condition="1" Order="3" Flags="14"/>
+    <ROW XmlElement="parameter" ParentElement="parameters" Name="parameter" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="parameters" ParentElement="defaultConnectionFactory" Name="parameters" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="provider" ParentElement="providers" Name="provider" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="provider_1" ParentElement="providers" Name="provider" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="providers" ParentElement="entityFramework" Name="providers" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="remove" ParentElement="DbProviderFactories" Name="remove" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="remove_1" ParentElement="DbProviderFactories" Name="remove" Condition="1" Order="2" Flags="14"/>
+    <ROW XmlElement="runtime" ParentElement="configuration" Name="runtime" Condition="1" Order="6" Flags="14"/>
+    <ROW XmlElement="section" ParentElement="configSections" Name="section" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="sectionGroup" ParentElement="configSections" Name="sectionGroup" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="section_1" ParentElement="sectionGroup" Name="section" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="section_2" ParentElement="sectionGroup" Name="section" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="setting" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="setting_1" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="setting_2" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="2" Flags="14"/>
+    <ROW XmlElement="setting_3" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="3" Flags="14"/>
+    <ROW XmlElement="setting_4" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="4" Flags="14"/>
+    <ROW XmlElement="setting_5" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="5" Flags="14"/>
+    <ROW XmlElement="setting_6" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="6" Flags="14"/>
+    <ROW XmlElement="setting_7" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="7" Flags="14"/>
+    <ROW XmlElement="startup" ParentElement="configuration" Name="startup" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="supportedRuntime" ParentElement="startup" Name="supportedRuntime" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="system.data" ParentElement="configuration" Name="system.data" Condition="1" Order="5" Flags="14"/>
+    <ROW XmlElement="system.serviceModel" ParentElement="configuration" Name="system.serviceModel" Condition="1" Order="2" Flags="14"/>
+    <ROW XmlElement="userSettings" ParentElement="configuration" Name="userSettings" Condition="1" Order="4" Flags="14"/>
+    <ROW XmlElement="value" ParentElement="setting" Name="value" Condition="1" Order="0" Flags="14" Text="443"/>
+    <ROW XmlElement="value_1" ParentElement="setting_1" Name="value" Condition="1" Order="0" Flags="14" Text="apistage01.pandoraswallet.com"/>
+    <ROW XmlElement="value_2" ParentElement="setting_2" Name="value" Condition="1" Order="0" Flags="14" Text="[APPDIR]"/>
+    <ROW XmlElement="value_3" ParentElement="setting_3" Name="value" Condition="1" Order="0" Flags="14" Text="True"/>
+    <ROW XmlElement="value_4" ParentElement="setting_4" Name="value" Condition="1" Order="0" Flags="14" Text="0"/>
+    <ROW XmlElement="value_5" ParentElement="setting_5" Name="value" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="value_6" ParentElement="setting_6" Name="value" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="value_7" ParentElement="setting_7" Name="value" Condition="1" Order="0" Flags="14"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.XmlFileComponent">
+    <ROW XmlFile="PandorasWallet.exe.config" FileName="PANDOR~1.CON|PandorasWallet.exe.config" DirProperty="APPDIR" Component="System.Buffers.dll" RootElement="configuration" Flags="89" Version="1.0" Encoding="UTF-8" IndentUnits="2"/>
+  </COMPONENT>
+</DOCUMENT>
