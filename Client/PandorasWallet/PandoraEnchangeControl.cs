@@ -60,9 +60,11 @@ namespace Pandora.Client.PandorasWallet
             MainForm.OnExhangeCurrencySelectionChanged += MainForm_OnExhangeMarketSelectionChanged;
             MainForm.OnLabelEstimatePriceClick += MainForm_OnLabelEstimatePriceClick;
             MainForm.OnExchangeSelectionChanged += MainForm_OnExchangeSelectionChanged;
+
             MainForm.OnTxtQuantityLeave += MainForm_OnExchangeQuantityTxtChanged;
             MainForm.OnExchangeBtnClick += MainForm_OnExchangeBtnClick;
             MainForm.OnOrderHistorySelectionChanged += MainForm_OnOrderHistorySelectionChanged;
+
             MainForm.OnTxtTotalLeave += MainForm_OnTotalReceivedChanged;
             MainForm.OnCheckAllOrderHistory += MainForm_OnCheckAllOrderHistory;
         }
@@ -97,6 +99,7 @@ namespace Pandora.Client.PandorasWallet
                         PandoraExchanger.ExchangeMarket[] lMarkets = FExchanger.GetMarketCoins(it.BaseTicker);
 
                         PandoraExchanger.ExchangeMarket lMarket = lMarkets.ToList().Find(x => x.BaseTicker == Coins.Find(y => y.Id == currencyId.Key).Ticker);
+
                         decimal lRate = lMarket.IsSell ? 1 / it.Rate : it.Rate;
                         decimal lRawAmount = it.SentQuantity / lRate;
 

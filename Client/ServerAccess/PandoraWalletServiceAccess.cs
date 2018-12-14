@@ -148,7 +148,7 @@ namespace Pandora.Client.ServerAccess
             {
                 Pandora.Client.Universal.Log.Write(Pandora.Client.Universal.LogLevel.Error, "Connection to Pandora Server failed with: " + ex.Message);
                 Connected = false;
-
+                //Note: if the web server is using intergrated security it will fail with this result.
                 if (ex.Message.Contains("The request failed with HTTP status 401: Unauthorized"))
                 {
                     throw new Pandora.Client.ClientLib.PandoraServerException("Access denied.  Invalid user name or password.");

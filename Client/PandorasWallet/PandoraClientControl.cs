@@ -58,6 +58,8 @@ namespace Pandora.Client.PandorasWallet
 
         public PandoraClientMainWindow MainForm { get; private set; }
 
+        public InitializingDialog InitializingDialog { get; set; }
+
         private PandoraClientControl(PandoraClientMainWindow aMainWindow)
         {
             MainForm = aMainWindow;
@@ -100,6 +102,8 @@ namespace Pandora.Client.PandorasWallet
 
             SettingsDialog = new SettingsDialog();
             SettingsDialog.OnChangeDefaultCoinClick += SettingsDialog_OnChangeDefaultCoinClick;
+
+            InitializingDialog = new InitializingDialog();
 
             RestoreInitialize();
             BackupInitialize();
@@ -694,35 +698,73 @@ namespace Pandora.Client.PandorasWallet
 
         private void MainForm_OnConnect(object sender, EventArgs e)
         {
-            ConnectDialog.Username = Properties.Settings.Default.Username;
-            ConnectDialog.Email = Properties.Settings.Default.Email;
-            ConnectDialog.UserConnected = false;
-
-            do
+            try
             {
-                if (!ConnectDialog.Execute())
-                {
-                    if (FStartUpConnected)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        MainForm.Close();
-                    }
-                }
+                ConnectDialog.Username = Properties.Settings.Default.Username;
+                ConnectDialog.Email = Properties.Settings.Default.Email;
+                ConnectDialog.UserConnected = false;
 
-                if (!WalletCreationProcess())
+                do
                 {
-                    continue;
-                }
+                    if (!ConnectDialog.Execute())
+                    {
+                        if (FStartUpConnected)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            MainForm.Close();
+                        }
+                    }
 
-                StartupExchangeProcess();
+                    Task<bool> lInitializeTask = Task.Run(() =>
+                    {
+                        Thread.Sleep(100);
+
+                        bool lResult = WalletCreationProcess();
+
+                        MainForm.BeginInvoke(new MethodInvoker(() => InitializingDialog.SetInitialized()));
+
+                        return lResult;
+                    });
+
+                    InitializingDialog.ShowDialog();
+
+                    lInitializeTask.Wait();
+
+                    if (lInitializeTask.IsFaulted)
+                    {
+                        throw lInitializeTask.Exception.InnerExceptions[0];
+                    }
+
+                    if (!lInitializeTask.Result)
+                    {
+                        continue;
+                    }
+
+                    StartupExchangeProcess();
+                }
+                while (!FStartUpConnected);
+
+                Utils.PandoraLog.GetPandoraLog().Write("Succesfully logged as " + FWallet.Username);
             }
-            while (!FStartUpConnected);
-
-            Utils.PandoraLog.GetPandoraLog().Write("Succesfully logged as " + FWallet.Username);
+            catch (Exception ex)
+            {
+                Utils.PandoraLog.GetPandoraLog().Write("An exception during initialization ocurred. Details: " + ex.Message + " on " + ex.Source);
+                throw;
+            }
+            finally
+            {
+                if (FWallet == null)
+                {
+                    Utils.PandoraLog.GetPandoraLog().Write("Fatal Error. Application shutting down.");
+                    Application.Exit();
+                }
+            }
         }
+
+        private delegate bool BoolInvoker();
 
         private bool WalletCreationProcess(bool aIsRestore = false)
         {
@@ -732,7 +774,8 @@ namespace Pandora.Client.PandorasWallet
             }
 
             FWallet = FWorkingWallet;
-            PrepareGUIWithWallet(FWallet);
+
+            MainForm?.Invoke(new MethodInvoker(() => PrepareGUIWithWallet(FWallet)));
 
             FWallet = FWorkingWallet;
 
@@ -763,7 +806,7 @@ namespace Pandora.Client.PandorasWallet
             {
                 if (FWorkingWallet.DefaultCoin == 0 || !FWorkingWallet.Encrypted)
                 {
-                    if (!ExecuteRestoringProccess())
+                    if ((bool)MainForm.Invoke(new BoolInvoker(() => !ExecuteRestoringProccess())))
                     {
                         return false;
                     }
@@ -781,7 +824,7 @@ namespace Pandora.Client.PandorasWallet
                 FWorkingWallet.DefaultCoin = lSelectedID;
                 FWorkingWallet.AddNewSelectedCurrency(lSelectedID);
 
-                if (!EncryptionPasswordDialog.Execute(true))
+                if ((bool)MainForm.Invoke(new BoolInvoker(() => !EncryptionPasswordDialog.Execute(true))))
                 {
                     return false;
                 }
@@ -789,9 +832,9 @@ namespace Pandora.Client.PandorasWallet
                 FWorkingWallet.InitializeRootSeed(true);
             }
 
-            MainForm.CurrencyViewControl.ClearCurrencies();
+            MainForm?.Invoke(new MethodInvoker(() => MainForm.CurrencyViewControl.ClearCurrencies()));
 
-            SetUserCoins(FWorkingWallet);
+            MainForm?.Invoke(new MethodInvoker(() => SetUserCoins(FWorkingWallet)));
 
             if (FWallet != null)
             {
@@ -859,9 +902,9 @@ namespace Pandora.Client.PandorasWallet
 
             aWallet.UsingFullCoinList = false;
 
-            DefaultCoinSelectorDialog.AddItemsToShow(lListOfCurrency);
+            MainForm.Invoke(new MethodInvoker(() => DefaultCoinSelectorDialog.AddItemsToShow(lListOfCurrency)));
 
-            return DefaultCoinSelectorDialog.Execute();
+            return (bool)MainForm.Invoke(new BoolInvoker(() => DefaultCoinSelectorDialog.Execute()));
         }
 
         private void AddCoinsToCurrencyView(List<CurrencyItem> aListCoins, PandoraWallet aWallet)

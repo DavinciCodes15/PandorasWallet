@@ -33,8 +33,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         private bool FOkPressed;
 
-        private PandoraWallet FWallet = null;
-
         public event EventHandler OnOkClick;
 
         public bool UserConnected { get; set; }
@@ -95,21 +93,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 FOkPressed = false;
                 e.Cancel = !UserConnected;
             }
-        }
-
-        public bool Execute(out PandoraWallet aWallet)
-        {
-            Cursor.Current = Cursors.Default;
-
-            if (ShowDialog() == DialogResult.OK)
-            {
-                aWallet = FWallet;
-                return true;
-            }
-
-            aWallet = null;
-
-            return false;
         }
     }
 }

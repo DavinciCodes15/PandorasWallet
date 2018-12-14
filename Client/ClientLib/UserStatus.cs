@@ -21,7 +21,6 @@ namespace Pandora.Client.ClientLib
         public DateTime StatusDate { get; private set; }
 
         public bool Active { get; private set; }
-
         public string ExtendedInfo { get; private set; }
     }
 }

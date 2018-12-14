@@ -126,6 +126,7 @@ namespace Pandora.Client.PandorasWallet
 
         private static ProcessStartInfo InitializeIisExpress(string aFullPath, int aPortNumber)
         {
+            // todo: grab stdout and/or stderr for logging purposes?
             string key = Environment.Is64BitOperatingSystem ? "programfiles(x86)" : "programfiles";
             string programfiles = Environment.GetEnvironmentVariable(key);
 

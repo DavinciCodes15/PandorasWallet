@@ -1,27 +1,7 @@
-//   Copyright 2017-2019 Davinci Codes
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// Also use the software for non-commercial purposes.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace Pandora.Client.Universal.Threading
 {
@@ -30,7 +10,7 @@ namespace Pandora.Client.Universal.Threading
     // public delegate void NotifyDelegate(object sender);
     public delegate void ErrorHandlerDelegate(object sender, Exception e, ref bool aIsHandled);
 
-    #endregion Delagates
+    #endregion
 
     public abstract class MethodJet : ISynchronizeInvoke, IDisposable
     {
@@ -42,11 +22,12 @@ namespace Pandora.Client.Universal.Threading
         private int FActiveThreadID = 0;
         private ISynchronizeInvoke FSynchronizingObject = null;
         private object FEventLock = new object();
-
+        // private methods
         private int GetCurrentThreadId()
         {
             return Thread.CurrentThread.ManagedThreadId;
         }
+
 
         #region Protected Members
 
@@ -56,13 +37,15 @@ namespace Pandora.Client.Universal.Threading
         /// <remarks>If an end message is sent this propertiy is set to true.</remarks>
         protected bool Terminated
         {
-            get => FTerminated;
-            set => FTerminated = value;
+            get { return FTerminated; }
+            set { FTerminated = value; }
         }
+
 
         protected virtual void InternalRun()
         {
             FTerminated = false;
+            DelegateMessage methodMessage;
 
             lock (this)
             {
@@ -71,7 +54,7 @@ namespace Pandora.Client.Universal.Threading
             try
             {
                 InternalInitialize();
-                while (GetMethodMessage(out DelegateMessage methodMessage))
+                while (GetMethodMessage(out methodMessage))
                 {
                     InvokeMethodMessage(methodMessage);
                 }
@@ -82,7 +65,7 @@ namespace Pandora.Client.Universal.Threading
                 {
                     InternalFinalize();
                 }
-                finally
+                finally 
                 {
                     DoOnTerminate();
                     FActiveThreadID = 0;
@@ -94,13 +77,13 @@ namespace Pandora.Client.Universal.Threading
         /// Gets a Delgate Message from the message queue
         /// </summary>
         /// <remarks>
-        /// GetMethodMessage Looks on the message queue if no message is available
+        /// GetMethodMessage Looks on the message queue if no message is available 
         /// the call is blocked until a message is found
-        /// The MethodJet uses the return value to determine whether to end the main
-        /// message loop and stop running.
-        /// The GetMethodMessage function retrieves messages associated with the
+        /// The MethodJet uses the return value to determine whether to end the main 
+        /// message loop and stop running. 
+        /// The GetMethodMessage function retrieves messages associated with the 
         /// object located on an enternal queue.
-        /// During this call, the object delivers pending messages that were sent
+        /// During this call, the object delivers pending messages that were sent 
         /// to the object using the Invoke, BeginInvoke, or Terminate.
         /// </remarks>
         /// <returns>Returns true if the "Method Message" is not an end "Method Message".</returns>
@@ -112,9 +95,7 @@ namespace Pandora.Client.Universal.Threading
             {
                 aMethodMessage = FMethodQueue.Dequeue();
                 if (FMethodQueue.Count == 0)
-                {
                     FQueueSignal.Reset();
-                }
             }
             return !aMethodMessage.TerminateMessage;
         }
@@ -132,10 +113,7 @@ namespace Pandora.Client.Universal.Threading
             catch (Exception e)
             {
                 if ((e.GetBaseException() is ThreadAbortException) || (!aMethodMessage.CompletedSynchronously && !DoErrorHandler(e)))
-                {
                     throw;
-                }
-
                 return false;
             }
         }
@@ -165,7 +143,7 @@ namespace Pandora.Client.Universal.Threading
             get
             {
                 int result;
-                result = FActiveThreadID;
+                    result = FActiveThreadID;
                 return result;
             }
         }
@@ -173,25 +151,20 @@ namespace Pandora.Client.Universal.Threading
         /// <summary>
         /// Executes an event that occurs inside the running method pump.
         /// </summary>
-        /// <remarks>Call the DoEvent to execute an event on the correct thread.
-        /// This method checks if SinchronizingObject property is set and executes
-        /// the event using the ISynchronizeInvoke interface.  By doing so this
+        /// <remarks>Call the DoEvent to execute an event on the correct thread.  
+        /// This method checks if SinchronizingObject property is set and executes 
+        /// the event using the ISynchronizeInvoke interface.  By doing so this 
         /// insures that the event is fired only when the thread is in a valid state.</remarks>
         protected virtual void DoEvent(Delegate anEvent, bool asynchronous, params object[] args)
         {
             if (FSynchronizingObject == null)
-            {
                 anEvent.DynamicInvoke(args);
-            }
             else if (asynchronous)
-            {
                 FSynchronizingObject.BeginInvoke(anEvent, args);
-            }
             else
-            {
                 FSynchronizingObject.Invoke(anEvent, args);
-            }
         }
+
 
         protected virtual bool DoErrorHandler(Exception e)
         {
@@ -208,24 +181,23 @@ namespace Pandora.Client.Universal.Threading
             return ErrorHandled;
         }
 
-        #endregion Protected Members
+        #endregion
 
         #region Public Members
-
         /// <summary>
-        /// The ISynchronizeInvoke representing the object used to
-        /// marshal the event-handler calls that are issued when an
+        /// The ISynchronizeInvoke representing the object used to 
+        /// marshal the event-handler calls that are issued when an 
         /// interval has elapsed. The default is a null reference.
         /// </summary>
         /// <remarks>
         /// When SynchronizingObject is a null reference, events executed
-        /// with the DoEvent method are called on a thread from the Run
-        /// method was executed on.
-        /// When an event is handled by a visual Forms component, such
-        /// as a button or a Form, accessing the component from another
-        /// thread might result in an exception or just might not work.
-        /// Avoid this effect by setting SynchronizingObject to a Forms
-        /// component, which causes the a method that handles an event
+        /// with the DoEvent method are called on a thread from the Run 
+        /// method was executed on. 
+        /// When an event is handled by a visual Forms component, such 
+        /// as a button or a Form, accessing the component from another 
+        /// thread might result in an exception or just might not work.  
+        /// Avoid this effect by setting SynchronizingObject to a Forms 
+        /// component, which causes the a method that handles an event 
         /// to be called on the same thread that the component was created on.
         /// </remarks>
         public MethodJet()
@@ -258,9 +230,7 @@ namespace Pandora.Client.Universal.Threading
         private void IsRunning()
         {
             if (!Running)
-            {
                 throw new DevErrorException("MethodJet not running.");
-            }
         }
 
         #region ISynchronizeInvoke Members
@@ -272,7 +242,7 @@ namespace Pandora.Client.Universal.Threading
             lock (FMethodQueue)
             {
                 FMethodQueue.Enqueue(methodMessage);
-                FQueueSignal.Set();
+                FQueueSignal.Set(); 
             }
             return methodMessage;
         }
@@ -282,19 +252,11 @@ namespace Pandora.Client.Universal.Threading
             IsRunning();
             DelegateMessage methodMessage = result as DelegateMessage;
             if (RunningThreadID == GetCurrentThreadId())
-            {
                 throw new DevErrorException("MethodJet is running in the same thread calling EndInvoke will cause a dead lock!");
-            }
-
             if (aMillisecondsTimeout < 1)
-            {
                 methodMessage.AsyncWaitHandle.WaitOne();
-            }
             else
-            {
-                methodMessage.AsyncWaitHandle.WaitOne(aMillisecondsTimeout);
-            }
-
+            methodMessage.AsyncWaitHandle.WaitOne(aMillisecondsTimeout);
             return methodMessage.AsyncState;
         }
 
@@ -308,9 +270,13 @@ namespace Pandora.Client.Universal.Threading
             return EndInvoke(BeginInvoke(method, args));
         }
 
-        public virtual bool InvokeRequired => RunAsynchronous;
 
-        #endregion ISynchronizeInvoke Members
+        public virtual bool InvokeRequired
+        {
+            get { return RunAsynchronous; }
+        }
+
+        #endregion
 
         public virtual void Terminate()
         {
@@ -319,14 +285,12 @@ namespace Pandora.Client.Universal.Threading
                 if (!Terminated)
                 {
                     if (Running)
-                    {
                         BeginInvoke(null, null);
-                    }
-
                     Terminated = true;
                 }
             }
         }
+
 
         public abstract void Run();
 
@@ -334,9 +298,21 @@ namespace Pandora.Client.Universal.Threading
         /// Deturmins if the call to the Run method is asynchronous or not.
         /// </summary>
         /// <remarks>Calling the run method will return once the Method Pump is terminated executing if the RunAsynchronous property is false.  If  true calling Run will execute the MethodPump in a thread and will return once the thread is created.</remarks>
-        public virtual bool RunAsynchronous => false;
+        public virtual bool RunAsynchronous
+        {
+            get
+            {
+                return false;
+            }
+        }
 
-        public bool Running => RunningThreadID != 0;
+        public bool Running
+        {
+            get
+            {
+                return RunningThreadID != 0;
+            }
+        }
 
         public event EventHandler OnTerminated
         {
@@ -374,14 +350,12 @@ namespace Pandora.Client.Universal.Threading
             }
         }
 
-        #endregion Public Members
+        #endregion
 
         #region Internal Classes
-
         public class WaitEvent : EventWaitHandle
         {
             private DelegateMessage FMethodMessage;
-
             public WaitEvent(bool initialState, DelegateMessage aMethodMessage)
                 : base(initialState, EventResetMode.ManualReset)
             {
@@ -403,10 +377,7 @@ namespace Pandora.Client.Universal.Threading
 
                 baseResult = base.WaitOne(millisecondsTimeout, exitContext);
                 if (baseResult && (FMethodMessage.ExceptionObject != null))
-                {
                     throw FMethodMessage.ExceptionObject;
-                }
-
                 return baseResult;
             }
 
@@ -419,12 +390,10 @@ namespace Pandora.Client.Universal.Threading
 
                 baseResult = base.WaitOne(timeout, exitContext);
                 if (baseResult && (FMethodMessage.ExceptionObject != null))
-                {
                     throw FMethodMessage.ExceptionObject;
-                }
-
                 return baseResult;
             }
+
         }
 
         public sealed class DelegateMessage : IAsyncResult
@@ -447,15 +416,27 @@ namespace Pandora.Client.Universal.Threading
 
             #region IAsyncResult Members
 
-            public object AsyncState => FResult;
+            public object AsyncState
+            {
+                get { return FResult; }
+            }
 
-            public WaitHandle AsyncWaitHandle => FMethodSignal;
+            public WaitHandle AsyncWaitHandle
+            {
+                get { return FMethodSignal; }
+            }
 
-            public bool CompletedSynchronously => !FAsynchonous;
+            public bool CompletedSynchronously
+            {
+                get { return !FAsynchonous; }
+            }
 
-            public bool IsCompleted => FCompleted;
+            public bool IsCompleted
+            {
+                get { return FCompleted; }
+            }
 
-            #endregion IAsyncResult Members
+            #endregion
 
             /// <summary>
             /// Calls the method contained by MethodMessage.
@@ -464,10 +445,7 @@ namespace Pandora.Client.Universal.Threading
             public void MethodInvoke()
             {
                 if (IsCompleted)
-                {
                     throw new MethodExecutedException("Method already executed.");
-                }
-
                 try
                 {
                     try
@@ -488,16 +466,17 @@ namespace Pandora.Client.Universal.Threading
                 }
             }
 
-            public bool TerminateMessage => FEventMethod == null;
+            public bool TerminateMessage { get { return FEventMethod == null; } }
 
             public Exception ExceptionObject
             {
-                get => FException;
-                set => FException = value;
+                get { return FException; }
+                set { FException = value; }
             }
         }
+        #endregion
 
-        #endregion Internal Classes
+
 
         public virtual void Dispose()
         {

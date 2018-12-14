@@ -23,7 +23,6 @@
 #endif
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Pandora.Client.ClientLib;
 using Pandora.Client.ServerAccess;
 using System;
@@ -39,6 +38,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 {
     public class PandorasServer : IPandoraServer
     {
+        //TODO: STRINGS WILL BE JSON OBJECTS
         private PandoraWalletServiceAccess FServerAccess;
 
         private PandorasCache FPandoraCache;
@@ -356,7 +356,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             if ((TxUpdating == null || TxUpdating.IsCanceled) && CurrencyNumber.Any())
             {
-                TxUpdating = TxUpdatingTask(this, FCurrencyStatusUpdateCancellationSource.Token);
+                TxUpdating = TxUpdatingTask(this, FCurrencyStatusUpdateCancellationSource.Token); //Start fetching transactions now that I have currencies to work with
             }
         }
 
@@ -364,7 +364,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             if ((CurrencyStatusUpdating == null || CurrencyStatusUpdating.IsCanceled) && CurrencyNumber.Any())
             {
-                CurrencyStatusUpdating = Task.Run(() => CurrencyStatusUpdatingTask(this, FTxUpdateCancellationSource.Token));
+                CurrencyStatusUpdating = Task.Run(() => CurrencyStatusUpdatingTask(this, FTxUpdateCancellationSource.Token)); //Start fetching statuses
             }
         }
 
@@ -380,6 +380,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public byte[] GetCurrencyIcon(uint aCurrencyId)
         {
+            //TODO:LUIS- Overwrite icon in database when this is called
             return FPandoraCache.GetCurrencyByID(aCurrencyId).Icon;
         }
 
@@ -443,6 +444,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             FTxUpdateCancellationSource.Cancel();
             FCurrencyStatusUpdateCancellationSource.Cancel();
+
+            //TODO:LUIS- CLOSE STUFF BEFORE LOGGIN OFF
             return FServerAccess.Logoff();
         }
 
@@ -500,6 +503,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         System.Diagnostics.Debug.WriteLine("PANDORAS SERVER - New Transaction found");
 #endif
                         await Task.Delay(10000, aCancellationToken);
+                        //continue;
                     }
 
                     List<Tuple<uint, ulong>> lToUpdate = new List<Tuple<uint, ulong>>();
@@ -559,6 +563,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             return FBlockHeights[aCurrencyID];
         }
+
+        //TODO: Change this to work with Blockheights and transactions;
 
         private long FetchBlockHeight(uint aCurrencyID)
         {
@@ -629,11 +635,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             public static string CreateMD5(string input)
             {
+                // Use input string to calculate MD5 hash
                 using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
                 {
                     byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
                     byte[] hashBytes = md5.ComputeHash(inputBytes);
 
+                    // Convert the byte array to hexadecimal string
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < hashBytes.Length; i++)
                     {
@@ -654,10 +662,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 CreateConvertionEspecifications();
             }
 
-            protected override byte[] GetIcon(JObject aItem, JsonSerializer aSerializer)
-            {
-                return FPandoraServer.FetchCurrencyIcon(aItem["Id"].Value<uint>());
-            }
+            //protected override byte[] GetIcon(JObject aItem, JsonSerializer aSerializer)
+            //{
+            //    return FPandoraServer.FetchCurrencyIcon(aItem["Id"].Value<uint>());
+            //}
         }
 
         private class CurrencyAccountList : ICurrencyAccountList
@@ -694,6 +702,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             public int IndexOfAddress(uint aCurrencyId, string aAddress)
             {
                 return FPandoraServer.FPandoraCache.GetAllMonitoredAccounts().FindIndex((x) => (x.CurrencyId == aCurrencyId) && (x.Address == aAddress));
+
+                //TODO:LUIS-Maybe we need to change this in the future to make it work correctly
             }
 
             IEnumerator IEnumerable.GetEnumerator()

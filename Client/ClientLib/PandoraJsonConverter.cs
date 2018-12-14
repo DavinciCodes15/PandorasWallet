@@ -36,7 +36,7 @@ namespace Pandora.Client.ClientLib
                             aItem["ChainParamaters"].ToObject<ChainParams>(aSerializer)
                             );
                     }
-                },//Check why this is not working☻
+                },
                     {
                         typeof(ChainParams), (JObject aItem, JsonSerializer aSerializer)=>
                         {
@@ -70,7 +70,6 @@ namespace Pandora.Client.ClientLib
             };
         }
 
-        //TODO: LUIS- Add last class to this, and test everything
         public override bool CanConvert(Type objectType)
         {
             return FTypes.Keys.Any(t => t == objectType);

@@ -132,6 +132,12 @@
     <Compile Include="Dialogs\DefaultCoinSelector.Designer.cs">
       <DependentUpon>DefaultCoinSelector.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\InitializingDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\InitializingDialog.Designer.cs">
+      <DependentUpon>InitializingDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\LoginExchanger.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -246,6 +252,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\DefaultCoinSelector.resx">
       <DependentUpon>DefaultCoinSelector.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\InitializingDialog.resx">
+      <DependentUpon>InitializingDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\LoginExchanger.resx">
       <DependentUpon>LoginExchanger.cs</DependentUpon>

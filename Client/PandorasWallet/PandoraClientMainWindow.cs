@@ -73,6 +73,8 @@ namespace Pandora.Client.PandorasWallet
 
         public event EventHandler OnTransactionNameChanged;
 
+        //public event EventHandler OnTotalReceivedChanged;
+
         public event EventHandler OnLabelEstimatePriceClick;
 
         public event EventHandler OnPriceChanged;
@@ -316,6 +318,12 @@ namespace Pandora.Client.PandorasWallet
             {
                 e.Handled = true;
             }
+            /*
+            if (string.IsNullOrWhiteSpace(QuickAmountTextBox.Text))
+            {
+                QuickAmountTextBox.Text = "0";
+            }
+            */
         }
 
         private void listTransactions_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
@@ -398,22 +406,29 @@ namespace Pandora.Client.PandorasWallet
             public int Compare(object x, object y)
             {
                 int returnVal;
+                // Determine whether the type being compared is a date type.
                 try
                 {
+                    // Parse the two objects passed as a parameter as a DateTime.
                     System.DateTime firstDate =
                             DateTime.Parse(((ListViewItem)x).SubItems[col].Text);
                     System.DateTime secondDate =
                             DateTime.Parse(((ListViewItem)y).SubItems[col].Text);
+                    // Compare the two dates.
                     returnVal = DateTime.Compare(firstDate, secondDate);
                 }
+                // If neither compared object has a valid date format, compare
+                // as a string.
                 catch
                 {
+                    // Compare the two items as a string.
                     returnVal = string.Compare(((ListViewItem)x).SubItems[col].Text,
                                 ((ListViewItem)y).SubItems[col].Text);
                 }
-
+                // Determine whether the sort order is descending.
                 if (order == SortOrder.Descending)
                 {
+                    // Invert the value returned by String.Compare.
                     returnVal *= -1;
                 }
 
@@ -441,10 +456,12 @@ namespace Pandora.Client.PandorasWallet
 
         public string LabelCoinExchange { set => lblExchange.Text = string.Format("Exchange {0} On", value); }
 
+        //public string LabelCoinExchange { set { lblExchange.Text = string.Format("Exchange {0} On", lblCoinName.Text); } }
         public string LabelCoinQuantity { get => lblQuantity.Text; set => lblQuantity.Text = value; }
 
         public string LabelTotalCoinReceived { get => lblTotalReceived.Text; set => lblTotalReceived.Text = value; }
 
+        //public string LabelTotalCoinReceived { set { string.Format("{0} ({1})", lSelectedCurrencyToExchange.SubItems[0], lSelectedCurrencyToExchange.SubItems[1]); } }
         public string LabelPriceInCoin { set => lblEstimatePriceCoin.Text = string.Format("Estmated Current price in ({0}):", value); }
 
         public string LabelEstimatePrice { get => lblEstimatePrice.Text; set => lblEstimatePrice.Text = value; }
@@ -538,6 +555,7 @@ namespace Pandora.Client.PandorasWallet
                 {
                     lstCoinAvailable.Items[0].Selected = true;
                     lstCoinAvailable.Items[0].Focused = true;
+                    //lstCoinAvailable.Select();
                 }
             }
             catch
@@ -561,6 +579,16 @@ namespace Pandora.Client.PandorasWallet
 
         public void AddOrderHistory(int aInternalID, string aTrasactionName, string aSold, string aReceived, string aPrice, string aExchange, string aDateTime, string aStatus)
         {
+            //if (SelectedOrderHistory != null)
+            //    for (int it = 0; it < lstOrderHistory.Items.Count; it++)
+            //    {
+            //        if ((int)lstOrderHistory.Items[it].Tag == aInternalID)
+            //        {
+            //            lstOrderHistory.Items.RemoveAt(it);
+            //            break;
+            //        }
+            //    }
+
             ListViewItem lSelectedOrder = null;
             if (FOrderHistorySelected != null)
             {
@@ -646,6 +674,20 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        //public event EventHandler OnExchangeQuantityTxtChanged;
+
+        //private void txtQuantity_TextChanged(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        OnExchangeQuantityTxtChanged?.Invoke(sender, e);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.StandardErrorMsgBox(ex.Message);
+        //    }
+        //}
+
         private void txtQuantity_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(QuickAmountTextBox.Text))
@@ -688,6 +730,18 @@ namespace Pandora.Client.PandorasWallet
                 this.StandardErrorMsgBox(ex.Message);
             }
         }
+
+        //private void txtTotal_TextChanged(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        OnTotalReceivedChanged?.Invoke(sender, e);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        this.StandardErrorMsgBox(ex.Message);
+        //    }
+        //}
 
         private void lblEstimatePrice_Click(object sender, EventArgs e)
         {

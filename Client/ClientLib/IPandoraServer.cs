@@ -72,15 +72,6 @@
         TransactionRecord[] GetTransactions(uint aCurrencyId, string aAddress);
 
         /// <summary>
-        /// Gets Extedended information of the currency's transanaction beyond just inputs and outputs.  The infromation is provided in Json format
-        /// for the client app to display.
-        /// </summary>
-        /// <param name="aCurrencyId">The Id of the currency the tx belongs to.</param>
-        /// <param name="aTxId">Transaction Id of the the transaction.</param>
-        /// <returns>Returns a Json Script with the infromation about the transaction</returns>
-        //string GetExtendedTransactionInfo(uint aCurrencyId, string aTxId);
-
-        /// <summary>
         /// Creates a send transaction data string to be signed on the client side.  If the inputs or outputs are incorrect an exception orccers.
         /// </summary>
         /// <param name="aCurrencyId">Currency id of the address you want the transaction</param>
@@ -109,14 +100,6 @@
         /// <param name="aCurrencyId">The currency id of the Icon you wish to recieve</param>
         /// <returns></returns>
         byte[] GetCurrencyIcon(uint aCurrencyId);
-
-        /// <summary>
-        /// Download the currency interface code for creating addresses and keys
-        /// </summary>
-        /// <param name="aCurrencyId"></param>
-        /// <param name="aLibVersion"></param>
-        /// <returns></returns>
-        //byte[] GetCurrencyLib(uint aCurrencyId, string aLibVersion);
 
         /// <summary>
         /// The path that this code will store cache data because the code

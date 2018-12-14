@@ -698,9 +698,6 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         public bool Logon(string aEmail, string aUsername, string aPassword)
         {
-            /*
-                */
-
             if (FWalletPandoraServer.Logon(aEmail, aUsername, aPassword))
             {
                 try
@@ -1049,21 +1046,21 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         public void CreateBackup(string aPath)
         {
-            string lCopyFile = Path.Combine(FDataFolder.FullName, InstanceId + "_Copy" + ".sqlite");
+            string lCopyFile = Path.Combine(FDataFolder.FullName, InstanceId + "_Copy" + ".exchange");
             BackUp lBackUp = new BackUp();
             string lBackupFile = Path.ChangeExtension(aPath, ".bkp");
             string lSecret = Directory.EnumerateFiles(FDataFolder.FullName).Where((x) => x.Contains(InstanceId + ".secret")).ToList().First();
             string lSettings = Directory.EnumerateFiles(FDataFolder.FullName).Where((x) => x.Contains(InstanceId + ".settings")).ToList().First();
-            string lSqlite = Directory.EnumerateFiles(FDataFolder.FullName).Where((x) => x.Contains(InstanceId + ".exchange")).ToList().First();
+            string lExchange = Directory.EnumerateFiles(FDataFolder.FullName).Where((x) => x.Contains(InstanceId + ".exchange")).ToList().First();
 
-            File.Copy(lSqlite, lCopyFile);
+            File.Copy(lExchange, lCopyFile);
 
             lBackUp.Secret = File.ReadAllBytes(lSecret);
             lBackUp.LengthSecret = lBackUp.Secret.Length;
             lBackUp.Setting = File.ReadAllBytes(lSettings);
             lBackUp.LengthSetting = lBackUp.Setting.Length;
-            lBackUp.Sqlite = File.ReadAllBytes(Path.Combine(FDataFolder.FullName, InstanceId + "_Copy" + ".sqlite"));
-            lBackUp.LengthSqlite = lBackUp.Sqlite.Length;
+            lBackUp.Exchange = File.ReadAllBytes(Path.Combine(FDataFolder.FullName, InstanceId + "_Copy" + ".exchange"));
+            lBackUp.LengthExchange = lBackUp.Exchange.Length;
             lBackUp.Version = 111;
             if (File.Exists(lBackupFile))
             {
@@ -1088,8 +1085,8 @@ namespace Pandora.Client.PandorasWallet.Wallet
                     lBinaryWriter.Write(aBackUp.Secret);
                     lBinaryWriter.Write(aBackUp.LengthSetting);
                     lBinaryWriter.Write(aBackUp.Setting);
-                    lBinaryWriter.Write(aBackUp.LengthSqlite);
-                    lBinaryWriter.Write(aBackUp.Sqlite);
+                    lBinaryWriter.Write(aBackUp.LengthExchange);
+                    lBinaryWriter.Write(aBackUp.Exchange);
                 }
             }
         }
@@ -1100,7 +1097,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             BackUp lBackup = new BackUp();
             string lPathSecret = Path.Combine(FDataFolder.FullName, InstanceId + ".secret");
             string lPathSettings = Path.Combine(FDataFolder.FullName, InstanceId + ".settings");
-            string lPathSqlite = Path.Combine(FDataFolder.FullName, InstanceId + ".sqlite");
+            string lPathExchange = Path.Combine(FDataFolder.FullName, InstanceId + ".exchange");
 
             using (FileStream lFileStream = new FileStream(aPath, FileMode.Open, FileAccess.Read))
             {
@@ -1111,8 +1108,8 @@ namespace Pandora.Client.PandorasWallet.Wallet
                     lBackup.Secret = lBinaryReader.ReadBytes(lBackup.LengthSecret);
                     lBackup.LengthSetting = lBinaryReader.ReadInt32();
                     lBackup.Setting = lBinaryReader.ReadBytes(lBackup.LengthSetting);
-                    lBackup.LengthSqlite = lBinaryReader.ReadInt32();
-                    lBackup.Sqlite = lBinaryReader.ReadBytes(lBackup.LengthSqlite);
+                    lBackup.LengthExchange = lBinaryReader.ReadInt32();
+                    lBackup.Exchange = lBinaryReader.ReadBytes(lBackup.LengthExchange);
                 }
             }
             if (File.Exists(lPathSecret))
@@ -1138,6 +1135,19 @@ namespace Pandora.Client.PandorasWallet.Wallet
                     lBinaryWriter.Write(lBackup.Setting);
                 }
             }
+
+            if (File.Exists(lPathExchange))
+            {
+                File.Delete(lPathExchange);
+            }
+            using (FileStream lFileStream = new FileStream(lPathExchange, FileMode.Create, FileAccess.Write))
+            {
+                using (BinaryWriter lBinaryWriter = new BinaryWriter(lFileStream))
+                {
+                    lBinaryWriter.Write(lBackup.Exchange);
+                }
+            }
+
             FUserSettings.LoadSettings();
             return true;
         }
@@ -1148,11 +1158,12 @@ namespace Pandora.Client.PandorasWallet.Wallet
             public byte[] Secret;
             public byte[] Setting;
 
-            public byte[] Sqlite;
-            public int LengthSetting;
+            public byte[] Exchange;
 
+            public int LengthSetting;
             public int LengthSecret;
-            public int LengthSqlite;
+
+            public int LengthExchange;
         }
 
         public uint[] Get12NumbersOf11Bits()

@@ -32,8 +32,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public EventHandler OnCancelButtonClick;
         public EventHandler OnChangeDefaultCoinClick;
 
-        //Default properties
-
         public string DefaultPath { get; set; }
 
         public string DefaultDefaultCoin { get; set; }

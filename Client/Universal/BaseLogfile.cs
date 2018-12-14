@@ -1,27 +1,7 @@
-﻿//   Copyright 2017-2019 Davinci Codes
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-// Also use the software for non-commercial purposes.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE
-using Pandora.Client.Universal.Threading;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
+using Pandora.Client.Universal.Threading;
 
 namespace Pandora.Client.Universal
 {
@@ -59,7 +39,7 @@ namespace Pandora.Client.Universal
             FStream = MakeFileStream();
             CloseStream();
             OnThreadWriteEvent += new ThreadWriteEvent(ThreadWrite);
-            Run();
+            this.Run();
         }
 
         protected virtual void Initialize()
@@ -69,23 +49,19 @@ namespace Pandora.Client.Universal
         protected override void InternalInitialize()
         {
             base.InternalInitialize();
-            ActiveThread.Priority = System.Threading.ThreadPriority.Lowest;
+            this.ActiveThread.Priority = System.Threading.ThreadPriority.Lowest;
         }
 
         protected virtual void CloseStream()
         {
             if (FStream != FBackupStream)
-            {
                 FStream.Close();
-            }
-
             FStream = null;
         }
 
         protected virtual Stream GetStream()
         {
             if (FStream == null)
-            {
                 try
                 {
                     FStream = MakeFileStream();
@@ -96,8 +72,6 @@ namespace Pandora.Client.Universal
                     Log.WriteAppEvent("Log Stream Error", System.Diagnostics.EventLogEntryType.Error, Log.SE_ID_Stream_Error);
                     FStream = FBackupStream;
                 }
-            }
-
             return FStream;
         }
 
@@ -121,7 +95,6 @@ namespace Pandora.Client.Universal
         {
             FStream = GetStream();
             if (FBackupStream.Length > 0 && FStream != FBackupStream)
-            {
                 try
                 {
                     FBackupStream.Position = 0;
@@ -134,8 +107,6 @@ namespace Pandora.Client.Universal
                     FStream = null;
                     return false;
                 }
-            }
-
             return true;
         }
 
@@ -143,7 +114,6 @@ namespace Pandora.Client.Universal
         {
             base.InternalFinalize();
             if (FBackupStream.Length > 0)
-            {
                 try
                 {
                     int lRetryCount = 0;
@@ -152,19 +122,16 @@ namespace Pandora.Client.Universal
                         lRetryCount++;
                         Thread.Sleep(10);
                         if (lRetryCount > 200)
-                        {
                             throw new ThreadLogError(
-                                string.Format(
+                                String.Format(
                                 System.Globalization.CultureInfo.CurrentCulture,
                                 "Unable able to access {0}.  Logging information has been lost.", FileName));
-                        }
                     }
                 }
                 finally
                 {
                     CloseStream();
                 }
-            }
         }
 
         protected virtual void ThreadWrite(string aText, DateTime aTime)

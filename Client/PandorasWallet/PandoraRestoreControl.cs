@@ -85,6 +85,7 @@ namespace Pandora.Client.PandorasWallet
             if (RestoreDialog.Restored)
             {
                 WalletCreationProcess(!string.IsNullOrEmpty(FPasscode));
+
                 StartupExchangeProcess();
             }
         }
@@ -257,8 +258,6 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        //-----------------------------------------------------BackupProcess-----------------------------------------------------
-
         partial void BackupInitialize()
         {
             BackupWizard = new BaseWizzard
@@ -332,7 +331,6 @@ namespace Pandora.Client.PandorasWallet
                         FWordList = new WordList();
                         BackupWizard.TwelveWordsLabel = "Step 2. Store your 12 words display here";
                         BackupWizard.TwelveWordsControl.ReadOnlyTextBoxes = true;
-
                         if (!EncryptionPasswordDialog.Execute())
                         {
                             return;
@@ -434,8 +432,6 @@ namespace Pandora.Client.PandorasWallet
         {
             BackupWizard.Close();
         }
-
-        //--------------------------------------------ShareMethods----------------------------------------------
 
         private void SetupFinishTab(BaseWizzard aBaseWizzard)
         {
