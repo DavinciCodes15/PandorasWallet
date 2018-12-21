@@ -7,9 +7,9 @@ using System.Threading;
 namespace Pandora.Client.Crypto.Currencies
 {
     [Flags]
-    public enum ProtocolPeculiarity
+    public enum ProtocolFlags
     {
-        None = 0, UsesInvPayloadforGetHeader = 1, FailsToVerAck = 2
+        None = 0, UsesInvPayloadforGetHeader = 1, FailsToVerAck = 2, UseRPC = 4
     }
 
     public class ProtocolData
@@ -20,7 +20,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public uint GenesisTime { get; private set; }
 
-        public uint GenesisBlockHeight { get; private set; }
+        public uint InitialBlockHeight { get; private set; }
 
         public uint MaxP2PVersion { get; private set; }
 
@@ -31,7 +31,7 @@ namespace Pandora.Client.Crypto.Currencies
         public IConsensusFactory Consensus { get; private set; }
         public string DNSSeed { get; private set; }
 
-        private ProtocolPeculiarity FPeculiarities;
+        private ProtocolFlags FPeculiarities;
 
         private byte[] _MagicBytes;
 
@@ -54,12 +54,12 @@ namespace Pandora.Client.Crypto.Currencies
             }
         }
 
-        public ProtocolData(string aGenesisBlockHash, string aGenesisMerkleRoot, uint aGenesisTime, uint aGenesisHeight, uint aMaxP2PVersion, int aDefaultPort, uint aMagic, IConsensusFactory aConsensus, string aDNSSeed = "", ProtocolPeculiarity aPeculiarities = ProtocolPeculiarity.None)
+        public ProtocolData(string aGenesisBlockHash, string aGenesisMerkleRoot, uint aGenesisTime, uint aGenesisHeight, uint aMaxP2PVersion, int aDefaultPort, uint aMagic, IConsensusFactory aConsensus, string aDNSSeed = "", ProtocolFlags aPeculiarities = ProtocolFlags.None)
         {
             GenesisBlockHash = aGenesisBlockHash;
             GenesisMerkleRoot = aGenesisMerkleRoot;
             GenesisTime = aGenesisTime;
-            GenesisBlockHeight = aGenesisHeight;
+            InitialBlockHeight = aGenesisHeight;
             MaxP2PVersion = aMaxP2PVersion;
             DefaultPort = aDefaultPort;
             Magic = aMagic;
@@ -68,7 +68,7 @@ namespace Pandora.Client.Crypto.Currencies
             FPeculiarities = aPeculiarities;
         }
 
-        public bool Checkif(ProtocolPeculiarity aPeculiarity)
+        public bool Checkif(ProtocolFlags aPeculiarity)
         {
             return (FPeculiarities & aPeculiarity) == aPeculiarity;
         }

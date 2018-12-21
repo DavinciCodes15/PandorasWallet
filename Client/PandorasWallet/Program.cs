@@ -21,7 +21,6 @@
 using Pandora.Client.PandorasWallet.Utils;
 using Pandora.Client.Universal;
 using System;
-using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace Pandora.Client.PandorasWallet
@@ -48,10 +47,6 @@ namespace Pandora.Client.PandorasWallet
         [STAThread]
         private static void Main()
         {
-#if DEBUG
-            string lString = Environment.ExpandEnvironmentVariables(@"%PW_RootPath%Server\Wallet");
-            (new IisExpressWebServer(lString, 20159)).Start();
-#endif
             PandoraClientControl lControler = null;
             LogInitialize();
             try
@@ -86,64 +81,4 @@ namespace Pandora.Client.PandorasWallet
             Pandora.Client.Universal.Log.WriteAppEvent("Pandora Client log started.", System.Diagnostics.EventLogEntryType.Information, 6005);
         }
     }
-
-#if DEBUG
-
-    public class IisExpressWebServer
-    {
-        private int FPort;
-        private string FFullPath;
-        private static Process _webHostProcess;
-
-        public IisExpressWebServer(string aFullPath, int aPortNumber)
-        {
-            FFullPath = aFullPath;
-            FPort = aPortNumber;
-        }
-
-        public void Start()
-        {
-            ProcessStartInfo webHostStartInfo = InitializeIisExpress(FFullPath, FPort);
-            _webHostProcess = Process.Start(webHostStartInfo);
-        }
-
-        public void Stop()
-        {
-            if (_webHostProcess == null)
-            {
-                return;
-            }
-
-            if (!_webHostProcess.HasExited)
-            {
-                _webHostProcess.Kill();
-            }
-
-            _webHostProcess.Dispose();
-        }
-
-        public string BaseUrl => string.Format("http://localhost:{0}", FPort);
-
-        private static ProcessStartInfo InitializeIisExpress(string aFullPath, int aPortNumber)
-        {
-            // todo: grab stdout and/or stderr for logging purposes?
-            string key = Environment.Is64BitOperatingSystem ? "programfiles(x86)" : "programfiles";
-            string programfiles = Environment.GetEnvironmentVariable(key);
-
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                WindowStyle = ProcessWindowStyle.Normal,
-                ErrorDialog = true,
-                LoadUserProfile = true,
-                CreateNoWindow = false,
-                UseShellExecute = false,
-                Arguments = string.Format("/path:\"{0}\" /port:{1}", aFullPath, aPortNumber),
-                FileName = string.Format("{0}\\IIS Express\\iisexpress.exe", programfiles)
-            };
-
-            return startInfo;
-        }
-    }
-
-#endif
 }

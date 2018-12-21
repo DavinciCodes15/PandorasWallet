@@ -864,8 +864,11 @@ namespace Pandora.Client.PandorasWallet
 
         private void FWallet_OnNewTxData()
         {
-            UpdateTransactions(FWallet.ActiveCurrencyID, false);
-            RefreshInterface();
+            MainForm?.BeginInvoke(new MethodInvoker(() =>
+            {
+                UpdateTransactions(FWallet.ActiveCurrencyID, false);
+                RefreshInterface();
+            }));
         }
 
         private bool ExecuteRestoringProccess(string aError = null)

@@ -1,8 +1,9 @@
 ﻿using Pandora.Client.Crypto.Currencies.BuilderExtensions;
 using Pandora.Client.Crypto.Currencies.Crypto;
-using Pandora.Client.Crypto.Currencies.DataEncoders;
+
 //using Pandora.Client.Crypto.Currencies.OpenAsset;
 using Pandora.Client.Crypto.Currencies.Policy;
+
 //using Pandora.Client.Crypto.Currencies.Stealth;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace Pandora.Client.Crypto.Currencies
         Colored = 1,
         Uncolored = 2
     }
+
     public interface ICoinSelector
     {
         IEnumerable<ICoin> Select(IEnumerable<ICoin> coins, IMoney target);
@@ -33,33 +35,39 @@ namespace Pandora.Client.Crypto.Currencies
     {
         public DefaultCoinSelector()
         {
-
         }
-        Random _Rand = new Random();
+
+        private Random _Rand = new Random();
+
         public DefaultCoinSelector(int seed)
         {
             _Rand = new Random(seed);
         }
+
         #region ICoinSelector Members
 
         public IEnumerable<ICoin> Select(IEnumerable<ICoin> coins, IMoney target)
         {
-            var zero = target.Sub(target);
-            var targetCoin = coins
+            IMoney zero = target.Sub(target);
+            ICoin targetCoin = coins
                             .FirstOrDefault(c => c.Amount.CompareTo(target) == 0);
             //If any of your UTXO² matches the Target¹ it will be used.
             if (targetCoin != null)
+            {
                 return new[] { targetCoin };
+            }
 
             List<ICoin> result = new List<ICoin>();
             IMoney total = zero;
 
             if (target.CompareTo(zero) == 0)
+            {
                 return result;
+            }
 
-            var orderedCoins = coins.OrderBy(s => s.Amount).ToArray();
+            ICoin[] orderedCoins = coins.OrderBy(s => s.Amount).ToArray();
 
-            foreach (var coin in orderedCoins)
+            foreach (ICoin coin in orderedCoins)
             {
                 if (coin.Amount.CompareTo(target) == -1 && total.CompareTo(target) == -1)
                 {
@@ -67,8 +75,9 @@ namespace Pandora.Client.Crypto.Currencies
                     result.Add(coin);
                     //If the "sum of all your UTXO smaller than the Target" happens to match the Target, they will be used. (This is the case if you sweep a complete wallet.)
                     if (total.CompareTo(target) == 0)
+                    {
                         return result;
-
+                    }
                 }
                 else
                 {
@@ -83,11 +92,11 @@ namespace Pandora.Client.Crypto.Currencies
                         //Otherwise it finally settles for the minimum of
                         //the smallest UTXO greater than the Target
                         //the smallest combination of UTXO it discovered in Step 4.
-                        var allCoins = orderedCoins.ToArray();
+                        ICoin[] allCoins = orderedCoins.ToArray();
                         IMoney minTotal = null;
                         for (int _ = 0; _ < 1000; _++)
                         {
-                            var selection = new List<ICoin>();
+                            List<ICoin> selection = new List<ICoin>();
                             Utils.Shuffle(allCoins, _Rand);
                             total = zero;
                             for (int i = 0; i < allCoins.Length; i++)
@@ -95,9 +104,14 @@ namespace Pandora.Client.Crypto.Currencies
                                 selection.Add(allCoins[i]);
                                 total = total.Add(allCoins[i].Amount);
                                 if (total.CompareTo(target) == 0)
+                                {
                                     return selection;
+                                }
+
                                 if (total.CompareTo(target) == 1)
+                                {
                                     break;
+                                }
                             }
                             if (total.CompareTo(target) == -1)
                             {
@@ -112,11 +126,14 @@ namespace Pandora.Client.Crypto.Currencies
                 }
             }
             if (total.CompareTo(target) == -1)
+            {
                 return null;
+            }
+
             return result;
         }
 
-        #endregion
+        #endregion ICoinSelector Members
     }
 
     /// <summary>
@@ -136,11 +153,18 @@ namespace Pandora.Client.Crypto.Currencies
             StringBuilder builder = new StringBuilder();
             builder.Append(message);
             if (group != null)
+            {
                 builder.Append(" in group " + group);
+            }
+
             if (missing != null)
+            {
                 builder.Append(" with missing amount " + missing);
+            }
+
             return builder.ToString();
         }
+
         public NotEnoughFundsException(string message, Exception inner)
             : base(message, inner)
         {
@@ -172,15 +196,17 @@ namespace Pandora.Client.Crypto.Currencies
     {
         internal class TransactionBuilderSigner : ISigner
         {
-            ICoin coin;
-            SigHash sigHash;
-            IndexedTxIn txIn;
+            private ICoin coin;
+            private SigHash sigHash;
+            private IndexedTxIn txIn;
+
             public TransactionBuilderSigner(ICoin coin, SigHash sigHash, IndexedTxIn txIn)
             {
                 this.coin = coin;
                 this.sigHash = sigHash;
                 this.txIn = txIn;
             }
+
             #region ISigner Members
 
             public TransactionSignature Sign(CCKey key)
@@ -188,17 +214,20 @@ namespace Pandora.Client.Crypto.Currencies
                 return txIn.Sign(key, coin, sigHash);
             }
 
-            #endregion
+            #endregion ISigner Members
         }
+
         internal class TransactionBuilderKeyRepository : IKeyRepository
         {
-            TransactionSigningContext _Ctx;
-            TransactionBuilder _TxBuilder;
+            private TransactionSigningContext _Ctx;
+            private TransactionBuilder _TxBuilder;
+
             public TransactionBuilderKeyRepository(TransactionBuilder txBuilder, TransactionSigningContext ctx)
             {
                 _Ctx = ctx;
                 _TxBuilder = txBuilder;
             }
+
             #region IKeyRepository Members
 
             public CCKey FindKey(Script scriptPubkey)
@@ -206,10 +235,10 @@ namespace Pandora.Client.Crypto.Currencies
                 return _TxBuilder.FindKey(_Ctx, scriptPubkey);
             }
 
-            #endregion
+            #endregion IKeyRepository Members
         }
 
-        class KnownSignatureSigner : ISigner, IKeyRepository
+        private class KnownSignatureSigner : ISigner, IKeyRepository
         {
             private ICoin coin;
             private SigHash sigHash;
@@ -227,12 +256,12 @@ namespace Pandora.Client.Crypto.Currencies
 
             public CCKey FindKey(Script scriptPubKey)
             {
-                foreach (var tv in _KnownSignatures.Where(tv => IsCompatibleKey(tv.Item1, scriptPubKey)))
+                foreach (Tuple<PubKey, ECDSASignature> tv in _KnownSignatures.Where(tv => IsCompatibleKey(tv.Item1, scriptPubKey)))
                 {
-                    var hash = txIn.GetSignatureHash(coin, sigHash);
+                    uint256 hash = txIn.GetSignatureHash(coin, sigHash);
                     if (tv.Item1.Verify(hash, tv.Item2))
                     {
-                        var key = new CCKey();
+                        CCKey key = new CCKey();
                         _VerifiedSignatures.AddOrReplace(key.PubKey.Hash, tv.Item2);
                         return key;
                     }
@@ -259,6 +288,7 @@ namespace Pandora.Client.Crypto.Currencies
                 get;
                 set;
             }
+
             public TransactionBuilder Builder
             {
                 get;
@@ -266,13 +296,7 @@ namespace Pandora.Client.Crypto.Currencies
             }
 
             private readonly List<CCKey> _AdditionalKeys = new List<CCKey>();
-            public List<CCKey> AdditionalKeys
-            {
-                get
-                {
-                    return _AdditionalKeys;
-                }
-            }
+            public List<CCKey> AdditionalKeys => _AdditionalKeys;
 
             public SigHash SigHash
             {
@@ -280,6 +304,7 @@ namespace Pandora.Client.Crypto.Currencies
                 set;
             }
         }
+
         internal class TransactionBuildingContext
         {
             public TransactionBuildingContext(TransactionBuilder builder)
@@ -288,6 +313,7 @@ namespace Pandora.Client.Crypto.Currencies
                 Transaction = new Transaction();
                 AdditionalFees = Money.Zero;
             }
+
             public TransactionBuilder.BuilderGroup Group
             {
                 get;
@@ -295,18 +321,14 @@ namespace Pandora.Client.Crypto.Currencies
             }
 
             private readonly List<ICoin> _ConsumedCoins = new List<ICoin>();
-            public List<ICoin> ConsumedCoins
-            {
-                get
-                {
-                    return _ConsumedCoins;
-                }
-            }
+            public List<ICoin> ConsumedCoins => _ConsumedCoins;
+
             public TransactionBuilder Builder
             {
                 get;
                 set;
             }
+
             public Transaction Transaction
             {
                 get;
@@ -320,13 +342,7 @@ namespace Pandora.Client.Crypto.Currencies
             }
 
             private readonly List<Builder> _AdditionalBuilders = new List<Builder>();
-            public List<Builder> AdditionalBuilders
-            {
-                get
-                {
-                    return _AdditionalBuilders;
-                }
-            }
+            public List<Builder> AdditionalBuilders => _AdditionalBuilders;
 
             //ColorMarker _Marker;
 
@@ -383,7 +399,7 @@ namespace Pandora.Client.Crypto.Currencies
 
             public TransactionBuildingContext CreateMemento()
             {
-                var memento = new TransactionBuildingContext(Builder);
+                TransactionBuildingContext memento = new TransactionBuildingContext(Builder);
                 memento.RestoreMemento(this);
                 return memento;
             }
@@ -422,7 +438,8 @@ namespace Pandora.Client.Crypto.Currencies
 
         internal class BuilderGroup
         {
-            TransactionBuilder _Parent;
+            private TransactionBuilder _Parent;
+
             public BuilderGroup(TransactionBuilder parent)
             {
                 _Parent = parent;
@@ -430,26 +447,33 @@ namespace Pandora.Client.Crypto.Currencies
                 Builders.Add(SetChange);
             }
 
-            IMoney SetChange(TransactionBuildingContext ctx)
+            private IMoney SetChange(TransactionBuildingContext ctx)
             {
-                var changeAmount = (Money)ctx.ChangeAmount;
+                Money changeAmount = (Money)ctx.ChangeAmount;
                 if (changeAmount.Satoshi == 0)
+                {
                     return Money.Zero;
+                }
+
                 ctx.Transaction.AddOutput(new TxOut(changeAmount, ctx.Group.ChangeScript[(int)ChangeType.Uncolored]));
                 return changeAmount;
             }
+
             internal List<Builder> Builders = new List<Builder>();
             internal Dictionary<OutPoint, ICoin> Coins = new Dictionary<OutPoint, ICoin>();
             internal List<Builder> IssuanceBuilders = new List<Builder>();
+
             ///internal Dictionary<AssetId, List<Builder>> BuildersByAsset = new Dictionary<AssetId, List<Builder>>();
             internal Script[] ChangeScript = new Script[3];
+
             internal void Shuffle()
             {
                 Shuffle(Builders);
-               // foreach (var builders in BuildersByAsset)
-               //     Shuffle(builders.Value);
+                // foreach (var builders in BuildersByAsset)
+                //     Shuffle(builders.Value);
                 Shuffle(IssuanceBuilders);
             }
+
             private void Shuffle(List<Builder> builders)
             {
                 Utils.Shuffle(builders, _Parent._Rand);
@@ -474,8 +498,9 @@ namespace Pandora.Client.Crypto.Currencies
             }
         }
 
-        List<BuilderGroup> _BuilderGroups = new List<BuilderGroup>();
-        BuilderGroup _CurrentGroup = null;
+        private List<BuilderGroup> _BuilderGroups = new List<BuilderGroup>();
+        private BuilderGroup _CurrentGroup = null;
+
         internal BuilderGroup CurrentGroup
         {
             get
@@ -488,6 +513,7 @@ namespace Pandora.Client.Crypto.Currencies
                 return _CurrentGroup;
             }
         }
+
         public TransactionBuilder()
         {
             _Rand = new Random();
@@ -506,6 +532,7 @@ namespace Pandora.Client.Crypto.Currencies
         }
 
         internal Random _Rand;
+
         public TransactionBuilder(int seed)
         {
             _Rand = new Random(seed);
@@ -548,14 +575,15 @@ namespace Pandora.Client.Crypto.Currencies
             set;
         }
 
-        LockTime? _LockTime;
+        private LockTime? _LockTime;
+
         public TransactionBuilder SetLockTime(LockTime lockTime)
         {
             _LockTime = lockTime;
             return this;
         }
 
-        List<CCKey> _Keys = new List<CCKey>();
+        private List<CCKey> _Keys = new List<CCKey>();
 
         public TransactionBuilder AddKeys(params ISecret[] keys)
         {
@@ -572,9 +600,15 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder AddKnownSignature(PubKey pubKey, TransactionSignature signature)
         {
             if (pubKey == null)
+            {
                 throw new ArgumentNullException("pubKey");
+            }
+
             if (signature == null)
+            {
                 throw new ArgumentNullException("signature");
+            }
+
             _KnownSignatures.Add(Tuple.Create(pubKey, signature.Signature));
             return this;
         }
@@ -582,9 +616,15 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder AddKnownSignature(PubKey pubKey, ECDSASignature signature)
         {
             if (pubKey == null)
+            {
                 throw new ArgumentNullException("pubKey");
+            }
+
             if (signature == null)
+            {
                 throw new ArgumentNullException("signature");
+            }
+
             _KnownSignatures.Add(Tuple.Create(pubKey, signature));
             return this;
         }
@@ -596,7 +636,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public TransactionBuilder AddCoins(IEnumerable<ICoin> coins)
         {
-            foreach (var coin in coins)
+            foreach (ICoin coin in coins)
             {
                 CurrentGroup.Coins.AddOrReplace(coin.Outpoint, coin);
             }
@@ -625,7 +665,7 @@ namespace Pandora.Client.Crypto.Currencies
             return Send(destination.ScriptPubKey, amount);
         }
 
-        readonly static TxNullDataTemplate _OpReturnTemplate = new TxNullDataTemplate(1024 * 1024);
+        private static readonly TxNullDataTemplate _OpReturnTemplate = new TxNullDataTemplate(1024 * 1024);
 
         /// <summary>
         /// Send bitcoins to a destination
@@ -636,7 +676,10 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder Send(Script scriptPubKey, Money amount)
         {
             if (amount < Money.Zero)
+            {
                 throw new ArgumentOutOfRangeException("amount", "amount can't be negative");
+            }
+
             if (DustPrevention && amount < GetDust(scriptPubKey) && !_OpReturnTemplate.CheckScriptPubKey(scriptPubKey))
             {
                 SendFees(amount);
@@ -661,6 +704,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             return Send(destination.ScriptPubKey, amount);
         }
+
         /// <summary>
         /// Send a money amount to the destination
         /// </summary>
@@ -673,13 +717,18 @@ namespace Pandora.Client.Crypto.Currencies
             MoneyBag bag = amount as MoneyBag;
             if (bag != null)
             {
-                foreach (var money in bag)
+                foreach (IMoney money in bag)
+                {
                     Send(scriptPubKey, amount);
+                }
+
                 return this;
             }
             Money coinAmount = amount as Money;
             if (coinAmount != null)
+            {
                 return Send(scriptPubKey, coinAmount);
+            }
             //AssetMoney assetAmount = amount as AssetMoney;
             //if (assetAmount != null)
             //    return SendAsset(scriptPubKey, assetAmount);
@@ -711,8 +760,11 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder Shuffle()
         {
             Utils.Shuffle(_BuilderGroups, _Rand);
-            foreach (var group in _BuilderGroups)
+            foreach (BuilderGroup group in _BuilderGroups)
+            {
                 group.Shuffle();
+            }
+
             return this;
         }
 
@@ -759,14 +811,18 @@ namespace Pandora.Client.Crypto.Currencies
         //    return this;
         //}
 
-        Money GetDust()
+        private Money GetDust()
         {
             return GetDust(new Script(new byte[25]));
         }
-        Money GetDust(Script script)
+
+        private Money GetDust(Script script)
         {
             if (StandardTransactionPolicy == null || StandardTransactionPolicy.MinRelayTxFee == null)
+            {
                 return Money.Zero;
+            }
+
             return new TxOut(Money.Zero, script).GetDustThreshold(StandardTransactionPolicy.MinRelayTxFee);
         }
 
@@ -780,14 +836,15 @@ namespace Pandora.Client.Crypto.Currencies
             StandardTransactionPolicy = policy;
             return this;
         }
+
         public StandardTransactionPolicy StandardTransactionPolicy
         {
             get;
             set;
         }
 
+        private string _OpReturnUser;
 
-        string _OpReturnUser;
         private void AssertOpReturn(string name)
         {
             if (_OpReturnUser == null)
@@ -797,7 +854,9 @@ namespace Pandora.Client.Crypto.Currencies
             else
             {
                 if (_OpReturnUser != name)
+                {
                     throw new InvalidOperationException("Op return already used for " + _OpReturnUser);
+                }
             }
         }
 
@@ -863,7 +922,10 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder SendFees(Money fees)
         {
             if (fees == null)
+            {
                 throw new ArgumentNullException("fees");
+            }
+
             CurrentGroup.Builders.Add(ctx => fees);
             return this;
         }
@@ -875,7 +937,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns></returns>
         public TransactionBuilder SendEstimatedFees(FeeRate feeRate)
         {
-            var fee = EstimateFees(feeRate);
+            Money fee = EstimateFees(feeRate);
             SendFees(fee);
             return this;
         }
@@ -887,7 +949,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns></returns>
         public TransactionBuilder SendEstimatedFeesSplit(FeeRate feeRate)
         {
-            var fee = EstimateFees(feeRate);
+            Money fee = EstimateFees(feeRate);
             SendFeesSplit(fee);
             return this;
         }
@@ -900,24 +962,26 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder SendFeesSplit(Money fees)
         {
             if (fees == null)
-                throw new ArgumentNullException("fees");
-            var lastGroup = CurrentGroup; //Make sure at least one group exists
-            var totalWeight = _BuilderGroups.Select(b => b.FeeWeight).Sum();
-            Money totalSent = Money.Zero;
-            foreach (var group in _BuilderGroups)
             {
-                var groupFee = Money.Satoshis((group.FeeWeight / totalWeight) * fees.Satoshi);
+                throw new ArgumentNullException("fees");
+            }
+
+            BuilderGroup lastGroup = CurrentGroup; //Make sure at least one group exists
+            decimal totalWeight = _BuilderGroups.Select(b => b.FeeWeight).Sum();
+            Money totalSent = Money.Zero;
+            foreach (BuilderGroup group in _BuilderGroups)
+            {
+                Money groupFee = Money.Satoshis((group.FeeWeight / totalWeight) * fees.Satoshi);
                 totalSent += groupFee;
                 if (_BuilderGroups.Last() == group)
                 {
-                    var leftOver = fees - totalSent;
+                    Money leftOver = fees - totalSent;
                     groupFee += leftOver;
                 }
                 group.Builders.Add(ctx => groupFee);
             }
             return this;
         }
-
 
         /// <summary>
         /// If using SendFeesSplit or SendEstimatedFeesSplit, determine the weight this group participate in paying the fees
@@ -951,10 +1015,14 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder SetCoinSelector(ICoinSelector selector)
         {
             if (selector == null)
+            {
                 throw new ArgumentNullException("selector");
+            }
+
             CoinSelector = selector;
             return this;
         }
+
         /// <summary>
         /// Build the transaction
         /// </summary>
@@ -977,18 +1045,26 @@ namespace Pandora.Client.Crypto.Currencies
         {
             TransactionBuildingContext ctx = new TransactionBuildingContext(this);
             if (_CompletedTransaction != null)
+            {
                 ctx.Transaction = _CompletedTransaction.Clone(false);
+            }
+
             if (_LockTime != null)
+            {
                 ctx.Transaction.LockTime = _LockTime.Value;
-            foreach (var group in _BuilderGroups)
+            }
+
+            foreach (BuilderGroup group in _BuilderGroups)
             {
                 ctx.Group = group;
                 ctx.AdditionalBuilders.Clear();
                 ctx.AdditionalFees = Money.Zero;
 
                 ctx.ChangeType = ChangeType.Colored;
-                foreach (var builder in group.IssuanceBuilders)
+                foreach (Builder builder in group.IssuanceBuilders)
+                {
                     builder(ctx);
+                }
 
                 //var buildersByAsset = group.BuildersByAsset.ToList();
                 //foreach (var builders in buildersByAsset)
@@ -1026,32 +1102,41 @@ namespace Pandora.Client.Crypto.Currencies
             IEnumerable<ICoin> coins,
             IMoney zero)
         {
-            var originalCtx = ctx.CreateMemento();
-            var target = builders.Concat(ctx.AdditionalBuilders).Select(b => b(ctx)).Sum(zero);
+            TransactionBuildingContext originalCtx = ctx.CreateMemento();
+            IMoney target = builders.Concat(ctx.AdditionalBuilders).Select(b => b(ctx)).Sum(zero);
             if (ctx.CoverOnly != null)
             {
                 target = ctx.CoverOnly.Add(ctx.ChangeAmount);
             }
 
-            var unconsumed = coins.Where(c => ctx.ConsumedCoins.All(cc => cc.Outpoint != c.Outpoint));
-            var selection = CoinSelector.Select(unconsumed, target);
+            IEnumerable<ICoin> unconsumed = coins.Where(c => ctx.ConsumedCoins.All(cc => cc.Outpoint != c.Outpoint));
+            IEnumerable<ICoin> selection = CoinSelector.Select(unconsumed, target);
             if (selection == null)
+            {
                 throw new NotEnoughFundsException("Not enough fund to cover the target",
                     group.Name,
                     target.Sub(unconsumed.Select(u => u.Amount).Sum(zero))
                     );
-            var total = selection.Select(s => s.Amount).Sum(zero);
-            var change = total.Sub(target);
+            }
+
+            IMoney total = selection.Select(s => s.Amount).Sum(zero);
+            IMoney change = total.Sub(target);
             if (change.CompareTo(zero) == -1)
+            {
                 throw new NotEnoughFundsException("Not enough fund to cover the target",
                     group.Name,
                     change.Negate()
                 );
+            }
+
             if (change.CompareTo(ctx.Dust) == 1)
             {
-                var changeScript = group.ChangeScript[(int)ctx.ChangeType];
+                Script changeScript = group.ChangeScript[(int)ctx.ChangeType];
                 if (changeScript == null)
+                {
                     throw new InvalidOperationException("A change address should be specified (" + ctx.ChangeType + ")");
+                }
+
                 if (!(ctx.Dust is Money) || change.CompareTo(GetDust(changeScript)) == 1)
                 {
                     ctx.RestoreMemento(originalCtx);
@@ -1066,12 +1151,15 @@ namespace Pandora.Client.Crypto.Currencies
                     }
                 }
             }
-            foreach (var coin in selection)
+            foreach (ICoin coin in selection)
             {
                 ctx.ConsumedCoins.Add(coin);
-                var input = ctx.Transaction.Inputs.FirstOrDefault(i => i.PrevOut == coin.Outpoint);
+                TxIn input = ctx.Transaction.Inputs.FirstOrDefault(i => i.PrevOut == coin.Outpoint);
                 if (input == null)
+                {
                     input = ctx.Transaction.AddInput(new TxIn(coin.Outpoint));
+                }
+
                 if (_LockTime != null && !ctx.NonFinalSequenceSet)
                 {
                     input.Sequence = 0;
@@ -1083,7 +1171,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public Transaction SignTransaction(Transaction transaction, SigHash sigHash)
         {
-            var tx = transaction.Clone(false);
+            Transaction tx = transaction.Clone(false);
             SignTransactionInPlace(tx, sigHash);
             return tx;
         }
@@ -1092,17 +1180,23 @@ namespace Pandora.Client.Crypto.Currencies
         {
             return SignTransaction(transaction, SigHash.All);
         }
+
         public Transaction SignTransactionInPlace(Transaction transaction)
         {
             return SignTransactionInPlace(transaction, SigHash.All);
         }
+
         public Transaction SignTransactionInPlace(Transaction transaction, SigHash sigHash)
         {
             TransactionSigningContext ctx = new TransactionSigningContext(this, transaction);
-            ctx.SigHash = sigHash;
-            foreach (var input in transaction.Inputs.AsIndexedInputs())
+            if (transaction.ForkID != 0)
             {
-                var coin = FindSignableCoin(input);
+                sigHash = (SigHash)((uint)sigHash | 0x40u);
+            }
+            ctx.SigHash = sigHash;
+            foreach (IndexedTxIn input in transaction.Inputs.AsIndexedInputs())
+            {
+                ICoin coin = FindSignableCoin(input);
                 if (coin != null)
                 {
                     Sign(ctx, coin, input);
@@ -1113,31 +1207,40 @@ namespace Pandora.Client.Crypto.Currencies
 
         public ICoin FindSignableCoin(IndexedTxIn txIn)
         {
-            var coin = FindCoin(txIn.PrevOut);
+            ICoin coin = FindCoin(txIn.PrevOut);
             //if (coin is IColoredCoin)
             //    coin = ((IColoredCoin)coin).Bearer;
             if (coin == null || coin is ScriptCoin)// || coin is StealthCoin)
+            {
                 return coin;
+            }
 
-            var hash = ScriptCoin.GetRedeemHash(coin.TxOut.ScriptPubKey);
+            TxDestination hash = ScriptCoin.GetRedeemHash(coin.TxOut.ScriptPubKey);
             if (hash != null)
             {
-                var redeem = _ScriptPubKeyToRedeem.TryGet(coin.TxOut.ScriptPubKey);
+                Script redeem = _ScriptPubKeyToRedeem.TryGet(coin.TxOut.ScriptPubKey);
                 if (redeem != null && PayToWitScriptHashTemplate.Instance.CheckScriptPubKey(redeem))
+                {
                     redeem = _ScriptPubKeyToRedeem.TryGet(redeem);
+                }
+
                 if (redeem == null)
                 {
                     //if (hash is WitScriptId)
                     //    redeem = PayToWitScriptHashTemplate.Instance.ExtractWitScriptParameters(txIn.WitScript, (WitScriptId)hash);
                     if (hash is ScriptId)
                     {
-                        var parameters = PayToScriptHashTemplate.Instance.ExtractScriptSigParameters(txIn.ScriptSig, (ScriptId)hash);
+                        PayToScriptHashSigParameters parameters = PayToScriptHashTemplate.Instance.ExtractScriptSigParameters(txIn.ScriptSig, (ScriptId)hash);
                         if (parameters != null)
+                        {
                             redeem = parameters.RedeemScript;
+                        }
                     }
                 }
                 if (redeem != null)
+                {
                     return new ScriptCoin(coin, redeem);
+                }
             }
             return coin;
         }
@@ -1149,9 +1252,9 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns>True if no error</returns>
         public bool Verify(Transaction tx)
         {
-            TransactionPolicyError[] errors;
-            return Verify(tx, null as Money, out errors);
+            return Verify(tx, null as Money, out TransactionPolicyError[] errors);
         }
+
         /// <summary>
         /// Verify that a transaction is fully signed and have enough fees
         /// </summary>
@@ -1160,8 +1263,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns>True if no error</returns>
         public bool Verify(Transaction tx, Money expectedFees)
         {
-            TransactionPolicyError[] errors;
-            return Verify(tx, expectedFees, out errors);
+            return Verify(tx, expectedFees, out TransactionPolicyError[] errors);
         }
 
         /// <summary>
@@ -1172,8 +1274,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns>True if no error</returns>
         public bool Verify(Transaction tx, FeeRate expectedFeeRate)
         {
-            TransactionPolicyError[] errors;
-            return Verify(tx, expectedFeeRate, out errors);
+            return Verify(tx, expectedFeeRate, out TransactionPolicyError[] errors);
         }
 
         /// <summary>
@@ -1186,6 +1287,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             return Verify(tx, null as Money, out errors);
         }
+
         /// <summary>
         /// Verify that a transaction is fully signed, have enough fees, and follow the Standard and Miner Transaction Policy rules
         /// </summary>
@@ -1196,8 +1298,11 @@ namespace Pandora.Client.Crypto.Currencies
         public bool Verify(Transaction tx, Money expectedFees, out TransactionPolicyError[] errors)
         {
             if (tx == null)
+            {
                 throw new ArgumentNullException("tx");
-            var coins = tx.Inputs.Select(i => FindCoin(i.PrevOut)).Where(c => c != null).ToArray();
+            }
+
+            ICoin[] coins = tx.Inputs.Select(i => FindCoin(i.PrevOut)).Where(c => c != null).ToArray();
             List<TransactionPolicyError> exceptions = new List<TransactionPolicyError>();
             TransactionPolicyError[] policyErrors = null;// MinerTransactionPolicy.Instance.Check(tx, coins);
             exceptions.AddRange(policyErrors);
@@ -1205,19 +1310,25 @@ namespace Pandora.Client.Crypto.Currencies
             exceptions.AddRange(policyErrors);
             if (expectedFees != null)
             {
-                var fees = tx.GetFee(coins);
+                Money fees = tx.GetFee(coins);
                 if (fees != null)
                 {
                     Money margin = Money.Zero;
                     if (DustPrevention)
+                    {
                         margin = GetDust() * 2;
+                    }
+
                     if (!fees.Almost(expectedFees, margin))
-                        exceptions.Add(new TransactionPolicyError(string.Format("Fees different than expected  {0}" , expectedFees - fees)));
+                    {
+                        exceptions.Add(new TransactionPolicyError(string.Format("Fees different than expected  {0}", expectedFees - fees)));
+                    }
                 }
             }
             errors = exceptions.ToArray();
             return errors.Length == 0;
         }
+
         /// <summary>
         /// Verify that a transaction is fully signed and have enough fees
         /// </summary>
@@ -1228,9 +1339,13 @@ namespace Pandora.Client.Crypto.Currencies
         public bool Verify(Transaction tx, FeeRate expectedFeeRate, out TransactionPolicyError[] errors)
         {
             if (tx == null)
+            {
                 throw new ArgumentNullException("tx");
+            }
+
             return Verify(tx, expectedFeeRate == null ? null : expectedFeeRate.GetFee(tx), out errors);
         }
+
         /// <summary>
         /// Verify that a transaction is fully signed and have enough fees
         /// </summary>
@@ -1241,6 +1356,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             return Check(tx, expectedFeeRate == null ? null : expectedFeeRate.GetFee(tx));
         }
+
         /// <summary>
         /// Verify that a transaction is fully signed and have enough fees
         /// </summary>
@@ -1249,10 +1365,10 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns>Detected errors</returns>
         public TransactionPolicyError[] Check(Transaction tx, Money expectedFee)
         {
-            TransactionPolicyError[] errors;
-            Verify(tx, expectedFee, out errors);
+            Verify(tx, expectedFee, out TransactionPolicyError[] errors);
             return errors;
         }
+
         /// <summary>
         /// Verify that a transaction is fully signed and have enough fees
         /// </summary>
@@ -1268,12 +1384,14 @@ namespace Pandora.Client.Crypto.Currencies
             return new CoinNotFoundException(txIn);
         }
 
-
         public ICoin FindCoin(OutPoint outPoint)
         {
-            var result = _BuilderGroups.Select(c => c.Coins.TryGet(outPoint)).FirstOrDefault(r => r != null);
+            ICoin result = _BuilderGroups.Select(c => c.Coins.TryGet(outPoint)).FirstOrDefault(r => r != null);
             if (result == null && CoinFinder != null)
+            {
                 result = CoinFinder(outPoint);
+            }
+
             return result;
         }
 
@@ -1310,20 +1428,29 @@ namespace Pandora.Client.Crypto.Currencies
         public int EstimateSize(Transaction tx, bool virtualSize)
         {
             if (tx == null)
+            {
                 throw new ArgumentNullException("tx");
-            var clone = tx.Clone(false);
+            }
+
+            Transaction clone = tx.Clone(false);
             clone.Inputs.Clear();
-            var baseSize = clone.GetSerializedSize(tx.Version);
+            int baseSize = clone.GetSerializedSize(tx.Version);
 
             int vSize = 0;
             int size = baseSize;
             if (tx.HasWitness)
-                vSize += 2;
-            foreach (var txin in tx.Inputs.AsIndexedInputs())
             {
-                var coin = FindSignableCoin(txin) ?? FindCoin(txin.PrevOut);
+                vSize += 2;
+            }
+
+            foreach (IndexedTxIn txin in tx.Inputs.AsIndexedInputs())
+            {
+                ICoin coin = FindSignableCoin(txin) ?? FindCoin(txin.PrevOut);
                 if (coin == null)
+                {
                     throw CoinNotFound(txin);
+                }
+
                 EstimateScriptSigSize(coin, ref vSize, ref size);
                 size += 41;
             }
@@ -1338,8 +1465,8 @@ namespace Pandora.Client.Crypto.Currencies
 
             if (coin is ScriptCoin)
             {
-                var scriptCoin = (ScriptCoin)coin;
-                var p2sh = scriptCoin.GetP2SHRedeem();
+                ScriptCoin scriptCoin = (ScriptCoin)coin;
+                Script p2sh = scriptCoin.GetP2SHRedeem();
                 if (p2sh != null)
                 {
                     coin = new Coin(scriptCoin.Outpoint, new TxOut(scriptCoin.Amount, p2sh));
@@ -1356,9 +1483,9 @@ namespace Pandora.Client.Crypto.Currencies
                 }
             }
 
-            var scriptPubkey = coin.GetScriptCode();
-            var scriptSigSize = -1;
-            foreach (var extension in Extensions)
+            Script scriptPubkey = coin.GetScriptCode();
+            int scriptSigSize = -1;
+            foreach (BuilderExtension extension in Extensions)
             {
                 if (extension.CanEstimateScriptSigSize(scriptPubkey))
                 {
@@ -1368,11 +1495,19 @@ namespace Pandora.Client.Crypto.Currencies
             }
 
             if (scriptSigSize == -1)
+            {
                 scriptSigSize += coin.TxOut.ScriptPubKey.Length; //Using heurestic to approximate size of unknown scriptPubKey
+            }
+
             if (coin.GetHashVersion() == HashVersion.Witness)
+            {
                 vSize += scriptSigSize + 1; //Account for the push
+            }
+
             if (coin.GetHashVersion() == HashVersion.Original)
+            {
                 size += scriptSigSize;
+            }
         }
 
         /// <summary>
@@ -1383,7 +1518,9 @@ namespace Pandora.Client.Crypto.Currencies
         public Money EstimateFees(FeeRate feeRate)
         {
             if (feeRate == null)
+            {
                 throw new ArgumentNullException("feeRate");
+            }
 
             int builderCount = CurrentGroup.Builders.Count;
             Money feeSent = Money.Zero;
@@ -1391,11 +1528,14 @@ namespace Pandora.Client.Crypto.Currencies
             {
                 while (true)
                 {
-                    var tx = BuildTransaction(false);
-                    var shouldSend = EstimateFees(tx, feeRate);
-                    var delta = shouldSend - feeSent;
+                    Transaction tx = BuildTransaction(false);
+                    Money shouldSend = EstimateFees(tx, feeRate);
+                    Money delta = shouldSend - feeSent;
                     if (delta <= Money.Zero)
+                    {
                         break;
+                    }
+
                     SendFees(delta);
                     feeSent += delta;
                 }
@@ -1419,17 +1559,22 @@ namespace Pandora.Client.Crypto.Currencies
         public Money EstimateFees(Transaction tx, FeeRate feeRate)
         {
             if (tx == null)
+            {
                 throw new ArgumentNullException("tx");
-            if (feeRate == null)
-                throw new ArgumentNullException("feeRate");
+            }
 
-            var estimation = EstimateSize(tx, true);
+            if (feeRate == null)
+            {
+                throw new ArgumentNullException("feeRate");
+            }
+
+            int estimation = EstimateSize(tx, true);
             return feeRate.GetFee(estimation);
         }
 
         private void Sign(TransactionSigningContext ctx, ICoin coin, IndexedTxIn txIn)
         {
-            var input = txIn.TxIn;
+            TxIn input = txIn.TxIn;
             //if (coin is StealthCoin)
             //{
             //    var stealthCoin = (StealthCoin)coin;
@@ -1443,9 +1588,12 @@ namespace Pandora.Client.Crypto.Currencies
             //        normalCoin = normalCoin.ToScriptCoin(stealthCoin.Redeem);
             //    coin = normalCoin;
             //}
-            var scriptSig = CreateScriptSig(ctx, coin, txIn);
+            Script scriptSig = CreateScriptSig(ctx, coin, txIn);
             if (scriptSig == null)
+            {
                 return;
+            }
+
             ScriptCoin scriptCoin = coin as ScriptCoin;
 
             Script signatures = null;
@@ -1464,9 +1612,10 @@ namespace Pandora.Client.Crypto.Currencies
             {
                 signatures = txIn.ScriptSig;
                 if (scriptCoin != null && scriptCoin.RedeemType == RedeemType.P2SH)
+                {
                     signatures = RemoveRedeem(signatures);
+                }
             }
-
 
             signatures = CombineScriptSigs(coin, scriptSig, signatures);
 
@@ -1491,24 +1640,31 @@ namespace Pandora.Client.Crypto.Currencies
             }
         }
 
-
         private static Script RemoveRedeem(Script script)
         {
             if (script == Script.Empty)
+            {
                 return script;
-            var ops = script.ToOps().ToArray();
+            }
+
+            Op[] ops = script.ToOps().ToArray();
             return new Script(ops.Take(ops.Length - 1));
         }
 
         private Script CombineScriptSigs(ICoin coin, Script a, Script b)
         {
-            var scriptPubkey = coin.GetScriptCode();
+            Script scriptPubkey = coin.GetScriptCode();
             if (Script.IsNullOrEmpty(a))
+            {
                 return b ?? Script.Empty;
-            if (Script.IsNullOrEmpty(b))
-                return a ?? Script.Empty;
+            }
 
-            foreach (var extension in Extensions)
+            if (Script.IsNullOrEmpty(b))
+            {
+                return a ?? Script.Empty;
+            }
+
+            foreach (BuilderExtension extension in Extensions)
             {
                 if (extension.CanCombineScriptSig(scriptPubkey, a, b))
                 {
@@ -1520,21 +1676,21 @@ namespace Pandora.Client.Crypto.Currencies
 
         private Script CreateScriptSig(TransactionSigningContext ctx, ICoin coin, IndexedTxIn txIn)
         {
-            var scriptPubKey = coin.GetScriptCode();
-            var keyRepo = new TransactionBuilderKeyRepository(this, ctx);
-            var signer = new TransactionBuilderSigner(coin, ctx.SigHash, txIn);
+            Script scriptPubKey = coin.GetScriptCode();
+            TransactionBuilderKeyRepository keyRepo = new TransactionBuilderKeyRepository(this, ctx);
+            TransactionBuilderSigner signer = new TransactionBuilderSigner(coin, ctx.SigHash, txIn);
 
-            var signer2 = new KnownSignatureSigner(_KnownSignatures, coin, ctx.SigHash, txIn);
+            KnownSignatureSigner signer2 = new KnownSignatureSigner(_KnownSignatures, coin, ctx.SigHash, txIn);
 
-            foreach (var extension in Extensions)
+            foreach (BuilderExtension extension in Extensions)
             {
                 if (extension.CanGenerateScriptSig(scriptPubKey))
                 {
-                    var scriptSig1 = extension.GenerateScriptSig(scriptPubKey, keyRepo, signer);
-                    var scriptSig2 = extension.GenerateScriptSig(scriptPubKey, signer2, signer2);
+                    Script scriptSig1 = extension.GenerateScriptSig(scriptPubKey, keyRepo, signer);
+                    Script scriptSig2 = extension.GenerateScriptSig(scriptPubKey, signer2, signer2);
                     if (scriptSig1 != null && scriptSig2 != null && extension.CanCombineScriptSig(scriptPubKey, scriptSig1, scriptSig2))
                     {
-                        var combined = extension.CombineScriptSig(scriptPubKey, scriptSig1, scriptSig2);
+                        Script combined = extension.CombineScriptSig(scriptPubKey, scriptSig1, scriptSig2);
                         return combined;
                     }
                     return scriptSig1 ?? scriptSig2;
@@ -1544,11 +1700,11 @@ namespace Pandora.Client.Crypto.Currencies
             throw new NotSupportedException("Unsupported scriptPubKey");
         }
 
-        List<Tuple<PubKey, ECDSASignature>> _KnownSignatures = new List<Tuple<PubKey, ECDSASignature>>();
+        private List<Tuple<PubKey, ECDSASignature>> _KnownSignatures = new List<Tuple<PubKey, ECDSASignature>>();
 
         private CCKey FindKey(TransactionSigningContext ctx, Script scriptPubKey)
         {
-            var key = _Keys
+            CCKey key = _Keys
                 .Concat(ctx.AdditionalKeys)
                 .FirstOrDefault(k => IsCompatibleKey(k.PubKey, scriptPubKey));
             if (key == null && KeyFinder != null)
@@ -1582,7 +1738,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns></returns>
         public TransactionBuilder Then(string groupName)
         {
-            var group = _BuilderGroups.FirstOrDefault(g => g.Name == groupName);
+            BuilderGroup group = _BuilderGroups.FirstOrDefault(g => g.Name == groupName);
             if (group == null)
             {
                 group = new BuilderGroup(this);
@@ -1604,8 +1760,7 @@ namespace Pandora.Client.Crypto.Currencies
             return this;
         }
 
-
-        Transaction _CompletedTransaction;
+        private Transaction _CompletedTransaction;
 
         /// <summary>
         /// Allows to keep building on the top of a partially built transaction
@@ -1615,7 +1770,10 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder ContinueToBuild(Transaction transaction)
         {
             if (_CompletedTransaction != null)
+            {
                 throw new InvalidOperationException("Transaction to complete already set");
+            }
+
             _CompletedTransaction = transaction.Clone(false);
             return this;
         }
@@ -1627,26 +1785,37 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder CoverTheRest()
         {
             if (_CompletedTransaction == null)
-                throw new InvalidOperationException("A partially built transaction should be specified by calling ContinueToBuild");
-
-            var spent = _CompletedTransaction.Inputs.AsIndexedInputs().Select(txin =>
             {
-                var c = FindCoin(txin.PrevOut);
+                throw new InvalidOperationException("A partially built transaction should be specified by calling ContinueToBuild");
+            }
+
+            Money spent = _CompletedTransaction.Inputs.AsIndexedInputs().Select(txin =>
+            {
+                ICoin c = FindCoin(txin.PrevOut);
                 if (c == null)
+                {
                     throw CoinNotFound(txin);
+                }
+
                 if (!(c is Coin))
+                {
                     return null;
+                }
+
                 return (Coin)c;
             })
                     .Where(c => c != null)
                     .Select(c => c.Amount)
                     .Sum();
 
-            var toComplete = _CompletedTransaction.TotalOut - spent;
+            Money toComplete = _CompletedTransaction.TotalOut - spent;
             CurrentGroup.Builders.Add(ctx =>
             {
                 if (toComplete < Money.Zero)
+                {
                     return Money.Zero;
+                }
+
                 return toComplete;
             });
             return this;
@@ -1654,15 +1823,16 @@ namespace Pandora.Client.Crypto.Currencies
 
         public TransactionBuilder AddCoins(Transaction transaction)
         {
-            var txId = transaction.GetHash();
+            uint256 txId = transaction.GetHash();
             AddCoins(transaction.Outputs.Select((o, i) => new Coin(txId, (uint)i, o.Value, o.ScriptPubKey)).ToArray());
             return this;
         }
 
-        Dictionary<Script, Script> _ScriptPubKeyToRedeem = new Dictionary<Script, Script>();
+        private Dictionary<Script, Script> _ScriptPubKeyToRedeem = new Dictionary<Script, Script>();
+
         public TransactionBuilder AddKnownRedeems(params Script[] knownRedeems)
         {
-            foreach (var redeem in knownRedeems)
+            foreach (Script redeem in knownRedeems)
             {
                 _ScriptPubKeyToRedeem.AddOrReplace(redeem.WitHash.ScriptPubKey.Hash.ScriptPubKey, redeem); //Might be P2SH(PWSH)
                 _ScriptPubKeyToRedeem.AddOrReplace(redeem.Hash.ScriptPubKey, redeem); //Might be P2SH
@@ -1687,15 +1857,8 @@ namespace Pandora.Client.Crypto.Currencies
         //    return tx;
         //}
 
-
         private readonly List<BuilderExtension> _Extensions = new List<BuilderExtension>();
-        public List<BuilderExtension> Extensions
-        {
-            get
-            {
-                return _Extensions;
-            }
-        }
+        public List<BuilderExtension> Extensions => _Extensions;
 
         //private Transaction CombineSignaturesCore(Transaction signed1, Transaction signed2)
         //{
@@ -1742,12 +1905,12 @@ namespace Pandora.Client.Crypto.Currencies
 
         private Script DeduceScriptPubKey(Script scriptSig)
         {
-            var p2sh = PayToScriptHashTemplate.Instance.ExtractScriptSigParameters(scriptSig);
+            PayToScriptHashSigParameters p2sh = PayToScriptHashTemplate.Instance.ExtractScriptSigParameters(scriptSig);
             if (p2sh != null && p2sh.RedeemScript != null)
             {
                 return p2sh.RedeemScript.Hash.ScriptPubKey;
             }
-            foreach (var extension in Extensions)
+            foreach (BuilderExtension extension in Extensions)
             {
                 if (extension.CanDeduceScriptPubKey(scriptSig))
                 {
@@ -1768,21 +1931,9 @@ namespace Pandora.Client.Crypto.Currencies
         }
 
         private readonly OutPoint _OutPoint;
-        public OutPoint OutPoint
-        {
-            get
-            {
-                return _OutPoint;
-            }
-        }
+        public OutPoint OutPoint => _OutPoint;
 
         private readonly uint _InputIndex;
-        public uint InputIndex
-        {
-            get
-            {
-                return _InputIndex;
-            }
-        }
+        public uint InputIndex => _InputIndex;
     }
 }

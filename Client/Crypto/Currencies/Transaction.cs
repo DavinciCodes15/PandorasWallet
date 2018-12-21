@@ -888,6 +888,8 @@ namespace Pandora.Client.Crypto.Currencies
 
         private uint nVersion = 1;
 
+        public long ForkID { get; private set; }
+
         public uint Version
         {
             get => nVersion;
@@ -921,6 +923,8 @@ namespace Pandora.Client.Crypto.Currencies
             {
                 this.FromBytes(Encoders.Hex.DecodeData(hex));
             }
+
+            ForkID = aNetwork.ChainParams.ForkFromId;
         }
 
         public Transaction(byte[] bytes, Network aNetwork)
@@ -1045,7 +1049,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         #endregion ICoinSerializable Members
 
-        public uint256 GetHash()
+        public virtual uint256 GetHash()
         {
             uint256 h = null;
             uint256[] hashes = _Hashes;

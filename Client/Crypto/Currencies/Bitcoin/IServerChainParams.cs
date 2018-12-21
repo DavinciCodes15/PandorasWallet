@@ -12,6 +12,6 @@
         string DNSSeed { get; set; }
         bool X11 { get; set; }
         bool POS { get; set; }
-        ProtocolPeculiarity Peculiarity { get; set; }
+        ProtocolFlags ProtocolFlags { get; set; }
     }
 }

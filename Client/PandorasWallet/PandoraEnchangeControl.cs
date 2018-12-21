@@ -466,10 +466,19 @@ namespace Pandora.Client.PandorasWallet
                 }
                 catch (Exception ex)
                 {
-                    aOrder.ErrorCounter += 60;
+                    int lNumberofretrys = aOrder.ErrorCounter / 60;
+
+                    if (lNumberofretrys > 10)
+                    {
+                        aOrder.Cancelled = true;
+                        FExchanger.UpdateOrder(aOrder, OrderStatus.Interrupted);
+                        WriteTransactionLogEntry(aOrder);
+                    }
+
+                    aOrder.ErrorCounter += 1;
 
                     WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Error, "Error on Withdraw Order: " + ex.Message);
-                    WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, "Retrying in 1 minute. Attempt: " + aOrder.ErrorCounter / 60 + "/10");
+                    WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, "Retrying in 1 minute. Attempt: " + lNumberofretrys + "/10");
                 }
             }
             else
@@ -837,10 +846,19 @@ namespace Pandora.Client.PandorasWallet
                                     }
                                     catch (Exception ex)
                                     {
-                                        lItem.ErrorCounter += 60;
+                                        int lNumberofretrys = lItem.ErrorCounter / 60;
 
-                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Error, "Error Placing Order: " + ex.Message);
-                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Info, "Retrying in 1 minute. Attempt: " + lItem.ErrorCounter / 60 + "/10");
+                                        if (lNumberofretrys > 10)
+                                        {
+                                            lItem.Cancelled = true;
+                                            FExchanger.UpdateOrder(lItem, OrderStatus.Interrupted);
+                                            WriteTransactionLogEntry(lItem);
+                                        }
+
+                                        lItem.ErrorCounter += 1;
+
+                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Error, "Error on Withdraw Order: " + ex.Message);
+                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Info, "Retrying in 1 minute. Attempt: " + lNumberofretrys + "/10");
                                     }
                                 }
                                 else
@@ -876,7 +894,7 @@ namespace Pandora.Client.PandorasWallet
             {
                 case OrderStatus.Waiting:
                     FDBExchanger.WriteOrderLog(aMarket.InternalID, "Starting Transaction Process", OrderMessage.OrderMessageLevel.Info);
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, "Coins Sended to Exchange account", OrderMessage.OrderMessageLevel.Info);
+                    FDBExchanger.WriteOrderLog(aMarket.InternalID, aMarket.SentQuantity + " coins Sent to Exchange account", OrderMessage.OrderMessageLevel.Info);
                     FDBExchanger.WriteOrderLog(aMarket.InternalID, "Waiting for confirmations to place order", OrderMessage.OrderMessageLevel.StageChange);
                     break;
 
