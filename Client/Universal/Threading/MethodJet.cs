@@ -257,6 +257,8 @@ namespace Pandora.Client.Universal.Threading
                 methodMessage.AsyncWaitHandle.WaitOne();
             else
             methodMessage.AsyncWaitHandle.WaitOne(aMillisecondsTimeout);
+            if (methodMessage.ExceptionObject != null)
+                throw methodMessage.ExceptionObject;
             return methodMessage.AsyncState;
         }
 
@@ -265,7 +267,7 @@ namespace Pandora.Client.Universal.Threading
             return EndInvoke(result, 0);
         }
 
-        public virtual object Invoke(Delegate method, object[] args)
+         public virtual object Invoke(Delegate method, params object[] args)
         {
             return EndInvoke(BeginInvoke(method, args));
         }

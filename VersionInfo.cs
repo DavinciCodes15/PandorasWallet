@@ -1,4 +1,4 @@
-using System.Reflection;
+ï»¿using System.Reflection;
 
 /**********************************************
  * Add the following to the Project.*
@@ -10,8 +10,8 @@ using System.Reflection;
 */
 [assembly: AssemblyCompany("Davinci Codes Spa")]
 [assembly: AssemblyProduct("Pandora's Wallet")]
-[assembly: AssemblyCopyright("Copyright © Davinci Codes Spa 2017")]
-[assembly: AssemblyTrademark("Davinci Codes®")]
+[assembly: AssemblyCopyright("Copyright ï¿½ Davinci Codes Spa 2017")]
+[assembly: AssemblyTrademark("Davinci Codesï¿½")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -23,5 +23,6 @@ using System.Reflection;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.5.0")]
-[assembly: AssemblyFileVersion("1.0.6.1430")]
+
+[assembly: AssemblyVersion("1.0.16")]
+[assembly: AssemblyFileVersion("1.0.16.1513")]

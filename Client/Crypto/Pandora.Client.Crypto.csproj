@@ -44,18 +44,18 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>$(SolutionDir)PandoraTempKey.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
       <Version>11.0.1</Version>
     </PackageReference>
+    <PackageReference Include="System.Buffers">
+      <Version>4.0.0.0</Version>
+    </PackageReference>
     <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Buffers.4.0.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
-    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -328,6 +328,7 @@
     <Compile Include="Protocol\Behaviors\NodeBehaviorsCollection.cs" />
     <Compile Include="Protocol\Behaviors\PingPongBehavior.cs" />
     <Compile Include="Protocol\BitcoinSerializablePayload.cs" />
+    <Compile Include="Currencies\CustomTransaction.cs" />
     <Compile Include="Protocol\Filters\ActionFilter.cs" />
     <Compile Include="Protocol\Filters\NodeFilter.cs" />
     <Compile Include="Protocol\Filters\NodeFiltersCollection.cs" />
@@ -340,7 +341,6 @@
     <Compile Include="Protocol\Node.cs" />
     <Compile Include="Protocol\NodeConnectionParameters.cs" />
     <Compile Include="Protocol\NodeListener.cs" />
-    <Compile Include="Protocol\NodeManager.cs" />
     <Compile Include="Protocol\NodesCollection.cs" />
     <Compile Include="Protocol\Payload.cs" />
     <Compile Include="Protocol\Payloads\PayloadAttribute.cs" />
@@ -384,6 +384,7 @@
     <Compile Include="uint512.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

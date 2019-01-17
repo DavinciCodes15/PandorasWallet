@@ -1,11 +1,7 @@
 ﻿//using Pandora.Client.Crypto.Currencies.Protocol;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Pandora.Client.Crypto.Currencies;
+using System;
+using System.IO;
 
 namespace Pandora.Client.Crypto
 {
@@ -24,20 +20,27 @@ namespace Pandora.Client.Crypto
             };
             serializable.ReadWrite(s);
         }
+
         public static int GetSerializedSize(this ICoinSerializable serializable, uint version, SerializationType serializationType)
         {
-            CoinStream s = new CoinStream(Stream.Null, true);
-            s.Type = serializationType;
+            CoinStream s = new CoinStream(Stream.Null, true)
+            {
+                Type = serializationType
+            };
             s.ReadWrite(serializable);
             return (int)s.Counter.WrittenBytes;
         }
+
         public static int GetSerializedSize(this ICoinSerializable serializable, TransactionOptions options)
         {
-            var bms = new CoinStream(Stream.Null, true);
-            bms.TransactionOptions = options;
+            CoinStream bms = new CoinStream(Stream.Null, true)
+            {
+                TransactionOptions = options
+            };
             serializable.ReadWrite(bms);
             return (int)bms.Counter.WrittenBytes;
         }
+
         public static int GetSerializedSize(this ICoinSerializable serializable, uint version = 70012)
         {
             return GetSerializedSize(serializable, version, SerializationType.Disk);
@@ -47,6 +50,7 @@ namespace Pandora.Client.Crypto
         {
             ReadWrite(serializable, new MemoryStream(bytes), false, version);
         }
+
         public static void FromBytes(this ICoinSerializable serializable, byte[] bytes, uint version = 70012)
         {
             serializable.ReadWrite(new CoinStream(bytes)
@@ -57,7 +61,7 @@ namespace Pandora.Client.Crypto
 
         public static T Clone<T>(this T serializable, uint version) where T : ICoinSerializable, new()
         {
-            var instance = new T();
+            T instance = new T();
             instance.FromBytes(serializable.ToBytes(version), version);
             return instance;
         }
@@ -67,7 +71,7 @@ namespace Pandora.Client.Crypto
             MemoryStream ms = new MemoryStream();
             serializable.ReadWrite(new CoinStream(ms, true)
             {
-                ProtocolVersion = version
+                ProtocolVersion = version,
             });
             return ToArrayEfficient(ms);
         }
@@ -75,7 +79,7 @@ namespace Pandora.Client.Crypto
         public static byte[] ToArrayEfficient(this MemoryStream ms)
         {
 #if !(PORTABLE || NETCORE)
-            var bytes = ms.GetBuffer();
+            byte[] bytes = ms.GetBuffer();
             Array.Resize(ref bytes, (int)ms.Length);
             return bytes;
 #else

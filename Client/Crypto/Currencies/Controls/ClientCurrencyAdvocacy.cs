@@ -83,7 +83,10 @@ namespace Pandora.Client.Crypto.Currencies.Controls
 
         public virtual string SignTransaction(string aTxData, ICurrencyTransaction aValidationInfo)
         {
-            Transaction tx = new Transaction(aTxData, Network);
+            if (!CustomTransaction.GetCustomTransaction(Id, out Transaction tx, aTxData, Network))
+            {
+                tx = new Transaction(aTxData, Network);
+            }
 
             // check how much is being spent and insure all is spent.
             ulong lTotalSent = 0;
@@ -138,6 +141,7 @@ namespace Pandora.Client.Crypto.Currencies.Controls
                     ScriptPubKey = tx.Inputs[i].ScriptSig
                 }));
             }
+
             tx.Sign(lKeys.ToArray(), lCoins.ToArray());
             return tx.ToHex();
         }

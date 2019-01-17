@@ -886,7 +886,7 @@ namespace Pandora.Client.Crypto.Currencies
     {
         public bool RBF => Inputs.Any(i => i.Sequence < 0xffffffff - 1);
 
-        private uint nVersion = 1;
+        protected uint nVersion = 1;
 
         public long ForkID { get; private set; }
 
@@ -896,9 +896,9 @@ namespace Pandora.Client.Crypto.Currencies
             set => nVersion = value;
         }
 
-        private TxInList vin;
-        private TxOutList vout;
-        private LockTime nLockTime;
+        protected TxInList vin;
+        protected TxOutList vout;
+        protected LockTime nLockTime;
         public Network Network { get; private set; }
 
         public Transaction()

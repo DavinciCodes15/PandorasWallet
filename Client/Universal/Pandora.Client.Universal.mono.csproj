@@ -54,13 +54,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(PW_RootPath)PandoraTempKey.snk">
+    <Content Include="$(SolutionDir)Resources\Signing\PandoraTempKey.snk">
       <Link>Properties\PandoraTempKey.snk</Link>
       <Visible>ture</Visible>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(PW_RootPath)VersionInfo.cs">
+    <Compile Include="$(SolutionDir)VersionInfo.cs">
       <Link>Properties\VersionInfo.cs</Link>
       <Visible>ture</Visible>
     </Compile>
@@ -78,7 +78,7 @@
     <Compile Include="FixedLengthLogFile.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
