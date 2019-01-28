@@ -1,14 +1,9 @@
 ﻿#if !NOSOCKET
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
 using Pandora.Client.Crypto.Currencies;
 using Pandora.Client.Crypto.Currencies.DataEncoders;
+using System;
+using System.Net;
 
 #if WINDOWS_UWP
 using Windows.ApplicationModel;
@@ -69,11 +64,11 @@ namespace Pandora.Client.Crypto.Protocol.Payloads
 				_NUserAgent = "/NBitcoin:" + version.Major + "." + version.Minor + "." + version.Build + "/";
 #else
 #if !NETCORE
-                var version = typeof(VersionPayload).Assembly.GetName().Version;
+                Version version = typeof(VersionPayload).Assembly.GetName().Version;
 #else
 				var version = typeof(VersionPayload).GetTypeInfo().Assembly.GetName().Version;
 #endif
-                _NUserAgent = "/NBitcoin:" + version.Major + "." + version.MajorRevision + "." + version.Build + "/";
+                _NUserAgent = "/Pandora:" + version.Major + "." + version.MajorRevision + "." + version.Build + "/";
 #endif
             }
             return _NUserAgent;
@@ -83,126 +78,72 @@ namespace Pandora.Client.Crypto.Protocol.Payloads
 
         public uint Version
         {
-            get
-            {
-                return version;
-            }
-            set
-            {
-                version = value;
-            }
+            get => version;
+            set => version = value;
         }
 
         private ulong services;
 
         public NodeServices Services
         {
-            get
-            {
-                return (NodeServices)services;
-            }
-            set
-            {
-                services = (ulong)value;
-            }
+            get => (NodeServices)services;
+            set => services = (ulong)value;
         }
 
         private long timestamp;
 
         public DateTimeOffset Timestamp
         {
-            get
-            {
-                return Utils.UnixTimeToDateTime((uint)timestamp);
-            }
-            set
-            {
-                timestamp = Utils.DateTimeToUnixTime(value);
-            }
+            get => Utils.UnixTimeToDateTime((uint)timestamp);
+            set => timestamp = Utils.DateTimeToUnixTime(value);
         }
 
         private NetworkAddress addr_recv = new NetworkAddress();
 
         public IPEndPoint AddressReceiver
         {
-            get
-            {
-                return addr_recv.Endpoint;
-            }
-            set
-            {
-                addr_recv.Endpoint = value;
-            }
+            get => addr_recv.Endpoint;
+            set => addr_recv.Endpoint = value;
         }
 
         private NetworkAddress addr_from = new NetworkAddress();
 
         public IPEndPoint AddressFrom
         {
-            get
-            {
-                return addr_from.Endpoint;
-            }
-            set
-            {
-                addr_from.Endpoint = value;
-            }
+            get => addr_from.Endpoint;
+            set => addr_from.Endpoint = value;
         }
 
         private ulong nonce;
 
         public ulong Nonce
         {
-            get
-            {
-                return nonce;
-            }
-            set
-            {
-                nonce = value;
-            }
+            get => nonce;
+            set => nonce = value;
         }
 
         private int start_height;
 
         public int StartHeight
         {
-            get
-            {
-                return start_height;
-            }
-            set
-            {
-                start_height = value;
-            }
+            get => start_height;
+            set => start_height = value;
         }
 
         private bool relay;
 
         public bool Relay
         {
-            get
-            {
-                return relay;
-            }
-            set
-            {
-                relay = value;
-            }
+            get => relay;
+            set => relay = value;
         }
 
         private VarString user_agent;
 
         public string UserAgent
         {
-            get
-            {
-                return Encoders.ASCII.EncodeData(user_agent.GetString());
-            }
-            set
-            {
-                user_agent = new VarString(Encoders.ASCII.DecodeData(value));
-            }
+            get => Encoders.ASCII.EncodeData(user_agent.GetString());
+            set => user_agent = new VarString(Encoders.ASCII.DecodeData(value));
         }
 
         #region ICoinSerializable Members
@@ -227,11 +168,18 @@ namespace Pandora.Client.Crypto.Protocol.Payloads
                     stream.ReadWrite(ref nonce);
                     stream.ReadWrite(ref user_agent);
                     if (!stream.ProtocolCapabilities.SupportUserAgent)
+                    {
                         if (user_agent.Length != 0)
+                        {
                             throw new FormatException("Should not find user agent for current version " + version);
+                        }
+                    }
+
                     stream.ReadWrite(ref start_height);
-                    if (version >= 70001)
+                    if (version >= 70001 && stream.ProtocolCapabilities.SupportVersionRelay)
+                    {
                         stream.ReadWrite(ref relay);
+                    }
                 }
             }
         }

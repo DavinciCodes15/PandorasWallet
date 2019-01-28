@@ -1,5 +1,4 @@
-﻿using System;
-using Pandora.Client.Crypto.Currencies.Crypto;
+﻿using Pandora.Client.Crypto.Currencies.Crypto;
 
 namespace Pandora.Client.Crypto.Protocol
 {
@@ -92,6 +91,8 @@ namespace Pandora.Client.Crypto.Protocol
             set;
         }
 
+        public bool SupportVersionRelay { get; set; }
+
         public virtual HashStreamBase GetChecksumHashStream()
         {
             return new HashStream();
@@ -123,7 +124,8 @@ namespace Pandora.Client.Crypto.Protocol
                 SupportSendHeaders = true,
                 SupportTimeAddress = true,
                 SupportUserAgent = true,
-                SupportWitness = true
+                SupportWitness = true,
+                SupportVersionRelay = true
             };
         }
 

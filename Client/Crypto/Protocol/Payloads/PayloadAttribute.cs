@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace Pandora.Client.Crypto.Protocol.Payloads
 {
@@ -52,9 +50,11 @@ namespace Pandora.Client.Crypto.Protocol.Payloads
 
         public static Type GetCommandType(string commandName)
         {
-            Type result;
-            if (!_NameToType.TryGetValue(commandName, out result))
+            if (!_NameToType.TryGetValue(commandName, out Type result))
+            {
                 return typeof(UnknowPayload);
+            }
+
             return result;
         }
 
@@ -72,8 +72,18 @@ namespace Pandora.Client.Crypto.Protocol.Payloads
         internal static string GetCommandName(Type type)
         {
             string result;
-            if (!_TypeToName.TryGetValue(type, out result))
+            try
+            {
+                if (!_TypeToName.TryGetValue(type, out result) && !_TypeToName.TryGetValue(type.BaseType, out result))
+                {
+                    throw new ArgumentException(type.FullName + " is not a payload");
+                }
+            }
+            catch
+            {
                 throw new ArgumentException(type.FullName + " is not a payload");
+            }
+
             return result;
         }
     }

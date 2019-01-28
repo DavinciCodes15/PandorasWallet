@@ -681,9 +681,9 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void SetUserCoins(PandoraWallet aWallet)
+        private void SetUserCoins(PandoraWallet aWallet, IEnumerable<CurrencyItem> aPreloadedUserCoins = null)
         {
-            List<CurrencyItem> lUserCoins = aWallet.UserCoins;
+            List<CurrencyItem> lUserCoins = aPreloadedUserCoins != null ? aPreloadedUserCoins.ToList() : aWallet.UserCoins;
             AddCoinsToCurrencyView(lUserCoins, aWallet);
             aWallet.SetCoinAccountData(lUserCoins);
         }
@@ -834,7 +834,9 @@ namespace Pandora.Client.PandorasWallet
 
             MainForm?.Invoke(new MethodInvoker(() => MainForm.CurrencyViewControl.ClearCurrencies()));
 
-            MainForm?.Invoke(new MethodInvoker(() => SetUserCoins(FWorkingWallet)));
+            List<CurrencyItem> lUserCoins = FWorkingWallet.UserCoins;
+
+            MainForm?.Invoke(new MethodInvoker(() => SetUserCoins(FWorkingWallet, lUserCoins)));
 
             if (FWallet != null)
             {

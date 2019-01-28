@@ -247,7 +247,8 @@ namespace Pandora.Client.Crypto.Protocol
                             {
                                 ConsensusFactory = _Node.Network.Consensus,
                                 ProtocolVersion = Node.Version,
-                                TransactionOptions = Node.SupportedTransactionOptions
+                                TransactionOptions = Node.SupportedTransactionOptions,
+                                FProtocolData = Node.Network
                             });
                             byte[] bytes = ms.ToArrayEfficient();
                             evt.SetBuffer(bytes, 0, bytes.Length);

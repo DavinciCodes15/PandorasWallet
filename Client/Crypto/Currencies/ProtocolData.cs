@@ -9,7 +9,7 @@ namespace Pandora.Client.Crypto.Currencies
     [Flags]
     public enum ProtocolFlags
     {
-        None = 0, UsesInvPayloadforGetHeader = 1, FailsToVerAck = 2, UseRPC = 4
+        None = 0, UsesInvPayloadforGetHeader = 1, FailsToVerAck = 2, UseRPC = 4, UsesOldVersionPayload = 8
     }
 
     public class ProtocolData
@@ -77,18 +77,33 @@ namespace Pandora.Client.Crypto.Currencies
         {
             return new ProtocolCapabilities()
             {
-                PeerTooOld = protocolVersion < 209U,
-                SupportTimeAddress = protocolVersion >= 31402U,
-                SupportGetBlock = protocolVersion < 32000U || protocolVersion > 32400U,
-                SupportPingPong = protocolVersion > 60000U,
-                SupportMempoolQuery = protocolVersion >= 60002U,
-                SupportReject = protocolVersion >= 70002U,
-                SupportNodeBloom = protocolVersion >= 70011U,
-                SupportSendHeaders = protocolVersion >= 70012U,
-                SupportWitness = protocolVersion >= 70012U,
-                SupportCompactBlocks = protocolVersion >= 70014U,
-                SupportCheckSum = protocolVersion >= 60002,
-                SupportUserAgent = protocolVersion >= 60002
+                PeerTooOld = false,
+                SupportCheckSum = true,
+                SupportCompactBlocks = true,
+                SupportGetBlock = true,
+                SupportMempoolQuery = true,
+                SupportNodeBloom = true,
+                SupportPingPong = true,
+                SupportReject = true,
+                SupportSendHeaders = true,
+                SupportTimeAddress = true,
+                SupportUserAgent = true,
+                SupportWitness = true,
+                SupportVersionRelay = !Checkif(ProtocolFlags.UsesOldVersionPayload)
+
+                //PeerTooOld = protocolVersion < 209U,
+                //SupportTimeAddress = protocolVersion >= 31402U,
+                //SupportGetBlock = protocolVersion < 32000U || protocolVersion > 32400U,
+                //SupportPingPong = protocolVersion > 60000U,
+                //SupportMempoolQuery = protocolVersion >= 60002U,
+                //SupportReject = protocolVersion >= 70002U,
+                //SupportNodeBloom = protocolVersion >= 70011U,
+                //SupportSendHeaders = protocolVersion >= 70012U,
+                //SupportWitness = protocolVersion >= 70012U,
+                //SupportCompactBlocks = protocolVersion >= 70014U,
+                //SupportCheckSum = protocolVersion >= 60002,
+                //SupportUserAgent = protocolVersion >= 60002,
+                //SupportVersionRelay = protocolVersion >= 70001U && !Checkif(ProtocolFlags.UsesOldVersionPayload)
             };
         }
 
@@ -97,6 +112,10 @@ namespace Pandora.Client.Crypto.Currencies
             byte[] bytes = new byte[1];
             for (int i = 0; i < MagicBytes.Length; i++)
             {
+#if DEBUG
+                string hex = BitConverter.ToString(MagicBytes);
+#endif
+
                 i = Math.Max(0, i);
                 cancellation.ThrowIfCancellationRequested();
 

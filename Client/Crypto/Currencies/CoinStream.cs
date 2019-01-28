@@ -1,13 +1,10 @@
 ﻿using Pandora.Client.Crypto.Currencies.Controls;
 using Pandora.Client.Crypto.Protocol;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Pandora.Client.Crypto.Currencies
 {
@@ -37,17 +34,11 @@ namespace Pandora.Client.Crypto.Currencies
 
         #endregion IDisposable Members
 
-        public static IDisposable Nothing
-        {
-            get
-            {
-                return new Scope(() =>
-                {
-                }, () =>
-                {
-                });
-            }
-        }
+        public static IDisposable Nothing => new Scope(() =>
+                                                           {
+                                                           }, () =>
+                                                           {
+                                                           });
     }
 
     public class CoinStream
@@ -56,14 +47,8 @@ namespace Pandora.Client.Crypto.Currencies
 
         public int MaxArraySize
         {
-            get
-            {
-                return _MaxArraySize;
-            }
-            set
-            {
-                _MaxArraySize = value;
-            }
+            get => _MaxArraySize;
+            set => _MaxArraySize = value;
         }
 
         //ReadWrite<T>(ref T data)
@@ -83,23 +68,11 @@ namespace Pandora.Client.Crypto.Currencies
 
         private readonly Stream _Inner;
 
-        public Stream Inner
-        {
-            get
-            {
-                return _Inner;
-            }
-        }
+        public Stream Inner => _Inner;
 
         private readonly bool _Serializing;
 
-        public bool Serializing
-        {
-            get
-            {
-                return _Serializing;
-            }
-        }
+        public bool Serializing => _Serializing;
 
         private IConsensusFactory _ConsensusFactory = new BaseConsensusFactory();
 
@@ -108,14 +81,14 @@ namespace Pandora.Client.Crypto.Currencies
         /// </summary>
         public IConsensusFactory ConsensusFactory
         {
-            get
-            {
-                return _ConsensusFactory;
-            }
+            get => _ConsensusFactory;
             set
             {
                 if (value == null)
+                {
                     throw new ArgumentNullException(nameof(value));
+                }
+
                 _ConsensusFactory = value;
             }
         }
@@ -135,13 +108,13 @@ namespace Pandora.Client.Crypto.Currencies
         {
             if (Serializing)
             {
-                var bytes = data == null ? Script.Empty.ToBytes(true) : data.ToBytes(true);
+                byte[] bytes = data == null ? Script.Empty.ToBytes(true) : data.ToBytes(true);
                 ReadWriteAsVarString(ref bytes);
                 return data;
             }
             else
             {
-                var varString = new VarString();
+                VarString varString = new VarString();
                 varString.ReadWrite(this);
                 return Script.FromBytesUnsafe(varString.GetString(true));
             }
@@ -150,9 +123,13 @@ namespace Pandora.Client.Crypto.Currencies
         public void ReadWrite(ref Script script)
         {
             if (Serializing)
+            {
                 ReadWrite(script);
+            }
             else
+            {
                 script = ReadWrite(script);
+            }
         }
 
         public T ReadWrite<T>(T data) where T : ICoinSerializable
@@ -180,7 +157,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             try
             {
-                var parameters = new object[] { obj };
+                object[] parameters = new object[] { obj };
                 _ReadWriteTyped.MakeGenericMethod(type).Invoke(this, parameters);
                 obj = parameters[0];
             }
@@ -220,13 +197,20 @@ namespace Pandora.Client.Crypto.Currencies
 
         public void ReadWrite<T>(ref T data) where T : ICoinSerializable
         {
-            var obj = data;
+            T obj = data;
             if (obj == null)
+            {
                 if (!ConsensusFactory.TryCreateNew<T>(out obj))
+                {
                     obj = Activator.CreateInstance<T>();
+                }
+            }
+
             obj.ReadWrite(this);
             if (!Serializing)
+            {
                 data = obj;
+            }
         }
 
         public void ReadWrite<T>(ref List<T> list) where T : ICoinSerializable, new()
@@ -245,7 +229,7 @@ namespace Pandora.Client.Crypto.Currencies
             where TList : List<TItem>, new()
             where TItem : ICoinSerializable, new()
         {
-            var dataArray = data == null ? null : data.ToArray();
+            TItem[] dataArray = data == null ? null : data.ToArray();
             if (Serializing && dataArray == null)
             {
                 dataArray = new TItem[0];
@@ -254,9 +238,14 @@ namespace Pandora.Client.Crypto.Currencies
             if (!Serializing)
             {
                 if (data == null)
+                {
                     data = new TList();
+                }
                 else
+                {
                     data.Clear();
+                }
+
                 data.AddRange(dataArray);
             }
         }
@@ -285,21 +274,27 @@ namespace Pandora.Client.Crypto.Currencies
 
         private void ReadWriteNumber(ref ulong value, int size)
         {
-            var bytes = new byte[size];
+            byte[] bytes = new byte[size];
 
             for (int i = 0; i < size; i++)
             {
                 bytes[i] = (byte)(value >> i * 8);
             }
             if (IsBigEndian)
+            {
                 Array.Reverse(bytes);
+            }
+
             ReadWriteBytes(ref bytes);
             if (IsBigEndian)
+            {
                 Array.Reverse(bytes);
+            }
+
             ulong valueTemp = 0;
             for (int i = 0; i < bytes.Length; i++)
             {
-                var v = (ulong)bytes[i];
+                ulong v = bytes[i];
                 valueTemp += v << (i * 8);
             }
             value = valueTemp;
@@ -307,13 +302,22 @@ namespace Pandora.Client.Crypto.Currencies
 
         private void ReadWriteBytes(ref byte[] data, int offset = 0, int count = -1)
         {
-            if (data == null) throw new ArgumentNullException("data");
+            if (data == null)
+            {
+                throw new ArgumentNullException("data");
+            }
 
-            if (data.Length == 0) return;
+            if (data.Length == 0)
+            {
+                return;
+            }
 
             count = count == -1 ? data.Length : count;
 
-            if (count == 0) return;
+            if (count == 0)
+            {
+                return;
+            }
 
             if (Serializing)
             {
@@ -322,9 +326,12 @@ namespace Pandora.Client.Crypto.Currencies
             }
             else
             {
-                var readen = Inner.ReadEx(data, offset, count, ReadCancellationToken);
+                int readen = Inner.ReadEx(data, offset, count, ReadCancellationToken);
                 if (readen == 0)
+                {
                     throw new EndOfStreamException("No more byte to read");
+                }
+
                 Counter.AddReaden(readen);
             }
         }
@@ -336,7 +343,10 @@ namespace Pandora.Client.Crypto.Currencies
             get
             {
                 if (_Counter == null)
+                {
                     _Counter = new PerformanceCounter();
+                }
+
                 return _Counter;
             }
         }
@@ -350,9 +360,12 @@ namespace Pandora.Client.Crypto.Currencies
             }
             else
             {
-                var readen = Inner.ReadByte();
+                int readen = Inner.ReadByte();
                 if (readen == -1)
+                {
                     throw new EndOfStreamException("No more byte to read");
+                }
+
                 data = (byte)readen;
                 Counter.AddReaden(1);
             }
@@ -366,7 +379,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public IDisposable BigEndianScope()
         {
-            var old = IsBigEndian;
+            bool old = IsBigEndian;
             return new Scope(() =>
             {
                 IsBigEndian = true;
@@ -383,13 +396,20 @@ namespace Pandora.Client.Crypto.Currencies
         {
             get
             {
-                var capabilities = _ProtocolCapabilities;
-                if (capabilities == null)
+                try
                 {
-                    capabilities = ProtocolVersion.HasValue ? ProtocolCapabilities.CreateSupportAll() : FProtocolData.GetProtocolCapabilities(ProtocolVersion.Value);
-                    _ProtocolCapabilities = capabilities;
+                    ProtocolCapabilities capabilities = _ProtocolCapabilities;
+                    if (capabilities == null)
+                    {
+                        capabilities = ProtocolVersion.HasValue ? FProtocolData.GetProtocolCapabilities(ProtocolVersion.Value) : ProtocolCapabilities.CreateSupportAll();
+                        _ProtocolCapabilities = capabilities;
+                    }
+                    return capabilities;
                 }
-                return capabilities;
+                catch
+                {
+                    throw;
+                }
             }
         }
 
@@ -397,10 +417,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public uint? ProtocolVersion
         {
-            get
-            {
-                return _ProtocolVersion;
-            }
+            get => _ProtocolVersion;
             set
             {
                 _ProtocolVersion = value;
@@ -412,19 +429,13 @@ namespace Pandora.Client.Crypto.Currencies
 
         public TransactionOptions TransactionOptions
         {
-            get
-            {
-                return _TransactionSupportedOptions;
-            }
-            set
-            {
-                _TransactionSupportedOptions = value;
-            }
+            get => _TransactionSupportedOptions;
+            set => _TransactionSupportedOptions = value;
         }
 
         public IDisposable ProtocolVersionScope(uint version)
         {
-            var old = ProtocolVersion;
+            uint? old = ProtocolVersion;
             return new Scope(() =>
             {
                 ProtocolVersion = version;
@@ -438,12 +449,16 @@ namespace Pandora.Client.Crypto.Currencies
         public void CopyParameters(CoinStream stream)
         {
             if (stream == null)
+            {
                 throw new ArgumentNullException("stream");
+            }
+
             ProtocolVersion = stream.ProtocolVersion;
             IsBigEndian = stream.IsBigEndian;
             MaxArraySize = stream.MaxArraySize;
             Type = stream.Type;
             ConsensusFactory = stream.ConsensusFactory;
+            FProtocolData = stream.FProtocolData;
         }
 
         public SerializationType Type
@@ -454,7 +469,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public IDisposable SerializationTypeScope(SerializationType value)
         {
-            var old = Type;
+            SerializationType old = Type;
             return new Scope(() =>
             {
                 Type = value;
@@ -477,31 +492,39 @@ namespace Pandora.Client.Crypto.Currencies
             ulong vallong = val;
             ReadWriteAsVarInt(ref vallong);
             if (!Serializing)
+            {
                 val = (uint)vallong;
+            }
         }
 
         public void ReadWriteAsVarInt(ref ulong val)
         {
-            var value = new VarInt(val);
+            VarInt value = new VarInt(val);
             ReadWrite(ref value);
             if (!Serializing)
+            {
                 val = value.ToLong();
+            }
         }
 
         public void ReadWriteAsCompactVarInt(ref uint val)
         {
-            var value = new CompactVarInt(val, sizeof(uint));
+            CompactVarInt value = new CompactVarInt(val, sizeof(uint));
             ReadWrite(ref value);
             if (!Serializing)
+            {
                 val = (uint)value.ToLong();
+            }
         }
 
         public void ReadWriteAsCompactVarInt(ref ulong val)
         {
-            var value = new CompactVarInt(val, sizeof(ulong));
+            CompactVarInt value = new CompactVarInt(val, sizeof(ulong));
             ReadWrite(ref value);
             if (!Serializing)
+            {
                 val = value.ToLong();
+            }
         }
 
         private VarInt _VarInt = new VarInt(0);
@@ -509,14 +532,23 @@ namespace Pandora.Client.Crypto.Currencies
         private void ReadWriteArray<T>(ref T[] data) where T : ICoinSerializable
         {
             if (data == null && Serializing)
+            {
                 throw new ArgumentNullException("Impossible to serialize a null array");
+            }
+
             _VarInt.SetValue(data == null ? 0 : (ulong)data.Length);
             ReadWrite(ref _VarInt);
 
             if (_VarInt.ToLong() > (uint)MaxArraySize)
+            {
                 throw new ArgumentOutOfRangeException("Array size not big");
+            }
+
             if (!Serializing)
+            {
                 data = new T[_VarInt.ToLong()];
+            }
+
             for (int i = 0; i < data.Length; i++)
             {
                 T obj = data[i];
@@ -528,14 +560,23 @@ namespace Pandora.Client.Crypto.Currencies
         private void ReadWriteArray(ref ulong[] data)
         {
             if (data == null && Serializing)
+            {
                 throw new ArgumentNullException("Impossible to serialize a null array");
+            }
+
             _VarInt.SetValue(data == null ? 0 : (ulong)data.Length);
             ReadWrite(ref _VarInt);
 
             if (_VarInt.ToLong() > (uint)MaxArraySize)
+            {
                 throw new ArgumentOutOfRangeException("Array size not big");
+            }
+
             if (!Serializing)
+            {
                 data = new ulong[_VarInt.ToLong()];
+            }
+
             for (int i = 0; i < data.Length; i++)
             {
                 ulong obj = data[i];
@@ -547,14 +588,23 @@ namespace Pandora.Client.Crypto.Currencies
         private void ReadWriteArray(ref ushort[] data)
         {
             if (data == null && Serializing)
+            {
                 throw new ArgumentNullException("Impossible to serialize a null array");
+            }
+
             _VarInt.SetValue(data == null ? 0 : (ulong)data.Length);
             ReadWrite(ref _VarInt);
 
             if (_VarInt.ToLong() > (uint)MaxArraySize)
+            {
                 throw new ArgumentOutOfRangeException("Array size not big");
+            }
+
             if (!Serializing)
+            {
                 data = new ushort[_VarInt.ToLong()];
+            }
+
             for (int i = 0; i < data.Length; i++)
             {
                 ushort obj = data[i];
@@ -566,14 +616,23 @@ namespace Pandora.Client.Crypto.Currencies
         private void ReadWriteArray(ref uint[] data)
         {
             if (data == null && Serializing)
+            {
                 throw new ArgumentNullException("Impossible to serialize a null array");
+            }
+
             _VarInt.SetValue(data == null ? 0 : (ulong)data.Length);
             ReadWrite(ref _VarInt);
 
             if (_VarInt.ToLong() > (uint)MaxArraySize)
+            {
                 throw new ArgumentOutOfRangeException("Array size not big");
+            }
+
             if (!Serializing)
+            {
                 data = new uint[_VarInt.ToLong()];
+            }
+
             for (int i = 0; i < data.Length; i++)
             {
                 uint obj = data[i];
@@ -585,14 +644,23 @@ namespace Pandora.Client.Crypto.Currencies
         private void ReadWriteArray(ref byte[] data)
         {
             if (data == null && Serializing)
+            {
                 throw new ArgumentNullException("Impossible to serialize a null array");
+            }
+
             _VarInt.SetValue(data == null ? 0 : (ulong)data.Length);
             ReadWrite(ref _VarInt);
 
             if (_VarInt.ToLong() > (uint)MaxArraySize)
+            {
                 throw new ArgumentOutOfRangeException("Array size not big");
+            }
+
             if (!Serializing)
+            {
                 data = new byte[_VarInt.ToLong()];
+            }
+
             for (int i = 0; i < data.Length; i++)
             {
                 byte obj = data[i];
@@ -604,14 +672,23 @@ namespace Pandora.Client.Crypto.Currencies
         private void ReadWriteArray(ref long[] data)
         {
             if (data == null && Serializing)
+            {
                 throw new ArgumentNullException("Impossible to serialize a null array");
+            }
+
             _VarInt.SetValue(data == null ? 0 : (ulong)data.Length);
             ReadWrite(ref _VarInt);
 
             if (_VarInt.ToLong() > (uint)MaxArraySize)
+            {
                 throw new ArgumentOutOfRangeException("Array size not big");
+            }
+
             if (!Serializing)
+            {
                 data = new long[_VarInt.ToLong()];
+            }
+
             for (int i = 0; i < data.Length; i++)
             {
                 long obj = data[i];
@@ -623,14 +700,23 @@ namespace Pandora.Client.Crypto.Currencies
         private void ReadWriteArray(ref short[] data)
         {
             if (data == null && Serializing)
+            {
                 throw new ArgumentNullException("Impossible to serialize a null array");
+            }
+
             _VarInt.SetValue(data == null ? 0 : (ulong)data.Length);
             ReadWrite(ref _VarInt);
 
             if (_VarInt.ToLong() > (uint)MaxArraySize)
+            {
                 throw new ArgumentOutOfRangeException("Array size not big");
+            }
+
             if (!Serializing)
+            {
                 data = new short[_VarInt.ToLong()];
+            }
+
             for (int i = 0; i < data.Length; i++)
             {
                 short obj = data[i];
@@ -642,14 +728,23 @@ namespace Pandora.Client.Crypto.Currencies
         private void ReadWriteArray(ref int[] data)
         {
             if (data == null && Serializing)
+            {
                 throw new ArgumentNullException("Impossible to serialize a null array");
+            }
+
             _VarInt.SetValue(data == null ? 0 : (ulong)data.Length);
             ReadWrite(ref _VarInt);
 
             if (_VarInt.ToLong() > (uint)MaxArraySize)
+            {
                 throw new ArgumentOutOfRangeException("Array size not big");
+            }
+
             if (!Serializing)
+            {
                 data = new int[_VarInt.ToLong()];
+            }
+
             for (int i = 0; i < data.Length; i++)
             {
                 int obj = data[i];
@@ -694,7 +789,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             value = value ?? uint256.Zero;
             _MutableUint256.Value = value;
-            this.ReadWrite(ref _MutableUint256);
+            ReadWrite(ref _MutableUint256);
             value = _MutableUint256.Value;
         }
 
@@ -702,7 +797,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             value = value ?? uint256.Zero;
             _MutableUint256.Value = value;
-            this.ReadWrite(ref _MutableUint256);
+            ReadWrite(ref _MutableUint256);
             value = _MutableUint256.Value;
         }
 
@@ -710,13 +805,13 @@ namespace Pandora.Client.Crypto.Currencies
         {
             if (Serializing)
             {
-                var list = value == null ? null : value.Select(v => v.AsCoinSerializable()).ToList();
-                this.ReadWrite(ref list);
+                List<uint256.MutableUint256> list = value == null ? null : value.Select(v => v.AsCoinSerializable()).ToList();
+                ReadWrite(ref list);
             }
             else
             {
                 List<uint256.MutableUint256> list = null;
-                this.ReadWrite(ref list);
+                ReadWrite(ref list);
                 value = list.Select(l => l.Value).ToList();
             }
         }
@@ -727,7 +822,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             value = value ?? uint160.Zero;
             _MutableUint160.Value = value;
-            this.ReadWrite(ref _MutableUint160);
+            ReadWrite(ref _MutableUint160);
             value = _MutableUint160.Value;
         }
 
@@ -735,7 +830,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             value = value ?? uint160.Zero;
             _MutableUint160.Value = value;
-            this.ReadWrite(ref _MutableUint160);
+            ReadWrite(ref _MutableUint160);
             value = _MutableUint160.Value;
         }
 
@@ -743,23 +838,25 @@ namespace Pandora.Client.Crypto.Currencies
         {
             if (Serializing)
             {
-                var list = value == null ? null : value.Select(v => v.AsCoinSerializable()).ToList();
-                this.ReadWrite(ref list);
+                List<uint160.MutableUint160> list = value == null ? null : value.Select(v => v.AsCoinSerializable()).ToList();
+                ReadWrite(ref list);
             }
             else
             {
                 List<uint160.MutableUint160> list = null;
-                this.ReadWrite(ref list);
+                ReadWrite(ref list);
                 value = list.Select(l => l.Value).ToList();
             }
         }
 
         public void ReadWrite(ref ulong data)
         {
-            ulong l = (ulong)data;
+            ulong l = data;
             ReadWriteNumber(ref l, sizeof(ulong));
             if (!Serializing)
-                data = (ulong)l;
+            {
+                data = l;
+            }
         }
 
         public ulong ReadWrite(ulong data)
@@ -770,10 +867,12 @@ namespace Pandora.Client.Crypto.Currencies
 
         public void ReadWrite(ref ushort data)
         {
-            ulong l = (ulong)data;
+            ulong l = data;
             ReadWriteNumber(ref l, sizeof(ushort));
             if (!Serializing)
+            {
                 data = (ushort)l;
+            }
         }
 
         public ushort ReadWrite(ushort data)
@@ -784,10 +883,12 @@ namespace Pandora.Client.Crypto.Currencies
 
         public void ReadWrite(ref uint data)
         {
-            ulong l = (ulong)data;
+            ulong l = data;
             ReadWriteNumber(ref l, sizeof(uint));
             if (!Serializing)
+            {
                 data = (uint)l;
+            }
         }
 
         public uint ReadWrite(uint data)
@@ -798,10 +899,12 @@ namespace Pandora.Client.Crypto.Currencies
 
         public void ReadWrite(ref long data)
         {
-            long l = (long)data;
+            long l = data;
             ReadWriteNumber(ref l, sizeof(long));
             if (!Serializing)
-                data = (long)l;
+            {
+                data = l;
+            }
         }
 
         public long ReadWrite(long data)
@@ -812,10 +915,12 @@ namespace Pandora.Client.Crypto.Currencies
 
         public void ReadWrite(ref short data)
         {
-            long l = (long)data;
+            long l = data;
             ReadWriteNumber(ref l, sizeof(short));
             if (!Serializing)
+            {
                 data = (short)l;
+            }
         }
 
         public short ReadWrite(short data)
@@ -826,10 +931,12 @@ namespace Pandora.Client.Crypto.Currencies
 
         public void ReadWrite(ref int data)
         {
-            long l = (long)data;
+            long l = data;
             ReadWriteNumber(ref l, sizeof(int));
             if (!Serializing)
+            {
                 data = (int)l;
+            }
         }
 
         public int ReadWrite(int data)

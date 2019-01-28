@@ -55,7 +55,15 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
         }
 
-        public string AssemblyVersion => Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        public string AssemblyVersion
+        {
+            get
+            {
+                Assembly lAssembly = Assembly.GetExecutingAssembly();
+                System.Diagnostics.FileVersionInfo lFileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(lAssembly.Location);
+                return lFileVersion.FileVersion;
+            }
+        }
 
         public string AssemblyDescription
         {

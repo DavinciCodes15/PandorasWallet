@@ -1,9 +1,6 @@
 ﻿using Pandora.Client.Crypto.Currencies;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Pandora.Client.Crypto.Protocol.Payloads
 {
@@ -31,6 +28,7 @@ namespace Pandora.Client.Crypto.Protocol.Payloads
             public void ReadWrite(CoinStream stream)
             {
                 stream.ReadWrite(ref _Header);
+
                 VarInt txCount = new VarInt(0);
                 stream.ReadWrite(ref txCount);
             }
@@ -38,7 +36,7 @@ namespace Pandora.Client.Crypto.Protocol.Payloads
             #endregion ICoinSerializable Members
         }
 
-        private List<BlockHeader> headers = new List<BlockHeader>();
+        protected List<BlockHeader> headers = new List<BlockHeader>();
 
         public HeadersPayload()
         {
@@ -49,19 +47,13 @@ namespace Pandora.Client.Crypto.Protocol.Payloads
             Headers.AddRange(headers);
         }
 
-        public List<BlockHeader> Headers
-        {
-            get
-            {
-                return headers;
-            }
-        }
+        public List<BlockHeader> Headers => headers;
 
         public override void ReadWriteCore(CoinStream stream)
         {
             if (stream.Serializing)
             {
-                var heardersOff = headers.Select(h => new BlockHeaderWithTxCount(h)).ToList();
+                List<BlockHeaderWithTxCount> heardersOff = headers.Select(h => new BlockHeaderWithTxCount(h)).ToList();
                 stream.ReadWrite(ref heardersOff);
             }
             else

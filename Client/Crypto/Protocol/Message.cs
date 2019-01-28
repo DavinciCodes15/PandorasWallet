@@ -203,7 +203,8 @@ namespace Pandora.Client.Crypto.Protocol
             {
                 ProtocolVersion = version,
                 ReadCancellationToken = cancellationToken,
-                ConsensusFactory = network.Consensus //TODO: CHECK THIS
+                ConsensusFactory = network.Consensus,
+                FProtocolData = network
             };
 
             if (!network.ReadMagic(stream, cancellationToken, true))
