@@ -43,8 +43,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             private Dictionary<string, TimeSpan> FLifeTimes = new Dictionary<string, TimeSpan>();
 
-            public bool FWriting;
-
             public DBManager(string aDataPath, string aSQLiteFile)
             {
                 try
@@ -95,29 +93,35 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 SQLiteCommand CreateExtTxTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS TxExt (internalid BIGINT PRIMARY KEY, extdata varchar(100))", FDBConnection);
                 SQLiteCommand CreateDataRetrievalTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS DataReferences (type VARCHAR(100) PRIMARY KEY, lastdataretrieval DATETIME INTEGER)", FDBConnection);
 
-                try
+                using (SQLiteTransaction lTransaction = FDBConnection.BeginTransaction())
                 {
-                    CreateMonitoredAccounts.ExecuteNonQuery();
-                    CreateCurrencyData.ExecuteNonQuery();
-                    CreateCurrencyStatusData.ExecuteNonQuery();
-                    CreateTxTable.ExecuteNonQuery();
-                    CreateInputsTxTable.ExecuteNonQuery();
-                    CreateOutputsTxTable.ExecuteNonQuery();
-                    CreateExtTxTable.ExecuteNonQuery();
-                    CreateDataRetrievalTable.ExecuteNonQuery();
+                    try
+                    {
+                        CreateMonitoredAccounts.ExecuteNonQuery();
+                        CreateCurrencyData.ExecuteNonQuery();
+                        CreateCurrencyStatusData.ExecuteNonQuery();
+                        CreateTxTable.ExecuteNonQuery();
+                        CreateInputsTxTable.ExecuteNonQuery();
+                        CreateOutputsTxTable.ExecuteNonQuery();
+                        CreateExtTxTable.ExecuteNonQuery();
+                        CreateDataRetrievalTable.ExecuteNonQuery();
 
-                    CreateMonitoredAccounts.Dispose();
-                    CreateCurrencyData.Dispose();
-                    CreateCurrencyStatusData.Dispose();
-                    CreateTxTable.Dispose();
-                    CreateInputsTxTable.Dispose();
-                    CreateOutputsTxTable.Dispose();
-                    CreateExtTxTable.Dispose();
-                    CreateDataRetrievalTable.Dispose();
-                }
-                catch
-                {
-                    throw;
+                        lTransaction.Commit();
+
+                        CreateMonitoredAccounts.Dispose();
+                        CreateCurrencyData.Dispose();
+                        CreateCurrencyStatusData.Dispose();
+                        CreateTxTable.Dispose();
+                        CreateInputsTxTable.Dispose();
+                        CreateOutputsTxTable.Dispose();
+                        CreateExtTxTable.Dispose();
+                        CreateDataRetrievalTable.Dispose();
+                    }
+                    catch
+                    {
+                        lTransaction.Rollback();
+                        throw;
+                    }
                 }
             }
 
@@ -290,15 +294,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 {
                     return false;
                 }
-
-                foreach (CurrencyAccount it in aCurrList)
+                using (SQLiteTransaction lTransaction = FDBConnection.BeginTransaction())
                 {
-                    if (!Write(it))
+                    foreach (CurrencyAccount it in aCurrList)
                     {
-                        return false;
+                        if (!Write(it))
+                        {
+                            lTransaction.Rollback();
+                            return false;
+                        }
                     }
+                    lTransaction.Commit();
                 }
-
                 return true;
             }
 
@@ -334,8 +341,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         WriteCurrItem.ExecuteNonQuery();
                         return true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Universal.Log.Write(Universal.LogLevel.Error, "Write CurrencyItem cache exception: " + ex.Message + " on " + ex.Source);
                         return false;
                     }
                 }
@@ -348,12 +356,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     return false;
                 }
 
-                foreach (CurrencyItem it in aCurrItemList)
+                using (SQLiteTransaction lTransaction = FDBConnection.BeginTransaction())
                 {
-                    if (!Write(it))
+                    foreach (CurrencyItem it in aCurrItemList)
                     {
-                        return false;
+                        if (!Write(it))
+                        {
+                            lTransaction.Rollback();
+                            return false;
+                        }
                     }
+
+                    lTransaction.Commit();
                 }
                 return true;
             }
@@ -374,8 +388,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         WriteCurrStatusItem.ExecuteNonQuery();
                         return true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Universal.Log.Write(Universal.LogLevel.Error, "Write Currency Status Cache exception: " + ex.Message + " on " + ex.Source);
                         return false;
                     }
                 }
@@ -388,12 +403,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     return false;
                 }
 
-                foreach (CurrencyStatusItem it in aCurrStatusItemList)
+                using (SQLiteTransaction lTransaction = FDBConnection.BeginTransaction())
                 {
-                    if (!Write(it))
+                    foreach (CurrencyStatusItem it in aCurrStatusItemList)
                     {
-                        return false;
+                        if (!Write(it))
+                        {
+                            lTransaction.Rollback();
+                            return false;
+                        }
                     }
+
+                    lTransaction.Commit();
                 }
 
                 return true;
@@ -414,8 +435,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     {
                         WriteTxRecord.ExecuteNonQuery();
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Universal.Log.Write(Universal.LogLevel.Error, "Write TX Cache exception: " + ex.Message + " on " + ex.Source);
                         return false;
                     }
                 }
@@ -433,8 +455,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         {
                             WriteTxIn.ExecuteNonQuery();
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Universal.Log.Write(Universal.LogLevel.Error, "Write TX Cache exception: " + ex.Message + " on " + ex.Source);
                             return false;
                         }
                     }
@@ -453,8 +476,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         {
                             WriteTxOut.ExecuteNonQuery();
                         }
-                        catch
+                        catch (Exception ex)
                         {
+                            Universal.Log.Write(Universal.LogLevel.Error, "Write TX Cache exception: " + ex.Message + " on " + ex.Source);
                             return false;
                         }
                     }
@@ -469,13 +493,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 {
                     return false;
                 }
-
-                foreach (TransactionRecord it in aTxRecord)
+                using (SQLiteTransaction lTransaction = FDBConnection.BeginTransaction())
                 {
-                    if (!Write(it, aCurrencyId))
+                    foreach (TransactionRecord it in aTxRecord)
                     {
-                        return false;
+                        if (!Write(it, aCurrencyId))
+                        {
+                            lTransaction.Rollback();
+                            return false;
+                        }
                     }
+
+                    lTransaction.Commit();
                 }
 
                 return true;
@@ -493,8 +522,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         WriteTxExt.ExecuteNonQuery();
                         return true;
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Universal.Log.Write(Universal.LogLevel.Error, "Write TxExt Cache exception: " + ex.Message + " on " + ex.Source);
                         return false;
                     }
                 }
@@ -521,8 +551,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Universal.Log.Write(Universal.LogLevel.Error, "Read CurrencyAccount exception: " + ex.Message + " on " + ex.Source);
                     return false;
                 }
             }
@@ -565,8 +596,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Universal.Log.Write(Universal.LogLevel.Error, "Read CurrencyList cache exception: " + ex.Message + " on " + ex.Source);
                     return false;
                 }
                 return true;
@@ -593,8 +625,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Universal.Log.Write(Universal.LogLevel.Error, "Read CurrencyStatus cache exception: " + ex.Message + " on " + ex.Source);
                     return false;
                 }
             }
@@ -619,8 +652,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Universal.Log.Write(Universal.LogLevel.Error, "Read Tx cache exception: " + ex.Message + " on " + ex.Source);
                     return false;
                 }
 
@@ -642,8 +676,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             }
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Universal.Log.Write(Universal.LogLevel.Error, "Read Tx cache exception: " + ex.Message + " on " + ex.Source);
                         return false;
                     }
 
@@ -663,8 +698,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             }
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Universal.Log.Write(Universal.LogLevel.Error, "Read Tx cache exception: " + ex.Message + " on " + ex.Source);
                         return false;
                     }
                 }

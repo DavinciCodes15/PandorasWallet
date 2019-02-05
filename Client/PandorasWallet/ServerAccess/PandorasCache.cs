@@ -189,18 +189,23 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         private void CurrencyStatusDataUpdate(PandorasServer aPandorasServer, CachedObject aCachedObject, List<uint> aListOfCurrencies = null)
         {
-            bool lSomethingWrited = false;
+            List<CurrencyStatusItem> lStatuses = new List<CurrencyStatusItem>();
 
             foreach (uint it in aPandorasServer.CurrencyNumber)
             {
-                if (FDBManager.Write(aPandorasServer.FetchCurrencyStatus(it)))
+                List<CurrencyStatusItem> lCurrencyStatus = aPandorasServer.FetchCurrencyStatus(it);
+
+                if (lCurrencyStatus.Any())
                 {
-                    lSomethingWrited = true;
                     aListOfCurrencies?.Add(it);
+                    lStatuses.AddRange(lCurrencyStatus);
                 }
             }
 
-            aCachedObject.NewDataAlert = lSomethingWrited;
+            if (FDBManager.Write(lStatuses))
+            {
+                aCachedObject.NewDataAlert = true;
+            }
         }
 
         public void NewMonitoredAccountAdded(uint aCurrencyId)
@@ -223,12 +228,15 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
             else
             {
+                List<CurrencyAccount> lListAccounts = new List<CurrencyAccount>();
+
                 foreach (uint it in aPandorasServer.CurrencyNumber)
                 {
-                    if (FDBManager.Write(aPandorasServer.FetchMonitoredAccounts(it)))
-                    {
-                        lSomethingWrited = true;
-                    }
+                    lListAccounts.AddRange(aPandorasServer.FetchMonitoredAccounts(it));
+                }
+                if (FDBManager.Write(lListAccounts))
+                {
+                    lSomethingWrited = true;
                 }
             }
 

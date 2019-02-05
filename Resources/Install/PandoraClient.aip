@@ -14,10 +14,10 @@
     <ROW Property="DBUser" Value="cat"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{8CAD186E-A6DF-41F5-BC23-A6CEB8389DB0} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{E9F7ED6E-052E-4556-BD0A-2DA657EF81D8} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet"/>
-    <ROW Property="ProductVersion" Value="1.0.16.1516" Type="32" TargetFile="PandorasWallet.exe"/>
+    <ROW Property="ProductVersion" Value="1.0.16.1521" Type="32" TargetFile="PandorasWallet.exe"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{5E9C071C-BE57-468E-BACB-6A3C81D2C5A7}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -119,7 +119,7 @@
     <ROW Path="&lt;AI_DICTS&gt;ui_en.ail"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.DigCertStoreComponent">
-    <ROW TimeStampUrl="http://timestamp.digicert.com" SignerDescription="[|ProductName]" SignOptions="0" SignTool="0" UseSha256="1"/>
+    <ROW TimeStampUrl="http://timestamp.digicert.com" SignerDescription="[|ProductName]" SignOptions="7" SignTool="0" UseSha256="1" Thumbprint="7b6efe3c4902cefc13ffe3cef9853c165ef53708 Subject: LuisValles&#10;Issuer: LuisValles&#10;Valid from 05/07/2018 to 05/07/2019"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
     <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
@@ -264,7 +264,7 @@
     <ROW Registry="Version" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Version" Value="[ProductVersion]" Component_="ProductInformation"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
-    <ROW Shortcut="PandorasWallet" Directory_="SHORTCUTDIR" Name="PANDOR~1|Pandora&apos;s Wallet" Component_="PandorasWallet.exe" Target="[#PandorasWallet.exe]" Description="Pandora&apos;s Wallet" Hotkey="0" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="PandorasWallet" Directory_="SHORTCUTDIR" Name="PANDOR~1|Pandora&apos;s Wallet" Component_="PandorasWallet.exe" Target="[#PandorasWallet.exe]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
     <ROW Shortcut="PandorasWallet_1" Directory_="DesktopFolder" Name="PANDOR~1|Pandora&apos;s Wallet" Component_="PandorasWallet.exe" Target="[#PandorasWallet.exe]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
@@ -378,7 +378,7 @@
     <ROW XmlElement="system.serviceModel" ParentElement="configuration" Name="system.serviceModel" Condition="1" Order="2" Flags="14"/>
     <ROW XmlElement="userSettings" ParentElement="configuration" Name="userSettings" Condition="1" Order="4" Flags="14"/>
     <ROW XmlElement="value" ParentElement="setting" Name="value" Condition="1" Order="0" Flags="14" Text="443"/>
-    <ROW XmlElement="value_1" ParentElement="setting_1" Name="value" Condition="1" Order="0" Flags="14" Text="apistage01.pandoraswallet.com"/>
+    <ROW XmlElement="value_1" ParentElement="setting_1" Name="value" Condition="1" Order="0" Flags="14" Text="api.pandoraswallet.com"/>
     <ROW XmlElement="value_2" ParentElement="setting_2" Name="value" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="value_3" ParentElement="setting_3" Name="value" Condition="1" Order="0" Flags="14" Text="True"/>
     <ROW XmlElement="value_4" ParentElement="setting_4" Name="value" Condition="1" Order="0" Flags="14" Text="0"/>

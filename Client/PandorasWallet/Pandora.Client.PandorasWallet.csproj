@@ -58,7 +58,7 @@
     <ManifestKeyFile>Pandora.Server.CoinManager_Key.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>PandorasWallet.ico</ApplicationIcon>
+    <ApplicationIcon>Pandora%27s Wallet.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -300,7 +300,6 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Pandora.Server.CoinManager_Key.pfx" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -315,7 +314,7 @@
     <None Include="Resources\goldbars.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="PandorasWallet.ico" />
+    <Content Include="Pandora%27s Wallet.ico" />
     <Content Include="Resources\16x16%28Pandora%29.ico" />
     <Content Include="Resources\300x300%28pandora%29-01.png" />
     <Content Include="Resources\32x32%28Pandora%29 1.ico" />
@@ -351,7 +350,6 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

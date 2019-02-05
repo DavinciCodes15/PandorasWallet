@@ -1,4 +1,4 @@
-﻿//   Copyright 2017-2019 Davinci Codes
+//   Copyright 2017-2019 Davinci Codes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -703,21 +703,11 @@ namespace Pandora.Client.PandorasWallet
                 ConnectDialog.Username = Properties.Settings.Default.Username;
                 ConnectDialog.Email = Properties.Settings.Default.Email;
                 ConnectDialog.UserConnected = false;
-
-                do
+                if (ConnectDialog.Execute())
                 {
-                    if (!ConnectDialog.Execute())
-                    {
-                        if (FStartUpConnected)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            MainForm.Close();
-                        }
-                    }
-
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine("Starting wallet creation process");
+#endif
                     Task<bool> lInitializeTask = Task.Run(() =>
                     {
                         Thread.Sleep(100);
@@ -740,14 +730,69 @@ namespace Pandora.Client.PandorasWallet
 
                     if (!lInitializeTask.Result)
                     {
-                        continue;
+#if DEBUG
+                        System.Diagnostics.Debug.WriteLine("Canceled wallet creation process by user");
+#endif
+
+                        MainForm_OnConnect(sender, e);
+                        return;
                     }
 
                     StartupExchangeProcess();
-                }
-                while (!FStartUpConnected);
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine("Finish wallet creation process");
+#endif
 
-                Utils.PandoraLog.GetPandoraLog().Write("Succesfully logged as " + FWallet.Username);
+                    Utils.PandoraLog.GetPandoraLog().Write("Succesfully logged as " + FWallet.Username);
+                }
+                else if (!FStartUpConnected || FWallet == null || !FWallet.Connected)
+                {
+                    MainForm.Close();
+                    Application.Exit();
+                }
+
+                //do
+                //{
+                //    if (!ConnectDialog.Execute())
+                //    {
+                //        if (FStartUpConnected)
+                //        {
+                //            break;
+                //        }
+                //        else
+                //        {
+                //            MainForm.Close();
+                //        }
+                //    }
+
+                //    Task<bool> lInitializeTask = Task.Run(() =>
+                //    {
+                //        Thread.Sleep(100);
+
+                //        bool lResult = WalletCreationProcess();
+
+                //        MainForm.BeginInvoke(new MethodInvoker(() => InitializingDialog.SetInitialized()));
+
+                //        return lResult;
+                //    });
+
+                //    InitializingDialog.ShowDialog();
+
+                //    lInitializeTask.Wait();
+
+                //    if (lInitializeTask.IsFaulted)
+                //    {
+                //        throw lInitializeTask.Exception.InnerExceptions[0];
+                //    }
+
+                //    if (!lInitializeTask.Result)
+                //    {
+                //        continue;
+                //    }
+
+                //    StartupExchangeProcess();
+                //}
+                //while (!FStartUpConnected);
             }
             catch (Exception ex)
             {
@@ -756,7 +801,7 @@ namespace Pandora.Client.PandorasWallet
             }
             finally
             {
-                if (FWallet == null)
+                if (FWallet == null && FStartUpConnected)
                 {
                     Utils.PandoraLog.GetPandoraLog().Write("Fatal Error. Application shutting down.");
                     Application.Exit();
@@ -768,23 +813,25 @@ namespace Pandora.Client.PandorasWallet
 
         private bool WalletCreationProcess(bool aIsRestore = false)
         {
-            if (!StartupProcess(aIsRestore))
+            if (StartupProcess(aIsRestore))
+            {
+                FWallet = FWorkingWallet;
+
+                MainForm?.Invoke(new MethodInvoker(() => PrepareGUIWithWallet(FWallet)));
+
+                FWallet = FWorkingWallet;
+
+                FStartUpConnected = true;
+
+                FWallet.InitTxTracking();
+                FWallet.InitCurrencyStatusUpdating();
+
+                return true;
+            }
+            else
             {
                 return false;
             }
-
-            FWallet = FWorkingWallet;
-
-            MainForm?.Invoke(new MethodInvoker(() => PrepareGUIWithWallet(FWallet)));
-
-            FWallet = FWorkingWallet;
-
-            FStartUpConnected = true;
-
-            FWallet.InitTxTracking();
-            FWallet.InitCurrencyStatusUpdating();
-
-            return true;
         }
 
         private void FWallet_OnCurrencyItemUpdated(ulong aCurrencyID)

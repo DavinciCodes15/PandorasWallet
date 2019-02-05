@@ -347,7 +347,14 @@ namespace Pandora.Client.Exchange
                 {
                     foreach (BittrexMarketSummary it in lResponse.Data)
                     {
-                        FMarketPrices.AddOrUpdate(it.MarketName, it.Last.Value, (key, oldValue) => it.Last.Value);
+                        try
+                        {
+                            FMarketPrices.AddOrUpdate(it.MarketName, it.Last.Value, (key, oldValue) => it.Last.Value);
+                        }
+                        catch
+                        {
+                            FMarketPrices.AddOrUpdate(it.MarketName, 0, (key, oldValue) => 0);
+                        }
                     }
                 }
             }

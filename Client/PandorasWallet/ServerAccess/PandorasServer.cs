@@ -55,7 +55,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public CurrencyStatusEvent OnCurrencyStatus;
 
         private CancellationTokenSource FTxUpdateCancellationSource;
-        private CancellationTokenSource FCurrencyStatusUpdateCancellationSource;
+        // private CancellationTokenSource FCurrencyStatusUpdateCancellationSource;
 
         private Task TxUpdating = null;
 
@@ -72,7 +72,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private List<Tuple<uint, ulong>> FToConfirm;
         private Dictionary<uint, long> FBlockHeights = new Dictionary<uint, long>();
         private ulong FTemporalCurrencyCheckpoint = 0;
-        private Task CurrencyStatusUpdating;
+
+        // private Task CurrencyStatusUpdating;
+        private Timer FCurrencyStatusTimer;
 
         public PandorasServer(string aDataPath, string aRemoteServer = "localhost", int aPort = 20159, bool aEncryptationConnection = false)
         {
@@ -190,6 +192,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public List<CurrencyStatusItem> FetchCurrencyStatus(uint aId)
 
         {
+            bool lFirstFetching = false;
+
             if (!CurrencyNumber.Contains(aId))
             {
                 throw new Exception("Id out of range");
@@ -198,6 +202,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             if (!FStatusNumber.Keys.Contains(aId))
             {
                 FStatusNumber.Add(aId, 0);
+                lFirstFetching = true;
             }
 
             List<CurrencyStatusItem> Returninglist = new List<CurrencyStatusItem>();
@@ -217,7 +222,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             if (lCurrencyID != 0)
             {
-                CurrencyStatusUpdated(lCurrencyID);
+                if (!lFirstFetching)
+                {
+                    CurrencyStatusUpdated(lCurrencyID);
+                }
+
                 Returninglist.RemoveAll(x => x.Status == CurrencyStatus.Updated);
             }
             else
@@ -356,15 +365,15 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             if ((TxUpdating == null || TxUpdating.IsCanceled) && CurrencyNumber.Any())
             {
-                TxUpdating = TxUpdatingTask(this, FCurrencyStatusUpdateCancellationSource.Token); //Start fetching transactions now that I have currencies to work with
+                TxUpdating = Task.Run(() => TxUpdatingTask(this, FTxUpdateCancellationSource.Token)); //Start fetching transactions now that I have currencies to work with
             }
         }
 
         public void StartCurrencyStatusUpdatingTask()
         {
-            if ((CurrencyStatusUpdating == null || CurrencyStatusUpdating.IsCanceled) && CurrencyNumber.Any())
+            if (FCurrencyStatusTimer == null)
             {
-                CurrencyStatusUpdating = Task.Run(() => CurrencyStatusUpdatingTask(this, FTxUpdateCancellationSource.Token)); //Start fetching statuses
+                FCurrencyStatusTimer = new Timer(new TimerCallback(CurrencyStatusUpdatingTask), null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
             }
         }
 
@@ -443,8 +452,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public bool Logoff()
         {
             FTxUpdateCancellationSource.Cancel();
-            FCurrencyStatusUpdateCancellationSource.Cancel();
-
+            FCurrencyStatusTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            FCurrencyStatusTimer = null;
             //TODO:LUIS- CLOSE STUFF BEFORE LOGGIN OFF
             return FServerAccess.Logoff();
         }
@@ -461,33 +470,22 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return false;
         }
 
-        private async Task CurrencyStatusUpdatingTask(PandorasServer aPandorasServer, CancellationToken aCancellationToken)
+        private void CurrencyStatusUpdatingTask(object state)
         {
-            while (!aCancellationToken.IsCancellationRequested)
+            try
             {
-                try
+                if (CheckforNewCurrencyStatus(out List<uint> ListofUpdatedCurrencies))
                 {
-                    if (aPandorasServer.CheckforNewCurrencyStatus(out List<uint> ListofUpdatedCurrencies))
-                    {
-                        aPandorasServer.NotifyNewCurrencyStatus(ListofUpdatedCurrencies);
+                    NotifyNewCurrencyStatus(ListofUpdatedCurrencies);
 #if DEBUG
-                        System.Diagnostics.Debug.WriteLine("PANDORAS SERVER - New CurrencyStatus found");
+                    System.Diagnostics.Debug.WriteLine("PANDORAS SERVER - New CurrencyStatus found");
 #endif
-                        await Task.Delay(1000, aCancellationToken);
-                        continue;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Utils.PandoraLog.GetPandoraLog().Write("Error on fetching Transactions. Details: " + ex.Message + " on " + ex.Source);
-                }
-                finally
-                {
-                    await Task.Delay(30000, aCancellationToken);
                 }
             }
-
-            aCancellationToken.ThrowIfCancellationRequested();
+            catch (Exception ex)
+            {
+                Utils.PandoraLog.GetPandoraLog().Write("Error on fetching Transactions. Details: " + ex.Message + " on " + ex.Source);
+            }
         }
 
         private async Task TxUpdatingTask(PandorasServer aPandorasServer, CancellationToken aCancellationToken)
@@ -595,7 +593,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 FPandoraCache = new PandorasCache(this);
                 FPandoraCache.OnCacheExpired += OnCacheExpiredHandler;
                 FTxUpdateCancellationSource = new CancellationTokenSource();
-                FCurrencyStatusUpdateCancellationSource = new CancellationTokenSource();
 
                 return true;
             }

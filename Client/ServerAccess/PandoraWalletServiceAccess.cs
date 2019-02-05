@@ -59,13 +59,13 @@ namespace Pandora.Client.ServerAccess
             EncryptedConnection = aEncryptedConnection;
         }
 
-        private string GetConnectionURL()
+        private string GetConnectionURL(string aRemoteServer)
         {
             string lURL;
             string lServer = "localhost";
             if (!string.IsNullOrEmpty(RemoteServer))
             {
-                lServer = RemoteServer.ToLower();
+                lServer = aRemoteServer.ToLower();
             }
 
             if (EncryptedConnection)
@@ -89,7 +89,7 @@ namespace Pandora.Client.ServerAccess
             return lURL;
         }
 
-        private PandoraWalletWebService CreatePandoraWalletServer(string aUserName, string aPassword)
+        private PandoraWalletWebService CreatePandoraWalletServer()
         {
             PandoraWalletWebService lResult;
             try
@@ -100,7 +100,7 @@ namespace Pandora.Client.ServerAccess
                     lBinding = new BasicHttpsBinding();
                 }
 
-                EndpointAddress lAddress = new EndpointAddress(GetConnectionURL());
+                EndpointAddress lAddress = new EndpointAddress(GetConnectionURL(RemoteServer));
                 lResult = new PandoraWalletWebService(lBinding, lAddress);
                 lResult.GetServerId();
                 if (FPandoraWalletWebService == null)
@@ -131,7 +131,7 @@ namespace Pandora.Client.ServerAccess
             {
                 lock (this)
                 {
-                    FServer = CreatePandoraWalletServer(aUserName, aPassword);
+                    FServer = CreatePandoraWalletServer();
                     PandoraWalletService1_1.PandoraResult lServerResult = FServer.Logon(aEmail, aUserName, aPassword);
                     if (!string.IsNullOrEmpty(lServerResult.ErrorMsg))
                     {
