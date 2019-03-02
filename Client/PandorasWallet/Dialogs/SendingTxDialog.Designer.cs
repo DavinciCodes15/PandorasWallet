@@ -47,13 +47,11 @@
             // 
             // StatusLabel
             // 
-            this.StatusLabel.AutoSize = true;
             this.StatusLabel.Location = new System.Drawing.Point(28, 170);
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(63, 13);
+            this.StatusLabel.Size = new System.Drawing.Size(348, 28);
             this.StatusLabel.TabIndex = 7;
             this.StatusLabel.Text = "StatusLabel";
-            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // TxId
             // 

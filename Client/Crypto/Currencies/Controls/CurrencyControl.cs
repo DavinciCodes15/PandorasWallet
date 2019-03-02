@@ -6,7 +6,6 @@ namespace Pandora.Client.Crypto.Currencies.Controls
     public class CurrencyControl
     {
         private static CurrencyControl FControl;
-        private static ClientCurrencyAdvocacy FClientCurrencyAdvocacy;
 
         protected CurrencyControl()
         {

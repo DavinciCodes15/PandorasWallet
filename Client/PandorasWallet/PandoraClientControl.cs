@@ -22,7 +22,7 @@ using Pandora.Client.ClientLib;
 using Pandora.Client.PandorasWallet.Dialogs;
 
 using Pandora.Client.PandorasWallet.Wallet;
-
+using Pandora.Client.Universal;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -33,7 +33,7 @@ using System.Windows.Forms;
 
 namespace Pandora.Client.PandorasWallet
 {
-    public partial class PandoraClientControl
+    public partial class PandoraClientControl : IDisposable
     {
         private static PandoraClientControl FPandoraClientControl;
         private PandoraWallet FWallet;
@@ -83,27 +83,39 @@ namespace Pandora.Client.PandorasWallet
             MainForm.ExchangeTransactionNameEnabled = false;
 
             ConnectDialog = new ConnectDialog();
+            ConnectDialog.ParentWindow = MainForm;
             ConnectDialog.OnOkClick += ConnectDialog_OnOkClick;
 
             DefaultCoinSelectorDialog = new DefaultCoinSelector();
+            DefaultCoinSelectorDialog.ParentWindow = MainForm;
 
             AddCoinSelectorDialog = new AddCoinSelector();
+            AddCoinSelectorDialog.ParentWindow = MainForm;
 
             EncryptionPasswordDialog = new WalletPasswordDialog();
+            EncryptionPasswordDialog.ParentWindow = MainForm;
+
             EncryptionPasswordDialog.OnOkButtonClick += EncryptionPasswordDialog_OnOkButtonClick;
             EncryptionPasswordDialog.OnCancelButtonClick += EncryptionPasswordDialog_OnCancelButtonClick;
 
             RestoreDialog = new RestoreWalletDialog();
+            RestoreDialog.ParentWindow = MainForm;
+
             RestoreDialog.OnRestoreBtnClick += RestoreDialog_OnRestoreBtnClick;
 
             TransactionDetailDialog = new SendTransactionDialog();
+            TransactionDetailDialog.ParentWindow = MainForm;
 
             TrySendTxDialog = new SendingTxDialog();
+            TrySendTxDialog.ParentWindow = MainForm;
 
             SettingsDialog = new SettingsDialog();
+            SettingsDialog.ParentWindow = MainForm;
+
             SettingsDialog.OnChangeDefaultCoinClick += SettingsDialog_OnChangeDefaultCoinClick;
 
             InitializingDialog = new InitializingDialog();
+           
 
             RestoreInitialize();
             BackupInitialize();
@@ -357,9 +369,7 @@ namespace Pandora.Client.PandorasWallet
             if (TransactionDetailDialog.Execute())
             {
                 if (!EncryptionPasswordDialog.Execute())
-                {
                     return null;
-                }
 
                 FWallet.InitializeRootSeed();
 
@@ -620,30 +630,29 @@ namespace Pandora.Client.PandorasWallet
 
         private void WalletEncryptionProcess(string aPassword, PandoraWallet aWallet)
         {
-            string lResult;
+            string lResult = "";
             try
             {
-                if (string.IsNullOrEmpty(FPasscode))
+                try
                 {
-                    aWallet.DecryptWallet(aPassword);
+                    if (string.IsNullOrEmpty(FPasscode))
+                        aWallet.DecryptWallet(aPassword);
+                    else
+                        aWallet.DecryptWallet(aPassword, FPasscode);
                 }
-                else
+                catch (Exception ex)
                 {
-                    aWallet.DecryptWallet(aPassword, FPasscode);
+                    lResult = ex.Message;
                 }
-                lResult = string.Empty;
-            }
-            catch (Wallet.ClientExceptions.WrongPasswordException ex)
-            {
-                lResult = ex.Message;
-            }
 
-            if (FEncryptionCancellationtoken.IsCancellationRequested)
-            {
-                lResult = "Process aborted.";
+                if (FEncryptionCancellationtoken.IsCancellationRequested)
+                    lResult = "Process aborted.";
             }
-
-            EncryptionPasswordDialog.Invoke(new MethodInvoker(() => EncryptionPasswordDialog.SetResult(lResult)));
+            finally
+            {
+                // Let the main app know I done postive result or not.
+                EncryptionPasswordDialog.Invoke(new MethodInvoker(() => EncryptionPasswordDialog.SetResult(lResult)));
+            }
         }
 
         private void MainForm_OnAddCurrencyBtnClick(object sender, EventArgs e)
@@ -651,9 +660,7 @@ namespace Pandora.Client.PandorasWallet
             FWorkingWallet = FWallet;
 
             if (!EncryptionPasswordDialog.Execute())
-            {
                 return;
-            }
 
             FWallet.InitializeRootSeed();
 
@@ -675,9 +682,7 @@ namespace Pandora.Client.PandorasWallet
                 }
 
                 if (lAny)
-                {
                     SetUserCoins(FWallet);
-                }
             }
         }
 
@@ -710,42 +715,58 @@ namespace Pandora.Client.PandorasWallet
 #endif
                     Task<bool> lInitializeTask = Task.Run(() =>
                     {
+                        bool lResult = false;
                         Thread.Sleep(100);
+                        try
+                        {
+                            try
+                            {
+                                lResult = WalletCreationProcess();
 
-                        bool lResult = WalletCreationProcess();
-
-                        MainForm.BeginInvoke(new MethodInvoker(() => InitializingDialog.SetInitialized()));
-
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Write(LogLevel.Error, ex.Message);
+                                throw;
+                            }
+                        }
+                        finally
+                        {
+                            MainForm.BeginInvoke(new MethodInvoker(() => InitializingDialog.SetInitialized()));
+                        }
                         return lResult;
                     });
 
-                    InitializingDialog.ShowDialog();
+                    InitializingDialog.ShowDialog(MainForm);
 
-                    lInitializeTask.Wait();
-
-                    if (lInitializeTask.IsFaulted)
+                    try
                     {
-                        throw lInitializeTask.Exception.InnerExceptions[0];
+                        lInitializeTask.Wait();
+                    }
+                    catch
+                    {
+
                     }
 
+                    if (lInitializeTask.IsFaulted)
+                        throw lInitializeTask.Exception.InnerException;
                     if (!lInitializeTask.Result)
                     {
 #if DEBUG
                         System.Diagnostics.Debug.WriteLine("Canceled wallet creation process by user");
 #endif
-
-                        MainForm_OnConnect(sender, e);
-                        return;
                     }
-
-                    StartupExchangeProcess();
+                    else
+                    {
+                        StartupExchangeProcess();
 #if DEBUG
-                    System.Diagnostics.Debug.WriteLine("Finish wallet creation process");
+                        System.Diagnostics.Debug.WriteLine("Finish wallet creation process");
 #endif
-
-                    Utils.PandoraLog.GetPandoraLog().Write("Succesfully logged as " + FWallet.Username);
+                        Log.Write("Succesfully logged as " + FWallet.Username);
+                    }
                 }
-                else if (!FStartUpConnected || FWallet == null || !FWallet.Connected)
+                
+                if (!FStartUpConnected || FWallet == null || !FWallet.Connected)
                 {
                     MainForm.Close();
                     Application.Exit();
@@ -813,7 +834,8 @@ namespace Pandora.Client.PandorasWallet
 
         private bool WalletCreationProcess(bool aIsRestore = false)
         {
-            if (StartupProcess(aIsRestore))
+            bool lResult = StartupProcess(aIsRestore);
+            if (lResult)
             {
                 FWallet = FWorkingWallet;
 
@@ -825,13 +847,8 @@ namespace Pandora.Client.PandorasWallet
 
                 FWallet.InitTxTracking();
                 FWallet.InitCurrencyStatusUpdating();
-
-                return true;
             }
-            else
-            {
-                return false;
-            }
+            return lResult;
         }
 
         private void FWallet_OnCurrencyItemUpdated(ulong aCurrencyID)
@@ -852,19 +869,13 @@ namespace Pandora.Client.PandorasWallet
             if (FWorkingWallet.CheckIfUserHasAccounts() && !aForceCreation)
             {
                 if (FWorkingWallet.DefaultCoin == 0 || !FWorkingWallet.Encrypted)
-                {
                     if ((bool)MainForm.Invoke(new BoolInvoker(() => !ExecuteRestoringProccess())))
-                    {
                         return false;
-                    }
-                }
             }
             else
             {
                 if (!ExecuteDefaultCoinSelector(FWorkingWallet))
-                {
                     return false;
-                }
 
                 uint lSelectedID = (uint)DefaultCoinSelectorDialog.SelectedCurrencyID;
 
@@ -872,9 +883,7 @@ namespace Pandora.Client.PandorasWallet
                 FWorkingWallet.AddNewSelectedCurrency(lSelectedID);
 
                 if ((bool)MainForm.Invoke(new BoolInvoker(() => !EncryptionPasswordDialog.Execute(true))))
-                {
                     return false;
-                }
 
                 FWorkingWallet.InitializeRootSeed(true);
             }
@@ -886,9 +895,7 @@ namespace Pandora.Client.PandorasWallet
             MainForm?.Invoke(new MethodInvoker(() => SetUserCoins(FWorkingWallet, lUserCoins)));
 
             if (FWallet != null)
-            {
                 FWallet.Close();
-            }
 
             FWorkingWallet.OnCurrencyItemUpdated += FWallet_OnCurrencyItemUpdated;
             FWorkingWallet.OnNewTxData += FWallet_OnNewTxData;
@@ -975,6 +982,12 @@ namespace Pandora.Client.PandorasWallet
             }
 
             return FPandoraClientControl;
+        }
+
+        public void Dispose()
+        {
+            FWallet?.Dispose();
+            FWorkingWallet?.Dispose();
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Pandora.Client.PandorasWallet.Utils
 {
     public class SettingsManager
     {
-        private string SettingsPath { get; }
+        public string SettingsPath { get; private set; }
         private ReaderWriterLockSlim rwLock { get; }
 
         private JObject settings;

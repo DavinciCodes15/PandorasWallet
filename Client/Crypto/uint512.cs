@@ -65,5 +65,15 @@ namespace Pandora.Client.Crypto
 
             return lp2.Concat(lp1);
         }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

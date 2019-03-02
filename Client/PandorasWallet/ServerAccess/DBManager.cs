@@ -43,11 +43,15 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             private Dictionary<string, TimeSpan> FLifeTimes = new Dictionary<string, TimeSpan>();
 
+            public string FileName { get; private set; }
+
             public DBManager(string aDataPath, string aSQLiteFile)
             {
                 try
                 {
-                    FDBConnection = new SQLiteConnection("Data Source=" + Path.Combine(aDataPath, aSQLiteFile + ".sqlite" + ";PRAGMA journal_mode=WAL;"));
+                    FileName = Path.Combine(aDataPath, aSQLiteFile + ".sqlite");
+
+                    FDBConnection = new SQLiteConnection("Data Source=" + FileName + ";PRAGMA journal_mode=WAL;");
                     FDBConnection.Open();
 
                     CreateTables();
@@ -304,6 +308,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             return false;
                         }
                     }
+                    InsertNewRetrievalTime("MonitoredAccounts");
                     lTransaction.Commit();
                 }
                 return true;
@@ -366,7 +371,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             return false;
                         }
                     }
-
+                    InsertNewRetrievalTime("CurrencyItem");
                     lTransaction.Commit();
                 }
                 return true;
@@ -413,7 +418,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             return false;
                         }
                     }
-
+                    InsertNewRetrievalTime("CurrencyStatus");
                     lTransaction.Commit();
                 }
 
@@ -503,7 +508,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             return false;
                         }
                     }
-
+                    InsertNewRetrievalTime("Tx");
                     lTransaction.Commit();
                 }
 
@@ -530,11 +535,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
-            public bool Read(out List<CurrencyAccount> aCurrencyAccountsList, bool fWithWhere = false, uint aCurrencyId = 0)
+            public bool Read(out List<CurrencyAccount> aCurrencyAccountsList, uint? aCurrencyId = null)
             {
                 aCurrencyAccountsList = new List<CurrencyAccount>();
 
-                string qrywhere = fWithWhere ? (" WHERE currencyId = " + aCurrencyId) : string.Empty;
+                string qrywhere = aCurrencyId.HasValue ? (" WHERE currencyId = " + aCurrencyId.Value) : string.Empty;
                 string qry = "SELECT id, currencyid, address FROM MonitoredAccounts" + qrywhere;
 
                 try
@@ -558,11 +563,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
-            public bool Read(out List<CurrencyItem> aCurrencyList, bool fWithWhere = false, uint aId = 0)
+            public bool Read(out List<CurrencyItem> aCurrencyList, uint? aId = null)
             {
                 aCurrencyList = new List<CurrencyItem>();
 
-                string qrywhere = fWithWhere ? (" WHERE id = " + aId) : string.Empty;
+                string qrywhere = aId.HasValue ? (" WHERE id = " + aId.Value) : string.Empty;
                 string qry = "SELECT id, name, ticker, precision, MinConfirmations, livedate, Icon, IconSize,FeePerKb, ChainParams FROM Currencies" + qrywhere;
 
                 try
@@ -604,11 +609,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 return true;
             }
 
-            public bool Read(out List<CurrencyStatusItem> aCurrencyStatusList, bool fWithWhere = false, uint aCurrencyId = 0)
+            public bool Read(out List<CurrencyStatusItem> aCurrencyStatusList, uint? aCurrencyId = null)
             {
                 aCurrencyStatusList = new List<CurrencyStatusItem>();
 
-                string qrywhere = fWithWhere ? (" WHERE currencyId = " + aCurrencyId) : string.Empty;
+                string qrywhere = aCurrencyId.HasValue ? (" WHERE currencyId = " + aCurrencyId.Value) : string.Empty;
                 string qry = "SELECT id, currencyid, statustime, status, extinfo, blockheight FROM CurrenciesStatus" + qrywhere;
 
                 try
@@ -744,31 +749,28 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     }
                 }
 
+                bool lResult = false;
+
                 switch (count)
                 {
                     case 0:
-                        InsertNewRetrievalTime(aType);
-                        return true;
+                        lResult = true;
+                        break;
 
                     case 1:
 
                         if (FLifeTimes[aType] < (DateTime.Now - lLastDataRetrieval))
                         {
-                            InsertNewRetrievalTime(aType);
-                            return true;
+                            lResult = true;
                         }
-
-                        return false;
-
-                    default:
 
                         break;
                 }
 
-                return true;
+                return lResult;
             }
 
-            private void InsertNewRetrievalTime(string aType)
+            public void InsertNewRetrievalTime(string aType)
             {
                 using (SQLiteCommand Write = new SQLiteCommand("INSERT OR REPLACE INTO DataReferences (type, lastdataretrieval) VALUES (@type, @lastdataretrieval)", FDBConnection))
                 {

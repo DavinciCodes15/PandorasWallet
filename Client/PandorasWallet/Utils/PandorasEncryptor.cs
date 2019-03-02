@@ -273,6 +273,9 @@ namespace Pandora.Client.PandorasWallet.Utils
             return lHash;
         }
 
+        [System.Runtime.InteropServices.DllImport("kernel32")]
+        static extern bool FlushFileBuffers(IntPtr handle);
+
         ///<summary>
         /// Encrypts a file using Rijndael algorithm.
         ///</summary>
@@ -280,58 +283,64 @@ namespace Pandora.Client.PandorasWallet.Utils
         {
             try
             {
-                using (MemoryStream fsCrypt = new MemoryStream())
+                using (MemoryStream lMemoryStream = new MemoryStream())
                 {
                     Tuple<byte[], byte[]> lkeys = GetCryptoKeyAndIV(aPassword);
 
                     byte[] lkey = lkeys.Item1;
                     byte[] lIV = lkeys.Item2;
 
-                    BinaryFormatter formatter = new BinaryFormatter();
+                    BinaryFormatter lBinaryFormatter = new BinaryFormatter();
 
-                    formatter.Serialize(fsCrypt, aKeys);
+                    lBinaryFormatter.Serialize(lMemoryStream, aKeys);
 
-                    fsCrypt.Seek(0, SeekOrigin.Begin);
+                    lMemoryStream.Seek(0, SeekOrigin.Begin);
 
                     Aes RMCrypto = Aes.Create();
 
                     RMCrypto.Padding = PaddingMode.PKCS7;
 
                     using (FileStream lFile = new FileStream(aEncryptedFilePath, FileMode.Create))
-                    using (CryptoStream cs = new CryptoStream(lFile,
-                            RMCrypto.CreateEncryptor(lkey, lIV),
-                            CryptoStreamMode.Write))
                     {
-                        cs.Write(fsCrypt.ToArray(), 0, (int)fsCrypt.Length);
-                    }
+                        var lData = lMemoryStream.ToArray();
+                        lMemoryStream.SetLength(0);
+                        using (CryptoStream lCryptoStream = new CryptoStream(lMemoryStream,
+                                RMCrypto.CreateEncryptor(lkey, lIV),
+                                CryptoStreamMode.Write))
+                        {
+                       
+                            lCryptoStream.Write(lData, 0, lData.Length);
+                            lCryptoStream.FlushFinalBlock();
+                            lData = lMemoryStream.ToArray();
+                            lFile.Write(lData, 0, lData.Length);
+                        }
+                        byte[] lSalt = FUE.GetBytes(aSalt);
+                        uint lSaltLenght = (uint)lSalt.Length;
 
-                    byte[] lSalt = FUE.GetBytes(aSalt);
-                    uint lSaltLenght = (uint)lSalt.Length;
+                        lSalt = lSalt.Concat(BitConverter.GetBytes(lSaltLenght)).ToArray();
 
-                    lSalt = lSalt.Concat(BitConverter.GetBytes(lSaltLenght)).ToArray();
 
-                    using (FileStream stream = new FileStream(aEncryptedFilePath, FileMode.Append))
-                    {
-                        stream.Write(lSalt, 0, lSalt.Length);
-                    }
+                        lFile.Write(lSalt, 0, lSalt.Length);
 
-                    byte[] lInventory;
-                    if (aKeys.Inventory == null || !aKeys.Inventory.Any())
-                    {
-                        lInventory = new byte[0];
-                    }
-                    else
-                    {
-                        lInventory = aKeys.Inventory.SelectMany(x => BitConverter.GetBytes((int)x)).ToArray();
-                    }
 
-                    uint lInventoryLenght = (uint)lInventory.Length;
+                        byte[] lInventory;
+                        if (aKeys.Inventory == null || !aKeys.Inventory.Any())
+                        {
+                            lInventory = new byte[0];
+                        }
+                        else
+                        {
+                            lInventory = aKeys.Inventory.SelectMany(x => BitConverter.GetBytes((int)x)).ToArray();
+                        }
 
-                    lInventory = lInventory.Concat(BitConverter.GetBytes(lInventoryLenght)).ToArray();
+                        uint lInventoryLenght = (uint)lInventory.Length;
 
-                    using (FileStream stream = new FileStream(FEncryptedFilePath, FileMode.Append))
-                    {
-                        stream.Write(lInventory, 0, lInventory.Length);
+                        lInventory = lInventory.Concat(BitConverter.GetBytes(lInventoryLenght)).ToArray();
+
+
+                        lFile.Write(lInventory, 0, lInventory.Length);
+                        lFile.Flush();
+                        FlushFileBuffers(lFile.SafeFileHandle.DangerousGetHandle());
                     }
                 }
             }

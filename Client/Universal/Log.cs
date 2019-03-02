@@ -27,8 +27,13 @@ namespace Pandora.Client.Universal
         /// <summary>
         /// any object that implements SystemLog will be used.
         /// </summary>
-        public static ISystemLog SystemLog { get; set; }
+        public static ISystemLog SystemLog
+        {
+            get;
+            set;
+        }
 
+        public static bool Active { get => SystemLog != null && SystemLog.Active; }
         public static bool ThrowSystemLogMissingException { get; set; }
         public static LogLevelFlags LogLevelFlag { get; set; }
 
@@ -60,7 +65,8 @@ namespace Pandora.Client.Universal
         {
             if (SystemLog != null)
             {
-                SystemLog.Write(aText, aArgs);
+                if (SystemLog.Active)
+                    SystemLog.Write(aText, aArgs);
             }
             else if (ThrowSystemLogMissingException)
             {
@@ -93,5 +99,7 @@ namespace Pandora.Client.Universal
     public interface ISystemLog
     {
         void Write(string aText, params object[] aArgs);
+
+        bool Active { get; }
     }
 }

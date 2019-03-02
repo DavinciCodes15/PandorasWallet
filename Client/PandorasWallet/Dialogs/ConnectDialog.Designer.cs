@@ -158,7 +158,6 @@
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "ConnectDialog";
-            this.ShowInTaskbar = true;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Connect to Pandora\'s  Server";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ConnectDialog_FormClosing);

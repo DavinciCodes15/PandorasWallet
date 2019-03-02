@@ -120,100 +120,100 @@
   <data name="textBoxDescription.Text" xml:space="preserve">
     <value>Pandora's Wallet Terms of Use
 
-BY INSTALLING, ACCESSING OR OTHERWISE 
-USING THE Pandora's Wallet DIGITAL WALLET SYSTEM 
-SOFTWARE (HEREINAFTER REFERRED TO AS THE 
-"SOFTWARE"), THE SOFTWARE USER AND/OR 
-LICENCEE (HEREINAFTER REFERRED TO AS 
-"YOU/YOUR" AS THE CONTEXT DICTATES) 
-AGREE TO BE BOUND BY THE TERMS SET OUT 
-BELOW. 
-
+BY INSTALLING, ACCESSING OR OTHERWISE 
+USING THE Pandora's Wallet DIGITAL WALLET SYSTEM 
+SOFTWARE (HEREINAFTER REFERRED TO AS THE 
+"SOFTWARE"), THE SOFTWARE USER AND/OR 
+LICENSEE (HEREINAFTER REFERRED TO AS 
+"YOU/YOUR" AS THE CONTEXT DICTATES) 
+AGREE TO BE BOUND BY THE TERMS SET OUT 
+BELOW.
+ 
 LIMITED WARRANTY
 
-Davinci Codes SpA and Davinci Codes Ltd. (hereinafter referred 
-to as "We/Us/Our" as the context dictates) warrants 
-the Software is inherently complex and may not be completely free 
-of errors.  Accordingly, We make no warranty or 
-representation, oral or written, express or implied, with 
-respect to the Software or documentation, including 
-their quality, performance, merchantability, or fitness for 
-a particular purpose.  You, as licensee and/or 
+Davinci Codes Limited, a legal entity organized and existing
+under the laws of Belize (hereinafter referred to as
+"We/Us/Our" as the context dictates), warrants the Software
+is inherently complex and may not be completely free 
+of errors.  Accordingly, We make no warranty or 
+representation, oral or written, express or implied, with 
+respect to the Software or documentation, including 
+their quality, performance, merchantability, or fitness for 
+a particular purpose.  You, as licensee and/or 
 Software user, are solely responsible for storing any
-and all cryptocurrency.
+And all cryptocurrency.
 
 LIMITATION OF LIABILITY
 
-It is Your responsibility to adequately safeguard and 
-backup Your data used in conjunction with the 
-Software at all times and ensure prompt and timely 
-payment for Software components (if applicable) and ongoing 
-support. Our entire liability to You and others for 
-damages (including loss of profits suffered by You or 
-others arising out of or in any way connected with 
-these terms of use), whether direct, indirect, special, 
-consequential or incidental, from any cause 
-whatsoever, including Software malfunction, and 
-regardless of the form of action, whether in contract, 
-warranty or tort (including negligence), shall, even if 
-We have been advised of the possibility of such 
-damages, be limited to the payment of the cost of the 
+It is Your responsibility to adequately safeguard and 
+backup Your data used in conjunction with the 
+Software at all times and ensure prompt and timely 
+payment for Software components (if applicable)and ongoing 
+support.  Our entire liability to You and others for 
+damages (including loss of profits suffered by You or 
+others arising out of or in any way connected with 
+these terms of use), whether direct, indirect, special, 
+consequential or incidental, from any cause 
+whatsoever, including Software malfunction, and 
+regardless of the form of action, whether in contract, 
+warranty or tort (including negligence), shall, even if 
+We have been advised of the possibility of such 
+damages, be limited to the payment cost of the 
 Software.
 
 COPYRIGHT
 
-Except as provided in the specific licences 
-for use granted in conjunction with Your accepted 
-purchase order at the indicated installation site, You 
-will have no right to otherwise copy, transfer, distribute, resell, 
-loan, rent, lease, sub-licence, alter, merge, 
-modify, or utilize the Software in any manner, 
-at any time, without the written consent of a duly authorized 
-corporate officer of Ours. 
-
-PAYMENT 
-
-It is agreed and understood that any specific 
-licences granted will be concurrent only with full and 
-final payment for the Software and are otherwise null 
-and void with the Software immediately returnable to 
-Us. We shall have the right to limit Your access to 
-data stored by way of the Software without liability to 
-Us (see: Limitation of Liability) where You are non-
-compliant with the agreed payment terms.  
-Similarly, We shall have the right to refuse to provide 
-any Software support (if applicable), at any 
-time You fail to make duly and timely payment of 
-Software as agreed, where Your payment(s) 
-for same are in arrears.
+Except as provided in the specific licenses 
+for use granted in conjunction with Your accepted 
+purchase order at the indicated installation site, You 
+will have no right to otherwise copy, transfer, distribute, resell, 
+loan, rent, lease, sub-license, alter, merge, 
+modify, or utilize the Software in any manner, including,
+at any time, without the written consent of a duly authorized
+corporate officer of Ours.  It is agreed and understood that
+any specific 
+licenses granted will be concurrent only with full and 
+final payment for the Software and are otherwise null 
+and void with the Software immediately returnable to 
+Us.  We shall have the right to limit Your access to 
+data stored by way of the Software without liability to 
+Us (see:  Limitation of Liability) where You are non-
+compliant with the appropriate payment terms.  
+Similarly, We shall have the right to refuse to provide 
+any Software support obligation (if applicable), at any 
+time after purchase, where Your payment(s) for same
+are in arrears.
 
 OTHER GENERAL TERMS
 
-(a)The terms set out herein shall be 
-construed, interpreted and governed by the laws of 
-Chile; 
+(a)The terms set out herein shall be 
+construed, interpreted and governed by the laws of
+Belize; 
 
-(b)The terms set out herein 
-may not be amended, under any circumstances, 
-unless in writing by a authorized corporate officer of 
-Ours. No dealer, distributor, agent or employee is 
-otherwise authorized to make any modification or 
+(b)The terms set out herein 
+may not be amended, under any circumstances, 
+unless in writing by an authorized corporate officer of 
+Ours.  No dealer, distributor, agent or employee is 
+otherwise authorized to make any modification or 
 addition to the above statements; and
 
-(c)These terms shall inure 
-to the benefit of and be binding upon the parties and 
-their respective heirs, executors, administrators, 
+(c)These terms shall inure 
+to the benefit of and be binding upon the parties and 
+their respective heirs, executors, administrators, 
 successors and permitted assigns;
 
+(d) Although the pricing of the Software is set in
+Bitcoins, all refunds payable pursuant to applicable law
+will be paid in US dollars, according to the equivalent
+value of said cryptocurrency at the date of purchase of
+the Software.
 
-BY INSTALLING, ACCESSING OR OTHERWISE 
-USING THE SOFTWARE, YOU AGREE TO BE 
-BOUND BY THE ABOVE TERMS OF USE. IF YOU 
-DO NOT AGREE WITH THE ABOVE TERMS, THEN 
-SIMPLY RETURN ALL SOFTWARE ITEMS 
-(DELETE ANY SOFTWARE LOADED.)
-
-</value>
+BY INSTALLING, ACCESSING OR OTHERWISE 
+USING THE SOFTWARE, YOU AGREE TO BE 
+BOUND BY THE ABOVE TERMS OF USE. IF YOU 
+DO NOT AGREE WITH THE ABOVE TERMS, THEN 
+SIMPLY RETURN ALL SOFTWARE ITEMS 
+(DELETE ANY SOFTWARE LOADED.)</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="pictureBox1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

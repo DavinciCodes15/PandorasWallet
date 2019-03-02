@@ -48,7 +48,7 @@ namespace Pandora.Client.Crypto.Protocol
                     {
                         _Process(message);
                     }
-                    catch (Exception ex)
+                    catch 
                     {
                         //NodeServerTrace.Error("Unexpected expected during message loop", ex);
                     }
@@ -75,7 +75,7 @@ namespace Pandora.Client.Crypto.Protocol
                             {
                                 processMessage(message);
                             }
-                            catch (Exception ex)
+                            catch 
                             {
                                 //NodeServerTrace.Error("Unexpected expected during message loop", ex);
                             }

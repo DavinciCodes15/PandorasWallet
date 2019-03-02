@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.ClientLib
 {
-
+    [Serializable]
     public class CurrencyItem 
     {
 

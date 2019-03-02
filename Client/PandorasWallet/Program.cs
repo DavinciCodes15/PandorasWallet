@@ -68,7 +68,15 @@ namespace Pandora.Client.PandorasWallet
             }
             finally
             {
-                Utils.PandoraLog.GetPandoraLog().Dispose();
+                try
+                {
+                    lControler.Dispose();
+                }
+                catch(Exception ex)
+                {
+                    Log.Write(ex.Message);
+                }
+                (Log.SystemLog as PandoraLog).Active = false;
             }
         }
 
@@ -80,8 +88,9 @@ namespace Pandora.Client.PandorasWallet
             Pandora.Client.Universal.Log.WriteAppEvent("PandoraClient log file is '" + lLog.FileName + "'", System.Diagnostics.EventLogEntryType.Information, 6004);
             Pandora.Client.Universal.Log.WriteAppEvent("Pandora current working folder '" + System.IO.Directory.GetCurrentDirectory() + "'", System.Diagnostics.EventLogEntryType.Information, 6004);
             lLog.LineLength = 120;
+            lLog.MaxSize = 5;
             lLog.Active = true;
-            Log.SystemLog = PandoraLog.GetPandoraLog();
+            Log.SystemLog = lLog;
             Log.Write("*********** Pandora Client Started!");
             Pandora.Client.Universal.Log.WriteAppEvent("Pandora Client log started.", System.Diagnostics.EventLogEntryType.Information, 6005);
         }

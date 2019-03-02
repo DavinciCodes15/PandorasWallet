@@ -30,8 +30,14 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         }
 
         public bool Execute()
-        {
-            return ShowDialog() == DialogResult.OK;
+        {   
+            
+            if (ParentWindow == null) 
+                return ShowDialog() == DialogResult.OK;
+            else
+                return ShowDialog(ParentWindow) == DialogResult.OK;
         }
+
+        public IWin32Window ParentWindow { get; set; }
     }
 }

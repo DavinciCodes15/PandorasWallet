@@ -29,7 +29,7 @@ using System.Linq;
 
 namespace Pandora.Client.PandorasWallet.Wallet
 {
-    public class PandoraWallet
+    public class PandoraWallet : IDisposable
     {
         private PandorasServer FWalletPandoraServer;
 
@@ -158,9 +158,9 @@ namespace Pandora.Client.PandorasWallet.Wallet
             {
                 List<CurrencyItem> LAvaliableCoins = new List<CurrencyItem>();
 
-                CurrencyCount = (uint)FWalletPandoraServer.CurrencyNumber.Count;
+                CurrencyCount = (uint)FWalletPandoraServer.CurrencyIdList.Count;
 
-                foreach (uint it in FWalletPandoraServer.CurrencyNumber)
+                foreach (uint it in FWalletPandoraServer.CurrencyIdList)
                 {
                     if (!FUserCoins.Contains(it))
                     {
@@ -415,6 +415,9 @@ namespace Pandora.Client.PandorasWallet.Wallet
             }
         }
 
+        public string SettingsFile => FUserSettings.SettingsPath;
+        public string DBFileName => FWalletPandoraServer.DBFileName;
+
         public void ChangeDataFolder(string aNewDataPath)
         {
             FileInfo[] lFiles = FDataFolder.GetFiles();
@@ -431,7 +434,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
                 FWalletPandoraServer.DataPath = lDataFolder.FullName;
 
-                FUserSettings = new SettingsManager(Path.Combine(FDataFolder.FullName, InstanceId + ".settings"));
+                FUserSettings = new SettingsManager(SettingsFile);
                 FKeyManager = new PandorasEncryptor(FDataFolder, InstanceId, FUserSettings);
 
                 Properties.Settings.Default.DataPath = lDataFolder.FullName;
@@ -468,6 +471,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
             if (!lWallet.Logon(aEmail, aUsername, aPassword))
             {
+                lWallet.Dispose();
                 throw new ClientExceptions.InvalidOperationException("Invalid Logon For: " + aEmail + ", and Username: " + aUsername);
             }
 
@@ -526,7 +530,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
                 lTimeoutCount++;
             }
 
-            CurrencyCount = (uint)FWalletPandoraServer.CurrencyNumber.Count;
+            CurrencyCount = (uint)FWalletPandoraServer.CurrencyIdList.Count;
 
             return FFullListOfCurencies.Where(x => FWalletPandoraServer.GetCurrencyStatus((uint)x.Id).Status != CurrencyStatus.Disabled).ToArray();
         }
@@ -536,7 +540,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             if (UsingFullCoinList)
             {
                 FFullListOfCurencies = FWalletPandoraServer.GetCurrencyList();
-                CurrencyCount = (uint)FWalletPandoraServer.CurrencyNumber.Count;
+                CurrencyCount = (uint)FWalletPandoraServer.CurrencyIdList.Count;
             }
         }
 
@@ -567,9 +571,10 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         public bool CheckIfUserHasAccounts()
         {
-            CurrencyItem lCurrency = FWalletPandoraServer.GetCurrency(1);
+            return !FWalletPandoraServer.IsNewAccount(); 
+            //CurrencyItem lCurrency = FWalletPandoraServer.GetCurrency(1);
 
-            return FWalletPandoraServer.MonitoredAccounts.GetById((uint)lCurrency.Id).Any();
+            //return FWalletPandoraServer.MonitoredAccounts.GetById((uint)lCurrency.Id).Any();
         }
 
         private IClientCurrencyAdvocacy GetAdvocacy(uint aCurrencyId)
@@ -1247,6 +1252,11 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
             lHex = SumAllNumbers.ToString();
             return lHex;
+        }
+
+        public void Dispose()
+        {
+            FWalletPandoraServer?.Dispose();
         }
     }
 }

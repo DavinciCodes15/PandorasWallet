@@ -55,9 +55,7 @@ namespace Pandora.Client.Universal.Threading
             {
                 InternalInitialize();
                 while (GetMethodMessage(out methodMessage))
-                {
                     InvokeMethodMessage(methodMessage);
-                }
             }
             finally
             {
@@ -446,8 +444,8 @@ namespace Pandora.Client.Universal.Threading
             /// <remarks>This method is called by TMethodPump after GetMethodMessage is called.</remarks>
             public void MethodInvoke()
             {
-                if (IsCompleted)
-                    throw new MethodExecutedException("Method already executed.");
+                //if (IsCompleted)
+                //    throw new MethodExecutedException("Method already executed.");
                 try
                 {
                     try
@@ -475,9 +473,12 @@ namespace Pandora.Client.Universal.Threading
                 get { return FException; }
                 set { FException = value; }
             }
+            public override string ToString()
+            {
+                return FEventMethod.Method.Name;
+            }
         }
         #endregion
-
 
 
         public virtual void Dispose()

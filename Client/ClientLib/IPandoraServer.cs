@@ -62,7 +62,7 @@
         /// use this object to add remove and find monitored accounts.  Currency accounts in this list will be monitored and if
         /// transactions occur on the account the OnTransactions Event will be fired to notify the client app of new transactions.
         /// </summary>
-        ICurrencyAccountList MonitoredAccounts { get; }
+        //CurrencyAccountList MonitoredAccounts { get; }
 
         /// <summary>
         /// Call this method to get all transactions then adds it to MonitoredAccounts.

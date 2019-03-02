@@ -36,9 +36,8 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.PandorasWallet.ServerAccess
 {
-    public class PandorasServer : IPandoraServer
+    public class PandorasServer :  IDisposable
     {
-        //TODO: STRINGS WILL BE JSON OBJECTS
         private PandoraWalletServiceAccess FServerAccess;
 
         private PandorasCache FPandoraCache;
@@ -55,7 +54,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public CurrencyStatusEvent OnCurrencyStatus;
 
         private CancellationTokenSource FTxUpdateCancellationSource;
-        // private CancellationTokenSource FCurrencyStatusUpdateCancellationSource;
 
         private Task TxUpdating = null;
 
@@ -65,15 +63,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public event Func<ulong, bool> OnCurrencyItemMustUpdate;
 
-        public List<long> CurrencyNumber { get; private set; }
+        public List<long> CurrencyIdList { get; private set; }
         private Dictionary<ulong, ulong> FStatusNumber = new Dictionary<ulong, ulong>();
         private Dictionary<ulong, ulong> FCurrencyAccountCheckpointIds = new Dictionary<ulong, ulong>();
         private Dictionary<ulong, ulong> FTransactionCheckpointIds = new Dictionary<ulong, ulong>();
         private List<Tuple<uint, ulong>> FToConfirm;
         private Dictionary<uint, long> FBlockHeights = new Dictionary<uint, long>();
         private ulong FTemporalCurrencyCheckpoint = 0;
-
-        // private Task CurrencyStatusUpdating;
         private Timer FCurrencyStatusTimer;
 
         public PandorasServer(string aDataPath, string aRemoteServer = "localhost", int aPort = 20159, bool aEncryptationConnection = false)
@@ -93,7 +89,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public string InstanceId { get; private set; }
         public bool Connected => FServerAccess.Connected;
 
-        public ICurrencyAccountList MonitoredAccounts => FCurrencyAccountList;
+        public CurrencyAccountList MonitoredAccounts => FCurrencyAccountList;
 
         public string DataPath
         {
@@ -112,12 +108,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         private bool CheckforNewTransactions(out List<uint> aListOfCurrencies)
         {
-            return FPandoraCache.CheckforNewTransactions(this, out aListOfCurrencies);
+            return FPandoraCache.CheckforNewTransactions(out aListOfCurrencies);
         }
 
         private bool CheckforNewCurrencyStatus(out List<uint> aListOfCurrencies)
         {
-            return FPandoraCache.CheckforNewCurrencyStatus(this, out aListOfCurrencies);
+            return FPandoraCache.CheckforNewCurrencyStatus(out aListOfCurrencies);
         }
 
         public void CheckIfConfirmed(uint aId, ulong aBlockHeight)
@@ -154,7 +150,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             do
             {
-                uint lCurrencyPoint = (CurrencyNumber.Any() ? (uint)CurrencyNumber.Max() : 0);
+                uint lCurrencyPoint = (CurrencyIdList.Any() ? (uint)CurrencyIdList.Max() : 0);
                 uint lPoint = FTemporalCurrencyCheckpoint < lCurrencyPoint && FTemporalCurrencyCheckpoint > 0 ? (uint)FTemporalCurrencyCheckpoint : lCurrencyPoint;
 
                 JsonListOfCurrencies = JsonConvert.DeserializeObject<List<long>>(FServerAccess.GetCurrencyList(lPoint), FConverter);
@@ -162,29 +158,19 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 if (JsonListOfCurrencies.Any())
                 {
                     foreach (long it in JsonListOfCurrencies)
-                    {
-                        if (!CurrencyNumber.Contains(it))
-                        {
-                            CurrencyNumber.Add(it);
-                        }
-                    }
+                        if (!CurrencyIdList.Contains(it))
+                            CurrencyIdList.Add(it);
 
                     if (FTemporalCurrencyCheckpoint > 0)
-                    {
                         FTemporalCurrencyCheckpoint = (ulong)JsonListOfCurrencies.Max();
-                    }
                 }
 
                 foreach (long it in JsonListOfCurrencies)
-                {
                     ReturningList.Add(JsonConvert.DeserializeObject<CurrencyItem>(FServerAccess.GetCurrency((uint)it), FConverter));
-                }
             } while (JsonListOfCurrencies.Any());
 
             if (FTemporalCurrencyCheckpoint > 0)
-            {
                 FTemporalCurrencyCheckpoint = 0;
-            }
 
             return ReturningList;
         }
@@ -194,7 +180,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             bool lFirstFetching = false;
 
-            if (!CurrencyNumber.Contains(aId))
+            if (!CurrencyIdList.Contains(aId))
             {
                 throw new Exception("Id out of range");
             }
@@ -251,6 +237,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return Returninglist;
         }
 
+        public bool IsNewAccount()
+        {
+            List<CurrencyAccount> lJsonListOfAccounts = JsonConvert.DeserializeObject<List<CurrencyAccount>>(FServerAccess.GetMonitoredAcccounts(1, 0), FConverter);
+            return lJsonListOfAccounts.Count == 0;
+        }
+
         private void CurrencyStatusUpdated(ulong aCurrencyId)
         {
             FTemporalCurrencyCheckpoint = aCurrencyId - 1;
@@ -265,7 +257,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public List<CurrencyAccount> FetchMonitoredAccounts(ulong aId)
 
         {
-            if (!CurrencyNumber.Contains((long)aId))
+            if (!CurrencyIdList.Contains((long)aId))
             {
                 throw new Exception("Id out of range");
             }
@@ -295,7 +287,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public List<TransactionRecord> FetchTransactions(ulong aId)
 
         {
-            if (!CurrencyNumber.Contains((long)aId))
+            if (!CurrencyIdList.Contains((long)aId))
             {
                 throw new Exception("Id out of range");
             }
@@ -331,11 +323,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public void SetCheckpoints(Dictionary<string, long[]> aCheckpoints)
         {
-            CurrencyNumber = aCheckpoints["Currencies"].ToList();
+            CurrencyIdList = aCheckpoints["Currencies"].ToList();
 
             if (aCheckpoints["CurrenciesStatus"].Any())
             {
-                foreach (long it in CurrencyNumber)
+                foreach (long it in CurrencyIdList)
                 {
                     int index = aCheckpoints["CurrenciesStatusIndex"].ToList().IndexOf(it);
                     FStatusNumber[Convert.ToUInt64(it)] = index != -1 ? Convert.ToUInt64(aCheckpoints["CurrenciesStatus"][index]) : 0;
@@ -344,7 +336,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             if (aCheckpoints["MonitoredAccounts"].Any())
             {
-                foreach (long it in CurrencyNumber)
+                foreach (long it in CurrencyIdList)
                 {
                     int index = aCheckpoints["MonitoredAccountsIndex"].ToList().IndexOf(it);
                     FCurrencyAccountCheckpointIds[Convert.ToUInt64(it)] = index != -1 ? Convert.ToUInt64(aCheckpoints["MonitoredAccounts"][index]) : 0;
@@ -353,7 +345,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             if (aCheckpoints["Tx"].Any())
             {
-                foreach (long it in CurrencyNumber)
+                foreach (long it in CurrencyIdList)
                 {
                     int index = aCheckpoints["TxIndex"].ToList().IndexOf(it);
                     FTransactionCheckpointIds[Convert.ToUInt64(it)] = index != -1 ? Convert.ToUInt64(aCheckpoints["Tx"][index]) : 0;
@@ -363,10 +355,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public void StartTxUpdatingTask()
         {
-            if ((TxUpdating == null || TxUpdating.IsCanceled) && CurrencyNumber.Any())
-            {
+            if ((TxUpdating == null || TxUpdating.IsCanceled) && CurrencyIdList.Any())
                 TxUpdating = Task.Run(() => TxUpdatingTask(this, FTxUpdateCancellationSource.Token)); //Start fetching transactions now that I have currencies to work with
-            }
         }
 
         public void StartCurrencyStatusUpdatingTask()
@@ -384,28 +374,49 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public CurrencyItem GetCurrency(uint aCurrencyId)
         {
-            return FPandoraCache.GetCurrencyByID(aCurrencyId);
+            var lResult = FPandoraCache.GetCurrencyItem(aCurrencyId);
+            if (lResult == null)
+            {
+                var lList = GetCurrencyList();
+                foreach (var lItem in lList)
+                    if (lItem.Id == aCurrencyId)
+                        lResult = lItem;
+            }
+            if (lResult == null)
+                throw new Exception(string.Format("Unable to GetCurrency because currency ID {0} does not exist.", aCurrencyId));
+            return lResult;
         }
 
         public byte[] GetCurrencyIcon(uint aCurrencyId)
         {
-            //TODO:LUIS- Overwrite icon in database when this is called
-            return FPandoraCache.GetCurrencyByID(aCurrencyId).Icon;
+            return GetCurrency(aCurrencyId).Icon;
         }
 
         public CurrencyItem[] GetCurrencyList()
         {
-            return FPandoraCache.GetAllCurrencies();
+            return FPandoraCache.GetCurrencies();
         }
 
         public CurrencyStatusItem GetCurrencyStatus(uint aCurrencyId)
         {
-            return FPandoraCache.GetCurrencyStatusByID(aCurrencyId);
+            // Only get the status from the DBCashe because another service will go get it.
+            var lResult = FPandoraCache.GetCurrencyStatusItem(aCurrencyId);
+            // if the service did not fire well looks like we have to go get the status.
+            if (lResult == null)
+            {
+                var lList = GetCurrencyStatus();
+                foreach (var lItem in lList)
+                    if (lItem.CurrencyId == aCurrencyId)
+                        lResult = lItem;
+            }
+            if (lResult == null)
+                throw new Exception(string.Format("Unable to GetCurrency because currency ID {0} does not exist.", aCurrencyId));
+            return lResult;
         }
 
         public CurrencyStatusItem[] GetCurrencyStatus()
         {
-            return FPandoraCache.GetAllCurrencyStatuses();
+            return FPandoraCache.GetCurrencyStatuses();
         }
 
         public void ClearMemoryCache()
@@ -454,7 +465,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             FTxUpdateCancellationSource.Cancel();
             FCurrencyStatusTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             FCurrencyStatusTimer = null;
-            //TODO:LUIS- CLOSE STUFF BEFORE LOGGIN OFF
+
             return FServerAccess.Logoff();
         }
 
@@ -501,7 +512,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         System.Diagnostics.Debug.WriteLine("PANDORAS SERVER - New Transaction found");
 #endif
                         await Task.Delay(10000, aCancellationToken);
-                        //continue;
                     }
 
                     List<Tuple<uint, ulong>> lToUpdate = new List<Tuple<uint, ulong>>();
@@ -512,26 +522,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     {
                         long lTxBlock = (long)it.Item2;
                         if (lTxBlock > 0)
-                        {
                             lConfirmations = FetchBlockHeight(it.Item1) - lTxBlock + 1;
-                        }
                         else
-                        {
                             lConfirmations = 0;
-                        }
 
                         if (lConfirmations > 0)
-                        {
                             lToUpdate.Add(it);
-                        }
                     }
 
                     if (lToUpdate.Any())
                     {
                         lock (FToConfirm)
-                        {
                             FToConfirm.RemoveAll(x => lToUpdate.Contains(x));
-                        }
 
                         aPandorasServer.NotifyNewTransaction(lToUpdate.Select((x) => x.Item1).ToList(), true);
 #if DEBUG
@@ -585,6 +587,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             OnCurrencyStatus?.Invoke(aListOfCurrencies.ToArray());
         }
 
+        public string DBFileName => FPandoraCache.DBFileName;
+
         public bool Logon(string aEmail, string aUserName, string aPassword)
         {
             if (FServerAccess.Logon(aEmail, aUserName, aPassword))
@@ -628,6 +632,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
+        public void Dispose()
+        {
+            FTxUpdateCancellationSource.Cancel();
+            FPandoraCache?.Dispose();
+            FServerAccess?.Dispose();
+        }
+
         public static class HashUtility
         {
             public static string CreateMD5(string input)
@@ -665,53 +676,70 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             //}
         }
 
-        private class CurrencyAccountList : ICurrencyAccountList
+        internal CurrencyAccount[] GetMonitoredAccounts()
         {
-            private PandorasServer FPandoraServer;
+            return FPandoraCache.GetMonitoredAccounts();
+        }
 
-            public CurrencyAccountList(PandorasServer aPandoraServer)
-            {
-                FPandoraServer = aPandoraServer;
-            }
+        internal void AddMonitoredAccount(uint aCurrencyId, string aAddress)
+        {
+            FServerAccess.AddMonitoredAccount(aCurrencyId, aAddress);
+        }
 
-            public CurrencyAccount this[int i] => FPandoraServer.FPandoraCache.GetAllMonitoredAccounts()[i];
+        internal void NewMonitoredAccountAdded(uint aCurrencyId)
+        {
+            FPandoraCache.NewMonitoredAccountAdded(aCurrencyId);
+        }
 
-            public void AddCurrencyAccount(uint aCurrencyId, string aAddress)
-            {
-                FPandoraServer.FServerAccess.AddMonitoredAccount(aCurrencyId, aAddress);
-                FPandoraServer.FPandoraCache.NewMonitoredAccountAdded(aCurrencyId);
-            }
+        internal CurrencyAccount[] GetCurrencyAccount(uint aId)
+        {
+            return FPandoraCache.GetCurrencyAccount(aId);
+        }
+    }
+    public class CurrencyAccountList : IEnumerable<CurrencyAccount>
+    {
+        private PandorasServer FPandoraServer;
 
-#if DEBUG
+        public CurrencyAccountList(PandorasServer aPandoraServer)
+        {
+            FPandoraServer = aPandoraServer;
+        }
 
-            public bool RemoveMonitoredAddress(ulong aCurrencyId)
-            {
-                return FPandoraServer.FServerAccess.RemoveMonitoredAcccounts(aCurrencyId);
-            }
+        public CurrencyAccount this[int i] => FPandoraServer.GetMonitoredAccounts()[i];
 
-#endif
+        public void AddCurrencyAccount(uint aCurrencyId, string aAddress)
+        {
+            FPandoraServer.AddMonitoredAccount(aCurrencyId, aAddress);
+            FPandoraServer.NewMonitoredAccountAdded(aCurrencyId);
+        }
 
-            public IEnumerator<CurrencyAccount> GetEnumerator()
-            {
-                return FPandoraServer.FPandoraCache.GetAllMonitoredAccounts().GetEnumerator();
-            }
+//#if DEBUG
 
-            public int IndexOfAddress(uint aCurrencyId, string aAddress)
-            {
-                return FPandoraServer.FPandoraCache.GetAllMonitoredAccounts().FindIndex((x) => (x.CurrencyId == aCurrencyId) && (x.Address == aAddress));
+//        public bool RemoveMonitoredAddress(ulong aCurrencyId)
+//        {
+//            return FPandoraServer.FServerAccess.RemoveMonitoredAcccounts(aCurrencyId);
+//        }
 
-                //TODO:LUIS-Maybe we need to change this in the future to make it work correctly
-            }
+//#endif
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return FPandoraServer.FPandoraCache.GetAllMonitoredAccounts().GetEnumerator();
-            }
+        public IEnumerator<CurrencyAccount> GetEnumerator()
+        {
+            return FPandoraServer.GetMonitoredAccounts().Cast<CurrencyAccount>().GetEnumerator();
+        }
 
-            public CurrencyAccount[] GetById(uint aId)
-            {
-                return FPandoraServer.FPandoraCache.GetMonitoredAccountByID(aId);
-            }
+        public int IndexOfAddress(uint aCurrencyId, string aAddress)
+        {
+            return Array.FindIndex(FPandoraServer.GetMonitoredAccounts(), (x) => (x.CurrencyId == aCurrencyId) && (x.Address == aAddress));
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return FPandoraServer.GetMonitoredAccounts().GetEnumerator();
+        }
+
+        public CurrencyAccount[] GetById(uint aId)
+        {
+            return FPandoraServer.GetCurrencyAccount(aId);
         }
     }
 }

@@ -309,13 +309,23 @@ namespace Pandora.Client.PandorasWallet
 
         private void QuickAmmountTextBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"[^0-9\s]");
+
+            if (regex.IsMatch(e.KeyChar.ToString()) && (e.KeyChar != '.') && e.KeyChar != 8)
             {
                 e.Handled = true;
             }
 
             if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
             {
+                e.Handled = true;
+            }
+
+            if((sender as TextBox).Text == "0" && e.KeyChar != '.')
+            {
+                (sender as TextBox).Text = e.KeyChar.ToString();
+                (sender as TextBox).SelectionStart = (sender as TextBox).Text.Length;
+                (sender as TextBox).SelectionLength = 0;
                 e.Handled = true;
             }
             /*
@@ -441,6 +451,58 @@ namespace Pandora.Client.PandorasWallet
             try
             {
                 OnSearchBoxTextChanged?.Invoke(sender, e);
+            }
+            catch (Exception ex)
+            {
+                this.StandardErrorMsgBox(ex.Message);
+            }
+        }
+
+        private void TxtBoxSendToAddress_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            try
+            {
+                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"[^a-zA-Z0-9\s]");
+                e.Handled = (regex.IsMatch(e.KeyChar.ToString()) && e.KeyChar != 8);
+            }
+            catch (Exception ex)
+            {
+                this.StandardErrorMsgBox(ex.Message);
+            }
+        }
+
+        private void TxtBoxSendToAddress_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"[^a-zA-Z0-9\s]");
+                string sanitizedValue = regex.Replace(TxtBoxSendToAddress.Text, string.Empty);
+                TxtBoxSendToAddress.Text = sanitizedValue;
+            }
+            catch (Exception ex)
+            {
+                this.StandardErrorMsgBox(ex.Message);
+            }
+        }
+        string FPreviousSendAmount = "0";
+        private void QuickAmountTextBox_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if(string.IsNullOrWhiteSpace((sender as TextBox).Text))
+                {
+                    (sender as TextBox).Text = "0";
+                }
+                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"^([0-9]*[.]{0,1})([0-9]*)$");
+                if (!regex.IsMatch((sender as TextBox).Text))
+                {
+                    (sender as TextBox).Text = FPreviousSendAmount;
+                }
+                else
+                {
+                    FPreviousSendAmount = (sender as TextBox).Text;
+                }
+                
             }
             catch (Exception ex)
             {

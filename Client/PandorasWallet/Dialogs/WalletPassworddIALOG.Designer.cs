@@ -130,7 +130,7 @@
             this.unlockPictureBox.TabIndex = 12;
             this.unlockPictureBox.TabStop = false;
             // 
-            // WalletPasswordDialogDummy
+            // WalletPasswordDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoSize = true;
@@ -139,8 +139,7 @@
             this.Controls.Add(this.unlockPictureBox);
             this.Controls.Add(this.controlPanel);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "WalletPasswordDialogDummy";
-            this.ShowInTaskbar = true;
+            this.Name = "WalletPasswordDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Wallet Password";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WalletPasswordBox_FormClosing);

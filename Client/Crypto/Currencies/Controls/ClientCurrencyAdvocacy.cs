@@ -84,27 +84,19 @@ namespace Pandora.Client.Crypto.Currencies.Controls
         public virtual string SignTransaction(string aTxData, ICurrencyTransaction aValidationInfo)
         {
             if (!CustomTransaction.GetCustomTransaction(Id, out Transaction tx, aTxData, Network))
-            {
                 tx = new Transaction(aTxData, Network);
-            }
 
             // check how much is being spent and insure all is spent.
             ulong lTotalSent = 0;
             foreach (ITransactionUnit linput in aValidationInfo.Inputs)
-            {
                 lTotalSent += linput.Amount;
-            }
 
             ulong lTotalSpending = aValidationInfo.TxFee;
             foreach (ITransactionUnit lOutput in aValidationInfo.Outputs)
-            {
                 lTotalSpending += lOutput.Amount;
-            }
 
             if (lTotalSent != lTotalSpending)
-            {
                 throw new Exception("The total of the inputs does not equal the total outputs.");
-            }
             // Check output amounts in the transaction to sign.
             int lValidCount = 0;
             foreach (TxOut lOutput in tx.Outputs)
@@ -122,9 +114,7 @@ namespace Pandora.Client.Crypto.Currencies.Controls
                 }
             }
             if (lValidCount != aValidationInfo.Outputs.Length)
-            {
                 throw new Exception("Transaction to sign is not correct.");
-            }
 
             List<CCKey> lKeys = new List<CCKey>();
             List<ICoin> lCoins = new List<ICoin>();

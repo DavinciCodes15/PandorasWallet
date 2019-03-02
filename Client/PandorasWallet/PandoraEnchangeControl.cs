@@ -785,7 +785,7 @@ namespace Pandora.Client.PandorasWallet
         private void UpdateExchangeOrderTxRelationship()
         {
             try
-            {
+            {   //
                 if (FWallet != null && FExchanger.IsCredentialsSet)
                 {
                     Dictionary<uint, List<TransactionViewModel>> aTxs = FWallet.TransactionsByCurrency;

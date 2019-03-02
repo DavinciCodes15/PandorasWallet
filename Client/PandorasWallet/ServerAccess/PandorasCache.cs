@@ -26,6 +26,9 @@ using System.Runtime.Caching;
 
 namespace Pandora.Client.PandorasWallet.ServerAccess
 {
+    /// <summary>
+    /// Class used for managing Pandora's Wallet Cache
+    /// </summary>
     public partial class PandorasCache : IDisposable
     {
         private PandorasServer FPandoraServer;
@@ -33,9 +36,14 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private DBManager FDBManager;
         private ObjectCache FCache;
 
-        private CachedObject FCurrencyAccounts, FCurrencyItems, FCurrencyStatuses, FTxs;
+        private CachedObject<CurrencyAccount> FCurrencyAccounts;
+        private CachedObject<CurrencyItem> FCurrencyItems;
+        private CachedObject<CurrencyStatusItem> FCurrencyStatuses;
+        private CachedObject<TransactionRecord> FTxs;
 
         public event Action<string> OnCacheExpired;
+
+        public string DBFileName => FDBManager.FileName;
 
         public PandorasCache(PandorasServer aobject)
         {
@@ -46,17 +54,17 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             FDBManager = new DBManager(FPandoraServer.DataPath, FPandoraServer.InstanceId);
 
-            FCurrencyAccounts = new CachedObject(this, FCache, FDBManager, typeof(CurrencyAccount));
-            FCurrencyItems = new CachedObject(this, FCache, FDBManager, typeof(CurrencyItem));
-            FCurrencyStatuses = new CachedObject(this, FCache, FDBManager, typeof(CurrencyStatusItem));
-            FTxs = new CachedObject(this, FCache, FDBManager, typeof(TransactionRecord));
+            FCurrencyAccounts = new CachedObject<CurrencyAccount>(this, FCache, FDBManager);
+            FCurrencyItems = new CachedObject<CurrencyItem>(this, FCache, FDBManager);
+            FCurrencyStatuses = new CachedObject<CurrencyStatusItem>(this, FCache, FDBManager);
+            FTxs = new CachedObject<TransactionRecord>(this, FCache, FDBManager);
 
             SetLifeTimes();
 
             FPandoraServer.SetCheckpoints(FDBManager.GetSavedCheckpoints());
         }
 
-        public void SetLifeTimes()
+        private void SetLifeTimes()
         {
             FDBManager.AddOrReplaceLifeTimes("MonitoredAccounts", 3600);
             FDBManager.AddOrReplaceLifeTimes("CurrencyStatus", 60);
@@ -64,6 +72,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             FDBManager.AddOrReplaceLifeTimes("Tx", 10);
         }
 
+        // TODO: Untested code occurs when the path 
+        // for storing cache data is changed.
         public void RefreshCacheFolder()
         {
             if (FDBManager == null)
@@ -93,75 +103,71 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 FCurrencyItems.EmptyCache();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Pandora.Client.Universal.Log.Write(Universal.LogLevel.Error, "OnCurrencyItemMustUpdate error {0}\n{1}\n{2}", ex.Message, ex.Source, ex.StackTrace);
                 return false;
             }
         }
 
-        public CurrencyAccount[] GetMonitoredAccountByID(uint aID)
+        public CurrencyAccount[] GetCurrencyAccount(uint aCurrencyAccountId)
+        {
+            return FCurrencyAccounts.Get(aCurrencyAccountId);
+        }
+
+        public CurrencyAccount[] GetMonitoredAccounts()
         {
             if (FDBManager.CheckLastRetrieval("MonitoredAccounts"))
-            {
                 MonitoredAccountsDataUpdate(FPandoraServer, FCurrencyAccounts);
-            }
-
-            return (CurrencyAccount[])FCurrencyAccounts.Get(aID);
+            return FCurrencyAccounts.Get();
         }
 
-        public List<CurrencyAccount> GetAllMonitoredAccounts()
+        public CurrencyStatusItem GetCurrencyStatusItem(uint aID)
         {
-            if (FDBManager.CheckLastRetrieval("MonitoredAccounts"))
-            {
-                MonitoredAccountsDataUpdate(FPandoraServer, FCurrencyAccounts);
-            }
-
-            return (List<CurrencyAccount>)FCurrencyAccounts.Get();
+            // get the Currency Status Item form the local Database
+            var lResult = FCurrencyStatuses.Get(aID);
+            //it comes as an array so lets get the right value if one exists
+            //if not return null
+            if (lResult.Length == 0)
+                return null;
+            else
+                return lResult[0];
         }
 
-        public CurrencyStatusItem GetCurrencyStatusByID(uint aID)
+        public CurrencyStatusItem[] GetCurrencyStatuses()
         {
             if (FDBManager.CheckLastRetrieval("CurrencyStatus"))
-            {
                 CurrencyStatusDataUpdate(FPandoraServer, FCurrencyStatuses);
-            }
 
-            return (CurrencyStatusItem)FCurrencyStatuses.Get(aID);
+             return FCurrencyStatuses.Get();
         }
 
-        public CurrencyStatusItem[] GetAllCurrencyStatuses()
+        public CurrencyItem GetCurrencyItem(uint aCurrencyId)
         {
-            if (FDBManager.CheckLastRetrieval("CurrencyStatus"))
-            {
-                CurrencyStatusDataUpdate(FPandoraServer, FCurrencyStatuses);
-            }
-
-            return (CurrencyStatusItem[])FCurrencyStatuses.Get();
+            // get the Currency Item form the local Database
+            var lResult = FCurrencyItems.Get(aCurrencyId);
+            //it comes as an array so lets get the right value if one exists
+            //if not return null
+            if (lResult.Length == 0)
+                return null;
+            else
+                return lResult[0];
         }
 
-        public CurrencyItem GetCurrencyByID(uint aID)
+
+        public CurrencyItem[] GetCurrencies(uint? aID = null)
         {
             if (FDBManager.CheckLastRetrieval("CurrencyItem"))
-            {
                 CurrencyItemDataUpdate(FPandoraServer, FCurrencyItems);
-            }
-
-            return (CurrencyItem)FCurrencyItems.Get(aID);
-        }
-
-        public CurrencyItem[] GetAllCurrencies()
-        {
-            if (FDBManager.CheckLastRetrieval("CurrencyItem"))
-            {
-                CurrencyItemDataUpdate(FPandoraServer, FCurrencyItems);
-            }
-
-            return FCurrencyItems.Get();
+            if (aID.HasValue)
+                return FCurrencyItems.Get(aID.Value);
+            else
+                return FCurrencyItems.Get();
         }
 
         public TransactionRecord[] GetTxs(uint aID)
         {
-            return (TransactionRecord[])FTxs.Get(aID);
+            return FTxs.Get(aID);
         }
 
         public void Clear()
@@ -178,7 +184,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             Clear();
         }
 
-        private void CurrencyItemDataUpdate(PandorasServer aPandorasServer, CachedObject aCachedObject)
+        private void CurrencyItemDataUpdate(PandorasServer aPandorasServer, CachedObject<CurrencyItem> aCachedObject)
         {
             if (FDBManager.Write(aPandorasServer.FetchCurrencies()))
             {
@@ -187,11 +193,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        private void CurrencyStatusDataUpdate(PandorasServer aPandorasServer, CachedObject aCachedObject, List<uint> aListOfCurrencies = null)
+        private void CurrencyStatusDataUpdate(PandorasServer aPandorasServer, CachedObject<CurrencyStatusItem> aCachedObject, List<uint> aListOfCurrencies = null)
         {
             List<CurrencyStatusItem> lStatuses = new List<CurrencyStatusItem>();
 
-            foreach (uint it in aPandorasServer.CurrencyNumber)
+            foreach (uint it in aPandorasServer.CurrencyIdList)
             {
                 List<CurrencyStatusItem> lCurrencyStatus = aPandorasServer.FetchCurrencyStatus(it);
 
@@ -215,7 +221,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             MonitoredAccountsDataUpdate(FPandoraServer, FCurrencyAccounts, true, aCurrencyId);
         }
 
-        private void MonitoredAccountsDataUpdate(PandorasServer aPandorasServer, CachedObject aCachedObject, bool aFlagforCurrency = false, uint aCurrencyId = 0)
+        private void MonitoredAccountsDataUpdate(PandorasServer aPandorasServer, CachedObject<CurrencyAccount> aCachedObject, bool aFlagforCurrency = false, uint aCurrencyId = 0)
         {
             bool lSomethingWrited = false;
 
@@ -229,8 +235,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             else
             {
                 List<CurrencyAccount> lListAccounts = new List<CurrencyAccount>();
-
-                foreach (uint it in aPandorasServer.CurrencyNumber)
+                
+                foreach (uint it in aPandorasServer.CurrencyIdList)
                 {
                     lListAccounts.AddRange(aPandorasServer.FetchMonitoredAccounts(it));
                 }
@@ -243,27 +249,21 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             aCachedObject.NewDataAlert = lSomethingWrited;
         }
 
-        private List<uint> TransactionsDataUpdate(PandorasServer aPandorasServer, CachedObject aCachedObject)
+        private List<uint> TransactionsDataUpdate(PandorasServer aPandorasServer, CachedObject<TransactionRecord> aCachedObject)
         {
-            bool lSomethingWrited = false;
 
-            List<uint> lCurrencyNumbers = new List<uint>();
+            List<uint> lCurrencyIdList = new List<uint>();
 
-            foreach (uint it in aPandorasServer.CurrencyNumber)
-            {
-                if (FDBManager.Write(aPandorasServer.FetchTransactions(it), it))
-                {
-                    lSomethingWrited = true;
-                    lCurrencyNumbers.Add(it);
-                }
-            }
+            foreach (uint lCurrencyId in aPandorasServer.CurrencyIdList)
+                if (FDBManager.Write(aPandorasServer.FetchTransactions(lCurrencyId), lCurrencyId))
+                    lCurrencyIdList.Add(lCurrencyId);
 
-            aCachedObject.NewDataAlert = lSomethingWrited;
+            aCachedObject.NewDataAlert = lCurrencyIdList.Count > 0;
 
-            return lCurrencyNumbers;
+            return lCurrencyIdList;
         }
 
-        public bool CheckforNewTransactions(PandorasServer aPandorasServer, out List<uint> aListOfCurrencies)
+        public bool CheckforNewTransactions(out List<uint> aListOfCurrencies)
         {
             if (FDBManager.CheckLastRetrieval("Tx"))
             {
@@ -281,12 +281,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return false;
         }
 
-        public bool CheckforNewCurrencyStatus(PandorasServer aPandorasServer, out List<uint> aListOfCurrencies)
+        public bool CheckforNewCurrencyStatus(out List<uint> aListOfCurrencies)
         {
             if (FDBManager.CheckLastRetrieval("CurrencyStatus"))
             {
                 aListOfCurrencies = new List<uint>();
-                CurrencyStatusDataUpdate(FPandoraServer, FTxs, aListOfCurrencies);
+                CurrencyStatusDataUpdate(FPandoraServer, FCurrencyStatuses, aListOfCurrencies);
 
                 if (aListOfCurrencies.Any())
                 {
@@ -342,36 +342,76 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         #endregion IDisposable Support
 
-        private class CachedObject
-
+        /// <summary>
+        /// Serves as a bridge between system object cache and Sqlite HD database
+        /// </summary>
+        /// <typeparam name="T">Pandora item type</typeparam>
+        private class CachedObject<T>
         {
+            public bool NewDataAlert = false;
+
             private int FLifeTime;
             private List<object> FData = new List<object>();
-            private Type FType;
             private ObjectCache FCacheRef;
             private DBManager FDBManager;
             private PandorasCache FPandoraCache;
 
-            public bool NewDataAlert = false;
-
-            private Dictionary<Type, Func<uint, CachedObject, dynamic>> FOneElementDict = new Dictionary<Type, Func<uint, CachedObject, dynamic>>
+            private T[] GetSetDBData(string aIdentifier, uint? aId = null)
             {
-                { typeof(CurrencyAccount),(uint aCurrencyId, CachedObject ACachedObject) => {if(ACachedObject.FCacheRef.Contains("1D" + Convert.ToString(aCurrencyId))) { return (CurrencyAccount[])ACachedObject.FCacheRef.Get("1D" + Convert.ToString(aCurrencyId)); } else{ACachedObject.FDBManager.Read(out List<CurrencyAccount>returned, true, aCurrencyId);  ACachedObject.FCacheRef.Set("1D" + Convert.ToString(aCurrencyId), returned.ToArray(), ACachedObject.SetSlidingPolicy()); return (CurrencyAccount[])ACachedObject.FCacheRef.Get("1D" + Convert.ToString(aCurrencyId)); } } }, //TODO:LUIS- MAKE THIS SUPPORT POSSIBLE ERRORS AND BUILD LOGICS
-                { typeof(CurrencyItem), (uint aId, CachedObject ACachedObject) => {if(ACachedObject.FCacheRef.Contains("2D" + Convert.ToString(aId))) { return (CurrencyItem) ACachedObject.FCacheRef.Get("2D" + Convert.ToString(aId)); } else {ACachedObject.FDBManager.Read(out List<CurrencyItem>returned, true, aId); ACachedObject.FCacheRef.Set("2D" + Convert.ToString(aId), returned.FirstOrDefault(), ACachedObject.SetSlidingPolicy()); return (CurrencyItem) ACachedObject.FCacheRef.Get("2D" + Convert.ToString(aId)); } } },
-                { typeof(CurrencyStatusItem), (uint aId, CachedObject ACachedObject) => {if(ACachedObject.FCacheRef.Contains("3D" + Convert.ToString(aId))) { return (CurrencyStatusItem)ACachedObject.FCacheRef.Get("3D" + Convert.ToString(aId)); } else {ACachedObject.FDBManager.Read(out List<CurrencyStatusItem>returned, true, aId); ACachedObject.FCacheRef.Set("3D" + Convert.ToString(aId), returned.FirstOrDefault(), ACachedObject.SetSlidingPolicy());  return (CurrencyStatusItem)ACachedObject.FCacheRef.Get("3D" + Convert.ToString(aId)); } } },
-                { typeof(TransactionRecord), (uint aId, CachedObject ACachedObject) => {if(ACachedObject.FCacheRef.Contains("4D" + aId)) { return (TransactionRecord[])ACachedObject.FCacheRef.Get("4D" + aId); } else { ACachedObject.FDBManager.Read(out List<TransactionRecord>returned, aId); ACachedObject.FCacheRef.Set("4D" + aId, returned.ToArray(), ACachedObject.SetSlidingPolicy()); return (TransactionRecord[])ACachedObject.FCacheRef.Get("4D" + aId); } } },
+                aIdentifier = aIdentifier + (aId.HasValue ? Convert.ToString(aId) : typeof(T).Name);
+                T[] lResult;
+                if (aId.HasValue && FCacheRef.Contains(aIdentifier))
+                    lResult = (T[])FCacheRef.Get(aIdentifier);
+                else
+                {
+                    switch (typeof(T).Name)
+                    {
+                        case "CurrencyAccount":
+                            FDBManager.Read(out List<CurrencyAccount> lReturned1, aId);
+                            FCacheRef.Set(aIdentifier , lReturned1.ToArray(), aId.HasValue ? SetSlidingPolicy() : SetAbsolutePolicy());
+                            break;
+
+                        case "CurrencyItem":
+                            FDBManager.Read(out List<CurrencyItem> lReturned2, aId);
+                            FCacheRef.Set(aIdentifier , lReturned2.ToArray(), aId.HasValue ? SetSlidingPolicy() : SetAbsolutePolicy());
+                            break;
+
+                        case "CurrencyStatusItem":
+                            FDBManager.Read(out List<CurrencyStatusItem> lReturned3, aId);
+                            FCacheRef.Set(aIdentifier, lReturned3.ToArray(), aId.HasValue ? SetSlidingPolicy() : SetAbsolutePolicy());
+                            break;
+
+                        case "TransactionRecord":
+                            FDBManager.Read(out List<TransactionRecord> lReturned4, aId.Value);
+                            FCacheRef.Set(aIdentifier, lReturned4.ToArray(), aId.HasValue ? SetSlidingPolicy() : SetAbsolutePolicy());
+                            break;
+                    }
+
+                    lResult = (T[])FCacheRef.Get(aIdentifier);
+                }
+                if (lResult == null)
+                    lResult = new T[0];
+
+                return lResult;
+            }
+
+            private Dictionary<Type, string> FElementIdentifiers = new Dictionary<Type, string>
+            {
+                { typeof(CurrencyAccount), "1D"},
+                { typeof(CurrencyItem), "2D"},
+                { typeof(CurrencyStatusItem), "3D" },
+                { typeof(TransactionRecord), "4D"},
             };
 
-            private Dictionary<Type, Func<CachedObject, dynamic>> FAllElementsDict = new Dictionary<Type, Func<CachedObject, dynamic>>
-                {
-                    { typeof(CurrencyAccount),(CachedObject ACachedObject)=>{ACachedObject.FDBManager.Read(out List<CurrencyAccount>returned);  ACachedObject.FCacheRef.Set("ALL" + ACachedObject.ToString(), returned, ACachedObject.SetAbsolutePolicy()); return ((List<CurrencyAccount>) ACachedObject.FCacheRef.Get("ALL" + ACachedObject.ToString())); } },
-                    { typeof(CurrencyItem),(CachedObject ACachedObject)=>{ACachedObject.FDBManager.Read(out List<CurrencyItem>returned);  ACachedObject.FCacheRef.Set("ALL" + ACachedObject.ToString(), returned.ToArray(), ACachedObject.SetAbsolutePolicy()); return ((CurrencyItem[]) ACachedObject.FCacheRef.Get("ALL" + ACachedObject.ToString())); } },
-                    { typeof(CurrencyStatusItem),(CachedObject ACachedObject)=>{ ACachedObject.FDBManager.Read(out List<CurrencyStatusItem>returned); ACachedObject.FCacheRef.Set("ALL" + ACachedObject.ToString(), returned.ToArray(), ACachedObject.SetAbsolutePolicy()); return ((CurrencyStatusItem[]) ACachedObject.FCacheRef.Get("ALL" + ACachedObject.ToString())); } },
-                 };
-
-            public CachedObject(PandorasCache aPandorasCache, ObjectCache aObjectCache, DBManager aDBManager, Type aType, int aLifeTimeinMinutes = 5)
+            /// <summary>
+            /// Initializes bridge object
+            /// </summary>
+            /// <param name="aPandorasCache">Parent class</param>
+            /// <param name="aObjectCache">Initialized .Net ObjectCache</param>
+            /// <param name="aDBManager">Initialized DBManager object</param>
+            /// <param name="aLifeTimeinMinutes">Lifespan of the cache object</param>
+            public CachedObject(PandorasCache aPandorasCache, ObjectCache aObjectCache, DBManager aDBManager, int aLifeTimeinMinutes = 5)
             {
-                FType = aType;
                 FLifeTime = aLifeTimeinMinutes;
                 FCacheRef = aObjectCache;
                 FDBManager = aDBManager;
@@ -402,27 +442,27 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 return lAbsoluteCachepolicy;
             }
 
-            public dynamic Get()
+            public T[] Get()
             {
-                if (FType == typeof(TransactionRecord))
+                if (typeof(T) == typeof(TransactionRecord))
                 {
                     throw new Exception("Cannot get all transactions without an address and Currency ID");
                 }
 
-                if (FCacheRef.Contains("ALL" + FType.ToString()) && !NewDataAlert)
+                if (FCacheRef.Contains("ALL" + typeof(T).ToString()) && !NewDataAlert)
                 {
-                    return Convert.ChangeType(FCacheRef.Get("ALL" + FType.Name), FType == typeof(CurrencyAccount) ? typeof(List<>).MakeGenericType(FType) : typeof(Array).MakeGenericType(FType));
+                    return (T[])FCacheRef.Get("ALL" + typeof(T).Name);
                 }
                 else
                 {
                     NewDataAlert = false;
-                    return FAllElementsDict[FType](this);
+                    return GetSetDBData("ALL");
                 }
             }
 
-            public dynamic Get(uint aCurrencyId)
+            public T[] Get(uint aId)
             {
-                return FOneElementDict[FType](aCurrencyId, this);
+                return GetSetDBData(FElementIdentifiers[typeof(T)], aId);
             }
 
             public void EmptyCache()

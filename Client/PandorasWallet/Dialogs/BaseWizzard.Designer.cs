@@ -47,12 +47,12 @@
             this.lblCopy = new System.Windows.Forms.Label();
             this.btnCopy = new System.Windows.Forms.Button();
             this.lblTwelveWords = new System.Windows.Forms.Label();
+            this.twelveWords1 = new Pandora.Client.PandorasWallet.TwelveWords();
             this.Finish = new System.Windows.Forms.TabPage();
             this.lblFinish = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.lbl1 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.twelveWords1 = new Pandora.Client.PandorasWallet.TwelveWords();
             this.tabControl1.SuspendLayout();
             this.Introduction.SuspendLayout();
             this.OptionChoose.SuspendLayout();
@@ -262,6 +262,25 @@
             this.lblTwelveWords.TabIndex = 4;
             this.lblTwelveWords.Text = "Step 2. Introduce in each box the words";
             // 
+            // twelveWords1
+            // 
+            this.twelveWords1.Location = new System.Drawing.Point(170, 28);
+            this.twelveWords1.Name = "twelveWords1";
+            this.twelveWords1.Size = new System.Drawing.Size(474, 152);
+            this.twelveWords1.TabIndex = 5;
+            this.twelveWords1.Word1 = "";
+            this.twelveWords1.Word10 = "";
+            this.twelveWords1.Word11 = "";
+            this.twelveWords1.Word12 = "";
+            this.twelveWords1.Word2 = "";
+            this.twelveWords1.Word3 = "";
+            this.twelveWords1.Word4 = "";
+            this.twelveWords1.Word5 = "";
+            this.twelveWords1.Word6 = "";
+            this.twelveWords1.Word7 = "";
+            this.twelveWords1.Word8 = "";
+            this.twelveWords1.Word9 = "";
+            // 
             // Finish
             // 
             this.Finish.BackColor = System.Drawing.Color.WhiteSmoke;
@@ -312,25 +331,6 @@
             this.pictureBox1.TabIndex = 27;
             this.pictureBox1.TabStop = false;
             // 
-            // twelveWords1
-            // 
-            this.twelveWords1.Location = new System.Drawing.Point(170, 28);
-            this.twelveWords1.Name = "twelveWords1";
-            this.twelveWords1.Size = new System.Drawing.Size(474, 152);
-            this.twelveWords1.TabIndex = 5;
-            this.twelveWords1.Word1 = "";
-            this.twelveWords1.Word10 = "";
-            this.twelveWords1.Word11 = "";
-            this.twelveWords1.Word12 = "";
-            this.twelveWords1.Word2 = "";
-            this.twelveWords1.Word3 = "";
-            this.twelveWords1.Word4 = "";
-            this.twelveWords1.Word5 = "";
-            this.twelveWords1.Word6 = "";
-            this.twelveWords1.Word7 = "";
-            this.twelveWords1.Word8 = "";
-            this.twelveWords1.Word9 = "";
-            // 
             // BaseWizzard
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -343,6 +343,7 @@
             this.Controls.Add(this.tabControl1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "BaseWizzard";
+            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "RestoreWalletWizard";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.RestoreWalletWizard_FormClosing);

@@ -341,7 +341,7 @@
             this.pictureBox.TabIndex = 15;
             this.pictureBox.TabStop = false;
             // 
-            // SendTransaction
+            // SendTransactionDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.BackColor = System.Drawing.SystemColors.InactiveCaption;
@@ -355,7 +355,8 @@
             this.Controls.Add(this.label1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F, System.Drawing.FontStyle.Bold);
             this.Margin = new System.Windows.Forms.Padding(4);
-            this.Name = "SendTransaction";
+            this.Name = "SendTransactionDialog";
+            this.ShowIcon = false;
             this.Text = "Confirmation";
             this.Shown += new System.EventHandler(this.SendTransaction_Shown);
             this.Controls.SetChildIndex(this.label1, 0);

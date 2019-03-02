@@ -44,7 +44,6 @@ namespace Pandora.Client.PandorasWallet
             this.label4 = new System.Windows.Forms.Label();
             this.tabControl = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.lstViewCurrencies = new Pandora.Client.PandorasWallet.CurrencyView();
             this.AddCurrencyBtn = new System.Windows.Forms.Button();
             this.checkIsTicker = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -60,7 +59,6 @@ namespace Pandora.Client.PandorasWallet
             this.colCredit = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.colConf = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.statsctrlExchage = new Pandora.Client.PandorasWallet.StatusControl();
             this.txtTransactionName = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.lblEstimatePrice = new System.Windows.Forms.Label();
@@ -83,7 +81,6 @@ namespace Pandora.Client.PandorasWallet
             this.lblExchange = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.statscntrlTradeHistory = new Pandora.Client.PandorasWallet.StatusControl();
             this.chckOrderHistory = new System.Windows.Forms.CheckBox();
             this.label18 = new System.Windows.Forms.Label();
             this.lstOrderHistory = new System.Windows.Forms.ListView();
@@ -124,6 +121,9 @@ namespace Pandora.Client.PandorasWallet
             this.toolStripStatusEmail = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolTipBalance = new System.Windows.Forms.ToolTip(this.components);
             this.QuickSendButton = new Pandora.Client.PandorasWallet.MenuButton();
+            this.lstViewCurrencies = new Pandora.Client.PandorasWallet.CurrencyView();
+            this.statsctrlExchage = new Pandora.Client.PandorasWallet.StatusControl();
+            this.statscntrlTradeHistory = new Pandora.Client.PandorasWallet.StatusControl();
             this.tabControl.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -153,6 +153,8 @@ namespace Pandora.Client.PandorasWallet
             this.TxtBoxSendToAddress.Name = "TxtBoxSendToAddress";
             this.TxtBoxSendToAddress.Size = new System.Drawing.Size(347, 20);
             this.TxtBoxSendToAddress.TabIndex = 17;
+            this.TxtBoxSendToAddress.TextChanged += new System.EventHandler(this.TxtBoxSendToAddress_TextChanged);
+            this.TxtBoxSendToAddress.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtBoxSendToAddress_KeyPress);
             // 
             // lblTotal
             // 
@@ -214,6 +216,7 @@ namespace Pandora.Client.PandorasWallet
             this.QuickAmountTextBox.Size = new System.Drawing.Size(208, 20);
             this.QuickAmountTextBox.TabIndex = 19;
             this.QuickAmountTextBox.Text = "0";
+            this.QuickAmountTextBox.TextChanged += new System.EventHandler(this.QuickAmountTextBox_TextChanged);
             this.QuickAmountTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.QuickAmmountTextBox_KeyPress);
             // 
             // QuickAmmountLabel
@@ -266,19 +269,6 @@ namespace Pandora.Client.PandorasWallet
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Crypto Currencies";
             this.tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // lstViewCurrencies
-            // 
-            this.lstViewCurrencies.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lstViewCurrencies.CurrencyIds = new long[0];
-            this.lstViewCurrencies.Location = new System.Drawing.Point(3, 35);
-            this.lstViewCurrencies.Name = "lstViewCurrencies";
-            this.lstViewCurrencies.SelectedCurrencyId = ((long)(0));
-            this.lstViewCurrencies.Size = new System.Drawing.Size(911, 351);
-            this.lstViewCurrencies.TabIndex = 20;
-            this.lstViewCurrencies.OnSelectedIndexChanged += new System.EventHandler(this.lstViewCurrencies_OnSelectedIndexChanged);
             // 
             // AddCurrencyBtn
             // 
@@ -440,17 +430,6 @@ namespace Pandora.Client.PandorasWallet
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Exchange";
             this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // statsctrlExchage
-            // 
-            this.statsctrlExchage.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.statsctrlExchage.Location = new System.Drawing.Point(338, 16);
-            this.statsctrlExchage.Name = "statsctrlExchage";
-            this.statsctrlExchage.Size = new System.Drawing.Size(576, 367);
-            this.statsctrlExchage.StatusName = "";
-            this.statsctrlExchage.TabIndex = 78;
             // 
             // txtTransactionName
             // 
@@ -671,16 +650,6 @@ namespace Pandora.Client.PandorasWallet
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Trade History";
             this.tabPage4.UseVisualStyleBackColor = true;
-            // 
-            // statscntrlTradeHistory
-            // 
-            this.statscntrlTradeHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.statscntrlTradeHistory.Location = new System.Drawing.Point(3, 213);
-            this.statscntrlTradeHistory.Name = "statscntrlTradeHistory";
-            this.statscntrlTradeHistory.Size = new System.Drawing.Size(908, 169);
-            this.statscntrlTradeHistory.StatusName = "";
-            this.statscntrlTradeHistory.TabIndex = 44;
             // 
             // chckOrderHistory
             // 
@@ -1036,6 +1005,40 @@ namespace Pandora.Client.PandorasWallet
             this.QuickSendButton.Text = "Send";
             this.QuickSendButton.UseVisualStyleBackColor = true;
             this.QuickSendButton.Click += new System.EventHandler(this.QuickSendButton_Click);
+            // 
+            // lstViewCurrencies
+            // 
+            this.lstViewCurrencies.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstViewCurrencies.CurrencyIds = new long[0];
+            this.lstViewCurrencies.Location = new System.Drawing.Point(3, 35);
+            this.lstViewCurrencies.Name = "lstViewCurrencies";
+            this.lstViewCurrencies.SelectedCurrencyId = ((long)(0));
+            this.lstViewCurrencies.Size = new System.Drawing.Size(911, 351);
+            this.lstViewCurrencies.TabIndex = 20;
+            this.lstViewCurrencies.OnSelectedIndexChanged += new System.EventHandler(this.lstViewCurrencies_OnSelectedIndexChanged);
+            // 
+            // statsctrlExchage
+            // 
+            this.statsctrlExchage.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.statsctrlExchage.Location = new System.Drawing.Point(338, 16);
+            this.statsctrlExchage.Name = "statsctrlExchage";
+            this.statsctrlExchage.Size = new System.Drawing.Size(576, 367);
+            this.statsctrlExchage.StatusName = "";
+            this.statsctrlExchage.TabIndex = 78;
+            // 
+            // statscntrlTradeHistory
+            // 
+            this.statscntrlTradeHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.statscntrlTradeHistory.Location = new System.Drawing.Point(3, 213);
+            this.statscntrlTradeHistory.Name = "statscntrlTradeHistory";
+            this.statscntrlTradeHistory.Size = new System.Drawing.Size(908, 169);
+            this.statscntrlTradeHistory.StatusName = "";
+            this.statscntrlTradeHistory.TabIndex = 44;
             // 
             // PandoraClientMainWindow
             // 

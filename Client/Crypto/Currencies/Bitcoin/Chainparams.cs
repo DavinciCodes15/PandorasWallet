@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace Pandora.Client.Crypto.Currencies
 {
+    [Serializable]
     public class ChainParams : IChianParams
     {
         public enum NetworkType { MainNet = 0, TestNet = 1};
