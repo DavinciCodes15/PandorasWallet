@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Pandora.Client.ClientLib;
+using Pandora.Client.Universal;
+using Pandora.Client.Universal.Threading;
+using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading;
-using Pandora.Client.ClientLib;
-using Pandora.Client.Universal.Threading;
-using Pandora.Client.Universal;
 
 namespace Pandora.Client.ServerAccess
 {
@@ -36,6 +36,14 @@ namespace Pandora.Client.ServerAccess
     }
 
     public delegate void OnDiconnectEventHandler();
+    public class PandoraServiceError : Exception
+    {
+        public PandoraServiceError(string aMessage) : base(aMessage)
+        {
+
+        }
+
+    }
 
     public delegate void ServerEvent(object sender, string aResult);
 
@@ -175,7 +183,7 @@ namespace Pandora.Client.ServerAccess
         private void CheckConnected()
         {
             if (!Connected)
-                throw new Exception("Not connected.");
+                throw new PandoraServiceError("Not connected.");
         }
 
         private void InternalDisconnect()
@@ -199,28 +207,38 @@ namespace Pandora.Client.ServerAccess
         // goes down for maintainane 
         protected override bool InvokeMethodMessage(DelegateMessage aMethodMessage)
         {
-            var lResult = base.InvokeMethodMessage(aMethodMessage);
-            var lName = aMethodMessage.ToString();
-            if (!lResult && lName != "ThreadLogon") // do not try reconnect if the logon method is called
+            aMethodMessage.OnAfterEvent += MethodMessage_OnAfterEvent;
+            return base.InvokeMethodMessage(aMethodMessage);
+        }
+
+        private void MethodMessage_OnAfterEvent(object sender, EventArgs e)
+        {
+            DelegateMessage lMethodMessage = sender as DelegateMessage;
+           
+            if (lMethodMessage.ExceptionObject != null ) // do not try reconnect if the logon method is called
             {
+                /// if we cant connet to the server because its down 
+                if (lMethodMessage.ExceptionObject is System.ServiceModel.EndpointNotFoundException)
+                {
+                    Log.Write(LogLevel.Error, lMethodMessage.ExceptionObject.Message);
+                    lMethodMessage.ExceptionObject = new PandoraServiceError("Internet connection error occured while connecting to the remote server.");
+                }
+                var lName = lMethodMessage.ToString();
+
                 // an exception occured
                 // Now test if the error is because of a communication issue or 
                 // if the error is because the server sent the error to be thrown
-                if (!(aMethodMessage.ExceptionObject is PandoraServerException))
+                if (!(lMethodMessage.ExceptionObject is PandoraServerException) && lName != "ThreadLogon")
                     // if there is a comunication faild we need to reconnect
                     try
                     {
                         FServer = CreatePandoraWalletServer();
-                        // if success run the method again
-                        lResult = base.InvokeMethodMessage(aMethodMessage);
                     }
                     catch
                     {
                         // if we fail to reconnect to the server no problem
-                        // just throw the last error when the Invoke ends.
                     }
             }
-            return lResult;
         }
 
         private bool ThreadLogon(string aEmail, string aUserName, string aPassword)
@@ -236,7 +254,7 @@ namespace Pandora.Client.ServerAccess
                 // Assuming this connection is now solid call the logon
                 PandoraWalletService1_1.PandoraResult lServerResult = FServer.Logon(aEmail, aUserName, aPassword);
                 if (!string.IsNullOrEmpty(lServerResult.ErrorMsg))
-                    throw new Pandora.Client.ClientLib.PandoraServerException("Server Error: " + lServerResult.ErrorMsg);
+                    throw new PandoraServerException("Server Error: " + lServerResult.ErrorMsg);
                 FConnectionId = (string)lServerResult.result;
                 Username = aUserName;
                 Email = aEmail;
@@ -245,17 +263,17 @@ namespace Pandora.Client.ServerAccess
             }
             catch (EndpointNotFoundException ex)
             {
-                Log.Write(Pandora.Client.Universal.LogLevel.Error, "Connection to Pandora Server failed with: " + ex.Message);
+                Log.Write(LogLevel.Error, "Connection to Pandora Server failed with: " + ex.Message);
                 Connected = false;
-                throw new Pandora.Client.ClientLib.PandoraServerException("Server not available. Please ensure you have an active internet conection.");
+                throw new PandoraServerException("Server not available. Please ensure you have an active internet conection.");
             }
             catch (Exception ex)
             {
-                Pandora.Client.Universal.Log.Write(Pandora.Client.Universal.LogLevel.Error, "Connection to Pandora Server failed with: " + ex.Message);
+                Log.Write(LogLevel.Error, "Connection to Pandora Server failed with: " + ex.Message);
                 Connected = false;
                 //Note: if the web server is using intergrated security it will fail with this result.
                 if (ex.Message.Contains("The request failed with HTTP status 401: Unauthorized"))
-                    throw new Pandora.Client.ClientLib.PandoraServerException("Access denied.  Invalid user name or password.");
+                    throw new PandoraServerException("Access denied.  Invalid user name or password.");
 
                 throw;
             }

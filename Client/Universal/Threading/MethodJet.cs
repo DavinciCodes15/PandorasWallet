@@ -400,40 +400,38 @@ namespace Pandora.Client.Universal.Threading
         {
             private Delegate FEventMethod;
             private object[] FArguments;
-            private object FResult = null;
-            private bool FCompleted = false;
-            private bool FAsynchonous;
-            private EventWaitHandle FMethodSignal;
-            private Exception FException = null;
 
             public DelegateMessage(Delegate aEventMethod, object[] args, bool isAsynchonous)
             {
-                FMethodSignal = new EventWaitHandle(false, EventResetMode.ManualReset);
-                FAsynchonous = isAsynchonous;
+                AsyncWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+
+                CompletedSynchronously = !isAsynchonous;
                 FArguments = args;
                 FEventMethod = aEventMethod;
             }
+
+            public event EventHandler OnAfterEvent;
 
             #region IAsyncResult Members
 
             public object AsyncState
             {
-                get { return FResult; }
+                get; private set;
             }
 
             public WaitHandle AsyncWaitHandle
             {
-                get { return FMethodSignal; }
+                get; private set;
             }
 
             public bool CompletedSynchronously
             {
-                get { return !FAsynchonous; }
+                get; private set;
             }
 
             public bool IsCompleted
             {
-                get { return FCompleted; }
+                get; private set;
             }
 
             #endregion
@@ -444,25 +442,31 @@ namespace Pandora.Client.Universal.Threading
             /// <remarks>This method is called by TMethodPump after GetMethodMessage is called.</remarks>
             public void MethodInvoke()
             {
-                //if (IsCompleted)
-                //    throw new MethodExecutedException("Method already executed.");
+                // you can not run this method again because the 
+                // signal is set that it has finished.
+                if (IsCompleted)
+                    throw new MethodExecutedException("Method already executed.");
                 try
                 {
                     try
                     {
-                        FException = null;
-                        FResult = FEventMethod.DynamicInvoke(FArguments);
+                        ExceptionObject = null;
+                        AsyncState = FEventMethod.DynamicInvoke(FArguments);
                     }
                     catch (Exception e)
                     {
-                        FException = e;
-                        throw;
+                        // for some reason if the exeption is thrown in diynamicinvoke it has a 
+                        // encapsulates the error
+                        ExceptionObject = e.InnerException;
                     }
+                    OnAfterEvent?.Invoke(this, null);
+                    if (ExceptionObject != null)
+                        throw ExceptionObject;
                 }
                 finally
                 {
-                    FMethodSignal.Set();
-                    FCompleted = true;
+                    (AsyncWaitHandle as EventWaitHandle).Set();
+                    IsCompleted = true;
                 }
             }
 
@@ -470,8 +474,8 @@ namespace Pandora.Client.Universal.Threading
 
             public Exception ExceptionObject
             {
-                get { return FException; }
-                set { FException = value; }
+                get;
+                set;
             }
             public override string ToString()
             {
