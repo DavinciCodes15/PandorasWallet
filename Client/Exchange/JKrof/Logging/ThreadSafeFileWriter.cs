@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace CryptoExchange.Net.Logging
+namespace Pandora.Client.Exchange.JKrof.Logging
 {
     public class ThreadSafeFileWriter: TextWriter
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Newtonsoft.Json;
 
-namespace CryptoExchange.Net.Converters
+namespace Pandora.Client.Exchange.JKrof.Converters
 {
     public class TimestampConverter : JsonConverter
     {
@@ -21,7 +21,7 @@ namespace CryptoExchange.Net.Converters
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            writer.WriteValue((long)Math.Round((((DateTime)value) - new DateTime(1970, 1, 1)).TotalMilliseconds));
+            writer.WriteValue((long)Math.Round(((DateTime)value - new DateTime(1970, 1, 1)).TotalMilliseconds));
         }
     }
 }

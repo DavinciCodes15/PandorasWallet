@@ -1,7 +1,6 @@
-﻿using CryptoExchange.Net.Interfaces;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace CryptoExchange.Net.Authentication
+namespace Pandora.Client.Exchange.JKrof.Authentication
 {
     public abstract class AuthenticationProvider
     {
@@ -34,10 +33,10 @@ namespace CryptoExchange.Net.Authentication
 
         protected string ByteToString(byte[] buff)
         {
-            var sbinary = "";
+            var result = "";
             foreach (var t in buff)
-                sbinary += t.ToString("X2"); /* hex format */
-            return sbinary;
+                result += t.ToString("X2"); /* hex format */
+            return result;
         }
     }
 }

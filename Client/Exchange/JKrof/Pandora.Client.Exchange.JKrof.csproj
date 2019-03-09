@@ -22,6 +22,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Deterministic>true</Deterministic>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -36,6 +37,8 @@
     <AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,132 +51,71 @@
       <Version>11.0.1</Version>
     </PackageReference>
     <PackageReference Include="WebSocket4Net" Version="0.15.2" />
-    <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.0" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(SolutionDir)VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+      <Visible>ture</Visible>
+    </Compile>
     <Compile Include="Attributes\JsonOptionalPropertyAttribute.cs" />
     <Compile Include="Authentication\ApiCredentials.cs" />
     <Compile Include="Authentication\AuthenticationProvider.cs" />
     <Compile Include="Authentication\PrivateKey.cs" />
-    <Compile Include="Binance\BinanceAuthenticationProvider.cs" />
-    <Compile Include="Binance\BinanceClient.cs" />
-    <Compile Include="Binance\BinanceHelpers.cs" />
-    <Compile Include="Binance\BinanceSocketClient.cs" />
-    <Compile Include="Binance\Converters\DepositStatusConverter.cs" />
-    <Compile Include="Binance\Converters\ExecutionTypeConverter.cs" />
-    <Compile Include="Binance\Converters\KlineIntervalConverter.cs" />
-    <Compile Include="Binance\Converters\OrderRejectReasonConverter.cs" />
-    <Compile Include="Binance\Converters\OrderResponseTypeConverter.cs" />
-    <Compile Include="Binance\Converters\OrderSideConverter.cs" />
-    <Compile Include="Binance\Converters\OrderStatusConverter.cs" />
-    <Compile Include="Binance\Converters\OrderTypeConverter.cs" />
-    <Compile Include="Binance\Converters\RateLimitConverter.cs" />
-    <Compile Include="Binance\Converters\SymbolFilterConverter.cs" />
-    <Compile Include="Binance\Converters\SymbolFilterTypeConverter.cs" />
-    <Compile Include="Binance\Converters\SymbolStatusConverter.cs" />
-    <Compile Include="Binance\Converters\SystemStatusConverter.cs" />
-    <Compile Include="Binance\Converters\TimeInForceConverter.cs" />
-    <Compile Include="Binance\Converters\WithdrawalStatusConverter.cs" />
-    <Compile Include="Binance\Interfaces\IBinanceClient.cs" />
-    <Compile Include="Binance\Interfaces\IBinanceSocketClient.cs" />
-    <Compile Include="Binance\Objects\Binance24hPrice.cs" />
-    <Compile Include="Binance\Objects\BinanceAccountInfo.cs" />
-    <Compile Include="Binance\Objects\BinanceAccountStatus.cs" />
-    <Compile Include="Binance\Objects\BinanceAggregatedTrades.cs" />
-    <Compile Include="Binance\Objects\BinanceBookPrice.cs" />
-    <Compile Include="Binance\Objects\BinanceCanceledOrder.cs" />
-    <Compile Include="Binance\Objects\BinanceCheckTime.cs" />
-    <Compile Include="Binance\Objects\BinanceClientOptions.cs" />
-    <Compile Include="Binance\Objects\BinanceCombinedStream.cs" />
-    <Compile Include="Binance\Objects\BinanceDepositAddress.cs" />
-    <Compile Include="Binance\Objects\BinanceDepositList.cs" />
-    <Compile Include="Binance\Objects\BinanceDustLog.cs" />
-    <Compile Include="Binance\Objects\BinanceExchangeInfo.cs" />
-    <Compile Include="Binance\Objects\BinanceKline.cs" />
-    <Compile Include="Binance\Objects\BinanceListenKey.cs" />
-    <Compile Include="Binance\Objects\BinanceOrder.cs" />
-    <Compile Include="Binance\Objects\BinanceOrderBook.cs" />
-    <Compile Include="Binance\Objects\BinanceOrderTrade.cs" />
-    <Compile Include="Binance\Objects\BinancePing.cs" />
-    <Compile Include="Binance\Objects\BinancePlacedOrder.cs" />
-    <Compile Include="Binance\Objects\BinancePrice.cs" />
-    <Compile Include="Binance\Objects\BinanceRateLimit.cs" />
-    <Compile Include="Binance\Objects\BinanceRecentTrade.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamAccountInfo.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamAggregatedTrade.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamConnection.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamEvent.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamKline.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamOrderUpdate.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamSubscription.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamTick.cs" />
-    <Compile Include="Binance\Objects\BinanceStreamTrade.cs" />
-    <Compile Include="Binance\Objects\BinanceSymbol.cs" />
-    <Compile Include="Binance\Objects\BinanceSymbolFilter.cs" />
-    <Compile Include="Binance\Objects\BinanceSystemStatus.cs" />
-    <Compile Include="Binance\Objects\BinanceTrade.cs" />
-    <Compile Include="Binance\Objects\BinanceTradeRuleResult.cs" />
-    <Compile Include="Binance\Objects\BinanceWithdrawalFee.cs" />
-    <Compile Include="Binance\Objects\BinanceWithdrawalList.cs" />
-    <Compile Include="Binance\Objects\BinanceWithdrawalPlaced.cs" />
-    <Compile Include="Binance\Objects\Enums.cs" />
-    <Compile Include="Bittrex\BittrexAuthenticationProvider.cs" />
-    <Compile Include="Bittrex\BittrexClient.cs" />
-    <Compile Include="Bittrex\BittrexSocketClient.cs" />
-    <Compile Include="Bittrex\Converters\ConditionTypeConverter.cs" />
-    <Compile Include="Bittrex\Converters\FillTypeConverter.cs" />
-    <Compile Include="Bittrex\Converters\OrderSideConverter.cs" />
-    <Compile Include="Bittrex\Converters\OrderSideExtendedConverter.cs" />
-    <Compile Include="Bittrex\Converters\OrderUpdateTypeConverter.cs" />
-    <Compile Include="Bittrex\Converters\TickIntervalConverter.cs" />
-    <Compile Include="Bittrex\Converters\TimeInEffectConverter.cs" />
-    <Compile Include="Bittrex\Interfaces\IBittrexClient.cs" />
-    <Compile Include="Bittrex\Interfaces\IBittrexSocketClient.cs" />
-    <Compile Include="Bittrex\Interfaces\IConnectionFactory.cs" />
-    <Compile Include="Bittrex\Interfaces\IHubConnection.cs" />
-    <Compile Include="Bittrex\Objects\BittrexAccountOrder.cs" />
-    <Compile Include="Bittrex\Objects\BittrexApiResult.cs" />
-    <Compile Include="Bittrex\Objects\BittrexBalance.cs" />
-    <Compile Include="Bittrex\Objects\BittrexCandle.cs" />
-    <Compile Include="Bittrex\Objects\BittrexCurrency.cs" />
-    <Compile Include="Bittrex\Objects\BittrexDeposit.cs" />
-    <Compile Include="Bittrex\Objects\BittrexDepositAddress.cs" />
-    <Compile Include="Bittrex\Objects\BittrexEnums.cs" />
-    <Compile Include="Bittrex\Objects\BittrexError.cs" />
-    <Compile Include="Bittrex\Objects\BittrexGuid.cs" />
-    <Compile Include="Bittrex\Objects\BittrexMarket.cs" />
-    <Compile Include="Bittrex\Objects\BittrexMarketHistory.cs" />
-    <Compile Include="Bittrex\Objects\BittrexMarketSummary.cs" />
-    <Compile Include="Bittrex\Objects\BittrexOpenOrdersOrder.cs" />
-    <Compile Include="Bittrex\Objects\BittrexOptions.cs" />
-    <Compile Include="Bittrex\Objects\BittrexOrderBook.cs" />
-    <Compile Include="Bittrex\Objects\BittrexOrderHistoryOrder.cs" />
-    <Compile Include="Bittrex\Objects\BittrexOrderResult.cs" />
-    <Compile Include="Bittrex\Objects\BittrexPrice.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamBalance.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamExchangeState.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamFill.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamMarketHistory.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamMarketSummaries.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamMarketSummary.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamMarketSummaryLite.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamOrder.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamOrderBookEntry.cs" />
-    <Compile Include="Bittrex\Objects\BittrexStreamRegistration.cs" />
-    <Compile Include="Bittrex\Objects\BittrexWithdrawal.cs" />
-    <Compile Include="Bittrex\Sockets\BittrexHubConnection.cs" />
-    <Compile Include="Bittrex\Sockets\ConnectionFactory.cs" />
-    <Compile Include="Bittrex\Sockets\WebsocketCustomTransport.cs" />
+    <Compile Include="BaseClient.cs" />
+    <Compile Include="Bittrex.Net\BittrexAuthenticationProvider.cs" />
+    <Compile Include="Bittrex.Net\BittrexClient.cs" />
+    <Compile Include="Bittrex.Net\BittrexSocketClient.cs" />
+    <Compile Include="Bittrex.Net\Converters\ConditionTypeConverter.cs" />
+    <Compile Include="Bittrex.Net\Converters\FillTypeConverter.cs" />
+    <Compile Include="Bittrex.Net\Converters\OrderSideConverter.cs" />
+    <Compile Include="Bittrex.Net\Converters\OrderSideExtendedConverter.cs" />
+    <Compile Include="Bittrex.Net\Converters\OrderUpdateTypeConverter.cs" />
+    <Compile Include="Bittrex.Net\Converters\TickIntervalConverter.cs" />
+    <Compile Include="Bittrex.Net\Converters\TimeInEffectConverter.cs" />
+    <Compile Include="Bittrex.Net\Interfaces\IBittrexClient.cs" />
+    <Compile Include="Bittrex.Net\Interfaces\IBittrexSocketClient.cs" />
+    <Compile Include="Bittrex.Net\Interfaces\ISignalRSocket.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexAccountOrder.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexApiResult.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexBalance.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexCandle.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexCurrency.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexDeposit.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexDepositAddress.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexEnums.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexGuid.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexMarket.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexMarketHistory.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexMarketSummary.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexOpenOrdersOrder.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexOptions.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexOrderBook.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexOrderHistoryOrder.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexOrderResult.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexPrice.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamBalance.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamExchangeState.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamFill.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamMarketHistory.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamMarketSummaries.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamMarketSummary.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamMarketSummaryLite.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamOrder.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexStreamOrderBookEntry.cs" />
+    <Compile Include="Bittrex.Net\Objects\BittrexWithdrawal.cs" />
+    <Compile Include="Bittrex.Net\Properties\AssemblyInfo.cs" />
+    <Compile Include="Bittrex.Net\Sockets\BittrexHubConnection.cs" />
+    <Compile Include="Bittrex.Net\Sockets\ConnectionFactory.cs" />
+    <Compile Include="Bittrex.Net\Sockets\ConnectionRequest.cs" />
+    <Compile Include="Bittrex.Net\Sockets\WebsocketCustomTransport.cs" />
     <Compile Include="Converters\ArrayConverter.cs" />
     <Compile Include="Converters\BaseConverter.cs" />
     <Compile Include="Converters\TimestampConverter.cs" />
     <Compile Include="Converters\TimestampSecondsConverter.cs" />
     <Compile Include="Converters\UTCDateTimeConverter.cs" />
-    <Compile Include="ExchangeClient.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="Implementation\BaseSocket.cs" />
-    <Compile Include="Implementation\WebsocketFactory.cs" />
-    <Compile Include="Interfaces\IExchangeClient.cs" />
+    <Compile Include="Interfaces\IRateLimiter.cs" />
     <Compile Include="Interfaces\IRequest.cs" />
     <Compile Include="Interfaces\IRequestFactory.cs" />
     <Compile Include="Interfaces\IResponse.cs" />
@@ -183,18 +125,27 @@
     <Compile Include="Logging\Log.cs" />
     <Compile Include="Logging\ThreadSafeFileWriter.cs" />
     <Compile Include="Objects\ApiProxy.cs" />
+    <Compile Include="Objects\ByteOrderComparer.cs" />
     <Compile Include="Objects\CallResult.cs" />
+    <Compile Include="Objects\Constants.cs" />
     <Compile Include="Objects\Enums.cs" />
     <Compile Include="Objects\Error.cs" />
     <Compile Include="Objects\ExchangeOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RateLimiter\IRateLimiter.cs" />
     <Compile Include="RateLimiter\RateLimiterPerEndpoint.cs" />
     <Compile Include="RateLimiter\RateLimiterTotal.cs" />
     <Compile Include="RateLimiter\RateLimitObject.cs" />
     <Compile Include="Requests\Request.cs" />
     <Compile Include="Requests\RequestFactory.cs" />
     <Compile Include="Requests\Response.cs" />
+    <Compile Include="RestClient.cs" />
+    <Compile Include="SocketClient.cs" />
+    <Compile Include="Sockets\BaseSocket.cs" />
+    <Compile Include="Sockets\SocketEvent.cs" />
+    <Compile Include="Sockets\SocketRequest.cs" />
+    <Compile Include="Sockets\SocketSubscription.cs" />
+    <Compile Include="Sockets\UpdateSubscription.cs" />
+    <Compile Include="Sockets\WebsocketFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

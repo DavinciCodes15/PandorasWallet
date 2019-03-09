@@ -1,4 +1,4 @@
-﻿namespace CryptoExchange.Net.Interfaces
+﻿namespace Pandora.Client.Exchange.JKrof.Interfaces
 {
     public interface IRequestFactory
     {

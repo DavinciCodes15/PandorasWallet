@@ -82,40 +82,55 @@ namespace Pandora.Client.PandorasWallet
             MainForm.ExchangeTotalReceivedEnabled = false;
             MainForm.ExchangeTransactionNameEnabled = false;
 
-            ConnectDialog = new ConnectDialog();
-            ConnectDialog.ParentWindow = MainForm;
+            ConnectDialog = new ConnectDialog
+            {
+                ParentWindow = MainForm
+            };
             ConnectDialog.OnOkClick += ConnectDialog_OnOkClick;
 
-            DefaultCoinSelectorDialog = new DefaultCoinSelector();
-            DefaultCoinSelectorDialog.ParentWindow = MainForm;
+            DefaultCoinSelectorDialog = new DefaultCoinSelector
+            {
+                ParentWindow = MainForm
+            };
 
-            AddCoinSelectorDialog = new AddCoinSelector();
-            AddCoinSelectorDialog.ParentWindow = MainForm;
+            AddCoinSelectorDialog = new AddCoinSelector
+            {
+                ParentWindow = MainForm
+            };
 
-            EncryptionPasswordDialog = new WalletPasswordDialog();
-            EncryptionPasswordDialog.ParentWindow = MainForm;
+            EncryptionPasswordDialog = new WalletPasswordDialog
+            {
+                ParentWindow = MainForm
+            };
 
             EncryptionPasswordDialog.OnOkButtonClick += EncryptionPasswordDialog_OnOkButtonClick;
             EncryptionPasswordDialog.OnCancelButtonClick += EncryptionPasswordDialog_OnCancelButtonClick;
 
-            RestoreDialog = new RestoreWalletDialog();
-            RestoreDialog.ParentWindow = MainForm;
+            RestoreDialog = new RestoreWalletDialog
+            {
+                ParentWindow = MainForm
+            };
 
             RestoreDialog.OnRestoreBtnClick += RestoreDialog_OnRestoreBtnClick;
 
-            TransactionDetailDialog = new SendTransactionDialog();
-            TransactionDetailDialog.ParentWindow = MainForm;
+            TransactionDetailDialog = new SendTransactionDialog
+            {
+                ParentWindow = MainForm
+            };
 
-            TrySendTxDialog = new SendingTxDialog();
-            TrySendTxDialog.ParentWindow = MainForm;
+            TrySendTxDialog = new SendingTxDialog
+            {
+                ParentWindow = MainForm
+            };
 
-            SettingsDialog = new SettingsDialog();
-            SettingsDialog.ParentWindow = MainForm;
+            SettingsDialog = new SettingsDialog
+            {
+                ParentWindow = MainForm
+            };
 
             SettingsDialog.OnChangeDefaultCoinClick += SettingsDialog_OnChangeDefaultCoinClick;
 
             InitializingDialog = new InitializingDialog();
-           
 
             RestoreInitialize();
             BackupInitialize();
@@ -320,6 +335,12 @@ namespace Pandora.Client.PandorasWallet
 
             ulong lTxFee = FWallet.CalculateTxFee(MainForm.ToSendAddress, lAmount, FWallet.ActiveCurrencyID);
 
+            decimal lDecimalTxFee = (lTxFee / (decimal)FWallet.Coin);
+            if (lAmount <= lDecimalTxFee)
+            {
+                throw new ClientExceptions.InsufficientFundsException(string.Format("Amount to send needs to be higher than trasaction fee. Current tx fee: {0}", lDecimalTxFee));
+            }
+
             ExecuteSendTxDialog(lAmount, lSelectedCurrency, lTxFee, lBalance, MainForm.ToSendAddress);
 
             MainForm.ToSendAmount = 0;
@@ -337,14 +358,20 @@ namespace Pandora.Client.PandorasWallet
             BalanceViewModel lBalanceModel = FWallet.GetBalance(FWallet.ActiveCurrencyID);
             decimal lBalance = Convert.ToDecimal(lBalanceModel.ToString());
 
-            ulong lTxFee = FWallet.CalculateTxFee(MainForm.ToSendAddress, lBalance, FWallet.ActiveCurrencyID);
-
             if (lBalance == 0)
             {
                 throw new ClientExceptions.InsufficientFundsException("Not enough coins to make Transaction.");
             }
 
+            ulong lTxFee = FWallet.CalculateTxFee(MainForm.ToSendAddress, lBalance, FWallet.ActiveCurrencyID);
+
             decimal lAmount = lBalance - (lTxFee / (decimal)FWallet.Coin);
+            decimal lDecimalTxFee = (lTxFee / (decimal)FWallet.Coin);
+
+            if (lAmount <= lDecimalTxFee)
+            {
+                throw new ClientExceptions.InsufficientFundsException(string.Format("Amount to send needs to be higher than trasaction fee. Current tx fee: {0}", (lTxFee / (decimal)FWallet.Coin)));
+            }
 
             ExecuteSendTxDialog(lAmount, lSelectedCurrency, lTxFee, lBalance, MainForm.ToSendAddress, false);
         }
@@ -722,7 +749,6 @@ namespace Pandora.Client.PandorasWallet
                             try
                             {
                                 lResult = WalletCreationProcess();
-
                             }
                             catch (Exception ex)
                             {
@@ -745,7 +771,6 @@ namespace Pandora.Client.PandorasWallet
                     }
                     catch
                     {
-
                     }
 
                     if (lInitializeTask.IsFaulted)
@@ -765,7 +790,7 @@ namespace Pandora.Client.PandorasWallet
                         Log.Write("Succesfully logged as " + FWallet.Username);
                     }
                 }
-                
+
                 if (!FStartUpConnected || FWallet == null || !FWallet.Connected)
                 {
                     MainForm.Close();
@@ -817,7 +842,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                Utils.PandoraLog.GetPandoraLog().Write("An exception during initialization ocurred. Details: " + ex.Message + " on " + ex.Source);
+                Utils.PandoraLog.GetPandoraLog().Write("An exception during initialization ocurred. Details: " + ex.ToString());
                 throw;
             }
             finally

@@ -25,7 +25,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Client")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Pandora's Wallet Client Application")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]
 

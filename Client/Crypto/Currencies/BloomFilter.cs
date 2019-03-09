@@ -1,9 +1,5 @@
 ﻿using Pandora.Client.Crypto.Currencies.Crypto;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Pandora.Client.Crypto.Currencies
 {
@@ -52,15 +48,17 @@ namespace Pandora.Client.Crypto.Currencies
             // The ideal size for a bloom filter with a given number of elements and false positive rate is:
             // - nElements * log(fp rate) / ln(2)^2
             // We ignore filter parameters which will create a bloom filter larger than the protocol limits
-            vData = new byte[Math.Min((uint)(-1 / LN2SQUARED * nElements * (decimal)Math.Log(nFPRate)), MAX_BLOOM_FILTER_SIZE) / 8];
+            uint lBytesize = (uint)Math.Ceiling((-1 / LN2SQUARED * nElements * (decimal)Math.Log(nFPRate) / 8));
+
+            vData = new byte[Math.Min(lBytesize, MAX_BLOOM_FILTER_SIZE)];
             //vData(min((unsigned int)(-1  / LN2SQUARED * nElements * log(nFPRate)), MAX_BLOOM_FILTER_SIZE * 8) / 8),
             // The ideal number of hash functions is filter size * ln(2) / number of elements
             // Again, we ignore filter parameters which will create a bloom filter with more hash functions than the protocol limits
             // See http://en.wikipedia.org/wiki/Bloom_filter for an explanation of these formulas
 
-            this.nHashFuncs = Math.Min((uint)(vData.Length * 8 / nElements * LN2), MAX_HASH_FUNCS);
-            this.nTweak = nTweakIn;
-            this.nFlags = (byte)nFlagsIn;
+            nHashFuncs = Math.Min((uint)(vData.Length * 8 / nElements * LN2), MAX_HASH_FUNCS);
+            nTweak = nTweakIn;
+            nFlags = (byte)nFlagsIn;
         }
 
         private uint Hash(uint nHashNum, byte[] vDataToHash)
@@ -147,7 +145,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             if (tx == null)
                 throw new ArgumentNullException(nameof(tx));
-            var hash = tx.GetHash();
+            uint256 hash = tx.GetHash();
             bool fFound = false;
             // Match if the filter contains the hash of tx
             //  for finding tx when they appear in a block
@@ -174,7 +172,7 @@ namespace Pandora.Client.Crypto.Currencies
                             Insert(new OutPoint(hash, i));
                         else if ((nFlags & (byte)BloomFlags.UPDATE_MASK) == (byte)BloomFlags.UPDATE_P2PUBKEY_ONLY)
                         {
-                            var template = StandardScripts.GetTemplateFromScriptPubKey(txout.ScriptPubKey);
+                            ScriptTemplate template = StandardScripts.GetTemplateFromScriptPubKey(txout.ScriptPubKey);
                             if (template != null &&
                                     (template.Type == TxOutType.TX_PUBKEY || template.Type == TxOutType.TX_MULTISIG))
                                 Insert(new OutPoint(hash, i));

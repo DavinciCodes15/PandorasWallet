@@ -37,7 +37,7 @@ namespace Pandora.Client.PandorasWallet
         private PandoraExchanger FExchanger;
         private ConcurrentBag<PandoraExchanger.ExchangeMarket> FExchangeCoinMarket;
         private LoginExchanger FExchangeLogin;
-        private Dictionary<uint, List<MarketOrder>> FExchangeCurrencyOrders;
+        private ConcurrentDictionary<uint, List<MarketOrder>> FExchangeCurrencyOrders;
         private CancellationTokenSource FExchangeTaskCancellationSource;
         private Task[] FExchangeTasks;
         private PandoraExchanger.ExchangeMarket FExchangeSelectedCoin;
@@ -55,7 +55,7 @@ namespace Pandora.Client.PandorasWallet
             FExchanger.OnMarketPricesChanging += FExchanger_OnMarketPricesChanging;
 
             FExchangeCoinMarket = new ConcurrentBag<PandoraExchanger.ExchangeMarket>();
-            FExchangeCurrencyOrders = new Dictionary<uint, List<MarketOrder>>();
+            FExchangeCurrencyOrders = new ConcurrentDictionary<uint, List<MarketOrder>>();
 
             MainForm.OnExhangeCurrencySelectionChanged += MainForm_OnExhangeMarketSelectionChanged;
             MainForm.OnLabelEstimatePriceClick += MainForm_OnLabelEstimatePriceClick;
@@ -289,6 +289,8 @@ namespace Pandora.Client.PandorasWallet
                     return;
                 }
 
+                FCacheQuantity = FCacheTotal = -1;
+
                 MainForm.ExchangeTargetPrice = FExchangeSelectedCoin.BasePrice;
                 MainForm.ExchangeTransactionName = string.Format("{0} -> {1} - {2}", FExchangeSelectedCoin.BaseTicker, MainForm.SelectedExchangeMarket.SubItems[1].Text, DateTime.Now.ToString());
 
@@ -313,6 +315,7 @@ namespace Pandora.Client.PandorasWallet
                 RefreshStatusOrderLog(lOrders);
 
                 EnableExchangeInterface();
+                MainForm_OnExchangeQuantityTxtChanged(null, null);
             }
         }
 
@@ -468,7 +471,7 @@ namespace Pandora.Client.PandorasWallet
                 {
                     int lNumberofretrys = aOrder.ErrorCounter / 60;
 
-                    if (lNumberofretrys > 10)
+                    if (lNumberofretrys >= 9)
                     {
                         aOrder.Cancelled = true;
                         FExchanger.UpdateOrder(aOrder, OrderStatus.Interrupted);
@@ -476,9 +479,9 @@ namespace Pandora.Client.PandorasWallet
                     }
 
                     aOrder.ErrorCounter += 1;
-
+                    Universal.Log.Write(Universal.LogLevel.Error, string.Format("Order: {0}. Exception: {1}", aOrder.InternalID, ex.ToString()));
                     WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Error, "Error on Withdraw Order: " + ex.Message);
-                    WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, "Retrying in 1 minute. Attempt: " + lNumberofretrys + "/10");
+                    WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, string.Format("Retrying in 1 minute. Attempt: {0}/10", (lNumberofretrys + 1)));
                 }
             }
             else
@@ -504,31 +507,45 @@ namespace Pandora.Client.PandorasWallet
                 throw new Exception("Sell Quantity should be greater than 0.0005");
             }
 
+            decimal lAmountTrade = FExchangeSelectedCoin.IsSell ? MainForm.ExchangeQuantity : MainForm.ExchangeTotalReceived;
+
+            if (FExchangeSelectedCoin.MinimumTrade >= lAmountTrade)
+            {
+                throw new Exception(string.Format("Sell minimum trade size is {0} {1}", FExchangeSelectedCoin.MinimumTrade, FExchangeSelectedCoin.BaseTicker));
+            }
+
             TryToCreateNewExchangeTransaction(MainForm.ExchangeTargetPrice, MainForm.ExchangeQuantity, FExchangeSelectedCoin);
             MainForm.StatusControlExchange.StatusName = MainForm.ExchangeTransactionName;
         }
 
+        private decimal FCacheTotal = -1;
+        private decimal FCacheQuantity = -1;
+
         private void MainForm_OnExchangeQuantityTxtChanged(object sender, EventArgs e)
         {
-            if (MainForm.ExchangeTargetPrice > 0 && MainForm.ExchangeQuantity > 0)
+            if (MainForm.ExchangeTargetPrice > 0 && MainForm.ExchangeQuantity > 0 && (MainForm.ExchangeQuantity != FCacheQuantity || MainForm.ExchangeTotalReceived != FCacheTotal))
             {
                 List<CurrencyItem> lCoinToSell = FWallet.UserCoins;
-                CurrencyItem lPresicion = lCoinToSell.Find(x => x.Ticker == MainForm.LabelCoinQuantity.Split(' ')[1].Replace("(", "").Replace(")", ""));
+                CurrencyItem lPresicion = lCoinToSell.Find(x => x.Ticker == FExchangeSelectedCoin.BaseTicker);
                 decimal lTotal = Math.Round(MainForm.ExchangeQuantity / (FExchangeSelectedCoin.IsSell ? 1 / MainForm.ExchangeTargetPrice : MainForm.ExchangeTargetPrice), FWallet.Precision);
                 decimal lComision = lTotal * (decimal)0.0025;
                 MainForm.ExchangeTotalReceived = Math.Round(lTotal - lComision, lPresicion.Precision);
+                FCacheTotal = MainForm.ExchangeTotalReceived;
+                FCacheQuantity = MainForm.ExchangeQuantity;
             }
         }
 
         private void MainForm_OnTotalReceivedChanged(object sender, EventArgs e)
         {
-            if (MainForm.ExchangeTotalReceived > 0)
+            if (MainForm.ExchangeTotalReceived > 0 && FCacheTotal != MainForm.ExchangeTotalReceived && (MainForm.ExchangeQuantity != FCacheQuantity || MainForm.ExchangeTotalReceived != FCacheTotal))
             {
                 List<CurrencyItem> lCoinToSell = FWallet.UserCoins;
-                CurrencyItem lPresicion = lCoinToSell.Find(x => x.Ticker == MainForm.LabelTotalCoinReceived.Split(' ')[1].Replace("(", "").Replace(")", ""));
+                CurrencyItem lPresicion = lCoinToSell.Find(x => x.Ticker == FExchangeSelectedCoin.BaseTicker);
                 decimal lTotal = Math.Round(MainForm.ExchangeTotalReceived * (FExchangeSelectedCoin.IsSell ? 1 / MainForm.ExchangeTargetPrice : MainForm.ExchangeTargetPrice), FWallet.Precision);
                 decimal lComision = lTotal * (decimal)0.0025;
                 MainForm.ExchangeQuantity = Math.Round(lTotal - lComision, lPresicion.Precision);
+                FCacheTotal = MainForm.ExchangeTotalReceived;
+                FCacheQuantity = MainForm.ExchangeQuantity;
             }
         }
 
@@ -720,13 +737,6 @@ namespace Pandora.Client.PandorasWallet
                     {
                         DisplayActiveCurrencyOrder();
                     }
-                    /*
-                    var lMarket = FExchangeCoinMarket.ToList().Find(x => x.MarketName == it.Market && x.BaseTicker == it.BaseTicker);
-                    if (lMarket == null)
-                        throw new Exception("Invalid transaction found");
-                    decimal lRate = lMarket.IsSell ? 1 / it.Rate : it.Rate;
-                    MainForm.AddOrderHistory(it.InternalID, it.Name, it.SentQuantity.ToString(), (it.SentQuantity * lRate).ToString(), lRate.ToString(), lMarket.MarketName, it.OpenTime.ToLocalTime().ToString(), it.Status.ToString());
-                    */
                 }
                 lOrders = FExchangeCurrencyOrders[aCurrency];
             }
@@ -782,6 +792,7 @@ namespace Pandora.Client.PandorasWallet
             WriteTransactionLogEntry(lOrderWithID);
         }
 
+        //TODO: This is to mouch complex, i need to simplify it
         private void UpdateExchangeOrderTxRelationship()
         {
             try
@@ -848,7 +859,7 @@ namespace Pandora.Client.PandorasWallet
                                     {
                                         int lNumberofretrys = lItem.ErrorCounter / 60;
 
-                                        if (lNumberofretrys > 10)
+                                        if (lNumberofretrys >= 9)
                                         {
                                             lItem.Cancelled = true;
                                             FExchanger.UpdateOrder(lItem, OrderStatus.Interrupted);
@@ -856,9 +867,10 @@ namespace Pandora.Client.PandorasWallet
                                         }
 
                                         lItem.ErrorCounter += 1;
+                                        Universal.Log.Write(Universal.LogLevel.Error, string.Format("Order: {0}. Exception: {1}", lItem.InternalID, ex.ToString()));
 
-                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Error, "Error on Withdraw Order: " + ex.Message);
-                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Info, "Retrying in 1 minute. Attempt: " + lNumberofretrys + "/10");
+                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Error, "Error while placing Order: " + ex.Message);
+                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Info, string.Format("Retrying in 1 minute. Attempt: {0}/10", (lNumberofretrys + 1)));
                                     }
                                 }
                                 else
@@ -872,7 +884,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                Utils.PandoraLog.GetPandoraLog().Write("Failed to Update Exchange Order Relationship. Details: " + ex.Message + " on " + ex.Source);
+                Universal.Log.Write("Failed to Update Exchange Order Relationship. Details: " + ex.Message + " on " + ex.Source);
             }
             finally
             {

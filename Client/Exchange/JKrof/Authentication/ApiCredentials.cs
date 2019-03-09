@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security;
 
-namespace CryptoExchange.Net.Authentication
+namespace Pandora.Client.Exchange.JKrof.Authentication
 {
     public class ApiCredentials: IDisposable
     {

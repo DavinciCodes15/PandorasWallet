@@ -1,4 +1,4 @@
-﻿namespace CryptoExchange.Net.Objects
+﻿namespace Pandora.Client.Exchange.JKrof.Objects
 {
     public enum RateLimitingBehaviour
     {
@@ -16,5 +16,12 @@
     {
         FormData,
         Json
+    }
+
+    public enum SocketType
+    {
+        Normal,
+        Background,
+        BackgroundAuthenticated
     }
 }

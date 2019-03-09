@@ -541,7 +541,16 @@ namespace Pandora.Client.Crypto.Currencies
                 throw new ArgumentOutOfRangeException("The supplied datetime can't be expressed in unix timestamp");
             return (ulong)result;
         }
-
+        public static ulong DateTimeToUnixTimeMilliseconds(DateTimeOffset dt)
+        {
+            dt = dt.ToUniversalTime();
+            if (dt < unixRef)
+                throw new ArgumentOutOfRangeException("The supplied datetime can't be expressed in unix timestamp");
+            var result = (dt - unixRef).Milliseconds;
+            if (result > UInt32.MaxValue)
+                throw new ArgumentOutOfRangeException("The supplied datetime can't be expressed in unix timestamp");
+            return (ulong)result;
+        }
         public static DateTimeOffset UnixTimeToDateTime(uint timestamp)
         {
             var span = TimeSpan.FromSeconds(timestamp);

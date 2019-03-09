@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CryptoExchange.Net.RateLimiter
+namespace Pandora.Client.Exchange.JKrof.RateLimiter
 {
     public class RateLimitObject
     {

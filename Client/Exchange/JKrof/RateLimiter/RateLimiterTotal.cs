@@ -1,11 +1,12 @@
-﻿using CryptoExchange.Net.Objects;
+﻿using Pandora.Client.Exchange.JKrof.Interfaces;
+using Pandora.Client.Exchange.JKrof.Objects;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
-namespace CryptoExchange.Net.RateLimiter
+namespace Pandora.Client.Exchange.JKrof.RateLimiter
 {
     /// <summary>
     /// Limits the amount of requests per time period to a certain limit, counts the total amount of requests.

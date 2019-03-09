@@ -114,7 +114,7 @@ namespace Pandora.Client.Universal
 
         public static void CriticalError(string aMethodName, string aClassName, Exception e, string aMessage)
         {
-            string s = string.Format("{0}\n{1}.{2}\n{3}", aMessage, aClassName, aMethodName, FormatException(e));
+            string s = string.Format("{0}\n{1}.{2}\nServer Name: {3}\n{4}", aMessage, aClassName, aMethodName, Environment.MachineName, FormatException(e));
             Log.Write(LogLevel.Critical, s);
             SendEmail(SubjectLine, s);
         }

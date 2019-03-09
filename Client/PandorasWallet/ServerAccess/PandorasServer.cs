@@ -634,7 +634,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public void Dispose()
         {
-            FTxUpdateCancellationSource.Cancel();
+            FTxUpdateCancellationSource?.Cancel();
             FPandoraCache?.Dispose();
             FServerAccess?.Dispose();
         }

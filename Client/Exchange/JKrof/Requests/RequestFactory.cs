@@ -1,7 +1,7 @@
 ﻿using System.Net;
-using CryptoExchange.Net.Interfaces;
+using Pandora.Client.Exchange.JKrof.Interfaces;
 
-namespace CryptoExchange.Net.Requests
+namespace Pandora.Client.Exchange.JKrof.Requests
 {
     public class RequestFactory : IRequestFactory
     {

@@ -4,26 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
-namespace CryptoExchange.Net.Logging
+namespace Pandora.Client.Exchange.JKrof.Logging
 {
     public class Log
     {
         private List<TextWriter> writers;
-        private LogVerbosity level = LogVerbosity.Info;
-
-
-        public LogVerbosity Level
-        {
-            get => level;
-            set
-            {
-                if (level != value)
-                {
-                    Write(LogVerbosity.Info, "Loglevel set to " + value);
-                    level = value;
-                }
-            }
-        }
+        
+        public LogVerbosity Level { get; set; } = LogVerbosity.Info;
 
         public Log()
         {
@@ -40,7 +27,7 @@ namespace CryptoExchange.Net.Logging
             if ((int)logType < (int)Level)
                 return;
 
-            string logMessage = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss:fff} | {logType} | {message}";
+            var logMessage = $"{DateTime.Now:yyyy/MM/dd HH:mm:ss:fff} | {logType} | {message}";
             foreach (var writer in writers.ToList())
             {
                 try

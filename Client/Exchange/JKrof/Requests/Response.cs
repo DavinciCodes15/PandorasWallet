@@ -1,14 +1,16 @@
 ﻿using System.IO;
 using System.Net;
-using CryptoExchange.Net.Interfaces;
+using Pandora.Client.Exchange.JKrof.Interfaces;
 
-namespace CryptoExchange.Net.Requests
+namespace Pandora.Client.Exchange.JKrof.Requests
 {
     public class Response : IResponse
     {
-        private readonly WebResponse response;
+        private readonly HttpWebResponse response;
 
-        public Response(WebResponse response)
+        public HttpStatusCode StatusCode => response.StatusCode;
+
+        public Response(HttpWebResponse response)
         {
             this.response = response;
         }
@@ -16,6 +18,11 @@ namespace CryptoExchange.Net.Requests
         public Stream GetResponseStream()
         {
             return response.GetResponseStream();
+        }
+
+        public void Close()
+        {
+            response.Close();
         }
     }
 }

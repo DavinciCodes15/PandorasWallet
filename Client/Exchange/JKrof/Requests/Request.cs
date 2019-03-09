@@ -2,9 +2,9 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using CryptoExchange.Net.Interfaces;
+using Pandora.Client.Exchange.JKrof.Interfaces;
 
-namespace CryptoExchange.Net.Requests
+namespace Pandora.Client.Exchange.JKrof.Requests
 {
     public class Request : IRequest
     {
@@ -26,6 +26,8 @@ namespace CryptoExchange.Net.Requests
             set => request.ContentType = value;
         }
 
+        public string Content { get; set; }
+
         public string Accept
         {
             get => ((HttpWebRequest)request).Accept;
@@ -44,11 +46,18 @@ namespace CryptoExchange.Net.Requests
             set => request.Method = value;
         }
 
+        public TimeSpan Timeout
+        {
+            get => TimeSpan.FromMilliseconds(request.Timeout);
+            set => request.Timeout = (int)Math.Round(value.TotalMilliseconds);
+        }
+
         public Uri Uri => request.RequestUri;
 
-        public void SetProxy(string host, int port)
+        public void SetProxy(string host, int port, string login, string password)
         {
             request.Proxy = new WebProxy(host, port);
+            if(!string.IsNullOrEmpty(login) && !string.IsNullOrEmpty(password)) request.Proxy.Credentials = new NetworkCredential(login, password);
         }
 
         public async Task<Stream> GetRequestStream()
@@ -58,7 +67,7 @@ namespace CryptoExchange.Net.Requests
 
         public async Task<IResponse> GetResponse()
         {
-            return new Response(await request.GetResponseAsync().ConfigureAwait(false));
+            return new Response((HttpWebResponse)await request.GetResponseAsync().ConfigureAwait(false));
         }
     }
 }

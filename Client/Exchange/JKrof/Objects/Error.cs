@@ -1,8 +1,14 @@
-﻿namespace CryptoExchange.Net.Objects
+﻿namespace Pandora.Client.Exchange.JKrof.Objects
 {
     public abstract class Error
     {
+        /// <summary>
+        /// The error code
+        /// </summary>
         public int Code { get; set; }
+        /// <summary>
+        /// The message for the error that occured
+        /// </summary>
         public string Message { get; set; }
 
         protected Error(int code, string message)

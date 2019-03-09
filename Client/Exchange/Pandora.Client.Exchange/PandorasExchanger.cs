@@ -1,6 +1,6 @@
 ﻿using Bittrex.Net;
 using Bittrex.Net.Objects;
-using CryptoExchange.Net.Objects;
+using Pandora.Client.Exchange.JKrof.Objects;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Pandora.Client.Exchange
         private static PandoraExchanger FInstance;
         private BittrexSocketClient FBittrexSocket;
         private ConcurrentDictionary<string, decimal> FMarketPrices;
-        private int FMarketPriceSubscription;
+        private Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription FMarketPriceSubscription;
         private bool FCredentialsSet;
 
         public bool IsCredentialsSet => FCredentialsSet;
@@ -63,7 +63,7 @@ namespace Pandora.Client.Exchange
 
         public void SetCredentials(string aApiKey, string aApiSecret)
         {
-            CryptoExchange.Net.Authentication.ApiCredentials lCredentials = new CryptoExchange.Net.Authentication.ApiCredentials(aApiKey, aApiSecret);
+            Pandora.Client.Exchange.JKrof.Authentication.ApiCredentials lCredentials = new Pandora.Client.Exchange.JKrof.Authentication.ApiCredentials(aApiKey, aApiSecret);
 
             BittrexClientOptions lClientOptions = new Bittrex.Net.Objects.BittrexClientOptions { ApiCredentials = lCredentials };
             BittrexSocketClientOptions lSocketOptions = new Bittrex.Net.Objects.BittrexSocketClientOptions { ApiCredentials = lCredentials };
@@ -166,6 +166,11 @@ namespace Pandora.Client.Exchange
                 throw new Exception("No Credentials were set");
             }
 
+            if (aOrder == null || aMarket == null)
+            {
+                throw new ArgumentNullException(aOrder == null ? nameof(aOrder) : nameof(aMarket), "Invalid argument: " + aOrder == null ? nameof(aOrder) : nameof(aMarket));
+            }
+
             using (BittrexClient lClient = new BittrexClient())
             {
                 CallResult<Bittrex.Net.Objects.BittrexGuid> lResponse;
@@ -181,7 +186,7 @@ namespace Pandora.Client.Exchange
 
                 if (!lResponse.Success)
                 {
-                    throw new Exception("Error Placing Order. Message: " + lResponse.Error.Message);
+                    throw new Exception("Bittrex Error. Message: " + lResponse.Error.Message);
                 }
 
                 Guid lUuid = lResponse.Data.Uuid;
@@ -245,7 +250,7 @@ namespace Pandora.Client.Exchange
                 {
                     bool lOrdersLogs = TransactionHandler.ReadOrderLogs(it.InternalID, out List<OrderMessage> lMessages);
 
-                    lMessages.Sort();
+                    lMessages = lMessages.OrderByDescending(lMessage => lMessage.Time).ToList();
 
                     lErrorCounter = 0;
 
@@ -304,7 +309,8 @@ namespace Pandora.Client.Exchange
                        CoinName = x.BaseCurrency != aTicker ? x.BaseCurrencyLong : x.MarketCurrencyLong,
                        CoinTicker = x.BaseCurrency != aTicker ? x.BaseCurrency : x.MarketCurrency,
                        MarketName = x.MarketName,
-                       IsSell = x.BaseCurrency != aTicker
+                       IsSell = x.BaseCurrency != aTicker,
+                       MinimumTrade = x.MinTradeSize
                    }).ToArray();
 
             return lCoinMarkets;
@@ -334,7 +340,7 @@ namespace Pandora.Client.Exchange
 
         public void StartMarketPriceUpdating()
         {
-            if (FMarketPriceSubscription != 0)
+            if (FMarketPriceSubscription != null)
             {
                 return;
             }
@@ -359,11 +365,12 @@ namespace Pandora.Client.Exchange
                 }
             }
 
-            CallResult<int> lResult = FBittrexSocket.SubscribeToMarketSummariesLiteUpdate((data) =>
+            CallResult<Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription> lResult = FBittrexSocket.SubscribeToMarketSummariesLiteUpdate((data) =>
         {
             foreach (BittrexStreamMarketSummaryLite it in data)
             {
-                FMarketPrices.AddOrUpdate(it.MarketName, it.Last, (key, oldValue) => it.Last);
+                if (it.Last.HasValue)
+                    FMarketPrices.AddOrUpdate(it.MarketName, it.Last.Value, (key, oldValue) => it.Last.Value);
             }
 
             OnMarketPricesChanging?.Invoke();
@@ -429,8 +436,8 @@ namespace Pandora.Client.Exchange
 
         public void StopMarketUpdating()
         {
-            FBittrexSocket.UnsubscribeFromStream(FMarketPriceSubscription);
-            FMarketPriceSubscription = 0;
+            FBittrexSocket.Unsubscribe(FMarketPriceSubscription).Wait();
+            FMarketPriceSubscription = null;
         }
 
         public static PandoraExchanger GetInstance()
@@ -466,7 +473,7 @@ namespace Pandora.Client.Exchange
             public string CoinName { get; set; }
             public string CoinTicker { get; set; }
             public string MarketName { get; set; }
-
+            public decimal MinimumTrade { get; set; }
             public bool IsSell { get; set; }
         }
     }

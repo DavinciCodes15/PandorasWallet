@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CryptoExchange.Net.Attributes
+namespace Pandora.Client.Exchange.JKrof.Attributes
 {
     public class JsonOptionalPropertyAttribute : Attribute
     {
