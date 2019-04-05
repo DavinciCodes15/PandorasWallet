@@ -63,8 +63,8 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                lControler?.MainForm.StandardErrorMsgBox("Error at initialization of Pandoras Wallet. Details: " + ex.Message + " on " + ex.Source);
-                Utils.PandoraLog.GetPandoraLog().Write("Error at initialization of Pandoras Wallet. Details: " + ex.Message + " on " + ex.Source);
+                lControler?.MainForm.StandardUnhandledErrorMsgBox(String.Format("Error at initialization of Pandoras Wallet.\n\nDetails: \n{0}", ex));
+                Log.Write("Error at initialization of Pandoras Wallet. Details: {0}", ex);
             }
             finally
             {
@@ -85,8 +85,8 @@ namespace Pandora.Client.PandorasWallet
             PandoraLog lLog = PandoraLog.GetPandoraLog();
             Log.LogLevelFlag = LogLevelFlags.All;
             lLog.FileName = Properties.Settings.Default.LogFileName;
-            Pandora.Client.Universal.Log.WriteAppEvent("PandoraClient log file is '" + lLog.FileName + "'", System.Diagnostics.EventLogEntryType.Information, 6004);
-            Pandora.Client.Universal.Log.WriteAppEvent("Pandora current working folder '" + System.IO.Directory.GetCurrentDirectory() + "'", System.Diagnostics.EventLogEntryType.Information, 6004);
+            Log.WriteAppEvent(string.Format("PandoraClient log file is '{0}", lLog.FileName), System.Diagnostics.EventLogEntryType.Information, 6004);
+            Log.WriteAppEvent(string.Format("Pandora current working folder '{0}'", System.IO.Directory.GetCurrentDirectory()), System.Diagnostics.EventLogEntryType.Information, 6004);
             lLog.LineLength = 120;
             lLog.MaxSize = 5;
             lLog.Active = true;

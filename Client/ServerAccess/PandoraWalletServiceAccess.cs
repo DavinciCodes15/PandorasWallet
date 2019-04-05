@@ -53,18 +53,19 @@ namespace Pandora.Client.ServerAccess
 
 
         private delegate bool LogonDelegate(string aEmail, string aUserName, string aPassword);
+        private delegate bool Logon2Delegate(string aEmail, string aUserName, string aPassword, string aVersion);
         private delegate string GetCurrencyListDelegate(uint aStartId);
-        private delegate string GetCurrencyStatusListDelegate(ulong aCurrencyId, ulong aStartId);
+        private delegate string GetCurrencyStatusListDelegate(ulong aCurrencyId, long aStartId);
         private delegate void AddMonitoredAccountDelegate(ulong aCurrencyId, string aAddress);
         private delegate string GetMonitoredAcccountsDelegate(ulong aCurrencyId, ulong aStartCurrencyAccountId);
         private delegate bool RemoveMonitoredAcccountsDelegate(ulong aCurrencyAccountId);
-        private delegate string GetTransactionRecordsDelegate(ulong aCurrencyId, ulong aStartTxRecordId);
+        private delegate string GetTransactionRecordsDelegate(uint aCurrencyId, ulong aStartTxRecordId);
         private delegate string CreateTransactionDelegate(CurrencyTransaction aCurrencyTransaction);
         private delegate long SendTransactionDelegate(ulong aCurrencyId, string aSignedTxData);
         private delegate bool IsTransactionSentDelegate(long aSendTxHandle);
         private delegate string GetTransactionIdDelegate(long aSendTxHandle);
         private delegate string GetCurrencyIconDelegate(uint aCurrencyId);
-        private delegate long GetBlockHeightDelegate(uint aCurrencyId);
+        private delegate ulong GetBlockHeightDelegate(uint aCurrencyId);
         private delegate bool CheckAddressDelegate(uint aCurrencyId, string aAddress);
         private delegate string GetCurrencyDelegate(uint aCurrencyId);
 
@@ -81,6 +82,18 @@ namespace Pandora.Client.ServerAccess
             RemoteServer = aRemoteserver;
             Port = aPort;
             EncryptedConnection = aEncryptedConnection;
+            Run();
+            this.OnErrorEvent += PandoraWalletServiceAccess_OnErrorEvent;
+        }
+
+        public PandoraWalletServiceAccess(string aRemoteserver, int aPort, bool aEncryptedConnection, string aConnectionId)
+        {
+            FSyncContext = SynchronizationContext.Current;
+            RemoteServer = aRemoteserver;
+            Port = aPort;
+            EncryptedConnection = aEncryptedConnection;
+            FConnectionId = aConnectionId;
+            FServer = CreatePandoraWalletServer();
             Run();
             this.OnErrorEvent += PandoraWalletServiceAccess_OnErrorEvent;
         }
@@ -134,23 +147,15 @@ namespace Pandora.Client.ServerAccess
         private PandoraWalletWebService CreatePandoraWalletServer()
         {
             PandoraWalletWebService lResult;
-            try
-            {
-                Binding lBinding = new BasicHttpBinding();
-                if (EncryptedConnection)
-                    lBinding = new BasicHttpsBinding();
+            Binding lBinding = new BasicHttpBinding();
+            if (EncryptedConnection)
+                lBinding = new BasicHttpsBinding();
 
-                EndpointAddress lAddress = new EndpointAddress(GetConnectionURL(RemoteServer));
-                lResult = new PandoraWalletWebService(lBinding, lAddress);
-                lResult.GetServerId();
-                if (FPandoraWalletWebService == null)
-                    FPandoraWalletWebService = new PandoraWalletWebService(lBinding, lAddress);
-            }
-            catch
-            {
-                lResult = null;
-                throw;
-            }
+            EndpointAddress lAddress = new EndpointAddress(GetConnectionURL(RemoteServer));
+            lResult = new PandoraWalletWebService(lBinding, lAddress);
+            lResult.GetServerId();
+            if (FPandoraWalletWebService == null)
+                FPandoraWalletWebService = new PandoraWalletWebService(lBinding, lAddress);
             return lResult;
         }
 
@@ -208,6 +213,7 @@ namespace Pandora.Client.ServerAccess
         protected override bool InvokeMethodMessage(DelegateMessage aMethodMessage)
         {
             aMethodMessage.OnAfterEvent += MethodMessage_OnAfterEvent;
+            
             return base.InvokeMethodMessage(aMethodMessage);
         }
 
@@ -279,14 +285,55 @@ namespace Pandora.Client.ServerAccess
             }
         }
 
+        public DateTime LastConnected { get; private set; }
+
+        private bool ThreadLogon2(string aEmail, string aUserName, string aPassword, string aVersion)
+        {
+            try
+            {
+                // only this thread an no other app has access to the 
+                // Only one method will be executed at a time 
+                // 
+                //  This Method will create an test the conneciton and find
+                //  Other servers to connect to.
+                FServer = CreatePandoraWalletServer();
+                // Assuming this connection is now solid call the logon
+                var lServerResult = FServer.Logon2(aEmail, aUserName, aPassword, aVersion);
+                LastConnected = lServerResult.LastConnected;
+                if (!string.IsNullOrEmpty(lServerResult.ErrorMsg))
+                    throw new PandoraServerException("Server Error: " + lServerResult.ErrorMsg);
+                FConnectionId = (string)lServerResult.result;
+                Username = aUserName;
+                Email = aEmail;
+                return Connected;
+
+            }
+            catch (EndpointNotFoundException ex)
+            {
+                Log.Write(LogLevel.Error, "Connection to Pandora Server failed with: " + ex.Message);
+                Connected = false;
+                throw new PandoraServerException("Server not available. Please ensure you have an active internet conection.");
+            }
+            catch (Exception ex)
+            {
+                Log.Write(LogLevel.Error, "Connection to Pandora Server failed with: " + ex.Message);
+                Connected = false;
+                //Note: if the web server is using intergrated security it will fail with this result.
+                if (ex.Message.Contains("The request failed with HTTP status 401: Unauthorized"))
+                    throw new PandoraServerException("Access denied.  Invalid user name or password.");
+
+                throw;
+            }
+        }
+        
         private string ThreadGetCurrencyList(uint aStartId)
         {
             return (string)ReadServerResult(FServer.GetCurrencyList(FConnectionId, aStartId));
         }
 
-        private string ThreadGetCurrencyStatusList(ulong aCurrencyId, ulong aStartId)
+        private string ThreadGetCurrencyStatusList(ulong aCurrencyId, long aStartId)
         {
-            return (string)ReadServerResult(FServer.GetCurrencyStatusList(FConnectionId, (long)aCurrencyId, (long)aStartId));
+            return (string)ReadServerResult(FServer.GetCurrencyStatusList(FConnectionId, (long)aCurrencyId, aStartId));
         }
         private void ThreadAddMonitoredAccount(ulong aCurrencyId, string aAddress)
         {
@@ -303,7 +350,7 @@ namespace Pandora.Client.ServerAccess
             return (bool)ReadServerResult(FServer.RemoveMonitoredAccount(ConnectionId, (long)aCurrencyAccountId));
         }
 
-        private string ThreadGetTransactionRecords(ulong aCurrencyId, ulong aStartTxRecordId)
+        private string ThreadGetTransactionRecords(uint aCurrencyId, ulong aStartTxRecordId)
         {
             return (string)ReadServerResult(FServer.GetTransactionRecords(ConnectionId, (long)aCurrencyId, (long)aStartTxRecordId));
         }
@@ -340,14 +387,15 @@ namespace Pandora.Client.ServerAccess
             return (string)ReadServerResult(FServer.GetCurrencyIcon(ConnectionId, aCurrencyId));
         }
 
-        private long ThreadGetBlockHeight(uint aCurrencyId)
+        private ulong ThreadGetBlockHeight(uint aCurrencyId)
         {
-            return (long)ReadServerResult(FServer.GetBlockHeight(ConnectionId, aCurrencyId));
+            return Convert.ToUInt64(ReadServerResult(FServer.GetBlockHeight(ConnectionId, aCurrencyId)));
         }
 
         private string ThreadGetCurrency(uint aCurrencyId)
         {
-            return (string)ReadServerResult(FServer.GetCurrency(FConnectionId, aCurrencyId));
+            var lResult = FServer.GetCurrency(FConnectionId, aCurrencyId);
+            return (string)ReadServerResult(lResult);
         }
 
         public bool ThreadCheckAddress(uint aCurrencyId, string aAddress)
@@ -355,6 +403,11 @@ namespace Pandora.Client.ServerAccess
             return (bool)ReadServerResult(FServer.CheckAddressValidity(ConnectionId, aCurrencyId, aAddress));
         }
 
+        private string ThreadGetLastCurrencyStatus(uint aCurrencyId)
+        {
+            var lResult = FServer.GetLastCurrencyStatus(FConnectionId, aCurrencyId);
+            return (string)ReadServerResult(lResult);
+        }
 
         /// <summary>
         /// Name of user last connected or currently connected.  If no user was connected the result is null.
@@ -406,9 +459,23 @@ namespace Pandora.Client.ServerAccess
         /// <param name="aUserName">User name that is not case sensitive</param>
         /// <param name="aPassword">Case sensitive unhashed password.</param>
         /// <returns>Returns true if the user is authenticated.</returns>
-        public bool Logon(string aEmail, string aUserName, string aPassword)
+        //public bool Logon(string aEmail, string aUserName, string aPassword)
+        //{
+        //    return (bool)this.Invoke(new LogonDelegate(ThreadLogon), aEmail, aUserName, aPassword);
+        //}
+
+        /// <summary>
+        /// Use this method to authenticate the user ONLY this means the user account is
+        /// in the database and the passwords match nothing more.  Check AccountStatus
+        /// method to review the status of the account.
+        /// </summary>
+        /// <param name="aEmail">Users email this is not case sensitive</param>
+        /// <param name="aUserName">User name that is not case sensitive</param>
+        /// <param name="aPassword">Case sensitive unhashed password.</param>
+        /// <returns>Returns true if the user is authenticated.</returns>
+        public bool Logon2(string aEmail, string aUserName, string aPassword, string aVersion)
         {
-            return (bool)this.Invoke(new LogonDelegate(ThreadLogon), aEmail, aUserName, aPassword);
+            return (bool)this.Invoke(new Logon2Delegate(ThreadLogon2), aEmail, aUserName, aPassword, aVersion);
         }
 
         /// <summary>
@@ -441,6 +508,11 @@ namespace Pandora.Client.ServerAccess
             return (string)ReadServerResult(FServer.GetUserStatus(ConnectionId));
         }
 
+        /// <summary>
+        /// Returns a Json Array of longs
+        /// </summary>
+        /// <param name="aStartId"></param>
+        /// <returns></returns>
         public string GetCurrencyList(uint aStartId)
         {
             CheckConnected();
@@ -450,7 +522,7 @@ namespace Pandora.Client.ServerAccess
         /// <summary>
         /// Gets the status of the currency
         /// </summary>
-        public string GetCurrencyStatusList(ulong aCurrencyId, ulong aStartId)
+        public string GetCurrencyStatusList(ulong aCurrencyId, long aStartId)
         {
             CheckConnected();
             return (string)this.Invoke(new GetCurrencyStatusListDelegate(ThreadGetCurrencyStatusList), aCurrencyId, aStartId);
@@ -486,7 +558,7 @@ namespace Pandora.Client.ServerAccess
             return (bool)this.Invoke(new RemoveMonitoredAcccountsDelegate(ThreadRemoveMonitoredAcccounts), aCurrencyAccountId);
         }
 
-        public string GetTransactionRecords(ulong aCurrencyId, ulong aStartTxRecordId)
+        public string GetTransactionRecords(uint aCurrencyId, ulong aStartTxRecordId)
         {
             CheckConnected();
             return (string)this.Invoke(new GetTransactionRecordsDelegate(ThreadGetTransactionRecords), aCurrencyId, aStartTxRecordId);
@@ -545,10 +617,10 @@ namespace Pandora.Client.ServerAccess
             return (string)this.Invoke(new GetCurrencyIconDelegate(ThreadGetCurrencyIcon), aCurrencyId);
         }
 
-        public long GetBlockHeight(uint aCurrencyId)
+        public ulong GetBlockHeight(uint aCurrencyId)
         {
             CheckConnected();
-            return (long)this.Invoke(new GetBlockHeightDelegate(ThreadGetBlockHeight), aCurrencyId);
+            return (ulong)this.Invoke(new GetBlockHeightDelegate(ThreadGetBlockHeight), aCurrencyId);
         }
 
         public bool CheckAddress(uint aCurrencyId, string aAddress)
@@ -562,5 +634,17 @@ namespace Pandora.Client.ServerAccess
             CheckConnected();
             return (string)this.Invoke(new GetCurrencyDelegate(ThreadGetCurrency), aCurrencyId);
         }
+
+        /// <summary>
+        /// Returns a JSON text of the CurrencyStatusItem
+        /// </summary>
+        /// <param name="aCurrencyId"></param>
+        /// <returns></returns>
+        public string GetLastCurrencyStatus(uint aCurrencyId)
+        {
+            CheckConnected();
+            return (string)this.Invoke(new GetCurrencyDelegate(ThreadGetLastCurrencyStatus), aCurrencyId);
+        }
+
     }
 }

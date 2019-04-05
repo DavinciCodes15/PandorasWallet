@@ -18,6 +18,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using Pandora.Client.Universal;
 using System;
 using System.Collections.Generic;
 
@@ -123,7 +124,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             if (FConfirmed < 0)
             {
                 FConfirmed = 0;
-                Utils.PandoraLog.GetPandoraLog().Write("Wallet Error: Invalid confirmed balance detected. Please review transactions.", DateTime.Now);
+                Log.Write(LogLevel.Error,"Wallet Error: Invalid confirmed balance detected. Please review transactions.");
             }
         }
 

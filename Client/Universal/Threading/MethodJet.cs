@@ -23,7 +23,7 @@ namespace Pandora.Client.Universal.Threading
         private ISynchronizeInvoke FSynchronizingObject = null;
         private object FEventLock = new object();
         // private methods
-        private int GetCurrentThreadId()
+        protected int GetCurrentThreadId()
         {
             return Thread.CurrentThread.ManagedThreadId;
         }

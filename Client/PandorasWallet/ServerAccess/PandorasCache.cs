@@ -1,4 +1,4 @@
-﻿//   Copyright 2017-2019 Davinci Codes
+//   Copyright 2017-2019 Davinci Codes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,7 +18,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using Newtonsoft.Json;
 using Pandora.Client.ClientLib;
+using Pandora.Client.Universal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,18 +51,14 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             FPandoraServer = aobject;
             FPandoraServer.OnCurrencyItemMustUpdate += FPandoraServer_OnCurrencyItemMustUpdate;
-
             FCache = MemoryCache.Default;
-
+            AppDataNameRecovery();
             FDBManager = new DBManager(FPandoraServer.DataPath, FPandoraServer.InstanceId);
-
             FCurrencyAccounts = new CachedObject<CurrencyAccount>(this, FCache, FDBManager);
             FCurrencyItems = new CachedObject<CurrencyItem>(this, FCache, FDBManager);
             FCurrencyStatuses = new CachedObject<CurrencyStatusItem>(this, FCache, FDBManager);
             FTxs = new CachedObject<TransactionRecord>(this, FCache, FDBManager);
-
             SetLifeTimes();
-
             FPandoraServer.SetCheckpoints(FDBManager.GetSavedCheckpoints());
         }
 
@@ -72,7 +70,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             FDBManager.AddOrReplaceLifeTimes("Tx", 10);
         }
 
-        // TODO: Untested code occurs when the path 
+        // TODO: Untested code occurs when the path
         // for storing cache data is changed.
         public void RefreshCacheFolder()
         {
@@ -95,17 +93,17 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             lOldDBManager.Dispose();
         }
 
-        private bool FPandoraServer_OnCurrencyItemMustUpdate(ulong obj)
+        private bool FPandoraServer_OnCurrencyItemMustUpdate(long aId)
         {
             try
             {
-                CurrencyItemDataUpdate(FPandoraServer, FCurrencyItems);
+                CurrencyItemDataUpdate(FPandoraServer, FCurrencyItems, aId);
                 FCurrencyItems.EmptyCache();
                 return true;
             }
             catch (Exception ex)
             {
-                Pandora.Client.Universal.Log.Write(Universal.LogLevel.Error, "OnCurrencyItemMustUpdate error {0}\n{1}\n{2}", ex.Message, ex.Source, ex.StackTrace);
+                Universal.Log.Write(Universal.LogLevel.Error, "OnCurrencyItemMustUpdate error {0}\n{1}\n{2}", ex.Message, ex.Source, ex.StackTrace);
                 return false;
             }
         }
@@ -125,7 +123,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public CurrencyStatusItem GetCurrencyStatusItem(uint aID)
         {
             // get the Currency Status Item form the local Database
-            var lResult = FCurrencyStatuses.Get(aID);
+            CurrencyStatusItem[] lResult = FCurrencyStatuses.Get(aID);
             //it comes as an array so lets get the right value if one exists
             //if not return null
             if (lResult.Length == 0)
@@ -134,26 +132,35 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 return lResult[0];
         }
 
-        public CurrencyStatusItem[] GetCurrencyStatuses()
+        public CurrencyStatusItem[] GetCurrencyStatuses(bool lForce = false)
         {
-            if (FDBManager.CheckLastRetrieval("CurrencyStatus"))
+            if (FDBManager.CheckLastRetrieval("CurrencyStatus") || lForce)
                 CurrencyStatusDataUpdate(FPandoraServer, FCurrencyStatuses);
 
-             return FCurrencyStatuses.Get();
+            return FCurrencyStatuses.Get();
         }
 
         public CurrencyItem GetCurrencyItem(uint aCurrencyId)
         {
             // get the Currency Item form the local Database
-            var lResult = FCurrencyItems.Get(aCurrencyId);
+            CurrencyItem[] lResult = FCurrencyItems.Get(aCurrencyId);
             //it comes as an array so lets get the right value if one exists
             //if not return null
             if (lResult.Length == 0)
-                return null;
+            {
+                var lJson = FPandoraServer.FServerAccess.GetCurrency(aCurrencyId);
+                var lCurrencyItem = JsonConvert.DeserializeObject<CurrencyItem>(lJson, new PandoraJsonConverter());
+                if (lCurrencyItem.Id == 0)
+                {
+                    Log.Write(LogLevel.Info, lJson);
+                    throw new Exception(string.Format("Currency Id {0} does not exist.", aCurrencyId));
+                }
+                FDBManager.Write(lCurrencyItem);
+                return lCurrencyItem;
+            }
             else
                 return lResult[0];
         }
-
 
         public CurrencyItem[] GetCurrencies(uint? aID = null)
         {
@@ -184,20 +191,22 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             Clear();
         }
 
-        private void CurrencyItemDataUpdate(PandorasServer aPandorasServer, CachedObject<CurrencyItem> aCachedObject)
+        public void CheckfornewCurrencies()
         {
-            if (FDBManager.Write(aPandorasServer.FetchCurrencies()))
-            {
+            CurrencyItemDataUpdate(FPandoraServer, FCurrencyItems);
+        }
+
+        private void CurrencyItemDataUpdate(PandorasServer aPandorasServer, CachedObject<CurrencyItem> aCachedObject, long? aId = null)
+        {
+            if (FDBManager.Write(aPandorasServer.FetchCurrencies(aId)))
                 aCachedObject.NewDataAlert = true;
-                return;
-            }
         }
 
         private void CurrencyStatusDataUpdate(PandorasServer aPandorasServer, CachedObject<CurrencyStatusItem> aCachedObject, List<uint> aListOfCurrencies = null)
         {
             List<CurrencyStatusItem> lStatuses = new List<CurrencyStatusItem>();
 
-            foreach (uint it in aPandorasServer.CurrencyIdList)
+            foreach (uint it in aPandorasServer.CurrencyIds)
             {
                 List<CurrencyStatusItem> lCurrencyStatus = aPandorasServer.FetchCurrencyStatus(it);
 
@@ -235,8 +244,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             else
             {
                 List<CurrencyAccount> lListAccounts = new List<CurrencyAccount>();
-                
-                foreach (uint it in aPandorasServer.CurrencyIdList)
+
+                foreach (uint it in aPandorasServer.CurrencyIds)
                 {
                     lListAccounts.AddRange(aPandorasServer.FetchMonitoredAccounts(it));
                 }
@@ -251,10 +260,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         private List<uint> TransactionsDataUpdate(PandorasServer aPandorasServer, CachedObject<TransactionRecord> aCachedObject)
         {
-
             List<uint> lCurrencyIdList = new List<uint>();
 
-            foreach (uint lCurrencyId in aPandorasServer.CurrencyIdList)
+            foreach (uint lCurrencyId in aPandorasServer.CurrencyIds)
                 if (FDBManager.Write(aPandorasServer.FetchTransactions(lCurrencyId), lCurrencyId))
                     lCurrencyIdList.Add(lCurrencyId);
 
@@ -368,12 +376,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     {
                         case "CurrencyAccount":
                             FDBManager.Read(out List<CurrencyAccount> lReturned1, aId);
-                            FCacheRef.Set(aIdentifier , lReturned1.ToArray(), aId.HasValue ? SetSlidingPolicy() : SetAbsolutePolicy());
+                            FCacheRef.Set(aIdentifier, lReturned1.ToArray(), aId.HasValue ? SetSlidingPolicy() : SetAbsolutePolicy());
                             break;
 
                         case "CurrencyItem":
                             FDBManager.Read(out List<CurrencyItem> lReturned2, aId);
-                            FCacheRef.Set(aIdentifier , lReturned2.ToArray(), aId.HasValue ? SetSlidingPolicy() : SetAbsolutePolicy());
+                            FCacheRef.Set(aIdentifier, lReturned2.ToArray(), aId.HasValue ? SetSlidingPolicy() : SetAbsolutePolicy());
                             break;
 
                         case "CurrencyStatusItem":
@@ -468,18 +476,117 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             public void EmptyCache()
             {
                 List<string> LIdsToErase = new List<string>();
-
                 foreach (KeyValuePair<string, object> it in FCacheRef)
-                {
                     LIdsToErase.Add(it.Key);
-                }
-
                 foreach (string it in LIdsToErase)
-                {
                     FCacheRef.Remove(it);
-                }
 
                 return;
+            }
+        }
+
+        /// <summary>
+        /// Scans the app data folder looking for bad or old file names, and then tries to perform a rename. This is used as a recovery system.
+        /// </summary>
+        private void AppDataNameRecovery()
+        {
+            try
+            {
+                if (TryRecoverAppDataNames(out string lWrongDataNames))
+                    UpdateAppDataNames(lWrongDataNames);
+            }
+            catch (System.Security.SecurityException ex)
+            {
+                //This should never happend
+                Universal.Log.Write(Universal.LogLevel.Error, ex.ToString());
+                throw new Exception("Not enough permissions, please try restart the application with administrators rights");
+            }
+        }
+
+        /// <summary>
+        /// Scans app data folder and looks for missplaced names in data files.
+        /// </summary>
+        /// <param name="aWrongDataName">Output of bad filename found. Null when nothing found.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Security.SecurityException">Thrown if app have inssuficient permissions to perform operations in app data folder</exception>
+        internal bool TryRecoverAppDataNames(out string aWrongDataName)
+        {
+            bool lResult = false;
+            aWrongDataName = null;
+            List<System.IO.FileInfo> lWronDataNames = new List<System.IO.FileInfo>();
+            System.IO.DirectoryInfo lDataDirectory = new System.IO.DirectoryInfo(FPandoraServer.DataPath);
+            System.IO.FileInfo[] lDataFiles = lDataDirectory.GetFiles("*.sqlite");
+
+            //First verify that there is no file already created with that isntanceid
+            if (!(lDataFiles.Where(lFile => lFile.Name.Contains(FPandoraServer.InstanceId)).Any()))
+            {
+                ClientJsonConverter lConverter = new ClientJsonConverter(FPandoraServer);
+                CurrencyAccount[] lUserMonitoredAccounts = Newtonsoft.Json.JsonConvert.DeserializeObject<List<CurrencyAccount>>(FPandoraServer.FServerAccess.GetMonitoredAcccounts(1, 0), lConverter).ToArray();
+                CurrencyAccount lBaseAccount = lUserMonitoredAccounts.FirstOrDefault();
+                if (lUserMonitoredAccounts.Any() && lBaseAccount != null)
+                {
+                    foreach (System.IO.FileInfo litem in lDataFiles)
+                    {
+                        try
+                        {
+                            // If the db file is usable the following method should not throw exception, otherwise just skip and test another
+                            CurrencyAccount[] lAddresses = DBManager.GetUserAddressesFromFile(FPandoraServer.DataPath, litem.Name);
+                            //Verify address to make sure that file belongs to user
+                            if (lAddresses.Any() && lAddresses.Where(laccount => laccount.CurrencyId == 1 && laccount.Address == lBaseAccount.Address).Any())
+                                lWronDataNames.Add(litem);
+                        }
+                        catch (Wallet.ClientExceptions.CacheDBException ex)
+                        {
+                            Universal.Log.Write(Universal.LogLevel.Error, ex.ToString());
+                        }
+                    }
+                    if (lWronDataNames.Any())
+                    {
+                        //If several files are found, take the most recent one as wright
+                        aWrongDataName = lWronDataNames.OrderByDescending(lFile => lFile.LastWriteTimeUtc).First().Name.Replace(".sqlite", string.Empty);
+                        lResult = true;
+                    }
+                }
+            }
+            return lResult;
+        }
+
+        /// <summary>
+        /// By providing a bad file name, saves old files and try to rename them with a valid intanceid
+        /// </summary>
+        /// <param name="lWrongDataName">Incorrect file name to be renamed</param>
+        /// <exception cref="System.Security.SecurityException">>Thrown if app have inssuficient permissions to perform operations in app data folder</exception>
+        internal void UpdateAppDataNames(string lWrongDataName)
+        {
+            System.IO.DirectoryInfo lDataDir = new System.IO.DirectoryInfo(FPandoraServer.DataPath);
+            System.IO.FileInfo[] lFiles = lDataDir.GetFiles();
+            try
+            {
+                System.IO.FileInfo lSQliteFile = lFiles.Where(x => x.Name.Contains(lWrongDataName) && x.Extension == ".sqlite").FirstOrDefault();
+                if (lSQliteFile != null)
+                {
+                    //Everything except .sqlite
+                    System.IO.FileInfo[] lFilteredFiles = lFiles.Where(lf => lf.Name.Contains(lWrongDataName) && lf != lSQliteFile).ToArray();
+                    foreach (System.IO.FileInfo lfile in lFilteredFiles)
+                    {
+                        System.IO.File.Copy(lfile.FullName, lfile.FullName.Replace(lWrongDataName, FPandoraServer.InstanceId));
+                        System.IO.File.Delete(lfile.FullName);
+                    }
+                    System.IO.File.Copy(lSQliteFile.FullName, lSQliteFile.FullName.Replace(lWrongDataName, FPandoraServer.InstanceId));//And Finally do sqlite file
+                    System.IO.File.Delete(lSQliteFile.FullName);
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new System.Security.SecurityException(ex.Message);
+            }
+            catch (System.IO.DirectoryNotFoundException ex)
+            {
+                Universal.Log.Write(Universal.LogLevel.Error, ex.ToString());
+            }
+            catch (System.IO.FileNotFoundException ex)
+            {
+                Universal.Log.Write(Universal.LogLevel.Error, ex.ToString());
             }
         }
     }

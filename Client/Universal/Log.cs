@@ -8,12 +8,12 @@ namespace Pandora.Client.Universal
         public const int SE_ID_Stream_Error = 2000;
         public const int SE_ID_Information = 3000;
 
-        public static void InitLog(FixedLengthLogFileControl aLog, string aFileName, ushort aLineLength, ushort aMaxSize, string aLogLevelFlag)
+        public static void InitLog(FixedLengthLogFileControl aLog, string aFileName, int aLineLength, int aMaxSize, LogLevelFlags aLogLevelFlag)
         {
-            Log.LogLevelFlag = (LogLevelFlags)Enum.Parse(typeof(LogLevelFlags), aLogLevelFlag);
+            Log.LogLevelFlag = aLogLevelFlag; //(LogLevelFlags)Enum.Parse(typeof(LogLevelFlags), aLogLevelFlag);
             aLog.FileName = aFileName;
-            aLog.LineLength = aLineLength;
-            aLog.MaxSize = aMaxSize;
+            aLog.LineLength = (ushort)aLineLength;
+            aLog.MaxSize = (ushort)aMaxSize;
             aLog.Active = true;
             Log.SystemLog = aLog;
         }
@@ -94,7 +94,7 @@ namespace Pandora.Client.Universal
     public enum LogLevel { Info, Warning, Error, Debug, Critical }
 
     [Flags]
-    public enum LogLevelFlags { All = 15, Information = 1, Warning = 2, Error = 4, Debug = 8 }
+    public enum LogLevelFlags { None = 0, All = 15, Information = 1, Warning = 2, Error = 4, Debug = 8 }
 
     public interface ISystemLog
     {

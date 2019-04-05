@@ -67,7 +67,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -95,7 +95,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
 
             FOkPressed = true;
@@ -109,7 +109,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
 

@@ -33,7 +33,8 @@ namespace Pandora.Client.ClientLib
                             aItem["Ticker"].Value<string>(),aItem["Precision"].Value<ushort>(),
                             aItem["LiveDate"].Value<DateTime>(),aItem["MinConfirmations"].Value<int>(),
                             GetIcon(aItem,aSerializer), aItem["FeePerKb"].Value<int>(),
-                            aItem["ChainParamaters"].ToObject<ChainParams>(aSerializer)
+                            aItem["ChainParamaters"].ToObject<ChainParams>(aSerializer),
+                            (CurrencyStatus)aItem["CurrentStatus"].Value<int>()
                             );
                     }
                 },
@@ -64,7 +65,21 @@ namespace Pandora.Client.ClientLib
                     { typeof(CurrencyStatusItem), (JObject aItem, JsonSerializer aSerializer) => { return new CurrencyStatusItem(aItem["StatusId"].Value<long>(),aItem["CurrencyId"].Value<uint>(),aItem["StatusTime"].Value<DateTime>(),(CurrencyStatus) Enum.Parse(typeof(CurrencyStatus),aItem["Status"].Value<string>()),aItem["ExtendedInfo"].Value<string>(), aItem["BlockHeight"].Value<ulong>()); } },
                     { typeof(CurrencyAccount),  (JObject aItem, JsonSerializer aSerializer) => { return new CurrencyAccount(aItem["Id"].Value<uint>(),aItem["CurrencyId"].Value<uint>(),aItem["Address"].Value<string>()); } },
                     { typeof(TransactionUnit), (JObject aItem, JsonSerializer aSerializer) => { return new TransactionUnit(aItem["Id"].Value<ulong>(), aItem["Amount"].Value<ulong>(),aItem["Address"].Value<string>()); } },
-                    { typeof(TransactionRecord),  (JObject aItem, JsonSerializer aSerializer) => { TransactionRecord lTxRcd =  new TransactionRecord(aItem["TransactionRecordId"].Value<ulong>(),aItem["TxId"].Value<string>(),aItem["TxDate"].Value<DateTime>(),aItem["Block"].Value<ulong>()); lTxRcd.AddInput(aItem["Inputs"].ToObject<TransactionUnit[]>(aSerializer)); lTxRcd.AddOutput(aItem["Outputs"].ToObject<TransactionUnit[]>(aSerializer)); lTxRcd.TxFee = aItem["TxFee"].Value<ulong>(); return lTxRcd;  }  },
+                    { typeof(TransactionRecord),  (JObject aItem, JsonSerializer aSerializer) => 
+                        {
+                            TransactionRecord lTxRcd =  new TransactionRecord(
+                                aItem["TransactionRecordId"].Value<ulong>(),
+                                aItem["TxId"].Value<string>(),
+                                aItem["TxDate"].Value<DateTime>(),
+                                aItem["Block"].Value<ulong>(),
+                                aItem["Valid"].Value<bool>()
+                                );
+                            lTxRcd.AddInput(aItem["Inputs"].ToObject<TransactionUnit[]>(aSerializer));
+                            lTxRcd.AddOutput(aItem["Outputs"].ToObject<TransactionUnit[]>(aSerializer));
+                            lTxRcd.TxFee = aItem["TxFee"].Value<ulong>();
+                            return lTxRcd;
+                        }
+                    },
                     { typeof(CurrencyTransaction), (JObject aItem,JsonSerializer aSerializer) => { return new CurrencyTransaction(aItem["Inputs"].ToObject<TransactionUnit[]>(aSerializer), aItem["Outputs"].ToObject<TransactionUnit[]>(aSerializer),aItem["TxFee"].Value<ulong>(),aItem["CurrencyId"].Value<ulong>()); } },
                     { typeof(UserStatus), (JObject aItem,JsonSerializer aSerializer) => { return new UserStatus(aItem["Active"].Value<bool>(),aItem["ExtendedInfo"].Value<string>(),aItem["StatusDate"].Value<DateTime>()); } }
             };

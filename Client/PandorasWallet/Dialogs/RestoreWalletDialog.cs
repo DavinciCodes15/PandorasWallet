@@ -50,14 +50,10 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
-        public void ErrorDialog(string aErrorMessage)
-        {
-            this.StandardErrorMsgBox(aErrorMessage);
-        }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
@@ -67,7 +63,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -75,7 +71,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         {
             if (!string.IsNullOrEmpty(InitialErrorMessage))
             {
-                ErrorDialog(InitialErrorMessage);
+                this.StandardUnhandledErrorMsgBox(InitialErrorMessage, "Wallet Restoe Error");
             }
         }
 

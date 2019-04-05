@@ -86,67 +86,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.AddMonitoredAccountResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.CheckAddressValidityResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.EndGetTransactionToSignResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetBlockHeightResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetCurrencyIconResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetCurrencyListResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetCurrencyResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetCurrencyStatusListResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetMonitoredAcccountsResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetServerIdResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetTransactionIdResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetTransactionRecordsResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.GetUserStatusResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.IsConnectedResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.IsTransactionSentResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.LogoffResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.LogonResponse.datasource">
+    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraLogonResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraResult.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.RemoveMonitoredAccountResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.SendTransactionResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_1\Pandora.Client.ServerAccess.PandoraWalletService1_1.StartGetTransactionToSignResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
     <None Include="Connected Services\PandoraWalletService1_1\PandoraWalletService1_1.wsdl" />

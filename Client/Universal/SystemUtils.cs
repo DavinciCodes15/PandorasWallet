@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
+using System.Reflection;
 
 #if MONO
 #else
@@ -32,6 +33,13 @@ namespace Pandora.Client.Universal
 
 #endif
 
+        public static string GetAssemblyVersion()
+        {
+            Assembly lAssembly = Assembly.GetExecutingAssembly();
+            System.Diagnostics.FileVersionInfo lFileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(lAssembly.Location);
+            return lFileVersion.FileVersion;
+        }
+
         public static DateTime StandardStringDateToDateTime(this string aDateTime)
         {
             if (aDateTime == null)
@@ -53,14 +61,23 @@ namespace Pandora.Client.Universal
             Process lResult = null;
             Process[] lList = Process.GetProcessesByName(aProcessName);
             if (lList.Length == 0)
-            {
                 lList = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(aProcessName));
-            }
-
-            if (lList.Length > 0)
+            if (lList.Length == 0)
             {
-                lResult = lList[0];
+                aProcessName = "./" + aProcessName;
+                var lProcesses = Process.GetProcesses();
+                foreach (var lProc in lProcesses)
+                {
+                    if (lProc.ProcessName == aProcessName)
+                    {
+                        lList = new Process[1] { lProc };
+                        break;
+                    }
+                }
             }
+            if (lList.Length > 0)
+                lResult = lList[0];
+
 
             return lResult;
         }
@@ -114,6 +131,7 @@ namespace Pandora.Client.Universal
 
         public static void CriticalError(string aMethodName, string aClassName, Exception e, string aMessage)
         {
+            if (e is ThreadAbortException) return; // not important
             string s = string.Format("{0}\n{1}.{2}\nServer Name: {3}\n{4}", aMessage, aClassName, aMethodName, Environment.MachineName, FormatException(e));
             Log.Write(LogLevel.Critical, s);
             SendEmail(SubjectLine, s);
@@ -194,6 +212,7 @@ namespace Pandora.Client.Universal
             Password = aEmailSystem.Password;
             CertificateFileName = aEmailSystem.CertificateFileName;
             UseSSL = aEmailSystem.UseSSL;
+            Enabled = aEmailSystem.Enabled;
         }
 
         public int Port { get; set; }

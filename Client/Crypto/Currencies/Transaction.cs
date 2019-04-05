@@ -305,7 +305,8 @@ namespace Pandora.Client.Crypto.Currencies
 
         public string GetAddress(Network aNetwork)
         {
-            return ScriptPubKey.GetDestination().GetAddress(aNetwork).ToString();
+            string lResult = ScriptPubKey.GetDestination().GetAddress(aNetwork).ToString();
+            return lResult;
         }
 
         public bool IsTo(IDestination destination)
@@ -951,6 +952,21 @@ namespace Pandora.Client.Crypto.Currencies
         public TxInList Inputs => vin;
         public TxOutList Outputs => vout;
 
+        public bool OutputsContainsAddress(string aAddress)
+        {
+            bool lResult = false;
+            foreach (TxOut lOut in Outputs)
+                if (lResult = lOut.GetAddress(Network) == aAddress) break;
+            return lResult;
+        }
+
+        public bool InputsContainsTxId(string aTxId)
+        {
+            bool lResult = false;
+            foreach (TxIn lIn in Inputs)
+                if (lResult = lIn.PrevOut.Hash.ToString().ToLower() == aTxId) break;
+            return lResult;
+        }
         //Since it is impossible to serialize a transaction with 0 input without problems during deserialization with wit activated, we fit a flag in the version to workaround it
         private const uint NoDummyInput = (1 << 27);
 
@@ -1087,7 +1103,7 @@ namespace Pandora.Client.Crypto.Currencies
             _Hashes = new uint256[2];
         }
 
-        public Transaction Clone(bool cloneCache)
+        public virtual Transaction Clone(bool cloneCache)
         {
             Transaction clone = new Transaction(this.ToBytes(), Network);
             if (cloneCache)

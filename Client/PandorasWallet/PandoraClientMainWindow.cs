@@ -116,7 +116,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
 
@@ -245,7 +245,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -268,7 +268,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -280,7 +280,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
 
@@ -303,7 +303,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -321,7 +321,7 @@ namespace Pandora.Client.PandorasWallet
                 e.Handled = true;
             }
 
-            if((sender as TextBox).Text == "0" && e.KeyChar != '.')
+            if ((sender as TextBox).Text == "0" && e.KeyChar != '.')
             {
                 (sender as TextBox).Text = e.KeyChar.ToString();
                 (sender as TextBox).SelectionStart = (sender as TextBox).Text.Length;
@@ -344,7 +344,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -356,7 +356,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -368,7 +368,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -380,7 +380,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -392,7 +392,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -454,7 +454,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -467,7 +467,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -481,15 +481,17 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
-        string FPreviousSendAmount = "0";
+
+        private string FPreviousSendAmount = "0";
+
         private void QuickAmountTextBox_TextChanged(object sender, EventArgs e)
         {
             try
             {
-                if(string.IsNullOrWhiteSpace((sender as TextBox).Text))
+                if (string.IsNullOrWhiteSpace((sender as TextBox).Text))
                 {
                     (sender as TextBox).Text = "0";
                 }
@@ -502,11 +504,10 @@ namespace Pandora.Client.PandorasWallet
                 {
                     FPreviousSendAmount = (sender as TextBox).Text;
                 }
-                
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -529,15 +530,19 @@ namespace Pandora.Client.PandorasWallet
         public string LabelEstimatePrice { get => lblEstimatePrice.Text; set => lblEstimatePrice.Text = value; }
 
         public decimal ExchangeTargetPrice { get => string.IsNullOrWhiteSpace(txtPrice.Text) ? 0 : Convert.ToDecimal(txtPrice.Text); set => txtPrice.Text = value.ToString(); }
+        public decimal ExchangeStopPrice { get => string.IsNullOrWhiteSpace(txtStopPrice.Text) ? 0 : Convert.ToDecimal(txtStopPrice.Text); set => txtStopPrice.Text = value.ToString(); }
         public decimal ExchangeQuantity { get => string.IsNullOrWhiteSpace(txtQuantity.Text) ? 0 : Convert.ToDecimal(txtQuantity.Text); set => txtQuantity.Text = value.ToString(); }
         public decimal ExchangeTotalReceived { get => string.IsNullOrWhiteSpace(txtTotal.Text) ? 0 : Convert.ToDecimal(txtTotal.Text); set => txtTotal.Text = value.ToString(); }
         public string ExchangeTransactionName { get => txtTransactionName.Text; set => txtTransactionName.Text = value; }
 
         public bool ExchangeTargetPriceEnabled { get => txtPrice.Enabled; set => txtPrice.Enabled = value; }
+        public bool ExchangeStoptPriceEnabled { get => txtStopPrice.Enabled; set => txtStopPrice.Enabled = value; }
         public bool ExchangeQuantityEnabled { get => txtQuantity.Enabled; set => txtQuantity.Enabled = value; }
         public bool ExchangeTotalReceivedEnabled { get => txtTotal.Enabled; set => txtTotal.Enabled = value; }
         public bool ExchangeTransactionNameEnabled { get => txtTransactionName.Enabled; set => txtTransactionName.Enabled = value; }
         public bool ExchangeButtonEnabled { get => btnExchange.Enabled; set => btnExchange.Enabled = value; }
+
+        public event EventHandler OnStopPriceTextChanged;
 
         public void ClearExchangeList()
         {
@@ -633,7 +638,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
 
@@ -706,7 +711,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -718,7 +723,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -732,7 +737,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -777,7 +782,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -789,7 +794,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -813,7 +818,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -825,7 +830,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -837,7 +842,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
 
@@ -849,7 +854,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -861,7 +866,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -875,7 +880,19 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void txtStopPrice_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                OnStopPriceTextChanged?.Invoke(sender, e);
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
             }
         }
     }

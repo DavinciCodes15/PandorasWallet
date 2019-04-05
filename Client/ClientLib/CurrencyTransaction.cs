@@ -30,6 +30,7 @@ namespace Pandora.Client.ClientLib
 
         public ulong CurrencyId { get; set; }
 
+ 
         ITransactionUnit[] ICurrencyTransaction.Inputs => this.Inputs;
 
         ITransactionUnit[] ICurrencyTransaction.Outputs => this.Outputs;

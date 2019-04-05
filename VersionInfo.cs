@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 /**********************************************
  * Add the following to the Project.*
@@ -24,5 +24,5 @@
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("1.0.19")]
-[assembly: AssemblyFileVersion("1.0.19.1551")]
+[assembly: AssemblyVersion("1.0.20")]
+[assembly: AssemblyFileVersion("1.0.20.1587")]

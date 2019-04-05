@@ -65,6 +65,7 @@
     <Compile Include="Encryption.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="BaseLogfile.cs" />
+    <Compile Include="PandoraLog.cs" />
     <Compile Include="SystemUtils.cs" />
     <Compile Include="Threading\Exceptions.cs" />
     <Compile Include="Threading\MethodJet.cs" />

@@ -72,7 +72,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
             finally
             {
@@ -92,7 +92,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
             finally
             {

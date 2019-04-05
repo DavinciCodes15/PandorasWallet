@@ -5,6 +5,7 @@ Pandora's Wallet 1.0
 
 Pandora's Wallet is a new way to take control of your crypto coin trading portfolio. The software connects to an API provided by DavinciCodes to manage the transactional side of cryptocurrency operations. The private keys and all personal keys are only used by the client app and none of them are know by the server. You can have several cryptocurrency coins all stored on a single wallet that can be used to trade on coin exchangers. All is done on a single place, keeping your assets secured.
 
+
 ## Prerequisites and Dependencies
 
 In order to use the make changes or use the software code you will need:

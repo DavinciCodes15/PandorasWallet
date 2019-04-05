@@ -171,7 +171,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
 
             this.SetWaitCursor();
@@ -216,7 +216,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
     }

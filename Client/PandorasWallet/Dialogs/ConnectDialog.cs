@@ -57,27 +57,30 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
             try
             {
-                OnOkClick?.Invoke(this, e);
+                try
+                {
+                    OnOkClick?.Invoke(this, e);
+                }
+                finally
+                {
+                    txtPassword.SelectAll();
+                    this.SetArrowCursor();
+                }
             }
             catch (ClientExceptions.InvalidOperationException)
             {
-                this.StandardErrorMsgBox("Email, username or password is incorrect,\nplease check your account at www.pandoraswallet.com");
+                this.StandardUnhandledErrorMsgBox("Email, username or password is incorrect,\nplease check your account at www.pandoraswallet.com", "Login failed");
                 DialogResult = DialogResult.None;
-                txtPassword.Text = "";
             }
             catch (ClientExceptions.UserNotActiveException ex)
             {
-                MessageBox.Show(this, ex.Data["statustime"] + ". " + ex.Data["message"] + "\nAny question contact us at support@davincicodes.net", "Login failed: User not active", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                string s = string.Format("{0}\n{1}\n", ex.Data["message"], ex.Data["statustime"]);
+                this.StandardUnhandledErrorMsgBox(s, "Login failed: User not active");
                 DialogResult = DialogResult.None;
-                txtPassword.Text = "";
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
-            }
-            finally
-            {
-                this.SetArrowCursor();
+                this.StandardExceptionMsgBox(ex , "Login failed");
             }
         }
 

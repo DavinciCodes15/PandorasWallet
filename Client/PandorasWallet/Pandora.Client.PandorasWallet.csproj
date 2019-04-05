@@ -148,6 +148,12 @@
     <Compile Include="Dialogs\LoginExchanger.Designer.cs">
       <DependentUpon>LoginExchanger.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\PrivKeyDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\PrivKeyDialog.Designer.cs">
+      <DependentUpon>PrivKeyDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\RestoreWalletDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -159,6 +165,12 @@
     </Compile>
     <Compile Include="Dialogs\BaseWizzard.Designer.cs">
       <DependentUpon>BaseWizzard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\ServerErrorDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\ServerErrorDialog.Designer.cs">
+      <DependentUpon>ServerErrorDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\SettingsDialog.cs">
       <SubType>Form</SubType>
@@ -183,6 +195,8 @@
       <DependentUpon>PandoraClientMainWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="PandoraEnchangeControl.cs" />
+    <Compile Include="ServerAccess\ClientJsonConverter.cs" />
+    <Compile Include="ServerAccess\PandoraObjectNotifier.cs" />
     <Compile Include="StatusControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -225,7 +239,6 @@
     <Compile Include="Dialogs\ConnectDialog.Designer.cs">
       <DependentUpon>ConnectDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utils\PandoraLog.cs" />
     <Compile Include="ServerAccess\DBManager.cs" />
     <Compile Include="ServerAccess\PandorasCache.cs" />
     <Compile Include="ServerAccess\PandorasServer.cs" />
@@ -263,11 +276,17 @@
     <EmbeddedResource Include="Dialogs\LoginExchanger.resx">
       <DependentUpon>LoginExchanger.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\PrivKeyDialog.resx">
+      <DependentUpon>PrivKeyDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\RestoreWalletDialog.resx">
       <DependentUpon>RestoreWalletDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\BaseWizzard.resx">
       <DependentUpon>BaseWizzard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\ServerErrorDialog.resx">
+      <DependentUpon>ServerErrorDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\SettingsDialog.resx">
       <DependentUpon>SettingsDialog.cs</DependentUpon>
@@ -319,6 +338,7 @@
     <Content Include="Resources\16x16%28Pandora%29.ico" />
     <Content Include="Resources\300x300%28pandora%29-01.png" />
     <Content Include="Resources\32x32%28Pandora%29 1.ico" />
+    <None Include="Resources\Pandora%27s Wallet Error.png" />
     <None Include="Resources\Bang.png" />
     <None Include="Resources\if_102_111044.png" />
     <None Include="Resources\if_103_111043.png" />

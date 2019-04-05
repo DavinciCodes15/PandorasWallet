@@ -50,11 +50,13 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             if (string.IsNullOrEmpty(aTxID))
             {
                 StatusPictureBox.Image = Properties.Resources.cancel;
+                this.Text = "Error Sending Transaction";
+
             }
             else
             {
                 StatusPictureBox.Image = Properties.Resources.ok;
-
+                this.Text = "Transaction Sent";
                 TxIdLabel.Visible = true;
                 TxId.Text = aTxID;
                 TxId.Visible = true;
@@ -62,5 +64,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             StatusLabel.Text = aMessage;
             btnOK.Visible = true;
         }
+
     }
 }

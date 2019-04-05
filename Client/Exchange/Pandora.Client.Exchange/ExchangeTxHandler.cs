@@ -26,7 +26,7 @@ namespace Pandora.Client.Exchange
             using (SQLiteConnection lConnection = new SQLiteConnection(FConnectionString))
             {
                 lConnection.Open();
-                SQLiteCommand lCreateTransactionTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS ExchangeTx (InternalID integer PRIMARY KEY autoincrement, ID varchar(255) , Market VARCHAR(100), Quantity numeric, OpenTime Datetime, Rate FLOAT, Completed INT, Cancelled INT, Status INT, CoinTXID varchar(255), BaseTicker varchar(255), Name varchar(255))", lConnection);
+                SQLiteCommand lCreateTransactionTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS ExchangeTx (InternalID integer PRIMARY KEY autoincrement, ID varchar(255) , Market VARCHAR(100), Quantity numeric, OpenTime Datetime, Rate FLOAT, Stop FLOAT, Completed INT, Cancelled INT, Status INT, CoinTXID varchar(255), BaseTicker varchar(255), Name varchar(255))", lConnection);
                 SQLiteCommand lCreateLogTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS ExchangeLog (ID integer PRIMARY KEY autoincrement, TransactionID int, TransactionTime datetime, Message varchar(255), MessageLevel int)", lConnection);
 
                 lCreateTransactionTable.ExecuteNonQuery();
@@ -34,6 +34,29 @@ namespace Pandora.Client.Exchange
 
                 lCreateLogTable.Dispose();
                 lCreateTransactionTable.Dispose();
+
+                string lQuery = "PRAGMA table_info(ExchangeTx)";
+
+                SQLiteCommand lReadColumns = new SQLiteCommand(lQuery, lConnection);
+
+                List<string> lColumns = new List<string>();
+                using (SQLiteDataReader rdr = lReadColumns.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        lColumns.Add(rdr.GetString(1));
+                    }
+                }
+
+                lReadColumns.Dispose();
+
+                if (!lColumns.Contains("Stop"))
+                {
+                    lQuery = "ALTER TABLE ExchangeTx ADD Stop FLOAT DEFAULT 0 NOT NULL";
+                    SQLiteCommand lAddColumn = new SQLiteCommand(lQuery, lConnection);
+                    lAddColumn.ExecuteNonQuery();
+                    lAddColumn.Dispose();
+                }
 
                 lConnection.Close();
             }
@@ -44,12 +67,13 @@ namespace Pandora.Client.Exchange
             using (SQLiteConnection lConnection = new SQLiteConnection(FConnectionString))
             {
                 lConnection.Open();
-                SQLiteCommand lCommand = new SQLiteCommand("INSERT OR REPLACE INTO ExchangeTx (ID,Market, Quantity, OpenTime, Rate, Completed, Cancelled, Status, CoinTXID, BaseTicker, Name) VALUES (@Id, @Market, @Quantity, @Opentime, @Rate, @Completed, @Cancelled, @Status, @CoinTxID, @BaseTicker, @Name)", lConnection);
+                SQLiteCommand lCommand = new SQLiteCommand("INSERT OR REPLACE INTO ExchangeTx (ID,Market, Quantity, OpenTime, Rate, Stop, Completed, Cancelled, Status, CoinTXID, BaseTicker, Name) VALUES (@Id, @Market, @Quantity, @Opentime, @Rate, @Stop, @Completed, @Cancelled, @Status, @CoinTxID, @BaseTicker, @Name)", lConnection);
                 lCommand.Parameters.Add(new SQLiteParameter("@Id", aMarketTransaction.ID.ToString()));
                 lCommand.Parameters.Add(new SQLiteParameter("@Market", aMarketTransaction.Market));
                 lCommand.Parameters.Add(new SQLiteParameter("@Quantity", aMarketTransaction.SentQuantity));
                 lCommand.Parameters.Add(new SQLiteParameter("@Opentime", aMarketTransaction.OpenTime));
                 lCommand.Parameters.Add(new SQLiteParameter("@Rate", aMarketTransaction.Rate));
+                lCommand.Parameters.Add(new SQLiteParameter("@Stop", aMarketTransaction.StopPrice));
                 lCommand.Parameters.Add(new SQLiteParameter("@Completed", aMarketTransaction.Completed));
                 lCommand.Parameters.Add(new SQLiteParameter("@Cancelled", aMarketTransaction.Cancelled));
                 lCommand.Parameters.Add(new SQLiteParameter("@Status", aMarketTransaction.Status));
@@ -78,12 +102,13 @@ namespace Pandora.Client.Exchange
             using (SQLiteConnection lConnection = new SQLiteConnection(FConnectionString))
             {
                 lConnection.Open();
-                SQLiteCommand lCommand = new SQLiteCommand("Update ExchangeTx SET ID = @Id, Market = @Market, Quantity = @Quantity, OpenTime = @Opentime, Rate = @Rate, Completed = @Completed, Cancelled = @Cancelled, Status = @Status, CoinTXID = @CoinTxID, BaseTicker = @BaseTicker, Name = @Name WHERE InternalID = " + aMarketTransaction.InternalID, lConnection);
+                SQLiteCommand lCommand = new SQLiteCommand("Update ExchangeTx SET ID = @Id, Market = @Market, Quantity = @Quantity, OpenTime = @Opentime, Rate = @Rate, Stop = @Stop, Completed = @Completed, Cancelled = @Cancelled, Status = @Status, CoinTXID = @CoinTxID, BaseTicker = @BaseTicker, Name = @Name WHERE InternalID = " + aMarketTransaction.InternalID, lConnection);
                 lCommand.Parameters.Add(new SQLiteParameter("@Id", aMarketTransaction.ID.ToString()));
                 lCommand.Parameters.Add(new SQLiteParameter("@Market", aMarketTransaction.Market));
                 lCommand.Parameters.Add(new SQLiteParameter("@Quantity", aMarketTransaction.SentQuantity));
                 lCommand.Parameters.Add(new SQLiteParameter("@Opentime", aMarketTransaction.OpenTime));
                 lCommand.Parameters.Add(new SQLiteParameter("@Rate", aMarketTransaction.Rate));
+                lCommand.Parameters.Add(new SQLiteParameter("@Stop", aMarketTransaction.StopPrice));
                 lCommand.Parameters.Add(new SQLiteParameter("@Completed", aMarketTransaction.Completed));
                 lCommand.Parameters.Add(new SQLiteParameter("@Cancelled", aMarketTransaction.Cancelled));
                 lCommand.Parameters.Add(new SQLiteParameter("@Status", (int)aStatus));
@@ -170,7 +195,7 @@ namespace Pandora.Client.Exchange
 
         public bool ReadTransactions(out MarketOrder[] aMarketOrders, string aBaseTicker = null)
         {
-            string lQry = "SELECT InternalID, ID, Market, Quantity, OpenTime, Rate, Completed, Cancelled, Status, CoinTxID, BaseTicker, Name FROM ExchangeTx ";
+            string lQry = "SELECT InternalID, ID, Market, Quantity, OpenTime, Rate, Completed, Cancelled, Status, CoinTxID, BaseTicker, Name, Stop FROM ExchangeTx ";
             if (aBaseTicker != null)
             {
                 lQry += "where BaseTicker = '" + aBaseTicker + "'";
@@ -190,6 +215,9 @@ namespace Pandora.Client.Exchange
                     {
                         while (rdr.Read())
                         {
+                            decimal lRate = rdr.GetDecimal(5);
+                            decimal lStop = rdr.GetDecimal(12);
+
                             MarketOrder lOrder = new MarketOrder
                             {
                                 InternalID = rdr.GetInt32(0),
@@ -197,13 +225,14 @@ namespace Pandora.Client.Exchange
                                 Market = rdr.GetString(2),
                                 SentQuantity = rdr.GetDecimal(3),
                                 OpenTime = rdr.GetDateTime(4),
-                                Rate = rdr.GetDecimal(5),
+                                Rate = lRate,
                                 Completed = rdr.GetBoolean(6),
                                 Cancelled = rdr.GetBoolean(7),
                                 Status = (OrderStatus)rdr.GetInt32(8),
                                 CoinTxID = rdr.GetString(9),
                                 BaseTicker = rdr.GetString(10),
-                                Name = rdr.GetString(11)
+                                Name = rdr.GetString(11),
+                                StopPrice = lStop == 0 ? lRate : lStop
                             };
 
                             lListOrders.Add(lOrder);

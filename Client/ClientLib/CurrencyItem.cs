@@ -13,7 +13,7 @@ namespace Pandora.Client.ClientLib
 
         public CurrencyItem()
         { ChainParamaters = null;  }
-        public CurrencyItem(long aId, string aName, string aTicker, ushort aPrecision, DateTime aLiveDate, int aMinConfirmations, byte[] aIcon, int aFeePerKb, ChainParams aChainParams)
+        public CurrencyItem(long aId, string aName, string aTicker, ushort aPrecision, DateTime aLiveDate, int aMinConfirmations, byte[] aIcon, int aFeePerKb, ChainParams aChainParams, CurrencyStatus aStatus)
         {
             Id = aId;
             Name = aName;
@@ -24,6 +24,7 @@ namespace Pandora.Client.ClientLib
             Icon = aIcon;
             FeePerKb = aFeePerKb;
             ChainParamaters = aChainParams;
+            CurrentStatus = aStatus;
         }
 
         public long Id { get; private set; }
@@ -43,5 +44,7 @@ namespace Pandora.Client.ClientLib
         public int FeePerKb { get; private set; }
 
         public ChainParams ChainParamaters { get; set; }
+
+        public CurrencyStatus CurrentStatus { get; set; }
     }
 }

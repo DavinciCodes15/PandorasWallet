@@ -31,6 +31,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public EventHandler OnOkButtonClick;
         public EventHandler OnCancelButtonClick;
         public EventHandler OnChangeDefaultCoinClick;
+        public EventHandler OnPrivKeyClick;
 
         public string DefaultPath { get; set; }
 
@@ -109,7 +110,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
 
@@ -121,7 +122,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
 
@@ -133,7 +134,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardErrorMsgBox(ex.Message);
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
 
@@ -213,7 +214,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 e.Cancel = s != "";
                 if (e.Cancel)
                 {
-                    this.StandardErrorMsgBox(s);
+                    this.StandardUnhandledErrorMsgBox(s, "Settings Error");
                 }
             }
             else
@@ -238,9 +239,21 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch
             {
-                this.StandardErrorMsgBox("Invalid DataPath");
+                this.StandardUnhandledErrorMsgBox(string.Format("Invalid directory for Data Path\n'{0}'.", txtDataPath.Text), "Settings Error");
                 txtDataPath.Focus();
                 txtDataPath.Text = FCachedDatapath;
+            }
+        }
+
+        private void btnPrivKey_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OnPrivKeyClick?.Invoke(this, e);
+            }
+            catch (Exception ex)
+            {
+                this.StandardUnhandledErrorMsgBox(ex.Message);
             }
         }
     }

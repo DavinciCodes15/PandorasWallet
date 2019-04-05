@@ -48,14 +48,15 @@ namespace Pandora.Client.Exchange
 
         public MarketOrder[] GetTradeTransactions(MarketOrder aMarket)
         {
-            return FTransactions.Where(x => x.Market == aMarket.Market).ToArray();
+            lock (FTransactions)
+                return FTransactions.Where(x => x.Market == aMarket.Market).ToArray();
         }
 
-        public decimal GetPrice(string aTicker)
+        public decimal GetPrice(string aMarketName)
         {
-            if (FMarketPrices.ContainsKey(aTicker))
+            if (FMarketPrices.ContainsKey(aMarketName))
             {
-                return FMarketPrices[aTicker];
+                return FMarketPrices[aMarketName];
             }
 
             return 0;
@@ -212,21 +213,25 @@ namespace Pandora.Client.Exchange
 
         public void UpdateOrder(MarketOrder aNewOrder, OrderStatus aStatus)
         {
-            MarketOrder lOrder = FTransactions.Find(x => x.ID == aNewOrder.ID);
-            if (lOrder != null)
+            MarketOrder lOrder;
+            lock (FTransactions)
             {
-                FTransactions[FTransactions.IndexOf(lOrder)] = aNewOrder;
-                if (!TransactionHandler.UpdateTransaction(aNewOrder, aStatus))
+                lOrder = FTransactions.Find(x => x.ID == aNewOrder.ID);
+                if (lOrder != null)
                 {
-                    throw new Exception("Failed to write new transaction into disk");
+                    FTransactions[FTransactions.IndexOf(lOrder)] = aNewOrder;
+                    if (!TransactionHandler.UpdateTransaction(aNewOrder, aStatus))
+                    {
+                        throw new Exception("Failed to write new transaction into disk");
+                    }
                 }
-            }
-            else
-            {
-                FTransactions.Add(aNewOrder);
-                if (!TransactionHandler.UpdateTransaction(aNewOrder, aStatus))
+                else
                 {
-                    throw new Exception("Failed to write new transaction into disk");
+                    FTransactions.Add(aNewOrder);
+                    if (!TransactionHandler.UpdateTransaction(aNewOrder, aStatus))
+                    {
+                        throw new Exception("Failed to write new transaction into disk");
+                    }
                 }
             }
 
@@ -242,9 +247,16 @@ namespace Pandora.Client.Exchange
 
             if (lTransactions != null && lTransactions.Any())
             {
-                FTransactions.AddRange(lTransactions);
+                lock (FTransactions)
+                    FTransactions.AddRange(lTransactions);
 
                 int lErrorCounter;
+
+                lock (FTransactions)
+                {
+                    MarketOrder[] lTxs = new MarketOrder[FTransactions.Count];
+                    FTransactions.CopyTo(lTxs);
+                }
 
                 foreach (MarketOrder it in FTransactions)
                 {
@@ -420,11 +432,8 @@ namespace Pandora.Client.Exchange
             {
                 decimal lRate = aMarket.IsSell ? 1 / aOrder.Rate : aOrder.Rate;
                 decimal lRawAmount = aOrder.SentQuantity / lRate;
-
                 decimal lQuantity = lRawAmount - aTxFee - (lRawAmount * (decimal)0.0025);
-
                 CallResult<BittrexGuid> lResponse = lClient.Withdraw(aMarket.CoinTicker, lQuantity, aAddress);
-
                 if (!lResponse.Success)
                 {
                     throw new Exception("Failed to withdraw. Error message:" + lResponse.Error.Message);
@@ -480,7 +489,7 @@ namespace Pandora.Client.Exchange
 
     public enum OrderStatus
     {
-        Waiting, Placed, Interrupted, Completed, Withdrawed
+        Waiting, Placed, Interrupted, Completed, Withdrawed, Initial
     }
 
     public class MarketOrder
@@ -498,6 +507,7 @@ namespace Pandora.Client.Exchange
         public string BaseTicker { get; set; }
         public string Name { get; set; }
         public int ErrorCounter { get; set; }
+        public decimal StopPrice { get; set; }
     }
 
     public class OrderMessage : System.Collections.IComparer

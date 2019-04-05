@@ -56,7 +56,6 @@
     <Compile Include="CurrencyItem.cs" />
     <Compile Include="CurrencyStatusItem.cs" />
     <Compile Include="CurrencyTransaction.cs" />
-    <Compile Include="ICurrencyAccountList.cs" />
     <Compile Include="IPandoraServer.cs" />
     <Compile Include="PandoraJsonConverter.cs" />
     <Compile Include="PandoraServerException.cs" />

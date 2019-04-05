@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Pandora.Client.Crypto.Currencies.Crypto;
+﻿using Pandora.Client.Crypto.Currencies.Crypto;
 using Pandora.Client.Crypto.Currencies.DataEncoders;
 using System;
 using System.Collections.Generic;
@@ -128,7 +127,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// them to be valid. (but old blocks may not comply with) Currently just P2SH,
         /// but in the future other flags may be added, such as a soft-fork to enforce
         /// strict DER encoding.
-        /// 
+        ///
         /// Failing one of these tests may trigger a DoS ban - see CheckInputs() for
         /// details.
         /// </summary>
@@ -162,18 +161,22 @@ namespace Pandora.Client.Crypto.Currencies
     public enum SigHash : uint
     {
         Undefined = 0,
+
         /// <summary>
         /// All outputs are signed
         /// </summary>
         All = 1,
+
         /// <summary>
         /// No outputs as signed
         /// </summary>
         None = 2,
+
         /// <summary>
         /// Only the output with the same index as this input is signed
         /// </summary>
         Single = 3,
+
         /// <summary>
         /// If set, no inputs, except this, are part of the signature
         /// </summary>
@@ -189,6 +192,7 @@ namespace Pandora.Client.Crypto.Currencies
     {
         // push value
         OP_0 = 0x00,
+
         OP_FALSE = OP_0,
         OP_PUSHDATA1 = 0x4c,
         OP_PUSHDATA2 = 0x4d,
@@ -215,6 +219,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         // control
         OP_NOP = 0x61,
+
         OP_VER = 0x62,
         OP_IF = 0x63,
         OP_NOTIF = 0x64,
@@ -227,6 +232,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         // stack ops
         OP_TOALTSTACK = 0x6b,
+
         OP_FROMALTSTACK = 0x6c,
         OP_2DROP = 0x6d,
         OP_2DUP = 0x6e,
@@ -248,6 +254,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         // splice ops
         OP_CAT = 0x7e,
+
         OP_SUBSTR = 0x7f,
         OP_LEFT = 0x80,
         OP_RIGHT = 0x81,
@@ -255,6 +262,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         // bit logic
         OP_INVERT = 0x83,
+
         OP_AND = 0x84,
         OP_OR = 0x85,
         OP_XOR = 0x86,
@@ -265,6 +273,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         // numeric
         OP_1ADD = 0x8b,
+
         OP_1SUB = 0x8c,
         OP_2MUL = 0x8d,
         OP_2DIV = 0x8e,
@@ -297,6 +306,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         // crypto
         OP_RIPEMD160 = 0xa6,
+
         OP_SHA1 = 0xa7,
         OP_SHA256 = 0xa8,
         OP_HASH160 = 0xa9,
@@ -312,6 +322,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         // expansion
         OP_NOP1 = 0xb0,
+
         OP_NOP2 = 0xb1,
         OP_NOP3 = 0xb2,
         OP_NOP4 = 0xb3,
@@ -335,11 +346,13 @@ namespace Pandora.Client.Crypto.Currencies
         {
             WitSig = WitScript.Empty;
         }
+
         public Script ScriptSig
         {
             get;
             set;
         }
+
         public WitScript WitSig
         {
             get;
@@ -349,20 +362,15 @@ namespace Pandora.Client.Crypto.Currencies
 
     public class Script
     {
-        static readonly Script _Empty = new Script();
-        public static Script Empty
-        {
-            get
-            {
-                return _Empty;
-            }
-        }
+        private static readonly Script _Empty = new Script();
+        public static Script Empty => _Empty;
 
         public byte[] _Script = new byte[0];
+
         public Script()
         {
-
         }
+
         public Script(params Op[] ops)
             : this((IEnumerable<Op>)ops)
         {
@@ -371,7 +379,7 @@ namespace Pandora.Client.Crypto.Currencies
         public Script(IEnumerable<Op> ops)
         {
             MemoryStream ms = new MemoryStream();
-            foreach (var op in ops)
+            foreach (Op op in ops)
             {
                 op.WriteTo(ms);
             }
@@ -388,7 +396,7 @@ namespace Pandora.Client.Crypto.Currencies
             return StringToByteArray(script);
         }
 
-        static byte[] StringToByteArray(String hex)
+        private static byte[] StringToByteArray(string hex)
         {
             int NumberChars = hex.Length;
             byte[] bytes = new byte[NumberChars / 2];
@@ -396,6 +404,7 @@ namespace Pandora.Client.Crypto.Currencies
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
             return bytes;
         }
+
         public static Script FromBytesUnsafe(byte[] data)
         {
             return new Script(data, true, true);
@@ -405,7 +414,6 @@ namespace Pandora.Client.Crypto.Currencies
             : this((IEnumerable<byte>)data)
         {
         }
-
 
         private Script(byte[] data, bool @unsafe, bool unused)
         {
@@ -429,13 +437,7 @@ namespace Pandora.Client.Crypto.Currencies
             }
         }
 
-        public int Length
-        {
-            get
-            {
-                return _Script.Length;
-            }
-        }
+        public int Length => _Script.Length;
 
         /// <summary>
         /// Extract the ScriptCode delimited by the <codeSeparatorIndex>th OP_CODESEPARATOR.
@@ -448,9 +450,9 @@ namespace Pandora.Client.Crypto.Currencies
                 return this;
             if (codeSeparatorIndex < -1)
                 throw new ArgumentOutOfRangeException("codeSeparatorIndex");
-            var separatorIndex = -1;
+            int separatorIndex = -1;
             List<Op> ops = new List<Op>();
-            foreach (var op in ToOps())
+            foreach (Op op in ToOps())
             {
                 if (op.Code == OpcodeType.OP_CODESEPARATOR)
                     separatorIndex++;
@@ -462,12 +464,10 @@ namespace Pandora.Client.Crypto.Currencies
             return new Script(ops.ToArray());
         }
 
-
         public ScriptReader CreateReader()
         {
             return new ScriptReader(_Script);
         }
-
 
         public int FindAndDelete(OpcodeType op)
         {
@@ -476,6 +476,7 @@ namespace Pandora.Client.Crypto.Currencies
                 Code = op
             });
         }
+
         public int FindAndDelete(Op op)
         {
             return op == null ? 0 : FindAndDelete(o => o.Code == op.Code && Utils.ArrayEqual(o.PushData, op.PushData));
@@ -485,18 +486,19 @@ namespace Pandora.Client.Crypto.Currencies
         {
             if (pushedData.Length == 0)
                 return 0;
-            var standardOp = Op.GetPushOp(pushedData);
+            Op standardOp = Op.GetPushOp(pushedData);
             return FindAndDelete(op =>
                             op.Code == standardOp.Code &&
                             op.PushData != null && Utils.ArrayEqual(op.PushData, pushedData));
         }
+
         public int FindAndDelete(Func<Op, bool> predicate)
         {
             int nFound = 0;
             List<Op> operations = new List<Op>();
-            foreach (var op in ToOps())
+            foreach (Op op in ToOps())
             {
-                var shouldDelete = predicate(op);
+                bool shouldDelete = predicate(op);
                 if (!shouldDelete)
                 {
                     operations.Add(op);
@@ -515,37 +517,24 @@ namespace Pandora.Client.Crypto.Currencies
             return Encoders.Hex.EncodeData(_Script);
         }
 
-        Script _PaymentScript;
+        private Script _PaymentScript;
 
         /// <summary>
         /// Get the P2SH scriptPubKey of this script
         /// </summary>
-        public Script PaymentScript
-        {
-            get
-            {
-                return _PaymentScript ?? (_PaymentScript = PayToScriptHashTemplate.Instance.GenerateScriptPubKey(Hash));
-            }
-        }
-
+        public Script PaymentScript => _PaymentScript ?? (_PaymentScript = PayToScriptHashTemplate.Instance.GenerateScriptPubKey(Hash));
 
         /// <summary>
         /// True if the scriptPubKey is witness
         /// </summary>
-        public bool IsWitness
-        {
-            get
-            {
-                return PayToWitTemplate.Instance.CheckScriptPubKey(this);
-            }
-        }
+        public bool IsWitness => PayToWitTemplate.Instance.CheckScriptPubKey(this);
 
         public override string ToString()
         {
             // by default StringBuilder capacity is 16 (too small)
             // 300 is enough for P2PKH
-            var builder = new StringBuilder(300);
-            var reader = new ScriptReader(_Script);
+            StringBuilder builder = new StringBuilder(300);
+            ScriptReader reader = new ScriptReader(_Script);
 
             Op op;
             while ((op = reader.Read()) != null)
@@ -561,7 +550,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             get
             {
-                foreach (var script in CreateReader().ToEnumerable())
+                foreach (Op script in CreateReader().ToEnumerable())
                 {
                     if (script.PushData == null)
                         return false;
@@ -574,7 +563,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             get
             {
-                foreach (var op in CreateReader().ToEnumerable())
+                foreach (Op op in CreateReader().ToEnumerable())
                 {
                     if (op.IsInvalid)
                         return false;
@@ -600,7 +589,7 @@ namespace Pandora.Client.Crypto.Currencies
         //https://en.bitcoin.it/wiki/OP_CHECKSIG
         public static uint256 SignatureHash(ICoin coin, Transaction txTo, SigHash nHashType = SigHash.All)
         {
-            var input = txTo.Inputs.AsIndexedInputs().FirstOrDefault(i => i.PrevOut == coin.Outpoint);
+            IndexedTxIn input = txTo.Inputs.AsIndexedInputs().FirstOrDefault(i => i.PrevOut == coin.Outpoint);
             if (input == null)
             {
                 ArgumentException argumentException = new ArgumentException("coin should be spent spent in txTo", "coin");
@@ -610,7 +599,7 @@ namespace Pandora.Client.Crypto.Currencies
             return input.GetSignatureHash(coin, nHashType);
         }
 
-        public static uint256 SignatureHash(Network aNetwork,Script scriptCode, Transaction txTo, int nIn, SigHash nHashType, Money amount = null, HashVersion sigversion = HashVersion.Original)
+        public static uint256 SignatureHash(Network aNetwork, Script scriptCode, Transaction txTo, int nIn, SigHash nHashType, Money amount = null, HashVersion sigversion = HashVersion.Original)
         {
             return SignatureHash(aNetwork, scriptCode, txTo, nIn, nHashType, amount, sigversion, null);
         }
@@ -674,9 +663,6 @@ namespace Pandora.Client.Crypto.Currencies
                 return GetHash(sss);
             }
 
-
-
-
             if (nIn >= txTo.Inputs.Count)
             {
                 Utils.log("ERROR: SignatureHash() : nIn=" + nIn + " out of range\n");
@@ -693,27 +679,27 @@ namespace Pandora.Client.Crypto.Currencies
                 }
             }
 
-            var scriptCopy = new Script(scriptCode._Script);
+            Script scriptCopy = new Script(scriptCode._Script);
             scriptCopy.FindAndDelete(OpcodeType.OP_CODESEPARATOR);
 
-            var txCopy = new Transaction(txTo.ToBytes(), aNetwork);
+            Transaction txCopy = txTo.Clone(false);
 
             //Set all TxIn script to empty string
-            foreach (var txin in txCopy.Inputs)
+            foreach (TxIn txin in txCopy.Inputs)
             {
                 txin.ScriptSig = new Script();
             }
             //Copy subscript into the txin script you are checking
             txCopy.Inputs[nIn].ScriptSig = scriptCopy;
 
-            var hashType = nHashType & (SigHash)31;
+            SigHash hashType = nHashType & (SigHash)31;
             if (hashType == SigHash.None)
             {
                 //The output of txCopy is set to a vector of zero size.
                 txCopy.Outputs.Clear();
 
                 //All other inputs aside from the current input in txCopy have their nSequence index set to zero
-                foreach (var input in txCopy.Inputs.Where((x, i) => i != nIn))
+                foreach (TxIn input in txCopy.Inputs.Where((x, i) => i != nIn))
                     input.Sequence = 0;
             }
             else if (hashType == SigHash.Single)
@@ -721,31 +707,29 @@ namespace Pandora.Client.Crypto.Currencies
                 //The output of txCopy is resized to the size of the current input index+1.
                 txCopy.Outputs.RemoveRange(nIn + 1, txCopy.Outputs.Count - (nIn + 1));
                 //All other txCopy outputs aside from the output that is the same as the current input index are set to a blank script and a value of (long) -1.
-                for (var i = 0; i < txCopy.Outputs.Count; i++)
+                for (int i = 0; i < txCopy.Outputs.Count; i++)
                 {
                     if (i == nIn)
                         continue;
                     txCopy.Outputs[i] = new TxOut();
                 }
                 //All other txCopy inputs aside from the current input are set to have an nSequence index of zero.
-                foreach (var input in txCopy.Inputs.Where((x, i) => i != nIn))
+                foreach (TxIn input in txCopy.Inputs.Where((x, i) => i != nIn))
                     input.Sequence = 0;
             }
-
 
             if ((nHashType & SigHash.AnyoneCanPay) != 0)
             {
                 //The txCopy input vector is resized to a length of one.
-                var script = txCopy.Inputs[nIn];
+                TxIn script = txCopy.Inputs[nIn];
                 txCopy.Inputs.Clear();
                 txCopy.Inputs.Add(script);
                 //The subScript (lead in by its length as a var-integer encoded!) is set as the first and only member of this vector.
                 txCopy.Inputs[0].ScriptSig = scriptCopy;
             }
 
-
             //Serialize TxCopy, append 4 byte hashtypecode
-            var stream = CreateHashWriter(sigversion);
+            CoinStream stream = CreateHashWriter(sigversion);
             txCopy.ReadWrite(stream);
             stream.ReadWrite((uint)nHashType);
             return GetHash(stream);
@@ -753,7 +737,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         private static uint256 GetHash(CoinStream stream)
         {
-            var preimage = ((HashStream)stream.Inner).GetHash();
+            uint256 preimage = ((HashStream)stream.Inner).GetHash();
             stream.Inner.Dispose();
             return preimage;
         }
@@ -762,7 +746,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             uint256 hashOutputs;
             CoinStream ss = CreateHashWriter(HashVersion.Witness);
-            foreach (var txout in txTo.Outputs)
+            foreach (TxOut txout in txTo.Outputs)
             {
                 ss.ReadWrite(txout);
             }
@@ -774,7 +758,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             uint256 hashSequence;
             CoinStream ss = CreateHashWriter(HashVersion.Witness);
-            foreach (var input in txTo.Inputs)
+            foreach (TxIn input in txTo.Inputs)
             {
                 ss.ReadWrite((uint)input.Sequence);
             }
@@ -786,7 +770,7 @@ namespace Pandora.Client.Crypto.Currencies
         {
             uint256 hashPrevouts;
             CoinStream ss = CreateHashWriter(HashVersion.Witness);
-            foreach (var input in txTo.Inputs)
+            foreach (TxIn input in txTo.Inputs)
             {
                 ss.ReadWrite(input.PrevOut);
             }
@@ -797,9 +781,11 @@ namespace Pandora.Client.Crypto.Currencies
         private static CoinStream CreateHashWriter(HashVersion version)
         {
             HashStream hs = new HashStream();
-            CoinStream stream = new CoinStream(hs, true);
-            stream.Type = SerializationType.Hash;
-            stream.TransactionOptions = version == HashVersion.Original ? TransactionOptions.None : TransactionOptions.Witness;
+            CoinStream stream = new CoinStream(hs, true)
+            {
+                Type = SerializationType.Hash,
+                TransactionOptions = version == HashVersion.Original ? TransactionOptions.None : TransactionOptions.Witness
+            };
             return stream;
         }
 
@@ -809,6 +795,7 @@ namespace Pandora.Client.Crypto.Currencies
                 return new Script(Op.GetPushOp(bytes.ToArray()));
             return a + Op.GetPushOp(bytes.ToArray());
         }
+
         public static Script operator +(Script a, Op op)
         {
             return a == null ? new Script(op) : new Script(a._Script.Concat(op.ToBytes()));
@@ -829,14 +816,14 @@ namespace Pandora.Client.Crypto.Currencies
         {
             uint n = 0;
             Op lastOpcode = null;
-            foreach (var op in ToOps())
+            foreach (Op op in ToOps())
             {
                 if (op.Code == OpcodeType.OP_CHECKSIG || op.Code == OpcodeType.OP_CHECKSIGVERIFY)
                     n++;
                 else if (op.Code == OpcodeType.OP_CHECKMULTISIG || op.Code == OpcodeType.OP_CHECKMULTISIGVERIFY)
                 {
                     if (fAccurate && lastOpcode != null && lastOpcode.Code >= OpcodeType.OP_1 && lastOpcode.Code <= OpcodeType.OP_16)
-                        n += (lastOpcode.PushData == null || lastOpcode.PushData.Length == 0) ? 0U : (uint)lastOpcode.PushData[0];
+                        n += (lastOpcode.PushData == null || lastOpcode.PushData.Length == 0) ? 0U : lastOpcode.PushData[0];
                     else
                         n += 20;
                 }
@@ -845,35 +832,17 @@ namespace Pandora.Client.Crypto.Currencies
             return n;
         }
 
-        ScriptId _Hash;
-        public ScriptId Hash
-        {
-            get
-            {
-                return _Hash ?? (_Hash = new ScriptId(this));
-            }
-        }
-        WitScriptId _WitHash;
-        public WitScriptId WitHash
-        {
-            get
-            {
-                return _WitHash ?? (_WitHash = new WitScriptId(this));
-            }
-        }
+        private ScriptId _Hash;
+        public ScriptId Hash => _Hash ?? (_Hash = new ScriptId(this));
+        private WitScriptId _WitHash;
+        public WitScriptId WitHash => _WitHash ?? (_WitHash = new WitScriptId(this));
 
         public CoinScriptAddress GetScriptAddress(Network network)
         {
             return (CoinScriptAddress)Hash.GetAddress(network);
         }
 
-        public bool IsPayToScriptHash
-        {
-            get
-            {
-                return PayToScriptHashTemplate.Instance.CheckScriptPubKey(this);
-            }
-        }
+        public bool IsPayToScriptHash => PayToScriptHashTemplate.Instance.CheckScriptPubKey(this);
 
         public CoinWitScriptAddress GetWitScriptAddress(Network network)
         {
@@ -887,7 +856,7 @@ namespace Pandora.Client.Crypto.Currencies
             // This is a pay-to-script-hash scriptPubKey;
             // get the last item that the scriptSig
             // pushes onto the stack:
-            var validSig = new PayToScriptHashTemplate().CheckScriptSig(scriptSig, this);
+            bool validSig = new PayToScriptHashTemplate().CheckScriptSig(scriptSig, this);
             return !validSig ? 0 : new Script(scriptSig.ToOps().Last().PushData).GetSigOpCount(true);
             // ... and return its opcount:
         }
@@ -904,7 +873,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns></returns>
         public CoinAddress GetSignerAddress(Network network)
         {
-            var sig = GetSigner();
+            TxDestination sig = GetSigner();
             return sig == null ? null : sig.GetAddress(network);
         }
 
@@ -914,12 +883,12 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns>The network</returns>
         public TxDestination GetSigner()
         {
-            var pubKey = PayToPubkeyHashTemplate.Instance.ExtractScriptSigParameters(this);
+            PayToPubkeyHashScriptSigParameters pubKey = PayToPubkeyHashTemplate.Instance.ExtractScriptSigParameters(this);
             if (pubKey != null)
             {
                 return pubKey.PublicKey.Hash;
             }
-            var p2sh = PayToScriptHashTemplate.Instance.ExtractScriptSigParameters(this);
+            PayToScriptHashSigParameters p2sh = PayToScriptHashTemplate.Instance.ExtractScriptSigParameters(this);
             return p2sh != null ? p2sh.RedeemScript.Hash : null;
         }
 
@@ -930,7 +899,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns></returns>
         public CoinAddress GetDestinationAddress(Network network)
         {
-            var dest = GetDestination();
+            TxDestination dest = GetDestination();
             return dest == null ? null : dest.GetAddress(network);
         }
 
@@ -941,13 +910,13 @@ namespace Pandora.Client.Crypto.Currencies
         /// <returns></returns>
         public TxDestination GetDestination()
         {
-            var pubKeyHashParams = PayToPubkeyHashTemplate.Instance.ExtractScriptPubKeyParameters(this);
+            KeyId pubKeyHashParams = PayToPubkeyHashTemplate.Instance.ExtractScriptPubKeyParameters(this);
             if (pubKeyHashParams != null)
                 return pubKeyHashParams;
-            var scriptHashParams = PayToScriptHashTemplate.Instance.ExtractScriptPubKeyParameters(this);
+            ScriptId scriptHashParams = PayToScriptHashTemplate.Instance.ExtractScriptPubKeyParameters(this);
             if (scriptHashParams != null)
                 return scriptHashParams;
-            var wit = PayToWitTemplate.Instance.ExtractScriptPubKeyParameters(this);
+            TxDestination wit = PayToWitTemplate.Instance.ExtractScriptPubKeyParameters(this);
             return wit;
         }
 
@@ -959,14 +928,14 @@ namespace Pandora.Client.Crypto.Currencies
         public PubKey[] GetDestinationPublicKeys()
         {
             List<PubKey> result = new List<PubKey>();
-            var single = PayToPubkeyTemplate.Instance.ExtractScriptPubKeyParameters(this);
+            PubKey single = PayToPubkeyTemplate.Instance.ExtractScriptPubKeyParameters(this);
             if (single != null)
             {
                 result.Add(single);
             }
             else
             {
-                var multiSig = PayToMultiSigTemplate.Instance.ExtractScriptPubKeyParameters(this);
+                PayToMultiSigTemplateParameters multiSig = PayToMultiSigTemplate.Instance.ExtractScriptPubKeyParameters(this);
                 if (multiSig != null)
                 {
                     result.AddRange(multiSig.PubKeys);
@@ -1017,20 +986,18 @@ namespace Pandora.Client.Crypto.Currencies
 
         public byte[] ToCompressedBytes()
         {
-            var compressor = new ScriptCompressor(this);
+            ScriptCompressor compressor = new ScriptCompressor(this);
             return compressor.ToBytes();
         }
 
         public static bool VerifyScript(Script scriptSig, Script scriptPubKey, Transaction tx, int i, ScriptVerify scriptVerify = ScriptVerify.Standard, SigHash sigHash = SigHash.Undefined)
         {
-            ScriptError unused;
-            return VerifyScript(scriptSig, scriptPubKey, tx, i, null, scriptVerify, sigHash, out unused);
+            return VerifyScript(scriptSig, scriptPubKey, tx, i, null, scriptVerify, sigHash, out ScriptError unused);
         }
 
         public static bool VerifyScript(Script scriptSig, Script scriptPubKey, Transaction tx, int i, Money value, ScriptVerify scriptVerify = ScriptVerify.Standard, SigHash sigHash = SigHash.Undefined)
         {
-            ScriptError unused;
-            return VerifyScript(scriptSig, scriptPubKey, tx, i, value, scriptVerify, sigHash, out unused);
+            return VerifyScript(scriptSig, scriptPubKey, tx, i, value, scriptVerify, sigHash, out ScriptError unused);
         }
 
         public static bool VerifyScript(Script scriptSig, Script scriptPubKey, Transaction tx, int i, Money value, out ScriptError error)
@@ -1040,43 +1007,35 @@ namespace Pandora.Client.Crypto.Currencies
 
         public static bool VerifyScript(Script scriptPubKey, Transaction tx, int i, Money value, ScriptVerify scriptVerify = ScriptVerify.Standard, SigHash sigHash = SigHash.Undefined)
         {
-            ScriptError unused;
-            var scriptSig = tx.Inputs[i].ScriptSig;
-            return VerifyScript(scriptSig, scriptPubKey, tx, i, value, scriptVerify, sigHash, out unused);
+            Script scriptSig = tx.Inputs[i].ScriptSig;
+            return VerifyScript(scriptSig, scriptPubKey, tx, i, value, scriptVerify, sigHash, out ScriptError unused);
         }
 
         public static bool VerifyScript(Script scriptPubKey, Transaction tx, int i, Money value, out ScriptError error)
         {
-            var scriptSig = tx.Inputs[i].ScriptSig;
+            Script scriptSig = tx.Inputs[i].ScriptSig;
             return VerifyScript(scriptSig, scriptPubKey, tx, i, value, ScriptVerify.Standard, SigHash.Undefined, out error);
         }
 
         public static bool VerifyScript(Script scriptPubKey, Transaction tx, int i, Money value, ScriptVerify scriptVerify, SigHash sigHash, out ScriptError error)
         {
-            var scriptSig = tx.Inputs[i].ScriptSig;
+            Script scriptSig = tx.Inputs[i].ScriptSig;
             return VerifyScript(scriptSig, scriptPubKey, tx, i, value, scriptVerify, sigHash, out error);
         }
 
         public static bool VerifyScript(Script scriptSig, Script scriptPubKey, Transaction tx, int i, Money value, ScriptVerify scriptVerify, SigHash sigHash, out ScriptError error)
         {
-            var eval = new ScriptEvaluationContext(tx.Network)
+            ScriptEvaluationContext eval = new ScriptEvaluationContext(tx.Network)
             {
                 SigHash = sigHash,
                 ScriptVerify = scriptVerify
             };
-            var result = eval.VerifyScript(scriptSig, scriptPubKey, tx, i, value);
+            bool result = eval.VerifyScript(scriptSig, scriptPubKey, tx, i, value);
             error = eval.Error;
             return result;
         }
 
-
-        public bool IsUnspendable
-        {
-            get
-            {
-                return _Script.Length > 0 && _Script[0] == (byte)OpcodeType.OP_RETURN;
-            }
-        }
+        public bool IsUnspendable => _Script.Length > 0 && _Script[0] == (byte)OpcodeType.OP_RETURN;
 
         public static bool IsNullOrEmpty(Script script)
         {
@@ -1088,6 +1047,7 @@ namespace Pandora.Client.Crypto.Currencies
             Script item = obj as Script;
             return item != null && Utils.ArrayEqual(item._Script, _Script);
         }
+
         public static bool operator ==(Script a, Script b)
         {
             if (ReferenceEquals(a, b))
@@ -1221,7 +1181,6 @@ namespace Pandora.Client.Crypto.Currencies
         //        }
         //    }
 
-
         //    foreach(var v in sigs2)
         //    {
         //        if(TransactionSignature.IsValid(v))
@@ -1251,7 +1210,6 @@ namespace Pandora.Client.Crypto.Currencies
         //        }
         //    }
 
-
         //    // Now build a merged CScript:
         //    int nSigsHave = 0;
         //    Script result = new Script(OpcodeType.OP_0); // pop-one-too-many workaround
@@ -1276,7 +1234,7 @@ namespace Pandora.Client.Crypto.Currencies
         private static Script PushAll(byte[][] stack)
         {
             Script s = new Script();
-            foreach (var push in stack)
+            foreach (byte[] push in stack)
             {
                 s += Op.GetPushOp(push);
             }
@@ -1295,13 +1253,7 @@ namespace Pandora.Client.Crypto.Currencies
             return scriptSig1.Length >= scriptSig2.Length ? scriptSig1 : scriptSig2;
         }
 
-        public bool IsValid
-        {
-            get
-            {
-                return ToOps().All(o => !o.IsInvalid);
-            }
-        }
+        public bool IsValid => ToOps().All(o => !o.IsInvalid);
     }
 
     public class ScriptCompressor : ICoinSerializable
@@ -1310,22 +1262,18 @@ namespace Pandora.Client.Crypto.Currencies
         // this can potentially be extended together with a new nVersion for
         // transactions, in which case this value becomes dependent on nVersion
         // and nHeight of the enclosing transaction.
-        const uint nSpecialScripts = 6;
-        byte[] _Script;
-        public byte[] ScriptBytes
-        {
-            get
-            {
-                return _Script;
-            }
-        }
+        private const uint nSpecialScripts = 6;
+
+        private byte[] _Script;
+        public byte[] ScriptBytes => _Script;
+
         public ScriptCompressor(Script script)
         {
             _Script = script.ToBytes(true);
         }
+
         public ScriptCompressor()
         {
-
         }
 
         public Script GetScript()
@@ -1333,10 +1281,10 @@ namespace Pandora.Client.Crypto.Currencies
             return new Script(_Script);
         }
 
-        byte[] Compress()
+        private byte[] Compress()
         {
             byte[] result = null;
-            var script = Script.FromBytesUnsafe(_Script);
+            Script script = Script.FromBytesUnsafe(_Script);
             KeyId keyID = PayToPubkeyHashTemplate.Instance.ExtractScriptPubKeyParameters(script);
             if (keyID != null)
             {
@@ -1357,7 +1305,7 @@ namespace Pandora.Client.Crypto.Currencies
             if (pubkey != null)
             {
                 result = new byte[33];
-                var pubBytes = pubkey.ToBytes(true);
+                byte[] pubBytes = pubkey.ToBytes(true);
                 Array.Copy(pubBytes, 1, result, 1, 32);
                 if (pubBytes[0] == 0x02 || pubBytes[0] == 0x03)
                 {
@@ -1373,21 +1321,24 @@ namespace Pandora.Client.Crypto.Currencies
             return null;
         }
 
-        Script Decompress(uint nSize, byte[] data)
+        private Script Decompress(uint nSize, byte[] data)
         {
             switch (nSize)
             {
                 case 0x00:
                     return PayToPubkeyHashTemplate.Instance.GenerateScriptPubKey(new KeyId(data.SafeSubarray(0, 20)));
+
                 case 0x01:
                     return PayToScriptHashTemplate.Instance.GenerateScriptPubKey(new ScriptId(data.SafeSubarray(0, 20)));
+
                 case 0x02:
                 case 0x03:
-                    var keyPart = data.SafeSubarray(0, 32);
-                    var keyBytes = new byte[33];
+                    byte[] keyPart = data.SafeSubarray(0, 32);
+                    byte[] keyBytes = new byte[33];
                     keyBytes[0] = (byte)nSize;
                     Array.Copy(keyPart, 0, keyBytes, 1, 32);
                     return PayToPubkeyTemplate.Instance.GenerateScriptPubKey(keyBytes);
+
                 case 0x04:
                 case 0x05:
                     byte[] vch = new byte[33];
@@ -1400,17 +1351,13 @@ namespace Pandora.Client.Crypto.Currencies
             return null;
         }
 
-
-
-
-
         #region ICoinSerializable Members
 
         public void ReadWrite(CoinStream stream)
         {
             if (stream.Serializing)
             {
-                var compr = Compress();
+                byte[] compr = Compress();
                 if (compr != null)
                 {
                     stream.ReadWrite(ref compr);
@@ -1446,9 +1393,7 @@ namespace Pandora.Client.Crypto.Currencies
             return 0;
         }
 
-
-
-        #endregion
+        #endregion ICoinSerializable Members
     }
 
     public enum RawFormat
@@ -1494,7 +1439,6 @@ namespace Pandora.Client.Crypto.Currencies
     //    public WitScript(IEnumerable<byte[]> script, bool @unsafe = false)
     //        : this(script.ToArray(), @unsafe)
     //    {
-
     //    }
 
     //    public WitScript(params Op[] ops)
@@ -1519,7 +1463,6 @@ namespace Pandora.Client.Crypto.Currencies
     //    }
     //    WitScript()
     //    {
-
     //    }
 
     //    public WitScript(Script scriptSig)
@@ -1699,6 +1642,4 @@ namespace Pandora.Client.Crypto.Currencies
         Witness = 0x40000000,
         All = Witness
     }
-
-
 }

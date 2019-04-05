@@ -22,6 +22,7 @@ using Pandora.Client.ClientLib;
 using Pandora.Client.Exchange;
 using Pandora.Client.PandorasWallet.Dialogs;
 using Pandora.Client.PandorasWallet.Wallet;
+using Pandora.Client.Universal;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -46,6 +47,11 @@ namespace Pandora.Client.PandorasWallet
         private bool FDisableUpdating;
 
         private object FExchangeInterfaceLock = new object();
+
+        private decimal FCacheTotal = -1;
+        private decimal FCacheQuantity = -1;
+
+        private int FPreviosOrderHistory = -1;
 
         partial void ExchangeInitialize()
         {
@@ -148,7 +154,7 @@ namespace Pandora.Client.PandorasWallet
                     }
                     catch (Exception ex)
                     {
-                        Utils.PandoraLog.GetPandoraLog().Write("Error starting market price updating. Details: " + ex.Message + " on " + ex.Source);
+                        Log.Write("Error starting market price updating. Details: {0}", ex);
                     }
                 });
             }
@@ -157,9 +163,9 @@ namespace Pandora.Client.PandorasWallet
 
             FExchangeTasks = new Task[3];
 
-            FExchangeTasks[0] = Task.Run(() => OrderHistoryRefresh(), FExchangeTaskCancellationSource.Token);
-            FExchangeTasks[1] = Task.Run(() => UpdateExchangeOrderTxRelationship(), FExchangeTaskCancellationSource.Token);
-            FExchangeTasks[2] = Task.Run(() => CheckOrderStatuses(), FExchangeTaskCancellationSource.Token);
+            FExchangeTasks[0] = Task.Run(() => OrderHistoryRefreshTask(), FExchangeTaskCancellationSource.Token);
+            FExchangeTasks[1] = Task.Run(() => LocalOrderScanTask(), FExchangeTaskCancellationSource.Token);
+            FExchangeTasks[2] = Task.Run(() => RemoteOrderScanTask(), FExchangeTaskCancellationSource.Token);
 
             SetOrderDBHandler(FWallet.DataFolder, FWallet.InstanceId);
 
@@ -226,8 +232,6 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private int FPreviosOrderHistory = -1;
-
         private void MainForm_OnOrderHistorySelectionChanged(object sender, EventArgs e)
         {
             int? lCurrenSelected = (int?)MainForm.SelectedOrderHistory?.Tag;
@@ -292,6 +296,7 @@ namespace Pandora.Client.PandorasWallet
                 FCacheQuantity = FCacheTotal = -1;
 
                 MainForm.ExchangeTargetPrice = FExchangeSelectedCoin.BasePrice;
+                MainForm.ExchangeStopPrice = FExchangeSelectedCoin.BasePrice;
                 MainForm.ExchangeTransactionName = string.Format("{0} -> {1} - {2}", FExchangeSelectedCoin.BaseTicker, MainForm.SelectedExchangeMarket.SubItems[1].Text, DateTime.Now.ToString());
 
                 if (!FExchangeCurrencyOrders.ContainsKey(FWallet.ActiveCurrencyID))
@@ -319,7 +324,7 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        public void OrderHistoryRefresh()
+        public void OrderHistoryRefreshTask()
         {
             try
             {
@@ -346,13 +351,13 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                Utils.PandoraLog.GetPandoraLog().Write("Error on order history refresh. Details: " + ex.Message + " on " + ex.Source);
+                Log.Write("Error on order history refresh. Details: {0}", ex);
             }
             finally
             {
                 Task.Delay(15000).Wait(FExchangeTaskCancellationSource.Token);
 
-                FExchangeTasks[0] = Task.Run(() => OrderHistoryRefresh(), FExchangeTaskCancellationSource.Token);
+                FExchangeTasks[0] = Task.Run(() => OrderHistoryRefreshTask(), FExchangeTaskCancellationSource.Token);
             }
         }
 
@@ -388,7 +393,7 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void CheckOrderStatuses()
+        private void RemoteOrderScanTask()
         {
             try
             {
@@ -396,50 +401,50 @@ namespace Pandora.Client.PandorasWallet
                 {
                     foreach (List<MarketOrder> OrderList in FExchangeCurrencyOrders.Values)
                     {
-                        foreach (MarketOrder itOrder in OrderList.Where(x => x.Status == OrderStatus.Placed))
+                        foreach (MarketOrder lOrder in OrderList.Where(x => x.Status == OrderStatus.Placed))
                         {
-                            MarketOrder lOrder = FExchanger.GetOrder(itOrder.ID);
+                            MarketOrder lRemoteOrder = FExchanger.GetOrder(lOrder.ID);
 
-                            if (!lOrder.Completed && !lOrder.Cancelled)
+                            if (!lRemoteOrder.Completed && !lRemoteOrder.Cancelled)
                             {
                                 continue;
                             }
 
-                            itOrder.Completed = lOrder.Completed;
-                            itOrder.Cancelled = lOrder.Cancelled;
+                            lOrder.Completed = lRemoteOrder.Completed;
+                            lOrder.Cancelled = lRemoteOrder.Cancelled;
 
                             OrderStatus lStatus = OrderStatus.Placed;
 
-                            if (itOrder.Completed)
+                            if (lOrder.Completed)
                             {
                                 lStatus = OrderStatus.Completed;
                             }
 
-                            if (itOrder.Cancelled)
+                            if (lOrder.Cancelled)
                             {
                                 lStatus = OrderStatus.Interrupted;
                             }
 
-                            FExchanger.UpdateOrder(itOrder, lStatus);
-                            WriteTransactionLogEntry(itOrder);
+                            FExchanger.UpdateOrder(lOrder, lStatus);
+                            WriteTransactionLogEntry(lOrder);
                         }
 
-                        foreach (MarketOrder it2 in OrderList.Where(x => x.Status == OrderStatus.Completed))
+                        foreach (MarketOrder lOrder in OrderList.Where(x => x.Status == OrderStatus.Completed))
                         {
-                            TryToWithdrawOrder(it2);
+                            TryToWithdrawOrder(lOrder);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Utils.PandoraLog.GetPandoraLog().Write("Error on Checking order statuses. Details: " + ex.Message + " on " + ex.Source);
+                Log.Write("Error on Checking order statuses. Details: " + ex.Message + " on " + ex.Source);
             }
             finally
             {
                 Task.Delay(5000).Wait(FExchangeTaskCancellationSource.Token);
 
-                FExchangeTasks[2] = Task.Run(() => CheckOrderStatuses(), FExchangeTaskCancellationSource.Token);
+                FExchangeTasks[2] = Task.Run(() => RemoteOrderScanTask(), FExchangeTaskCancellationSource.Token);
             }
         }
 
@@ -492,9 +497,9 @@ namespace Pandora.Client.PandorasWallet
 
         private void MainForm_OnExchangeBtnClick(object sender, EventArgs e)
         {
-            if (MainForm.ExchangeTargetPrice <= 0)
+            if (MainForm.ExchangeTargetPrice <= 0 || MainForm.ExchangeStopPrice <= 0)
             {
-                throw new Exception("Invalid target price amount.");
+                throw new Exception("Invalid target or stop price amount.");
             }
 
             if (MainForm.ExchangeQuantity > FWallet.GetBalance(FWallet.ActiveCurrencyID).Confirmed)
@@ -514,12 +519,9 @@ namespace Pandora.Client.PandorasWallet
                 throw new Exception(string.Format("Sell minimum trade size is {0} {1}", FExchangeSelectedCoin.MinimumTrade, FExchangeSelectedCoin.BaseTicker));
             }
 
-            TryToCreateNewExchangeTransaction(MainForm.ExchangeTargetPrice, MainForm.ExchangeQuantity, FExchangeSelectedCoin);
+            TryToCreateNewExchangeTransaction(MainForm.ExchangeTargetPrice, MainForm.ExchangeStopPrice, MainForm.ExchangeQuantity, FExchangeSelectedCoin);
             MainForm.StatusControlExchange.StatusName = MainForm.ExchangeTransactionName;
         }
-
-        private decimal FCacheTotal = -1;
-        private decimal FCacheQuantity = -1;
 
         private void MainForm_OnExchangeQuantityTxtChanged(object sender, EventArgs e)
         {
@@ -583,6 +585,7 @@ namespace Pandora.Client.PandorasWallet
             MainForm.ExchangeTransactionNameEnabled = false;
             MainForm.CheckAllOrderHistoryEnabled = false;
             MainForm.ExchangeButtonEnabled = false;
+            MainForm.ExchangeStoptPriceEnabled = false;
         }
 
         private void EnableExchangeInterface()
@@ -593,6 +596,7 @@ namespace Pandora.Client.PandorasWallet
             MainForm.ExchangeTransactionNameEnabled = true;
             MainForm.CheckAllOrderHistoryEnabled = true;
             MainForm.ExchangeButtonEnabled = true;
+            MainForm.ExchangeStoptPriceEnabled = true;
         }
 
         private void MainForm_OnExchangeSelectionChanged(object sender, EventArgs e)
@@ -744,7 +748,7 @@ namespace Pandora.Client.PandorasWallet
             RefreshStatusOrderLog(lOrders);
         }
 
-        private void TryToCreateNewExchangeTransaction(decimal aPriceTarget, decimal aAmount, PandoraExchanger.ExchangeMarket aMarket)
+        private void TryToCreateNewExchangeTransaction(decimal aPriceTarget, decimal aStopPrice, decimal aAmount, PandoraExchanger.ExchangeMarket aMarket)
         {
             string lExchangeAddress = FExchanger.GetDepositAddress(aMarket);
 
@@ -770,7 +774,8 @@ namespace Pandora.Client.PandorasWallet
                 SentQuantity = lCoinSentAmount,
                 Market = aMarket.MarketName,
                 Rate = aPriceTarget,
-                Status = OrderStatus.Waiting,
+                StopPrice = aStopPrice,
+                Status = OrderStatus.Initial,
                 BaseTicker = aMarket.BaseTicker,
                 OpenTime = DateTime.UtcNow,
                 Name = MainForm.ExchangeTransactionName
@@ -790,148 +795,184 @@ namespace Pandora.Client.PandorasWallet
             FExchangeCurrencyOrders[FWallet.ActiveCurrencyID].Add(lOrderWithID);
 
             WriteTransactionLogEntry(lOrderWithID);
+            WriteTransactionLogEntry(lOrderWithID, OrderMessage.OrderMessageLevel.Info, string.Format("Number of confirmations needed: {0} confirmations", FExchanger.GetConfirmations(aMarket.CoinTicker)));
         }
 
-        //TODO: This is to mouch complex, i need to simplify it
-        private void UpdateExchangeOrderTxRelationship()
+        private void LocalOrderScanTask()
         {
             try
-            {   //
+            {
                 if (FWallet != null && FExchanger.IsCredentialsSet)
                 {
-                    Dictionary<uint, List<TransactionViewModel>> aTxs = FWallet.TransactionsByCurrency;
+                    Dictionary<uint, List<TransactionViewModel>> lTxs = new Dictionary<uint, List<TransactionViewModel>>(FWallet.TransactionsByCurrency);
                     List<CurrencyItem> lCoins = FWallet.UserCoins;
+                    IEnumerable<CurrencyItem> lCoinWithTx = lCoins.Where(lCoin => lTxs.ContainsKey((uint)lCoin.Id) && lTxs[(uint)lCoin.Id].Any());
 
-                    foreach (uint iter in aTxs.Keys)
+                    foreach (CurrencyItem lCoin in lCoinWithTx)
                     {
-                        string lCurrentTicker = lCoins.Where(x => x.Id == iter).Select(x => x.Ticker).FirstOrDefault();
+                        uint lCoinId = (uint)lCoin.Id;
+                        string lTicker = lCoin.Ticker;
 
-                        if (lCurrentTicker == null)
+                        List<PandoraExchanger.ExchangeMarket> lExchangeCoinMarkets;
+                        try
                         {
+                            lExchangeCoinMarkets = FExchanger.GetMarketCoins(lTicker).ToList();
+                        }
+                        catch (Exception ex)
+                        {
+                            Universal.Log.Write(Universal.LogLevel.Error, string.Format("{0}: Exception in getmarketcoins. {1}", lCoin.Name, ex));
                             continue;
                         }
 
-                        int lConfirmations = FExchanger.GetConfirmations(lCurrentTicker);
-
-                        if (lConfirmations < 0)
-                        {
-                            continue;
-                        }
-
-                        foreach (TransactionViewModel it in aTxs[iter].Where(x => x.Confirmation >= (ulong)lConfirmations))
-                        {
-                            if (!FExchangeCurrencyOrders.ContainsKey(iter))
-                            {
-                                continue;
-                            }
-
-                            MarketOrder lItem = FExchangeCurrencyOrders[iter].Find(x => x.CoinTxID == it.TransactionID);
-
-                            if (lItem == null)
-                            {
-                                continue;
-                            }
-
-                            List<PandoraExchanger.ExchangeMarket> lExchangeCoinMarket;
-
-                            try
-                            {
-                                lExchangeCoinMarket = FExchanger.GetMarketCoins(lCurrentTicker).ToList();
-                            }
-                            catch
-                            {
-                                continue;
-                            }
-
-                            PandoraExchanger.ExchangeMarket lMarket = lExchangeCoinMarket.Find(x => x.BaseTicker == lCurrentTicker && lItem.Market == x.MarketName);
-
-                            if (lItem.Status == OrderStatus.Waiting && lMarket != null)
-                            {
-                                if (lItem.ErrorCounter % 60 == 0)
-                                {
-                                    try
-                                    {
-                                        FExchanger.PlaceOrder(lItem, lMarket);
-                                        WriteTransactionLogEntry(lItem);
-                                        lItem.ErrorCounter = 0;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        int lNumberofretrys = lItem.ErrorCounter / 60;
-
-                                        if (lNumberofretrys >= 9)
-                                        {
-                                            lItem.Cancelled = true;
-                                            FExchanger.UpdateOrder(lItem, OrderStatus.Interrupted);
-                                            WriteTransactionLogEntry(lItem);
-                                        }
-
-                                        lItem.ErrorCounter += 1;
-                                        Universal.Log.Write(Universal.LogLevel.Error, string.Format("Order: {0}. Exception: {1}", lItem.InternalID, ex.ToString()));
-
-                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Error, "Error while placing Order: " + ex.Message);
-                                        WriteTransactionLogEntry(lItem, OrderMessage.OrderMessageLevel.Info, string.Format("Retrying in 1 minute. Attempt: {0}/10", (lNumberofretrys + 1)));
-                                    }
-                                }
-                                else
-                                {
-                                    lItem.ErrorCounter++;
-                                }
-                            }
-                        }
+                        List<MarketOrder> lOrdersInitial = FExchangeCurrencyOrders[lCoinId].Where(lOrder => lOrder.Status == OrderStatus.Initial).ToList();
+                        VerifyInitialOrders(lOrdersInitial, lTicker, lTxs[lCoinId], lExchangeCoinMarkets);
+                        List<MarketOrder> lOrderWaiting = FExchangeCurrencyOrders[lCoinId].Where(lOrder => lOrder.Status == OrderStatus.Waiting).ToList();
+                        VerifyWaitingOrders(lOrderWaiting, lExchangeCoinMarkets, lTicker);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Universal.Log.Write("Failed to Update Exchange Order Relationship. Details: " + ex.Message + " on " + ex.Source);
+                Universal.Log.Write(Universal.LogLevel.Error, "Failed to Update Exchange Order Relationship. Details: " + ex.Message + " on " + ex.Source);
             }
             finally
             {
                 Task.Delay(1000).Wait(FExchangeTaskCancellationSource.Token);
 
-                FExchangeTasks[1] = Task.Run(() => UpdateExchangeOrderTxRelationship(), FExchangeTaskCancellationSource.Token);
+                FExchangeTasks[1] = Task.Run(() => LocalOrderScanTask(), FExchangeTaskCancellationSource.Token);
             }
         }
 
-        private void WriteTransactionLogEntry(MarketOrder aMarket, OrderMessage.OrderMessageLevel aLevel = OrderMessage.OrderMessageLevel.Info, string aMessage = null)
+        private void VerifyInitialOrders(List<MarketOrder> aInitialOrders, string aCoinTicker, IEnumerable<TransactionViewModel> aCurrencyTransactions, List<PandoraExchanger.ExchangeMarket> aListExchangeCoinMarket)
+        {
+            if (!aInitialOrders.Any())
+                return;
+
+            int lExchangeminConf = FExchanger.GetConfirmations(aCoinTicker);
+
+            if (lExchangeminConf < 0)
+                return;
+
+            IEnumerable<TransactionViewModel> lConfirmedTxs = aCurrencyTransactions.Where(x => x.Confirmation >= (ulong)lExchangeminConf);
+
+            foreach (TransactionViewModel lTx in lConfirmedTxs)
+            {
+                MarketOrder lItem = aInitialOrders.Find(x => x.CoinTxID == lTx.TransactionID);
+
+                if (lItem == null)
+                    continue;
+
+                PandoraExchanger.ExchangeMarket lMarket = aListExchangeCoinMarket.Find(x => x.BaseTicker == aCoinTicker && lItem.Market == x.MarketName);
+
+                if (lItem.Status == OrderStatus.Initial && lMarket != null)
+                {
+                    FExchanger.UpdateOrder(lItem, OrderStatus.Waiting);
+                    WriteTransactionLogEntry(lItem);
+                }
+            }
+        }
+
+        private void VerifyWaitingOrders(List<MarketOrder> aWaitingOrders, List<PandoraExchanger.ExchangeMarket> aListExchangeCoinMarket, string aTicker)
+        {
+            if (!aWaitingOrders.Any())
+                return;
+
+            foreach (MarketOrder lOrder in aWaitingOrders)
+            {
+                decimal lTargetPrice = lOrder.Rate;
+
+                PandoraExchanger.ExchangeMarket lMarket = aListExchangeCoinMarket.Find(x => x.BaseTicker == aTicker && lOrder.Market == x.MarketName);
+
+                bool lPlaceOrderFlag = false;
+
+                if (lMarket.IsSell)
+                    lPlaceOrderFlag = lOrder.StopPrice >= lMarket.BasePrice;
+                else
+                    lPlaceOrderFlag = lOrder.StopPrice <= lMarket.BasePrice;
+
+                if (lPlaceOrderFlag)
+                    TryToPlaceOrder(lOrder, lMarket);
+            }
+        }
+
+        private void TryToPlaceOrder(MarketOrder aOrder, PandoraExchanger.ExchangeMarket aMarket)
+        {
+            if (aOrder.ErrorCounter % 60 == 0)
+            {
+                try
+                {
+                    FExchanger.PlaceOrder(aOrder, aMarket);
+                    WriteTransactionLogEntry(aOrder);
+                    aOrder.ErrorCounter = 0;
+                }
+                catch (Exception ex)
+                {
+                    int lNumberofretrys = aOrder.ErrorCounter / 60;
+
+                    if (lNumberofretrys >= 9)
+                    {
+                        aOrder.Cancelled = true;
+                        FExchanger.UpdateOrder(aOrder, OrderStatus.Interrupted);
+                        WriteTransactionLogEntry(aOrder);
+                    }
+
+                    aOrder.ErrorCounter += 1;
+                    Universal.Log.Write(Universal.LogLevel.Error, string.Format("Order: {0}. Exception: {1}", aOrder.InternalID, ex.ToString()));
+
+                    WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Error, "Error while placing Order: " + ex.Message);
+                    WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, string.Format("Retrying in 1 minute. Attempt: {0}/10", (lNumberofretrys + 1)));
+                }
+            }
+            else
+            {
+                aOrder.ErrorCounter++;
+            }
+        }
+
+        private void WriteTransactionLogEntry(MarketOrder aOrder, OrderMessage.OrderMessageLevel aLevel = OrderMessage.OrderMessageLevel.Info, string aMessage = null)
         {
             if (!string.IsNullOrEmpty(aMessage))
             {
-                FDBExchanger.WriteOrderLog(aMarket.InternalID, aMessage, aLevel);
+                FDBExchanger.WriteOrderLog(aOrder.InternalID, aMessage, aLevel);
                 return;
             }
 
-            switch (aMarket.Status)
+            switch (aOrder.Status)
             {
+                case OrderStatus.Initial:
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, "Starting Transaction Process", OrderMessage.OrderMessageLevel.Info);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, aOrder.SentQuantity + " coins Sent to Exchange account", OrderMessage.OrderMessageLevel.Info);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, "Waiting for confirmations to wait for stop price", OrderMessage.OrderMessageLevel.StageChange);
+                    break;
+
                 case OrderStatus.Waiting:
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, "Starting Transaction Process", OrderMessage.OrderMessageLevel.Info);
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, aMarket.SentQuantity + " coins Sent to Exchange account", OrderMessage.OrderMessageLevel.Info);
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, "Waiting for confirmations to place order", OrderMessage.OrderMessageLevel.StageChange);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, string.Format("Transaction {0} has enough confirmations", aOrder.CoinTxID), OrderMessage.OrderMessageLevel.Info);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, string.Format("{0} coin are in Exchange account", aOrder.SentQuantity), OrderMessage.OrderMessageLevel.Info);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, "Waiting for market price to place order", OrderMessage.OrderMessageLevel.StageChange);
                     break;
 
                 case OrderStatus.Placed:
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, "Transaction confirmed", OrderMessage.OrderMessageLevel.Info);
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, "Placing Transaction on exchange. Uuid: " + aMarket.ID.ToString(), OrderMessage.OrderMessageLevel.StageChange);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, "Price reached specified target", OrderMessage.OrderMessageLevel.Info);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, "Placing order in exchange. Uuid: " + aOrder.ID.ToString(), OrderMessage.OrderMessageLevel.StageChange);
                     break;
 
                 case OrderStatus.Interrupted:
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, "Transaction cancelled or not found on Exchange.", OrderMessage.OrderMessageLevel.FatalError);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, "Transaction cancelled or not found on Exchange.", OrderMessage.OrderMessageLevel.FatalError);
                     break;
 
                 case OrderStatus.Completed:
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, "Transaction completed. Waiting for withdraw", OrderMessage.OrderMessageLevel.StageChange);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, "Transaction completed. Waiting for withdraw", OrderMessage.OrderMessageLevel.StageChange);
                     break;
 
                 case OrderStatus.Withdrawed:
-                    FDBExchanger.WriteOrderLog(aMarket.InternalID, "Money withdrawed to account", OrderMessage.OrderMessageLevel.Finisher);
+                    FDBExchanger.WriteOrderLog(aOrder.InternalID, "Money succesfully withdrawed to account", OrderMessage.OrderMessageLevel.Finisher);
                     break;
             }
             List<MarketOrder> lOrders = FExchangeCurrencyOrders[FWallet.ActiveCurrencyID];
 
-            RefreshStatusOrderLog(lOrders, aMarket.InternalID);
+            RefreshStatusOrderLog(lOrders, aOrder.InternalID);
 
-            RefreshSelectedOrderLog(aMarket.InternalID);
+            RefreshSelectedOrderLog(aOrder.InternalID);
         }
     }
 }

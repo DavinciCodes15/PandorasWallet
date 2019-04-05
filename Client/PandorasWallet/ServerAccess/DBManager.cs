@@ -24,6 +24,7 @@
 
 using Pandora.Client.ClientLib;
 using Pandora.Client.Crypto.Currencies;
+using Pandora.Client.Universal;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -55,7 +56,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     FDBConnection.Open();
 
                     CreateTables();
-                    GetTableNames();
+                    TableNames = new List<string>();
+                    TableNames.AddRange(GetTableNames());
                 }
                 catch
                 {
@@ -63,9 +65,33 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
-            private void GetTableNames()
+            /// <summary>
+            /// Retrieves a list of monitored address accounts from specified files, if exists
+            /// </summary>
+            /// <param name="aFilename">SqlLite File name with or without extention</param>
+            /// <returns>Currency account array of users coin data</returns>
+            /// <exception cref="Pandora.Client.PandorasWallet.Wallet.ClientExceptions.CacheDBException">Throw when there is an SQLite problem when perfoming query</exception>
+            public static CurrencyAccount[] GetUserAddressesFromFile(string aDataPath, string aSQLiteFilename)
             {
-                TableNames = new List<string>();
+                List<CurrencyAccount> lResult = new List<CurrencyAccount>();
+                if (!aSQLiteFilename.Contains(".sqlite"))
+                    aSQLiteFilename = string.Concat(aSQLiteFilename, ".sqlite");
+                string lFilePath = Path.Combine(aDataPath, aSQLiteFilename);
+                using (SQLiteConnection lConnection = new SQLiteConnection(string.Format("Data Source={0};PRAGMA journal_mode=WAL;", lFilePath)))
+                {
+                    lConnection.Open();
+                    if (ReadCurrencyAccount(out List<CurrencyAccount> lCurrencyAccountsLists, lConnection))
+                        lResult.AddRange(lCurrencyAccountsLists);
+                    else throw new Pandora.Client.PandorasWallet.Wallet.ClientExceptions.CacheDBException(string.Format("Error retrieving User addresses from file. Connection string: {0}", lConnection.ConnectionString));
+                    lConnection.Close();
+                }
+
+                return lResult.ToArray();
+            }
+
+            private string[] GetTableNames()
+            {
+                List<string> lTableNames = new List<string>();
 
                 try
                 {
@@ -75,10 +101,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         {
                             while (rdr.Read())
                             {
-                                TableNames.Add(rdr.GetString(0));
+                                lTableNames.Add(rdr.GetString(0));
                             }
                         }
                     }
+
+                    return lTableNames.ToArray();
                 }
                 catch
                 {
@@ -86,16 +114,35 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
+            private const int VERSION = 10002;
+
             private void CreateTables()
             {
+                string[] lTables = GetTableNames();
+
+                if (lTables.Any())
+                {
+                    if (!lTables.Contains("Version"))
+                    {
+                        TableNames = new List<string>(lTables);
+                        ClearAll(); // clears data from all tables
+                    }
+                    else if (GetVersion() >= VERSION)
+                    {
+                        return;
+                    }
+                }
                 SQLiteCommand CreateMonitoredAccounts = new SQLiteCommand("CREATE TABLE IF NOT EXISTS MonitoredAccounts (id BIGINT, currencyid INT, address VARCHAR(100),PRIMARY KEY (id,currencyId))", FDBConnection);
-                SQLiteCommand CreateCurrencyData = new SQLiteCommand("CREATE TABLE IF NOT EXISTS Currencies (id INT PRIMARY KEY, name VARCHAR(100), ticker VARCHAR(50), precision INT, MinConfirmations INT, livedate DATETIME, Icon BLOB, IconSize int, FeePerKb int, ChainParams BLOB)", FDBConnection);
+                SQLiteCommand CreateCurrencyData = new SQLiteCommand("CREATE TABLE IF NOT EXISTS Currencies2 (id INT PRIMARY KEY, name VARCHAR(100), ticker VARCHAR(50), precision INT, MinConfirmations INT, livedate DATETIME, Icon BLOB, IconSize int, FeePerKb int, ChainParams BLOB, status VARCHAR(50))", FDBConnection);
                 SQLiteCommand CreateCurrencyStatusData = new SQLiteCommand("CREATE TABLE IF NOT EXISTS CurrenciesStatus (id BIGINT, currencyid INT PRIMARY KEY, statustime DATETIME, status VARCHAR(50), extinfo VARCHAR(255), blockheight INT)", FDBConnection);
-                SQLiteCommand CreateTxTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS Tx (internalid BIGINT, currencyid BIGINT, id VARCHAR(100), dattime DATETIME, block BIGINT, TxFee BIGINT, PRIMARY KEY(internalid, currencyid))", FDBConnection);
+                SQLiteCommand CreateTxTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS TxTable (internalid BIGINT, currencyid BIGINT, id VARCHAR(100), dattime DATETIME, block BIGINT, TxFee BIGINT, Valid BOOLEAN, PRIMARY KEY(internalid, currencyid))", FDBConnection);
                 SQLiteCommand CreateInputsTxTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS TxIn (internalid BIGINT, id BIGINT, address varchar(100), ammount BIGINT, PRIMARY KEY (internalid,id,address,ammount))", FDBConnection);
                 SQLiteCommand CreateOutputsTxTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS TxOut (internalid BIGINT, id BIGINT, address varchar(100), ammount BIGINT, PRIMARY KEY (internalid,id,address,ammount))", FDBConnection);
                 SQLiteCommand CreateExtTxTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS TxExt (internalid BIGINT PRIMARY KEY, extdata varchar(100))", FDBConnection);
                 SQLiteCommand CreateDataRetrievalTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS DataReferences (type VARCHAR(100) PRIMARY KEY, lastdataretrieval DATETIME INTEGER)", FDBConnection);
+                SQLiteCommand CreateVersionTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS Version (NVersion BIGINT PRIMARY KEY)", FDBConnection);
+                SQLiteCommand WriteVersion = new SQLiteCommand("DELETE FROM VERSION ; INSERT OR REPLACE INTO Version (NVersion) VALUES (@Version)", FDBConnection);
+                WriteVersion.Parameters.Add(new SQLiteParameter("Version", VERSION));
 
                 using (SQLiteTransaction lTransaction = FDBConnection.BeginTransaction())
                 {
@@ -109,6 +156,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         CreateOutputsTxTable.ExecuteNonQuery();
                         CreateExtTxTable.ExecuteNonQuery();
                         CreateDataRetrievalTable.ExecuteNonQuery();
+                        CreateVersionTable.ExecuteNonQuery();
+                        WriteVersion.ExecuteNonQuery();
 
                         lTransaction.Commit();
 
@@ -120,6 +169,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         CreateOutputsTxTable.Dispose();
                         CreateExtTxTable.Dispose();
                         CreateDataRetrievalTable.Dispose();
+                        CreateVersionTable.Dispose();
+                        WriteVersion.Dispose();
                     }
                     catch
                     {
@@ -129,16 +180,27 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
+            private int GetVersion()
+            {
+                string lQuery = "SELECT NVersion FROM Version";
+                using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, FDBConnection))
+                using (SQLiteDataReader lReader = lSQLiteCommand.ExecuteReader())
+                    if (lReader.Read())
+                        return Convert.ToInt32(lReader.GetInt32(0));
+                    else
+                        return 0;
+            }
+
             public Dictionary<string, long[]> GetSavedCheckpoints()
             {
                 Dictionary<string, long[]> lCheckpoints = new Dictionary<string, long[]>();
-                foreach (string it in TableNames)
+                foreach (string lTableName in TableNames.Where(table => table != "Version"))
                 {
-                    switch (it)
+                    switch (lTableName)
                     {
                         case "MonitoredAccounts":
 
-                            string qry1 = "SELECT Max(id), currencyid FROM " + it + " GROUP BY currencyId";
+                            string qry1 = "SELECT Max(id), currencyid FROM " + lTableName + " GROUP BY currencyId";
                             List<long> LList = new List<long>();
                             List<long> LIndex = new List<long>();
                             using (SQLiteCommand command = new SQLiteCommand(qry1, FDBConnection))
@@ -153,13 +215,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 }
                             }
 
-                            lCheckpoints.Add(it, LList.ToArray());
-                            lCheckpoints.Add(it + "Index", LIndex.ToArray());
+                            lCheckpoints.Add(lTableName, LList.ToArray());
+                            lCheckpoints.Add(lTableName + "Index", LIndex.ToArray());
                             break;
 
-                        case "Tx":
+                        case "TxTable":
 
-                            string qry3alt = "SELECT Min(internalid), currencyid FROM " + it + " WHERE block == 0 GROUP BY currencyId";
+                            string qry3alt = "SELECT Min(internalid), currencyid FROM " + lTableName + " WHERE block == 0 GROUP BY currencyId";
 
                             List<Tuple<long, long>> lListResults1 = new List<Tuple<long, long>>();
 
@@ -174,7 +236,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 }
                             }
 
-                            string qry3 = "SELECT Max(internalid), currencyid FROM " + it + " WHERE block != 0 GROUP BY currencyId";
+                            string qry3 = "SELECT Max(internalid), currencyid FROM " + lTableName + " WHERE block != 0 GROUP BY currencyId";
 
                             List<Tuple<long, long>> lListResults2 = new List<Tuple<long, long>>();
 
@@ -192,12 +254,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             List<Tuple<long, long>> lListFinalResult = lListResults2.Where(x => !lListResults2.Exists(y => y.Item1 == x.Item1)).ToList();
                             lListFinalResult.AddRange(lListResults1);
 
-                            lCheckpoints.Add(it, lListFinalResult.Select(x => x.Item1).ToArray());
-                            lCheckpoints.Add(it + "Index", lListFinalResult.Select(x => x.Item2).ToArray());
+                            lCheckpoints.Add(lTableName, lListFinalResult.Select(x => x.Item1).ToArray());
+                            lCheckpoints.Add(lTableName + "Index", lListFinalResult.Select(x => x.Item2).ToArray());
                             break;
 
                         case "CurrenciesStatus":
-                            string qry4 = "SELECT Max(id), currencyid FROM " + it + " GROUP BY currencyId";
+                            string qry4 = "SELECT Max(id), currencyid FROM " + lTableName + " GROUP BY currencyId";
                             List<long> LList3 = new List<long>();
                             List<long> LIndex3 = new List<long>();
                             using (SQLiteCommand command = new SQLiteCommand(qry4, FDBConnection))
@@ -212,14 +274,14 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 }
                             }
 
-                            lCheckpoints.Add(it, LList3.ToArray());
-                            lCheckpoints.Add(it + "Index", LIndex3.ToArray());
+                            lCheckpoints.Add(lTableName, LList3.ToArray());
+                            lCheckpoints.Add(lTableName + "Index", LIndex3.ToArray());
                             break;
 
-                        case "Currencies":
+                        case "Currencies2":
 
-                            lCheckpoints.Add(it, new long[1]);
-                            string qry5 = "SELECT Id FROM " + it;
+                            lCheckpoints.Add(lTableName, new long[1]);
+                            string qry5 = "SELECT Id FROM " + lTableName;
                             List<long> lCoinIds = new List<long>();
                             using (SQLiteCommand command = new SQLiteCommand(qry5, FDBConnection))
                             {
@@ -232,7 +294,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 }
                             }
 
-                            lCheckpoints[it] = lCoinIds.ToArray();
+                            lCheckpoints[lTableName] = lCoinIds.ToArray();
 
                             break;
 
@@ -240,12 +302,14 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         case "TxIn":
                         case "TxOut":
                         case "TxExt":
+                        case "Tx":
+                        case "Currencies":
                             break;
 
                         default:
 
-                            lCheckpoints.Add(it, new long[1]);
-                            string qry2 = "SELECT COUNT(id), Max(id) FROM " + it + " limit 1";
+                            lCheckpoints.Add(lTableName, new long[1]);
+                            string qry2 = "SELECT COUNT(id), Max(id) FROM " + lTableName + " limit 1";
 
                             using (SQLiteCommand command = new SQLiteCommand(qry2, FDBConnection))
                             {
@@ -255,11 +319,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                     {
                                         if (rdr.GetInt32(0) > 0)
                                         {
-                                            lCheckpoints[it][0] = rdr.GetInt32(1);
+                                            lCheckpoints[lTableName][0] = rdr.GetInt32(1);
                                         }
                                         else
                                         {
-                                            lCheckpoints[it][0] = 0;
+                                            lCheckpoints[lTableName][0] = 0;
                                         }
                                     }
                                 }
@@ -316,7 +380,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             public bool Write(CurrencyItem aCurrItem)
             {
-                using (SQLiteCommand WriteCurrItem = new SQLiteCommand("INSERT OR REPLACE INTO Currencies (id, name, ticker, precision, MinConfirmations,livedate,Icon,IconSize,FeePerKb, ChainParams) VALUES (@id,@name,@ticker,@precision,@MinConfirmations,@LiveDate,@Icon,@IconSize,@FeePerKb, @ChainParams)", FDBConnection))
+                using (SQLiteCommand WriteCurrItem = new SQLiteCommand("INSERT OR REPLACE INTO Currencies2 (id, name, ticker, precision, MinConfirmations,livedate,Icon,IconSize,FeePerKb, ChainParams, Status) VALUES (@id,@name,@ticker,@precision,@MinConfirmations,@LiveDate,@Icon,@IconSize,@FeePerKb, @ChainParams,@Status)", FDBConnection))
                 {
                     WriteCurrItem.Parameters.Add(new SQLiteParameter("id", aCurrItem.Id));
                     WriteCurrItem.Parameters.Add(new SQLiteParameter("name", aCurrItem.Name));
@@ -327,6 +391,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     WriteCurrItem.Parameters.Add(new SQLiteParameter("Icon", aCurrItem.Icon));
                     WriteCurrItem.Parameters.Add(new SQLiteParameter("IconSize", aCurrItem.Icon.Count()));
                     WriteCurrItem.Parameters.Add(new SQLiteParameter("FeePerKb", aCurrItem.FeePerKb));
+                    WriteCurrItem.Parameters.Add(new SQLiteParameter("Status", aCurrItem.CurrentStatus));
 
                     MyCacheChainParams lChainParamsCopy = new MyCacheChainParams();
 
@@ -427,7 +492,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             public bool Write(TransactionRecord aTxRecord, ulong aCurrencyId)
             {
-                using (SQLiteCommand WriteTxRecord = new SQLiteCommand("INSERT OR REPLACE INTO Tx (internalid, currencyid, id, dattime, block, TxFee) VALUES (@internalid, @currencyid, @id, @dattime, @block, @TxFee)", FDBConnection))
+                using (SQLiteCommand WriteTxRecord = new SQLiteCommand("INSERT OR REPLACE INTO TxTable (internalid, currencyid, id, dattime, block, TxFee, Valid) VALUES (@internalid, @currencyid, @id, @dattime, @block, @TxFee, @Valid)", FDBConnection))
                 {
                     WriteTxRecord.Parameters.Add(new SQLiteParameter("internalid", aTxRecord.TransactionRecordId));
                     WriteTxRecord.Parameters.Add(new SQLiteParameter("currencyid", aCurrencyId));
@@ -435,6 +500,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     WriteTxRecord.Parameters.Add(new SQLiteParameter("dattime", aTxRecord.TxDate));
                     WriteTxRecord.Parameters.Add(new SQLiteParameter("block", aTxRecord.Block));
                     WriteTxRecord.Parameters.Add(new SQLiteParameter("TxFee", aTxRecord.TxFee));
+                    WriteTxRecord.Parameters.Add(new SQLiteParameter("Valid", aTxRecord.Valid));
 
                     try
                     {
@@ -537,6 +603,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             public bool Read(out List<CurrencyAccount> aCurrencyAccountsList, uint? aCurrencyId = null)
             {
+                return DBManager.ReadCurrencyAccount(out aCurrencyAccountsList, FDBConnection, aCurrencyId);
+            }
+
+            private static bool ReadCurrencyAccount(out List<CurrencyAccount> aCurrencyAccountsList, SQLiteConnection aConnection, uint? aCurrencyId = null)
+            {
                 aCurrencyAccountsList = new List<CurrencyAccount>();
 
                 string qrywhere = aCurrencyId.HasValue ? (" WHERE currencyId = " + aCurrencyId.Value) : string.Empty;
@@ -544,7 +615,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
                 try
                 {
-                    using (SQLiteCommand command = new SQLiteCommand(qry, FDBConnection))
+                    using (SQLiteCommand command = new SQLiteCommand(qry, aConnection))
                     {
                         using (SQLiteDataReader rdr = command.ExecuteReader())
                         {
@@ -568,7 +639,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 aCurrencyList = new List<CurrencyItem>();
 
                 string qrywhere = aId.HasValue ? (" WHERE id = " + aId.Value) : string.Empty;
-                string qry = "SELECT id, name, ticker, precision, MinConfirmations, livedate, Icon, IconSize,FeePerKb, ChainParams FROM Currencies" + qrywhere;
+                string qry = "SELECT id, name, ticker, precision, MinConfirmations, livedate, Icon, IconSize, FeePerKb, ChainParams, Status FROM Currencies2" + qrywhere;
 
                 try
                 {
@@ -596,7 +667,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 ChainParams lParams = new ChainParams();
                                 lParams.CopyFrom(lChainParamsObject);
 
-                                aCurrencyList.Add(new CurrencyItem(Convert.ToUInt32(rdr.GetInt32(0)), rdr.GetString(1), rdr.GetString(2), Convert.ToUInt16(rdr.GetInt16(3)), rdr.GetDateTime(5), Convert.ToUInt16(rdr.GetInt16(4)), lIcon, rdr.GetInt32(8), lParams));
+                                aCurrencyList.Add(new CurrencyItem(
+                                    Convert.ToUInt32(rdr.GetInt32(0)),
+                                    rdr.GetString(1),
+                                    rdr.GetString(2),
+                                    Convert.ToUInt16(rdr.GetInt16(3)),
+                                    rdr.GetDateTime(5),
+                                    Convert.ToUInt16(rdr.GetInt16(4)),
+                                    lIcon,
+                                    rdr.GetInt32(8),
+                                    lParams,
+                                    (CurrencyStatus)Enum.Parse(typeof(CurrencyStatus), rdr.GetString(10))
+                                    ));
                             }
                         }
                     }
@@ -632,7 +714,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
                 catch (Exception ex)
                 {
-                    Universal.Log.Write(Universal.LogLevel.Error, "Read CurrencyStatus cache exception: " + ex.Message + " on " + ex.Source);
+                    Log.Write(LogLevel.Error, "Read CurrencyStatus cache exception: " + ex.Message + " on " + ex.Source);
                     return false;
                 }
             }
@@ -642,24 +724,25 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 aTxList = new List<TransactionRecord>();
 
                 string qrywhere = " WHERE currencyid = " + aCurrencyId;
-                string qry = "SELECT internalid, currencyid, id, dattime, block, TxFee FROM Tx" + qrywhere;
+                string qry = string.Format("SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {0}", aCurrencyId);
 
                 try
                 {
-                    using (SQLiteCommand command = new SQLiteCommand(qry, FDBConnection))
+                    using (SQLiteCommand lSqlCommand = new SQLiteCommand(qry, FDBConnection))
                     {
-                        using (SQLiteDataReader rdr = command.ExecuteReader())
-                        {
-                            while (rdr.Read())
-                            {
-                                aTxList.Add(new TransactionRecord(Convert.ToUInt64(rdr.GetInt64(0)), rdr.GetString(2), rdr.GetDateTime(3), Convert.ToUInt64(rdr.GetInt64(4))));
-                            }
-                        }
+                        using (SQLiteDataReader lSqLiteReader = lSqlCommand.ExecuteReader())
+                            while (lSqLiteReader.Read())
+                                aTxList.Add(new TransactionRecord(
+                                    Convert.ToUInt64(lSqLiteReader.GetInt64(0)),
+                                    lSqLiteReader.GetString(2),
+                                    lSqLiteReader.GetDateTime(3),
+                                    Convert.ToUInt64(lSqLiteReader.GetInt64(4)),
+                                    lSqLiteReader.GetBoolean(5)));
                     }
                 }
                 catch (Exception ex)
                 {
-                    Universal.Log.Write(Universal.LogLevel.Error, "Read Tx cache exception: " + ex.Message + " on " + ex.Source);
+                    Log.Write(LogLevel.Error, "Read Tx cache exception: {0}", ex);
                     return false;
                 }
 
@@ -785,13 +868,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             {
                 try
                 {
-                    foreach (string it in TableNames)
+                    foreach (string lTableName in TableNames)
                     {
-                        string qry = "DELETE FROM " + it;
-                        using (SQLiteCommand command = new SQLiteCommand(qry, FDBConnection))
+                        string qry = "DELETE FROM " + lTableName;
+                        using (SQLiteCommand lSqLiteCommand = new SQLiteCommand(qry, FDBConnection))
                         {
                             {
-                                command.ExecuteNonQuery();
+                                lSqLiteCommand.ExecuteNonQuery();
                             }
                         }
                     }

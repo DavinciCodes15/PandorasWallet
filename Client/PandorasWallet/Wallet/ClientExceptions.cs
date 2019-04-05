@@ -120,6 +120,13 @@ namespace Pandora.Client.PandorasWallet.Wallet
             }
         }
 
+        public class CacheDBException : Exception
+        {
+            public CacheDBException(string message) : base(message)
+            {
+            }
+        }
+
         public class MisspelledWord : Exception
         {
             public MisspelledWord(string message)

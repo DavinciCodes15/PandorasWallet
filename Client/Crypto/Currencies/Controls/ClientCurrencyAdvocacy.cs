@@ -140,5 +140,10 @@ namespace Pandora.Client.Crypto.Currencies.Controls
         {
             return CoinScriptAddress.IsValid(aAddress, Network);
         }
+
+        public virtual string BinaryAddress(string aAddress)
+        {
+            return CoinScriptAddress.AddressToBinString(aAddress, Network);
+        }
     }
 }

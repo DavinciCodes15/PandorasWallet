@@ -1,6 +1,7 @@
 ﻿using Pandora.Client.Crypto.Currencies.DataEncoders;
 using System;
 using System.Linq;
+using System.Text;
 
 namespace Pandora.Client.Crypto.Currencies
 {
@@ -50,6 +51,16 @@ namespace Pandora.Client.Crypto.Currencies
             var lPubVer = aNetwork.GetVersionBytes(PUBKEY_ADDRESS, true);
             return ((lScriptVer != null && data.StartWith(lScriptVer)) && (data.Length == lScriptVer.Length + 20)) ||
                 ((lPubVer != null && data.StartWith(lPubVer)) && (data.Length == lPubVer.Length + 20));
+        }
+
+        public static string AddressToBinString(string aBase58Address, Network aNetwork)
+        {
+            const int SCRIPT_ADDRESS = 1;
+            const int PUBKEY_ADDRESS = 0;
+            if (aBase58Address == null) return null;
+            var data = (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).IsValidData(aBase58Address) ?
+                (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).DecodeData(aBase58Address) : new byte[0];
+            return BitConverter.ToString(data).Replace("-", ""); 
         }
 
         public CoinScriptAddress(ScriptId scriptId, Network network)

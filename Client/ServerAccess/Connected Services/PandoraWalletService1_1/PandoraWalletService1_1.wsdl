@@ -24,6 +24,32 @@
           <s:element minOccurs="0" maxOccurs="1" name="ErrorMsg" type="s:string" />
         </s:sequence>
       </s:complexType>
+      <s:element name="Logon2">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aEmail" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aUserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aPassword" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aVersion" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Logon2Response">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="Logon2Result" type="tns:PandoraLogonResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="PandoraLogonResult">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:PandoraResult">
+            <s:sequence>
+              <s:element minOccurs="1" maxOccurs="1" name="LastConnected" type="s:dateTime" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
       <s:element name="IsConnected">
         <s:complexType>
           <s:sequence>
@@ -118,6 +144,21 @@
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="GetCurrencyIconResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetLastCurrencyStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetLastCurrencyStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetLastCurrencyStatusResult" type="tns:PandoraResult" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -307,6 +348,9 @@
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="PandoraResult" nillable="true" type="tns:PandoraResult" />
+      <s:element name="PandoraLogonResult" nillable="true" type="tns:PandoraLogonResult" />
+      <s:element name="string" nillable="true" type="s:string" />
     </s:schema>
   </wsdl:types>
   <wsdl:message name="LogonSoapIn">
@@ -314,6 +358,12 @@
   </wsdl:message>
   <wsdl:message name="LogonSoapOut">
     <wsdl:part name="parameters" element="tns:LogonResponse" />
+  </wsdl:message>
+  <wsdl:message name="Logon2SoapIn">
+    <wsdl:part name="parameters" element="tns:Logon2" />
+  </wsdl:message>
+  <wsdl:message name="Logon2SoapOut">
+    <wsdl:part name="parameters" element="tns:Logon2Response" />
   </wsdl:message>
   <wsdl:message name="IsConnectedSoapIn">
     <wsdl:part name="parameters" element="tns:IsConnected" />
@@ -356,6 +406,12 @@
   </wsdl:message>
   <wsdl:message name="GetCurrencyIconSoapOut">
     <wsdl:part name="parameters" element="tns:GetCurrencyIconResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetLastCurrencyStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:GetLastCurrencyStatus" />
+  </wsdl:message>
+  <wsdl:message name="GetLastCurrencyStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:GetLastCurrencyStatusResponse" />
   </wsdl:message>
   <wsdl:message name="GetCurrencyStatusListSoapIn">
     <wsdl:part name="parameters" element="tns:GetCurrencyStatusList" />
@@ -429,10 +485,328 @@
   <wsdl:message name="GetTransactionIdSoapOut">
     <wsdl:part name="parameters" element="tns:GetTransactionIdResponse" />
   </wsdl:message>
+  <wsdl:message name="LogonHttpGetIn">
+    <wsdl:part name="aEmail" type="s:string" />
+    <wsdl:part name="aUserName" type="s:string" />
+    <wsdl:part name="aPassword" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="LogonHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="Logon2HttpGetIn">
+    <wsdl:part name="aEmail" type="s:string" />
+    <wsdl:part name="aUserName" type="s:string" />
+    <wsdl:part name="aPassword" type="s:string" />
+    <wsdl:part name="aVersion" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="Logon2HttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraLogonResult" />
+  </wsdl:message>
+  <wsdl:message name="IsConnectedHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="IsConnectedHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetServerIdHttpGetIn" />
+  <wsdl:message name="GetServerIdHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="LogoffHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="LogoffHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetUserStatusHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetUserStatusHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyListHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aStartId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyListHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyIconHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyIconHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetLastCurrencyStatusHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetLastCurrencyStatusHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyStatusListHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aStartId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyStatusListHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetBlockHeightHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetBlockHeightHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="AddMonitoredAccountHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aAddress" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="AddMonitoredAccountHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetMonitoredAcccountsHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aStartCurrencyAccountId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetMonitoredAcccountsHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="RemoveMonitoredAccountHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyAccountId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="RemoveMonitoredAccountHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionRecordsHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aStartTxRecordId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionRecordsHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="CheckAddressValidityHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aBase58CheckAddress" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CheckAddressValidityHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="StartGetTransactionToSignHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aTransationData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="StartGetTransactionToSignHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="EndGetTransactionToSignHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aGetTxToSignHandle" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="EndGetTransactionToSignHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="SendTransactionHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aSignedTxData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="SendTransactionHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="IsTransactionSentHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aSendTxHandle" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="IsTransactionSentHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionIdHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aSendTxHandle" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionIdHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="LogonHttpPostIn">
+    <wsdl:part name="aEmail" type="s:string" />
+    <wsdl:part name="aUserName" type="s:string" />
+    <wsdl:part name="aPassword" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="LogonHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="Logon2HttpPostIn">
+    <wsdl:part name="aEmail" type="s:string" />
+    <wsdl:part name="aUserName" type="s:string" />
+    <wsdl:part name="aPassword" type="s:string" />
+    <wsdl:part name="aVersion" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="Logon2HttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraLogonResult" />
+  </wsdl:message>
+  <wsdl:message name="IsConnectedHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="IsConnectedHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetServerIdHttpPostIn" />
+  <wsdl:message name="GetServerIdHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="LogoffHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="LogoffHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetUserStatusHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetUserStatusHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyListHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aStartId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyListHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyIconHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyIconHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetLastCurrencyStatusHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetLastCurrencyStatusHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyStatusListHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aStartId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyStatusListHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetBlockHeightHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetBlockHeightHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="AddMonitoredAccountHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aAddress" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="AddMonitoredAccountHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetMonitoredAcccountsHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aStartCurrencyAccountId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetMonitoredAcccountsHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="RemoveMonitoredAccountHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyAccountId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="RemoveMonitoredAccountHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionRecordsHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aStartTxRecordId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionRecordsHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="CheckAddressValidityHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aBase58CheckAddress" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CheckAddressValidityHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="StartGetTransactionToSignHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aTransationData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="StartGetTransactionToSignHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="EndGetTransactionToSignHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aGetTxToSignHandle" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="EndGetTransactionToSignHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="SendTransactionHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyId" type="s:string" />
+    <wsdl:part name="aSignedTxData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="SendTransactionHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="IsTransactionSentHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aSendTxHandle" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="IsTransactionSentHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionIdHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aSendTxHandle" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetTransactionIdHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
   <wsdl:portType name="PandoraWalletService1_1Soap">
     <wsdl:operation name="Logon">
       <wsdl:input message="tns:LogonSoapIn" />
       <wsdl:output message="tns:LogonSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Logon2">
+      <wsdl:input message="tns:Logon2SoapIn" />
+      <wsdl:output message="tns:Logon2SoapOut" />
     </wsdl:operation>
     <wsdl:operation name="IsConnected">
       <wsdl:input message="tns:IsConnectedSoapIn" />
@@ -461,6 +835,10 @@
     <wsdl:operation name="GetCurrencyIcon">
       <wsdl:input message="tns:GetCurrencyIconSoapIn" />
       <wsdl:output message="tns:GetCurrencyIconSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLastCurrencyStatus">
+      <wsdl:input message="tns:GetLastCurrencyStatusSoapIn" />
+      <wsdl:output message="tns:GetLastCurrencyStatusSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="GetCurrencyStatusList">
       <wsdl:input message="tns:GetCurrencyStatusListSoapIn" />
@@ -511,10 +889,199 @@
       <wsdl:output message="tns:GetTransactionIdSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
+  <wsdl:portType name="PandoraWalletService1_1HttpGet">
+    <wsdl:operation name="Logon">
+      <wsdl:input message="tns:LogonHttpGetIn" />
+      <wsdl:output message="tns:LogonHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Logon2">
+      <wsdl:input message="tns:Logon2HttpGetIn" />
+      <wsdl:output message="tns:Logon2HttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="IsConnected">
+      <wsdl:input message="tns:IsConnectedHttpGetIn" />
+      <wsdl:output message="tns:IsConnectedHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServerId">
+      <wsdl:input message="tns:GetServerIdHttpGetIn" />
+      <wsdl:output message="tns:GetServerIdHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Logoff">
+      <wsdl:input message="tns:LogoffHttpGetIn" />
+      <wsdl:output message="tns:LogoffHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUserStatus">
+      <wsdl:input message="tns:GetUserStatusHttpGetIn" />
+      <wsdl:output message="tns:GetUserStatusHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyList">
+      <wsdl:input message="tns:GetCurrencyListHttpGetIn" />
+      <wsdl:output message="tns:GetCurrencyListHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrency">
+      <wsdl:input message="tns:GetCurrencyHttpGetIn" />
+      <wsdl:output message="tns:GetCurrencyHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyIcon">
+      <wsdl:input message="tns:GetCurrencyIconHttpGetIn" />
+      <wsdl:output message="tns:GetCurrencyIconHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLastCurrencyStatus">
+      <wsdl:input message="tns:GetLastCurrencyStatusHttpGetIn" />
+      <wsdl:output message="tns:GetLastCurrencyStatusHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyStatusList">
+      <wsdl:input message="tns:GetCurrencyStatusListHttpGetIn" />
+      <wsdl:output message="tns:GetCurrencyStatusListHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBlockHeight">
+      <wsdl:input message="tns:GetBlockHeightHttpGetIn" />
+      <wsdl:output message="tns:GetBlockHeightHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddMonitoredAccount">
+      <wsdl:input message="tns:AddMonitoredAccountHttpGetIn" />
+      <wsdl:output message="tns:AddMonitoredAccountHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMonitoredAcccounts">
+      <wsdl:input message="tns:GetMonitoredAcccountsHttpGetIn" />
+      <wsdl:output message="tns:GetMonitoredAcccountsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RemoveMonitoredAccount">
+      <wsdl:input message="tns:RemoveMonitoredAccountHttpGetIn" />
+      <wsdl:output message="tns:RemoveMonitoredAccountHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionRecords">
+      <wsdl:input message="tns:GetTransactionRecordsHttpGetIn" />
+      <wsdl:output message="tns:GetTransactionRecordsHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckAddressValidity">
+      <wsdl:input message="tns:CheckAddressValidityHttpGetIn" />
+      <wsdl:output message="tns:CheckAddressValidityHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="StartGetTransactionToSign">
+      <wsdl:input message="tns:StartGetTransactionToSignHttpGetIn" />
+      <wsdl:output message="tns:StartGetTransactionToSignHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EndGetTransactionToSign">
+      <wsdl:input message="tns:EndGetTransactionToSignHttpGetIn" />
+      <wsdl:output message="tns:EndGetTransactionToSignHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendTransaction">
+      <wsdl:input message="tns:SendTransactionHttpGetIn" />
+      <wsdl:output message="tns:SendTransactionHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="IsTransactionSent">
+      <wsdl:input message="tns:IsTransactionSentHttpGetIn" />
+      <wsdl:output message="tns:IsTransactionSentHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionId">
+      <wsdl:input message="tns:GetTransactionIdHttpGetIn" />
+      <wsdl:output message="tns:GetTransactionIdHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="PandoraWalletService1_1HttpPost">
+    <wsdl:operation name="Logon">
+      <wsdl:input message="tns:LogonHttpPostIn" />
+      <wsdl:output message="tns:LogonHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Logon2">
+      <wsdl:input message="tns:Logon2HttpPostIn" />
+      <wsdl:output message="tns:Logon2HttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="IsConnected">
+      <wsdl:input message="tns:IsConnectedHttpPostIn" />
+      <wsdl:output message="tns:IsConnectedHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetServerId">
+      <wsdl:input message="tns:GetServerIdHttpPostIn" />
+      <wsdl:output message="tns:GetServerIdHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Logoff">
+      <wsdl:input message="tns:LogoffHttpPostIn" />
+      <wsdl:output message="tns:LogoffHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUserStatus">
+      <wsdl:input message="tns:GetUserStatusHttpPostIn" />
+      <wsdl:output message="tns:GetUserStatusHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyList">
+      <wsdl:input message="tns:GetCurrencyListHttpPostIn" />
+      <wsdl:output message="tns:GetCurrencyListHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrency">
+      <wsdl:input message="tns:GetCurrencyHttpPostIn" />
+      <wsdl:output message="tns:GetCurrencyHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyIcon">
+      <wsdl:input message="tns:GetCurrencyIconHttpPostIn" />
+      <wsdl:output message="tns:GetCurrencyIconHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLastCurrencyStatus">
+      <wsdl:input message="tns:GetLastCurrencyStatusHttpPostIn" />
+      <wsdl:output message="tns:GetLastCurrencyStatusHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyStatusList">
+      <wsdl:input message="tns:GetCurrencyStatusListHttpPostIn" />
+      <wsdl:output message="tns:GetCurrencyStatusListHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBlockHeight">
+      <wsdl:input message="tns:GetBlockHeightHttpPostIn" />
+      <wsdl:output message="tns:GetBlockHeightHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddMonitoredAccount">
+      <wsdl:input message="tns:AddMonitoredAccountHttpPostIn" />
+      <wsdl:output message="tns:AddMonitoredAccountHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetMonitoredAcccounts">
+      <wsdl:input message="tns:GetMonitoredAcccountsHttpPostIn" />
+      <wsdl:output message="tns:GetMonitoredAcccountsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="RemoveMonitoredAccount">
+      <wsdl:input message="tns:RemoveMonitoredAccountHttpPostIn" />
+      <wsdl:output message="tns:RemoveMonitoredAccountHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionRecords">
+      <wsdl:input message="tns:GetTransactionRecordsHttpPostIn" />
+      <wsdl:output message="tns:GetTransactionRecordsHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CheckAddressValidity">
+      <wsdl:input message="tns:CheckAddressValidityHttpPostIn" />
+      <wsdl:output message="tns:CheckAddressValidityHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="StartGetTransactionToSign">
+      <wsdl:input message="tns:StartGetTransactionToSignHttpPostIn" />
+      <wsdl:output message="tns:StartGetTransactionToSignHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="EndGetTransactionToSign">
+      <wsdl:input message="tns:EndGetTransactionToSignHttpPostIn" />
+      <wsdl:output message="tns:EndGetTransactionToSignHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="SendTransaction">
+      <wsdl:input message="tns:SendTransactionHttpPostIn" />
+      <wsdl:output message="tns:SendTransactionHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="IsTransactionSent">
+      <wsdl:input message="tns:IsTransactionSentHttpPostIn" />
+      <wsdl:output message="tns:IsTransactionSentHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionId">
+      <wsdl:input message="tns:GetTransactionIdHttpPostIn" />
+      <wsdl:output message="tns:GetTransactionIdHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
   <wsdl:binding name="PandoraWalletService1_1Soap" type="tns:PandoraWalletService1_1Soap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="Logon">
       <soap:operation soapAction="http://tempuri.org/Logon" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Logon2">
+      <soap:operation soapAction="http://tempuri.org/Logon2" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -578,6 +1145,15 @@
     </wsdl:operation>
     <wsdl:operation name="GetCurrencyIcon">
       <soap:operation soapAction="http://tempuri.org/GetCurrencyIcon" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLastCurrencyStatus">
+      <soap:operation soapAction="http://tempuri.org/GetLastCurrencyStatus" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -705,6 +1281,15 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="Logon2">
+      <soap12:operation soapAction="http://tempuri.org/Logon2" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="IsConnected">
       <soap12:operation soapAction="http://tempuri.org/IsConnected" style="document" />
       <wsdl:input>
@@ -761,6 +1346,15 @@
     </wsdl:operation>
     <wsdl:operation name="GetCurrencyIcon">
       <soap12:operation soapAction="http://tempuri.org/GetCurrencyIcon" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLastCurrencyStatus">
+      <soap12:operation soapAction="http://tempuri.org/GetLastCurrencyStatus" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -877,12 +1471,420 @@
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>
+  <wsdl:binding name="PandoraWalletService1_1HttpGet" type="tns:PandoraWalletService1_1HttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="Logon">
+      <http:operation location="/Logon" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Logon2">
+      <http:operation location="/Logon2" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IsConnected">
+      <http:operation location="/IsConnected" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServerId">
+      <http:operation location="/GetServerId" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Logoff">
+      <http:operation location="/Logoff" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUserStatus">
+      <http:operation location="/GetUserStatus" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyList">
+      <http:operation location="/GetCurrencyList" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrency">
+      <http:operation location="/GetCurrency" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyIcon">
+      <http:operation location="/GetCurrencyIcon" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLastCurrencyStatus">
+      <http:operation location="/GetLastCurrencyStatus" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyStatusList">
+      <http:operation location="/GetCurrencyStatusList" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBlockHeight">
+      <http:operation location="/GetBlockHeight" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddMonitoredAccount">
+      <http:operation location="/AddMonitoredAccount" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMonitoredAcccounts">
+      <http:operation location="/GetMonitoredAcccounts" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoveMonitoredAccount">
+      <http:operation location="/RemoveMonitoredAccount" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionRecords">
+      <http:operation location="/GetTransactionRecords" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckAddressValidity">
+      <http:operation location="/CheckAddressValidity" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StartGetTransactionToSign">
+      <http:operation location="/StartGetTransactionToSign" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EndGetTransactionToSign">
+      <http:operation location="/EndGetTransactionToSign" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendTransaction">
+      <http:operation location="/SendTransaction" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IsTransactionSent">
+      <http:operation location="/IsTransactionSent" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionId">
+      <http:operation location="/GetTransactionId" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PandoraWalletService1_1HttpPost" type="tns:PandoraWalletService1_1HttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="Logon">
+      <http:operation location="/Logon" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Logon2">
+      <http:operation location="/Logon2" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IsConnected">
+      <http:operation location="/IsConnected" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetServerId">
+      <http:operation location="/GetServerId" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Logoff">
+      <http:operation location="/Logoff" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUserStatus">
+      <http:operation location="/GetUserStatus" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyList">
+      <http:operation location="/GetCurrencyList" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrency">
+      <http:operation location="/GetCurrency" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyIcon">
+      <http:operation location="/GetCurrencyIcon" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLastCurrencyStatus">
+      <http:operation location="/GetLastCurrencyStatus" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyStatusList">
+      <http:operation location="/GetCurrencyStatusList" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBlockHeight">
+      <http:operation location="/GetBlockHeight" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddMonitoredAccount">
+      <http:operation location="/AddMonitoredAccount" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetMonitoredAcccounts">
+      <http:operation location="/GetMonitoredAcccounts" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemoveMonitoredAccount">
+      <http:operation location="/RemoveMonitoredAccount" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionRecords">
+      <http:operation location="/GetTransactionRecords" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CheckAddressValidity">
+      <http:operation location="/CheckAddressValidity" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StartGetTransactionToSign">
+      <http:operation location="/StartGetTransactionToSign" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="EndGetTransactionToSign">
+      <http:operation location="/EndGetTransactionToSign" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SendTransaction">
+      <http:operation location="/SendTransaction" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="IsTransactionSent">
+      <http:operation location="/IsTransactionSent" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetTransactionId">
+      <http:operation location="/GetTransactionId" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
   <wsdl:service name="PandoraWalletService1_1">
     <wsdl:port name="PandoraWalletService1_1Soap" binding="tns:PandoraWalletService1_1Soap">
       <soap:address location="http://localhost:20159/PandoraWalletService1_1.asmx" />
     </wsdl:port>
     <wsdl:port name="PandoraWalletService1_1Soap12" binding="tns:PandoraWalletService1_1Soap12">
       <soap12:address location="http://localhost:20159/PandoraWalletService1_1.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PandoraWalletService1_1HttpGet" binding="tns:PandoraWalletService1_1HttpGet">
+      <http:address location="http://localhost:20159/PandoraWalletService1_1.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PandoraWalletService1_1HttpPost" binding="tns:PandoraWalletService1_1HttpPost">
+      <http:address location="http://localhost:20159/PandoraWalletService1_1.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

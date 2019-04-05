@@ -1,4 +1,4 @@
-﻿//   Copyright 2017-2019 Davinci Codes
+//   Copyright 2017-2019 Davinci Codes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,11 +18,14 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using Newtonsoft.Json;
 using Pandora.Client.ClientLib;
 using Pandora.Client.Crypto.Currencies.Controls;
 using Pandora.Client.PandorasWallet.ServerAccess;
 using Pandora.Client.PandorasWallet.Utils;
+using Pandora.Client.Universal;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -45,13 +48,17 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         private object StatusLock = new object();
 
-        private Dictionary<uint, long> FBlockHeigthCache = new Dictionary<uint, long>();
+        //With Locking
+        private Dictionary<uint, ulong> FBlockHeigthCache = new Dictionary<uint, ulong>();
+
         private Dictionary<uint, IClientCurrencyAdvocacy> FCurrencyAdvocacies;
-        private Dictionary<uint, List<string>> FAddresses;
         private Dictionary<uint, TransactionUnit[]> FUnspent;
-        private Dictionary<uint, BalanceViewModel> FBalance;
-        private Dictionary<uint, List<TransactionViewModel>> FTransactions;
-        public Dictionary<uint, CurrencyStatusItem> CoinStatus;
+
+        //Concurrent
+        private ConcurrentDictionary<uint, List<string>> FAddresses;
+
+        private ConcurrentDictionary<uint, BalanceViewModel> FBalance;
+        private ConcurrentDictionary<uint, List<TransactionViewModel>> FTransactions;
 
         public Dictionary<uint, BalanceViewModel> BalancesByCurrency
         {
@@ -65,17 +72,17 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
                         lBalance.SetCoinPrecision(FWalletPandoraServer.GetCurrency(it).Precision);
 
-                        FBalance.Add(it, lBalance);
+                        while (!FBalance.TryAdd(it, lBalance)) ;
                     }
 
                     GetBalanceModels(it);
                 }
 
-                return FBalance;
+                return new Dictionary<uint, BalanceViewModel>(FBalance);
             }
         }
 
-        public Dictionary<uint, List<TransactionViewModel>> TransactionsByCurrency
+        public ConcurrentDictionary<uint, List<TransactionViewModel>> TransactionsByCurrency
         {
             get
             {
@@ -83,7 +90,10 @@ namespace Pandora.Client.PandorasWallet.Wallet
                 {
                     if (!FTransactions.ContainsKey(it))
                     {
-                        FTransactions.Add(it, new List<TransactionViewModel>());
+                        //This needs to be added
+                        while (!FTransactions.TryAdd(it, new List<TransactionViewModel>()))
+                        {
+                        }
                     }
                 }
 
@@ -111,28 +121,33 @@ namespace Pandora.Client.PandorasWallet.Wallet
             }
         }
 
+        public Dictionary<uint, CurrencyStatusItem> CoinStatus
+        {
+            get
+            {
+                Dictionary<uint, CurrencyStatusItem> lStatus = new Dictionary<uint, CurrencyStatusItem>();
+
+                foreach (uint it in FUserCoins)
+                {
+                    lStatus[it] = FWalletPandoraServer.GetCurrencyStatus(it);
+                }
+
+                return lStatus;
+            }
+        }
+
         public List<CurrencyItem> UserCoins
         {
             get
             {
-                List<CurrencyItem> LCurrencies = new List<CurrencyItem>();
+                List<CurrencyItem> lCurrencies = new List<CurrencyItem>();
 
                 foreach (uint it in FUserCoins)
                 {
-                    LCurrencies.Add(FWalletPandoraServer.GetCurrency(it));
-
-                    lock (StatusLock)
-                    {
-                        CoinStatus[it] = FWalletPandoraServer.GetCurrencyStatus(it);
-                    }
+                    lCurrencies.Add(FWalletPandoraServer.GetCurrency(it));
                 }
 
-                if (!FUserCoins.Contains(1) && !FAddresses.ContainsKey(1))
-                {
-                    SetCoinAccountData(1);
-                }
-
-                return LCurrencies;
+                return lCurrencies;
             }
         }
 
@@ -156,22 +171,22 @@ namespace Pandora.Client.PandorasWallet.Wallet
         {
             get
             {
-                List<CurrencyItem> LAvaliableCoins = new List<CurrencyItem>();
+                List<CurrencyItem> lAvaliableCoins = new List<CurrencyItem>();
 
-                CurrencyCount = (uint)FWalletPandoraServer.CurrencyIdList.Count;
+                CurrencyCount = (uint)FWalletPandoraServer.CurrencyIds.Length;
 
-                foreach (uint it in FWalletPandoraServer.CurrencyIdList)
+                foreach (uint it in FWalletPandoraServer.CurrencyIds)
                 {
                     if (!FUserCoins.Contains(it))
                     {
                         if (FWalletPandoraServer.GetCurrencyStatus(it).Status != CurrencyStatus.Disabled)
                         {
-                            LAvaliableCoins.Add(FWalletPandoraServer.GetCurrency(it));
+                            lAvaliableCoins.Add(FWalletPandoraServer.GetCurrency(it));
                         }
                     }
                 }
 
-                return LAvaliableCoins;
+                return lAvaliableCoins;
             }
         }
 
@@ -236,7 +251,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         public string InstanceId => FWalletPandoraServer.InstanceId;
 
-        public long BlockHeight
+        public ulong BlockHeight
         {
             get
             {
@@ -300,16 +315,28 @@ namespace Pandora.Client.PandorasWallet.Wallet
             FWalletPandoraServer.OnCurrencyItemUpdated += FWalletPandoraServer_OnCurrencyItemUpdated;
 
             FWalletPandoraServer.OnCurrencyFullListExpired += CurrencyFullListExpiredHandler;
+            FWalletPandoraServer.OnCurrencyStatusFullListExpired += FWalletPandoraServer_OnCurrencyStatusFullListExpired;
+            FWalletPandoraServer.OnMonitoredAccountsFullListExpired += FWalletPandoraServer_OnMonitoredAccountsFullListExpired;
 
-            CoinStatus = new Dictionary<uint, CurrencyStatusItem>();
-
-            FBalance = new Dictionary<uint, BalanceViewModel>() { { 0, new BalanceViewModel() } };
-            FTransactions = new Dictionary<uint, List<TransactionViewModel>>() { { 0, new List<TransactionViewModel>() } };
+            FBalance = new ConcurrentDictionary<uint, BalanceViewModel>();
+            FBalance.TryAdd(0, new BalanceViewModel());
+            FTransactions = new ConcurrentDictionary<uint, List<TransactionViewModel>>();
+            FTransactions.TryAdd(0, new List<TransactionViewModel>());
             FCurrencyAdvocacies = new Dictionary<uint, IClientCurrencyAdvocacy>();
-            FAddresses = new Dictionary<uint, List<string>>();
+            FAddresses = new ConcurrentDictionary<uint, List<string>>();
             FUnspent = new Dictionary<uint, TransactionUnit[]>();
 
             FTestnet = aisTestnet;
+        }
+
+        private void FWalletPandoraServer_OnMonitoredAccountsFullListExpired()
+        {
+            FWalletPandoraServer.GetMonitoredAccounts();
+        }
+
+        private void FWalletPandoraServer_OnCurrencyStatusFullListExpired()
+        {
+            FWalletPandoraServer.GetCurrencyStatus(true);
         }
 
         private void FWalletPandoraServer_OnCurrencyItemUpdated(ulong obj)
@@ -323,7 +350,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             {
                 if (!FBalance.ContainsKey(it))
                 {
-                    FBalance.Add(it, new BalanceViewModel());
+                    while (!FBalance.TryAdd(it, new BalanceViewModel())) ;
                 }
 
                 GetBalanceModels(it, true);
@@ -331,20 +358,23 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
             if (aisConfirmationUpdate)
             {
-                foreach (uint it in aIds)
+                foreach (uint lCurrencyId in aIds)
                 {
-                    if (!FBlockHeigthCache.ContainsKey(it))
+                    lock (FBlockHeigthCache)
                     {
-                        FBlockHeigthCache.Add(it, FWalletPandoraServer.GetBlockHeight(it));
-                        OnNewTxData();
-                        return;
-                    }
+                        if (!FBlockHeigthCache.ContainsKey(lCurrencyId))
+                        {
+                            FBlockHeigthCache.Add(lCurrencyId, FWalletPandoraServer.GetBlockHeight(lCurrencyId));
+                            OnNewTxData();
+                            return;
+                        }
 
-                    if (FBlockHeigthCache[it] < FWalletPandoraServer.GetBlockHeight(it))
-                    {
-                        FBlockHeigthCache[it] = FWalletPandoraServer.GetBlockHeight(it);
-                        OnNewTxData();
-                        return;
+                        if (FBlockHeigthCache[lCurrencyId] < FWalletPandoraServer.GetBlockHeight(lCurrencyId))
+                        {
+                            FBlockHeigthCache[lCurrencyId] = FWalletPandoraServer.GetBlockHeight(lCurrencyId);
+                            OnNewTxData();
+                            return;
+                        }
                     }
                 }
                 return;
@@ -379,6 +409,24 @@ namespace Pandora.Client.PandorasWallet.Wallet
             aSecret = lKeyPair.Item2;
 
             return true;
+        }
+
+        public string[] GetPrivKey()
+        {
+            if (FSeed == null)
+            {
+                throw new Exception("Can't execute if seed is not set");
+            }
+            IClientCurrencyAdvocacy lAdvocacy = GetAdvocacy(ActiveCurrencyID);
+
+            List<string> lPrivKeys = new List<string>();
+            for (uint it = 1; it <= AddressNumberSetting; it++)
+            {
+                lPrivKeys.Add(lAdvocacy.GetPrivateKey(it));
+            }
+            if (!lPrivKeys.Any())
+                throw new Exception("Failed to retrieve private key specified address");
+            return lPrivKeys.ToArray();
         }
 
         public bool CheckIfHaveKeys(string aExchangeName)
@@ -523,14 +571,14 @@ namespace Pandora.Client.PandorasWallet.Wallet
                     }
                 }
 
-                FWalletPandoraServer.RefreshData();
+                //FWalletPandoraServer.RefreshData();
 
                 FFullListOfCurencies = FWalletPandoraServer.GetCurrencyList();
 
                 lTimeoutCount++;
             }
 
-            CurrencyCount = (uint)FWalletPandoraServer.CurrencyIdList.Count;
+            CurrencyCount = (uint)FWalletPandoraServer.CurrencyIds.Length;
 
             return FFullListOfCurencies.Where(x => FWalletPandoraServer.GetCurrencyStatus((uint)x.Id).Status != CurrencyStatus.Disabled).ToArray();
         }
@@ -540,7 +588,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             if (UsingFullCoinList)
             {
                 FFullListOfCurencies = FWalletPandoraServer.GetCurrencyList();
-                CurrencyCount = (uint)FWalletPandoraServer.CurrencyIdList.Count;
+                CurrencyCount = (uint)FWalletPandoraServer.CurrencyIds.Length;
             }
         }
 
@@ -554,6 +602,11 @@ namespace Pandora.Client.PandorasWallet.Wallet
         {
             FWalletPandoraServer.OnCurrencyStatus += OnCurrencyStatusEventHandler;
             FWalletPandoraServer.StartCurrencyStatusUpdatingTask();
+        }
+
+        public void InitCurrencyItemUpdating()
+        {
+            FWalletPandoraServer.StartCurrencyItemUpdatingTask();
         }
 
         private void OnCurrencyStatusEventHandler(uint[] aIds)
@@ -571,10 +624,14 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         public bool CheckIfUserHasAccounts()
         {
-            return !FWalletPandoraServer.IsNewAccount(); 
-            //CurrencyItem lCurrency = FWalletPandoraServer.GetCurrency(1);
+            bool lIsNewAccount = !FWalletPandoraServer.IsNewAccount();
 
-            //return FWalletPandoraServer.MonitoredAccounts.GetById((uint)lCurrency.Id).Any();
+            //if (!FUserCoins.Contains(1) && !FAddresses.ContainsKey(1))
+            //{
+            //    SetCoinAccountData(1);
+            //}
+
+            return lIsNewAccount;
         }
 
         private IClientCurrencyAdvocacy GetAdvocacy(uint aCurrencyId)
@@ -584,19 +641,24 @@ namespace Pandora.Client.PandorasWallet.Wallet
                 throw new InvalidOperationException("A seed must be assign before asking for an advocacy");
             }
 
-            if (!FCurrencyAdvocacies.ContainsKey(aCurrencyId))
+            IClientCurrencyAdvocacy lAdvocacy;
+
+            lock (FCurrencyAdvocacies)
             {
-                CurrencyItem lCurrency = FWalletPandoraServer.GetCurrency(aCurrencyId);
-                FCurrencyAdvocacies.Add(aCurrencyId, CurrencyControl.GetCurrencyControl().GetClientCurrencyAdvocacy(aCurrencyId, lCurrency.ChainParamaters));
+                if (!FCurrencyAdvocacies.ContainsKey(aCurrencyId))
+                {
+                    CurrencyItem lCurrency = FWalletPandoraServer.GetCurrency(aCurrencyId);
+                    FCurrencyAdvocacies.Add(aCurrencyId, CurrencyControl.GetCurrencyControl().GetClientCurrencyAdvocacy(aCurrencyId, lCurrency.ChainParamaters));
 
-                FCurrencyAdvocacies[aCurrencyId].RootSeed = FSeed;
+                    FCurrencyAdvocacies[aCurrencyId].RootSeed = FSeed;
+                }
+
+                lAdvocacy = FCurrencyAdvocacies[aCurrencyId];
             }
-
-            IClientCurrencyAdvocacy lAdvocacy = FCurrencyAdvocacies[aCurrencyId];
 
             if (!FAddresses.ContainsKey(aCurrencyId))
             {
-                FAddresses.Add(aCurrencyId, new List<string>());
+                while (!FAddresses.TryAdd(aCurrencyId, new List<string>())) ;
             }
 
             if (FAddresses[aCurrencyId].Count < AddressNumberSetting)
@@ -674,14 +736,12 @@ namespace Pandora.Client.PandorasWallet.Wallet
         {
             if (string.IsNullOrEmpty(FSeed) && !FAddresses.ContainsKey(aCurrencyId))
             {
-                List<CurrencyAccount> lCurrenciesAccounts = FWalletPandoraServer.MonitoredAccounts.GetById(aCurrencyId).ToList();
+                List<CurrencyAccount> lCurrenciesAccounts = JsonConvert.DeserializeObject<List<CurrencyAccount>>(FWalletPandoraServer.FServerAccess.GetMonitoredAcccounts(aCurrencyId, 0));
 
                 if (!lCurrenciesAccounts.Any())
-                {
                     throw new ClientExceptions.AddressSynchException("Found incoherence between client and server. Try Restoring Wallet");
-                }
-
-                FAddresses.Add(aCurrencyId, lCurrenciesAccounts.Select(x => x.Address).ToList());
+                FWalletPandoraServer.AddMonitoredAccount(aCurrencyId, lCurrenciesAccounts[0].Address);
+                while (!FAddresses.TryAdd(aCurrencyId, lCurrenciesAccounts.Select(x => x.Address).ToList())) ;
 
                 return;
             }
@@ -735,7 +795,10 @@ namespace Pandora.Client.PandorasWallet.Wallet
         public BalanceViewModel GetBalance(uint aCurrencyId)
         {
             {
-                return BalancesByCurrency[aCurrencyId];
+                if (!BalancesByCurrency.TryGetValue(aCurrencyId, out BalanceViewModel lBalance))
+                    throw new Exception("Failed to retrieve balance data");
+
+                return lBalance;
             }
         }
 
@@ -757,7 +820,9 @@ namespace Pandora.Client.PandorasWallet.Wallet
             {
                 if (!FTransactions.ContainsKey(it))
                 {
-                    FTransactions.Add(it, new List<TransactionViewModel>());
+                    while (!FTransactions.TryAdd(it, new List<TransactionViewModel>()))
+                    {
+                    }
                 }
             }
 
@@ -767,7 +832,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             ulong lNTotalConfirmedBalance = 0;
             ulong lNTotalUnconfirmedBalance = 0;
 
-            List<string> lAccounts = FAddresses[aCoinID];
+            List<string> lAccounts = new List<string>(FAddresses[aCoinID]);
 
             bool lOneShot = true;
 
@@ -870,10 +935,11 @@ namespace Pandora.Client.PandorasWallet.Wallet
 #if DEBUG
                 System.Diagnostics.Debug.WriteLine("Consistency problems on balances");
 #endif
-                Utils.PandoraLog.GetPandoraLog().Write("Consistency problems on balances on " + ActiveCurrencyItem.Name + " for user: " + Username + " (" + Email + ") ");
+                Log.Write(LogLevel.Error, "Consistency problems on balances on {0} for user: {1} ({2}) ", ActiveCurrencyItem.Name, Username, Email);
             }
 
-            FUnspent[aCoinID] = lUnspent.ToArray();
+            lock (FUnspent)
+                FUnspent[aCoinID] = lUnspent.ToArray();
         }
 
         public bool ScanTransaction(string aAddress, TransactionRecord aTransactionRecord, out ulong aBalance)
@@ -1005,8 +1071,9 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
             SetCoinAccountData(aCurrencyID);
 
-            string lSignedTx = FCurrencyAdvocacies[aCurrencyID].SignTransaction(TxData, lCurrencyTransaction);
-
+            string lSignedTx;
+            lock (FCurrencyAdvocacies)
+                lSignedTx = FCurrencyAdvocacies[aCurrencyID].SignTransaction(TxData, lCurrencyTransaction);
             return lSignedTx;
         }
 
@@ -1023,8 +1090,8 @@ namespace Pandora.Client.PandorasWallet.Wallet
         private CurrencyTransaction CreateNewCurrencyTransaction(uint aCurrencyID, ulong aAmountToSend, string aToAddress, ulong aTxFee = 0)
         {
             CurrencyTransaction lCurrecyTransaction = new CurrencyTransaction();
-
-            lCurrecyTransaction.AddInput(FUnspent[aCurrencyID]);
+            lock (FUnspent)
+                lCurrecyTransaction.AddInput(FUnspent[aCurrencyID]);
 
             lCurrecyTransaction.AddOutput(aAmountToSend, aToAddress);
 

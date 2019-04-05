@@ -57,7 +57,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         private List<string> FAddresses;
 
-        private long FBlockHeight;
+        private ulong FBlockHeight;
 
         public int MinConfirmations { get; private set; }
 
@@ -143,7 +143,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             IsEmpty = false;
         }
 
-        public void SetBlockHeight(long aBlockHeigth, int aMinConfirmations)
+        public void SetBlockHeight(ulong aBlockHeigth, int aMinConfirmations)
         {
             FBlockHeight = aBlockHeigth;
             MinConfirmations = aMinConfirmations;

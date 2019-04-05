@@ -29,37 +29,29 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SendingTxDialog));
-            this.StatusLabel = new System.Windows.Forms.Label();
             this.TxId = new System.Windows.Forms.TextBox();
             this.TxIdLabel = new System.Windows.Forms.Label();
             this.StatusPictureBox = new System.Windows.Forms.PictureBox();
+            this.StatusLabel = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.StatusPictureBox)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(324, 261);
+            this.btnCancel.Location = new System.Drawing.Point(170, 261);
             this.btnCancel.Visible = false;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(158, 251);
-            // 
-            // StatusLabel
-            // 
-            this.StatusLabel.Location = new System.Drawing.Point(28, 170);
-            this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(348, 28);
-            this.StatusLabel.TabIndex = 7;
-            this.StatusLabel.Text = "StatusLabel";
+            this.btnOK.Location = new System.Drawing.Point(170, 261);
             // 
             // TxId
             // 
             this.TxId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.TxId.Location = new System.Drawing.Point(31, 214);
+            this.TxId.Location = new System.Drawing.Point(14, 214);
             this.TxId.Name = "TxId";
             this.TxId.ReadOnly = true;
-            this.TxId.Size = new System.Drawing.Size(345, 20);
+            this.TxId.Size = new System.Drawing.Size(387, 20);
             this.TxId.TabIndex = 8;
             this.TxId.Visible = false;
             // 
@@ -67,7 +59,7 @@
             // 
             this.TxIdLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.TxIdLabel.AutoSize = true;
-            this.TxIdLabel.Location = new System.Drawing.Point(28, 198);
+            this.TxIdLabel.Location = new System.Drawing.Point(14, 198);
             this.TxIdLabel.Name = "TxIdLabel";
             this.TxIdLabel.Size = new System.Drawing.Size(80, 13);
             this.TxIdLabel.TabIndex = 10;
@@ -76,12 +68,23 @@
             // StatusPictureBox
             // 
             this.StatusPictureBox.InitialImage = ((System.Drawing.Image)(resources.GetObject("StatusPictureBox.InitialImage")));
-            this.StatusPictureBox.Location = new System.Drawing.Point(137, 26);
+            this.StatusPictureBox.Location = new System.Drawing.Point(143, 12);
             this.StatusPictureBox.Name = "StatusPictureBox";
             this.StatusPictureBox.Size = new System.Drawing.Size(128, 128);
             this.StatusPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.StatusPictureBox.TabIndex = 9;
             this.StatusPictureBox.TabStop = false;
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.BackColor = System.Drawing.SystemColors.Control;
+            this.StatusLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.StatusLabel.Location = new System.Drawing.Point(12, 152);
+            this.StatusLabel.Multiline = true;
+            this.StatusLabel.Name = "StatusLabel";
+            this.StatusLabel.ReadOnly = true;
+            this.StatusLabel.Size = new System.Drawing.Size(389, 103);
+            this.StatusLabel.TabIndex = 11;
             // 
             // SendingTxDialog
             // 
@@ -107,10 +110,9 @@
         }
 
         #endregion
-
-        private System.Windows.Forms.Label StatusLabel;
         private System.Windows.Forms.TextBox TxId;
         private System.Windows.Forms.PictureBox StatusPictureBox;
         private System.Windows.Forms.Label TxIdLabel;
+        private System.Windows.Forms.TextBox StatusLabel;
     }
 }

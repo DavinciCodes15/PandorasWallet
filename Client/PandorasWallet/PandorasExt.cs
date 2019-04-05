@@ -18,6 +18,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using Pandora.Client.Universal;
 using System;
 using System.ComponentModel;
 using System.Reflection;
@@ -57,14 +58,37 @@ namespace Pandora.Client.PandorasWallet
             throw new ArgumentException("Not found.", nameof(description));
         }
 
-        public static void StandardErrorMsgBox(this Form aform, string aString)
+        public static void StandardErrorMsgBox(this Form aform,  string aErrorTitle, string aMsg, params object [] aArgs)
         {
-            MessageBox.Show(aString, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            aMsg = string.Format(aMsg, aArgs);
+            Log.Write(LogLevel.Error, "Error Dialog displayed.\nCaption: {0}\nMsg: {1}", aErrorTitle, aMsg);
+            MessageBox.Show(aMsg, aErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        public static void StandardUnhandledErrorMsgBox(this Form aform, string aMsg, string aErrorTitle = "Unhandled System Error")
+        {
+            var lDlg = Dialogs.ServerErrorDialog.GetInstance();
+            Log.Write(LogLevel.Error, "Error Dialog displayed.\nCaption: {0}\nMsg: {1}", aErrorTitle, aMsg);
+            lDlg.ErrorTitle = aErrorTitle;
+            lDlg.ErrorMessage = aMsg;
+            lDlg.ParentWindow = aform;
+            lDlg.Execute();
+        }
+
+        public static void StandardExceptionMsgBox(this Form aform, Exception ex, string aErrorTitle = "Unhandled System Exception")
+        {
+            var lDlg = Dialogs.ServerErrorDialog.GetInstance();
+            lDlg.ErrorTitle = aErrorTitle;
+            lDlg.ErrorMessage = string.Format("{0}\r\n----------------------------------------------------------------------------------\r\nUTC Date : {1}\r\n\r\n{2}", ex.Message, DateTime.Now.ToUniversalTime(), ex.StackTrace);
+            lDlg.ParentWindow = aform;
+            Log.Write(LogLevel.Error, "Error Dialog displayed.\nCaption: {0}\nMsg: {1}", aErrorTitle, lDlg.ErrorMessage);
+            lDlg.Execute();
         }
 
         public static void StandardInfoMsgBox(this Form aform, string aString)
         {
             MessageBox.Show(aString, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Log.Write(LogLevel.Info, "Info Dialog displayed.\nMsg: {0}", aString);
         }
 
         public static string GetEnumDescription(this Enum value)

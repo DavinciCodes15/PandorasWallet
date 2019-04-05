@@ -43,6 +43,7 @@
             this.groupConnection = new System.Windows.Forms.GroupBox();
             this.numPort = new System.Windows.Forms.NumericUpDown();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.btnPrivKey = new System.Windows.Forms.Button();
             this.imgBoxDefaultCoin = new System.Windows.Forms.PictureBox();
             this.checkEncryptWallet = new System.Windows.Forms.CheckBox();
             this.SelectFolderDialog = new System.Windows.Forms.FolderBrowserDialog();
@@ -204,6 +205,7 @@
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.btnPrivKey);
             this.groupBox2.Controls.Add(this.imgBoxDefaultCoin);
             this.groupBox2.Controls.Add(this.checkEncryptWallet);
             this.groupBox2.Controls.Add(this.txtDataPath);
@@ -219,6 +221,16 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Wallet";
             // 
+            // btnPrivKey
+            // 
+            this.btnPrivKey.Location = new System.Drawing.Point(309, 109);
+            this.btnPrivKey.Name = "btnPrivKey";
+            this.btnPrivKey.Size = new System.Drawing.Size(75, 23);
+            this.btnPrivKey.TabIndex = 23;
+            this.btnPrivKey.Text = "Priv. Key";
+            this.btnPrivKey.UseVisualStyleBackColor = true;
+            this.btnPrivKey.Click += new System.EventHandler(this.btnPrivKey_Click);
+            // 
             // imgBoxDefaultCoin
             // 
             this.imgBoxDefaultCoin.Location = new System.Drawing.Point(105, 24);
@@ -232,7 +244,7 @@
             this.checkEncryptWallet.AutoSize = true;
             this.checkEncryptWallet.Checked = true;
             this.checkEncryptWallet.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkEncryptWallet.Location = new System.Drawing.Point(169, 117);
+            this.checkEncryptWallet.Location = new System.Drawing.Point(19, 113);
             this.checkEncryptWallet.Name = "checkEncryptWallet";
             this.checkEncryptWallet.Size = new System.Drawing.Size(215, 17);
             this.checkEncryptWallet.TabIndex = 21;
@@ -241,7 +253,7 @@
             this.checkEncryptWallet.Visible = false;
             this.checkEncryptWallet.CheckedChanged += new System.EventHandler(this.checkEncryptWallet_CheckedChanged);
             // 
-            // SettingsDialogDummy
+            // SettingsDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.BackColor = System.Drawing.SystemColors.InactiveCaption;
@@ -252,7 +264,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(500, 500);
             this.MinimumSize = new System.Drawing.Size(444, 232);
-            this.Name = "SettingsDialogDummy";
+            this.Name = "SettingsDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Pandora\'s Wallet Settings";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingsDialogDummy_FormClosing);
@@ -290,5 +302,6 @@
         private System.Windows.Forms.NumericUpDown numPort;
         private System.Windows.Forms.FolderBrowserDialog SelectFolderDialog;
         private System.Windows.Forms.PictureBox imgBoxDefaultCoin;
+        private System.Windows.Forms.Button btnPrivKey;
     }
 }
