@@ -14,10 +14,10 @@
     <ROW Property="DBUser" Value="cat"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{25D6931B-FF0F-4325-B98C-BC0FCE8153E4} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{71D05C26-0E87-4E9F-88A4-6CF9E08F7FFA} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet"/>
-    <ROW Property="ProductVersion" Value="1.0.20.1587" Type="32" TargetFile="PandorasWallet.exe"/>
+    <ROW Property="ProductVersion" Value="1.0.20.1585" Type="32" TargetFile="PandorasWallet.exe"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{5E9C071C-BE57-468E-BACB-6A3C81D2C5A7}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
