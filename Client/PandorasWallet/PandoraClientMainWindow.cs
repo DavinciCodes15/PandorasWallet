@@ -609,20 +609,34 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        public void ExchangeSelectCurrency(string aTicker)
+        public void ExchangeSelectCurrency(string aName)
         {
             try
             {
-                if (aTicker == null)
+                if (aName == null)
                 {
                     return;
                 }
-
+                int lIndex = -1;
                 if (lstCoinAvailable.Items.Count > 0)
                 {
-                    lstCoinAvailable.Items[0].Selected = true;
-                    lstCoinAvailable.Items[0].Focused = true;
-                    //lstCoinAvailable.Select();
+                    foreach (object lIt in lstCoinAvailable.Items)
+                    {
+                        ListViewItem lListViewItem = (ListViewItem)lIt;
+                        if (aName.Contains(lListViewItem.Name))
+                        {
+                            lIndex = lListViewItem.Index;
+                            break;
+                        }
+                    }
+
+                    if (lIndex >= 0)
+                    {
+                        lstCoinAvailable.Items[lIndex].Selected = true;
+                        lstCoinAvailable.Items[lIndex].Focused = true;
+                        lstCoinAvailable.Select();
+                        lstCoinAvailable.EnsureVisible(lIndex);
+                    }
                 }
             }
             catch
@@ -644,7 +658,7 @@ namespace Pandora.Client.PandorasWallet
 
         public bool AllOrderHistoryChecked => chckOrderHistory.Checked;
 
-        public void AddOrderHistory(int aInternalID, string aTrasactionName, string aSold, string aReceived, string aPrice, string aExchange, string aDateTime, string aStatus)
+        public void AddOrderHistory(int aInternalID, string aTrasactionName, string aSold, string aReceived, string aPrice, string aStop, string aExchange, string aDateTime, string aStatus)
         {
             //if (SelectedOrderHistory != null)
             //    for (int it = 0; it < lstOrderHistory.Items.Count; it++)
@@ -666,6 +680,7 @@ namespace Pandora.Client.PandorasWallet
             item.SubItems.Add(aSold);
             item.SubItems.Add(aReceived);
             item.SubItems.Add(aPrice);
+            item.SubItems.Add(aStop);
             item.SubItems.Add(aExchange);
             item.SubItems.Add(aDateTime);
             item.SubItems.Add(aStatus);
@@ -779,6 +794,10 @@ namespace Pandora.Client.PandorasWallet
             try
             {
                 OnExchangeBtnClick?.Invoke(sender, e);
+            }
+            catch (Wallet.ClientExceptions.InvalidOperationException ex)
+            {
+                this.StandardInfoMsgBox(ex.Message);
             }
             catch (Exception ex)
             {

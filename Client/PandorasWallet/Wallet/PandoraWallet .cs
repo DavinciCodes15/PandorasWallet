@@ -1133,7 +1133,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             lBackUp.LengthSetting = lBackUp.Setting.Length;
             lBackUp.Exchange = File.ReadAllBytes(Path.Combine(FDataFolder.FullName, InstanceId + "_Copy" + ".exchange"));
             lBackUp.LengthExchange = lBackUp.Exchange.Length;
-            lBackUp.Version = 111;
+            lBackUp.Version = 112;
             if (File.Exists(lBackupFile))
             {
                 File.Delete(lBackupFile);

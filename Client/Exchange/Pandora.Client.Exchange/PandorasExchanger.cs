@@ -241,58 +241,42 @@ namespace Pandora.Client.Exchange
         public MarketOrder[] LoadTransactions(string aTicker)
         {
             if (!TransactionHandler.ReadTransactions(out MarketOrder[] lTransactions, aTicker))
-            {
-                throw new Exception("Failed to write new transaction into disk");
-            }
+                throw new Exception("Failed to read exchange transactions from disk");
 
             if (lTransactions != null && lTransactions.Any())
             {
-                lock (FTransactions)
-                    FTransactions.AddRange(lTransactions);
-
                 int lErrorCounter;
-
-                lock (FTransactions)
-                {
-                    MarketOrder[] lTxs = new MarketOrder[FTransactions.Count];
-                    FTransactions.CopyTo(lTxs);
-                }
-
-                foreach (MarketOrder it in FTransactions)
+                foreach (MarketOrder it in lTransactions)
                 {
                     bool lOrdersLogs = TransactionHandler.ReadOrderLogs(it.InternalID, out List<OrderMessage> lMessages);
-
-                    lMessages = lMessages.OrderByDescending(lMessage => lMessage.Time).ToList();
-
+                    lMessages = lMessages.OrderBy(lMessage => lMessage.Time).ToList();
                     lErrorCounter = 0;
-
                     for (int it2 = 0; it2 < lMessages.Count; it2++)
                     {
                         OrderMessage lIndividualMessage = lMessages[it2];
 
-                        if (lErrorCounter > 0)
+                        switch (lIndividualMessage.Level)
                         {
-                            switch (lIndividualMessage.Level)
-                            {
-                                case OrderMessage.OrderMessageLevel.Error:
-                                    lErrorCounter += 60;
-                                    break;
+                            case OrderMessage.OrderMessageLevel.Error:
+                                lErrorCounter += 60;
+                                break;
 
-                                case OrderMessage.OrderMessageLevel.StageChange:
-                                    lErrorCounter = 0;
-                                    break;
+                            case OrderMessage.OrderMessageLevel.StageChange:
+                                lErrorCounter = 0;
+                                break;
 
-                                case OrderMessage.OrderMessageLevel.FatalError:
-                                    lErrorCounter = -1;
-                                    break;
-                            }
+                            case OrderMessage.OrderMessageLevel.FatalError:
+                                lErrorCounter = -1;
+                                break;
                         }
+                        if (lErrorCounter == -1)
+                            break;
                     }
-
                     it.ErrorCounter = lErrorCounter;
                 }
+                lock (FTransactions)
+                    FTransactions.AddRange(lTransactions);
             }
-
             return lTransactions;
         }
 

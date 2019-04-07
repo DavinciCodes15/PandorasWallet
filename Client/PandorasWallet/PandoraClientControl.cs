@@ -78,11 +78,7 @@ namespace Pandora.Client.PandorasWallet
 
             MainForm.LabelCoinQuantity = "";
             MainForm.LabelTotalCoinReceived = "";
-            MainForm.ExchangeTargetPriceEnabled = false;
-            MainForm.ExchangeQuantityEnabled = false;
-            MainForm.ExchangeTotalReceivedEnabled = false;
-            MainForm.ExchangeTransactionNameEnabled = false;
-            MainForm.ExchangeStoptPriceEnabled = false;
+            DisableExchangeInterface();
 
             ConnectDialog = new ConnectDialog
             {
@@ -366,7 +362,7 @@ namespace Pandora.Client.PandorasWallet
 
             ExecuteSendTxDialog(lAmount, lSelectedCurrency, lTxFee, lBalance, MainForm.ToSendAddress);
 
-//            MainForm.ToSendAmount = 0;
+            //            MainForm.ToSendAmount = 0;
         }
 
         private void MainForm_OnSendAllMenuClick(object sender, EventArgs e)
@@ -461,7 +457,7 @@ namespace Pandora.Client.PandorasWallet
                         }
                         catch (Exception ex)
                         {
-                            var s = string.Format("Unhandled error on sending transaction. Details: {0}", ex);
+                            string s = string.Format("Unhandled error on sending transaction. Details: {0}", ex);
                             Log.Write("Unhandled error on sending transaction. Details: {0}", ex);
                             TrySendTxDialog?.BeginInvoke((MethodInvoker)delegate () { TrySendTxDialog.Response(s); });
                         }
@@ -491,7 +487,7 @@ namespace Pandora.Client.PandorasWallet
 
             UpdateTransactions(FWallet.ActiveCurrencyID, true);
 
-            UpdateExchange(FWallet.ActiveCurrencyID);
+            ExchangePandoraCurrencyChanged(FWallet.ActiveCurrencyID);
 
             if (!MainForm.AllOrderHistoryChecked)
             {
@@ -504,7 +500,7 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        partial void UpdateExchange(uint aCurrency);
+        partial void ExchangePandoraCurrencyChanged(uint aCurrency);
 
         private void ChangeCurrencyDetailData()
         {
@@ -973,7 +969,6 @@ namespace Pandora.Client.PandorasWallet
                 }
                 catch
                 {
-
                 }
         }
 
