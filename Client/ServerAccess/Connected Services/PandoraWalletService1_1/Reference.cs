@@ -29,6 +29,13 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_1 {
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/Logon2", ReplyAction="*")]
         System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraLogonResult> Logon2Async(string aEmail, string aUserName, string aPassword, string aVersion);
         
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/MarkOldUser", ReplyAction="*")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraResult MarkOldUser(string aConnectionId, string aEmail, string aUserName);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/MarkOldUser", ReplyAction="*")]
+        System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraResult> MarkOldUserAsync(string aConnectionId, string aEmail, string aUserName);
+        
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IsConnected", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraResult IsConnected(string aConnectionId);
@@ -281,6 +288,14 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_1 {
         
         public System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraLogonResult> Logon2Async(string aEmail, string aUserName, string aPassword, string aVersion) {
             return base.Channel.Logon2Async(aEmail, aUserName, aPassword, aVersion);
+        }
+        
+        public Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraResult MarkOldUser(string aConnectionId, string aEmail, string aUserName) {
+            return base.Channel.MarkOldUser(aConnectionId, aEmail, aUserName);
+        }
+        
+        public System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraResult> MarkOldUserAsync(string aConnectionId, string aEmail, string aUserName) {
+            return base.Channel.MarkOldUserAsync(aConnectionId, aEmail, aUserName);
         }
         
         public Pandora.Client.ServerAccess.PandoraWalletService1_1.PandoraResult IsConnected(string aConnectionId) {

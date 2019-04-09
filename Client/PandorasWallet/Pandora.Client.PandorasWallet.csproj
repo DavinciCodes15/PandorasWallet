@@ -50,13 +50,14 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <SignManifests>false</SignManifests>
+    <SignManifests>true</SignManifests>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>4F2474F559EB9F231AE2D3F092273B011DAA1C68</ManifestCertificateThumbprint>
+    <ManifestCertificateThumbprint>4A83735A7E7A3AA08B5F745547AB01B84F064991</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>Davinci Codes SpA signing.pfx</ManifestKeyFile>
+    <ManifestKeyFile>
+    </ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Pandora%27s Wallet.ico</ApplicationIcon>
@@ -66,7 +67,6 @@
     <AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Davinci Codes SpA signing.pfx" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>

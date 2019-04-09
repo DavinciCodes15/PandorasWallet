@@ -50,6 +50,22 @@
           </s:extension>
         </s:complexContent>
       </s:complexType>
+      <s:element name="MarkOldUser">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aEmail" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="aUserName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MarkOldUserResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="MarkOldUserResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
       <s:element name="IsConnected">
         <s:complexType>
           <s:sequence>
@@ -365,6 +381,12 @@
   <wsdl:message name="Logon2SoapOut">
     <wsdl:part name="parameters" element="tns:Logon2Response" />
   </wsdl:message>
+  <wsdl:message name="MarkOldUserSoapIn">
+    <wsdl:part name="parameters" element="tns:MarkOldUser" />
+  </wsdl:message>
+  <wsdl:message name="MarkOldUserSoapOut">
+    <wsdl:part name="parameters" element="tns:MarkOldUserResponse" />
+  </wsdl:message>
   <wsdl:message name="IsConnectedSoapIn">
     <wsdl:part name="parameters" element="tns:IsConnected" />
   </wsdl:message>
@@ -501,6 +523,14 @@
   </wsdl:message>
   <wsdl:message name="Logon2HttpGetOut">
     <wsdl:part name="Body" element="tns:PandoraLogonResult" />
+  </wsdl:message>
+  <wsdl:message name="MarkOldUserHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aEmail" type="s:string" />
+    <wsdl:part name="aUserName" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="MarkOldUserHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
   </wsdl:message>
   <wsdl:message name="IsConnectedHttpGetIn">
     <wsdl:part name="aConnectionId" type="s:string" />
@@ -659,6 +689,14 @@
   <wsdl:message name="Logon2HttpPostOut">
     <wsdl:part name="Body" element="tns:PandoraLogonResult" />
   </wsdl:message>
+  <wsdl:message name="MarkOldUserHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aEmail" type="s:string" />
+    <wsdl:part name="aUserName" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="MarkOldUserHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
   <wsdl:message name="IsConnectedHttpPostIn">
     <wsdl:part name="aConnectionId" type="s:string" />
   </wsdl:message>
@@ -808,6 +846,10 @@
       <wsdl:input message="tns:Logon2SoapIn" />
       <wsdl:output message="tns:Logon2SoapOut" />
     </wsdl:operation>
+    <wsdl:operation name="MarkOldUser">
+      <wsdl:input message="tns:MarkOldUserSoapIn" />
+      <wsdl:output message="tns:MarkOldUserSoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="IsConnected">
       <wsdl:input message="tns:IsConnectedSoapIn" />
       <wsdl:output message="tns:IsConnectedSoapOut" />
@@ -898,6 +940,10 @@
       <wsdl:input message="tns:Logon2HttpGetIn" />
       <wsdl:output message="tns:Logon2HttpGetOut" />
     </wsdl:operation>
+    <wsdl:operation name="MarkOldUser">
+      <wsdl:input message="tns:MarkOldUserHttpGetIn" />
+      <wsdl:output message="tns:MarkOldUserHttpGetOut" />
+    </wsdl:operation>
     <wsdl:operation name="IsConnected">
       <wsdl:input message="tns:IsConnectedHttpGetIn" />
       <wsdl:output message="tns:IsConnectedHttpGetOut" />
@@ -987,6 +1033,10 @@
     <wsdl:operation name="Logon2">
       <wsdl:input message="tns:Logon2HttpPostIn" />
       <wsdl:output message="tns:Logon2HttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="MarkOldUser">
+      <wsdl:input message="tns:MarkOldUserHttpPostIn" />
+      <wsdl:output message="tns:MarkOldUserHttpPostOut" />
     </wsdl:operation>
     <wsdl:operation name="IsConnected">
       <wsdl:input message="tns:IsConnectedHttpPostIn" />
@@ -1082,6 +1132,15 @@
     </wsdl:operation>
     <wsdl:operation name="Logon2">
       <soap:operation soapAction="http://tempuri.org/Logon2" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MarkOldUser">
+      <soap:operation soapAction="http://tempuri.org/MarkOldUser" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -1290,6 +1349,15 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="MarkOldUser">
+      <soap12:operation soapAction="http://tempuri.org/MarkOldUser" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="IsConnected">
       <soap12:operation soapAction="http://tempuri.org/IsConnected" style="document" />
       <wsdl:input>
@@ -1491,6 +1559,15 @@
         <mime:mimeXml part="Body" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="MarkOldUser">
+      <http:operation location="/MarkOldUser" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="IsConnected">
       <http:operation location="/IsConnected" />
       <wsdl:input>
@@ -1685,6 +1762,15 @@
     </wsdl:operation>
     <wsdl:operation name="Logon2">
       <http:operation location="/Logon2" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="MarkOldUser">
+      <http:operation location="/MarkOldUser" />
       <wsdl:input>
         <mime:content type="application/x-www-form-urlencoded" />
       </wsdl:input>

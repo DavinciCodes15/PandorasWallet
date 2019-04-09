@@ -1,4 +1,4 @@
-﻿//   Copyright 2017-2019 Davinci Codes
+//   Copyright 2017-2019 Davinci Codes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -144,6 +144,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public bool VerifyAddress(uint aCurrencyId, string aAddress)
         {
             return FServerAccess.CheckAddress(aCurrencyId, aAddress);
+        }
+
+        public bool MarkOldUser(string aEmail, string aUsername)
+        {
+            return FServerAccess.MarkOldUser(aEmail, aUsername);
         }
 
         private byte[] FetchCurrencyIcon(uint aCurrencyId)

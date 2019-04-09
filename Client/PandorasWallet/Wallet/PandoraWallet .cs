@@ -507,9 +507,42 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         public void InitializeRootSeed(bool aForceSeed = false)
         {
+            UserStatus lUserStatus = FWalletPandoraServer.GetUserStatus();
+            DateTime lLockDate = new DateTime(2019, 4, 8, 23, 59, 59);
+            string lEmail = FWalletPandoraServer.Email;
+            string lUsername = FWalletPandoraServer.Username;
             if (FSeed == null || aForceSeed)
             {
-                FSeed = FKeyManager.GetSecretRootSeed(FWalletPandoraServer.Email, FWalletPandoraServer.Username);
+                FSeed = FKeyManager.GetSecretRootSeed(lEmail.ToLower(), lUsername.ToLower());
+                if (lUserStatus.StatusDate <= lLockDate)
+                {
+                    string lStatusMessage = lUserStatus.ExtendedInfo;
+
+                    if (lUserStatus.ExtendedInfo.Contains("Actual Case is:"))
+                    {
+                        int lStart = lStatusMessage.IndexOf(":", StringComparison.Ordinal) + 1;
+                        string[] lSubstring = lStatusMessage.Substring(lStart, lStatusMessage.Length - lStart).Split(new string[] { "***" }, StringSplitOptions.RemoveEmptyEntries);
+                        lEmail = lSubstring[0].Trim();
+                        lUsername = lSubstring[1].Trim();
+                        FSeed = FKeyManager.GetSecretRootSeed(lEmail, lUsername);
+                    }
+                    else
+                    {
+                        FSeed = FKeyManager.GetSecretRootSeed(lEmail, lUsername);
+                        CurrencyItem lCurrency = FWalletPandoraServer.GetCurrency(1);
+                        IClientCurrencyAdvocacy lAdvocacy = CurrencyControl.GetCurrencyControl().GetClientCurrencyAdvocacy((uint)lCurrency.Id, lCurrency.ChainParamaters);
+                        lAdvocacy.RootSeed = FSeed;
+                        string lComparationAddress = lAdvocacy.GetAddress(1);
+                        string lAddress = GetCoinAddress(1);
+
+                        if (lComparationAddress != lAddress)
+                        {
+                            string lMessage = string.Format("Please contact support at support@davincicodes.net about Ontime Issue #1344");
+                            throw new Exception(lMessage);
+                        }
+                        FWalletPandoraServer.MarkOldUser(lEmail, lUsername);
+                    }
+                }
             }
         }
 

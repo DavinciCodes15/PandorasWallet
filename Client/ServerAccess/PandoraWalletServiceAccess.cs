@@ -68,6 +68,7 @@ namespace Pandora.Client.ServerAccess
         private delegate ulong GetBlockHeightDelegate(uint aCurrencyId);
         private delegate bool CheckAddressDelegate(uint aCurrencyId, string aAddress);
         private delegate string GetCurrencyDelegate(uint aCurrencyId);
+        private delegate bool MarkOldUserDelegate(string aEmail, string aUserName);
 
 
         private string FConnectionId;
@@ -377,6 +378,11 @@ namespace Pandora.Client.ServerAccess
             return (bool)ReadServerResult(FServer.IsTransactionSent(ConnectionId, aSendTxHandle));
         }
 
+        private bool ThreadMarkOldUser(string aEmail, string aUserName)
+        {
+            return (bool)ReadServerResult(FServer.MarkOldUser(ConnectionId, aEmail, aUserName));
+        }
+
         private string ThreadGetTransactionId(long aSendTxHandle)
         {
             return (string)ReadServerResult(FServer.GetTransactionId(ConnectionId, aSendTxHandle));
@@ -476,6 +482,10 @@ namespace Pandora.Client.ServerAccess
         public bool Logon2(string aEmail, string aUserName, string aPassword, string aVersion)
         {
             return (bool)this.Invoke(new Logon2Delegate(ThreadLogon2), aEmail, aUserName, aPassword, aVersion);
+        }
+        public bool MarkOldUser(string aEmail, string aUserName)
+        {
+            return (bool)this.Invoke(new MarkOldUserDelegate(ThreadMarkOldUser), aEmail, aUserName);
         }
 
         /// <summary>
