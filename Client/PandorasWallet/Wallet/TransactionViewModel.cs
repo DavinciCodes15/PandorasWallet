@@ -82,6 +82,8 @@ namespace Pandora.Client.PandorasWallet.Wallet
             }
         }
 
+        public bool Valid => FRecord.Valid;
+
         public TransactionUnit ChangeOutput
         {
             get
@@ -102,15 +104,15 @@ namespace Pandora.Client.PandorasWallet.Wallet
             IsEmpty = true;
         }
 
-        public TransactionViewModel(TransactionRecord aRecord, List<string> aListofAddresses)
+        public TransactionViewModel(TransactionRecord aRecord, IEnumerable<string> aListofAddresses)
         {
             Set(aRecord, aListofAddresses);
         }
 
-        public void Set(TransactionRecord aRecord, List<string> aListofAddresses)
+        public void Set(TransactionRecord aRecord, IEnumerable<string> aListofAddresses)
         {
             FRecord = aRecord;
-            FAddresses = aListofAddresses;
+            FAddresses = aListofAddresses.ToList();
 
             List<TransactionUnit> lInputs = FRecord.Inputs != null ? FRecord.Inputs.ToList() : null;
             List<TransactionUnit> lOutputs = FRecord.Outputs.ToList();

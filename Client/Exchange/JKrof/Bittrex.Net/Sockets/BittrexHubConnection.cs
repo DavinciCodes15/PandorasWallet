@@ -14,7 +14,7 @@ namespace Bittrex.Net.Sockets
     public class BittrexHubConnection: BaseSocket, ISignalRSocket
     {
         private readonly HubConnection connection;
-        private IHubProxy proxy;
+        private IHubProxy HubProxy;
 
         public BittrexHubConnection(Log log, HubConnection connection): base(null, connection.Url)
         {
@@ -44,7 +44,7 @@ namespace Bittrex.Net.Sockets
 
         public void SetHub(string name)
         {
-            proxy = connection.CreateHubProxy(name);
+            HubProxy = connection.CreateHubProxy(name);
         }
 
         public override void SetProxy(string proxyHost, int proxyPort)
@@ -56,7 +56,7 @@ namespace Bittrex.Net.Sockets
         {
             try
             {
-                var sub = await proxy.Invoke<T>(call, pars).ConfigureAwait(false);
+                var sub = await HubProxy.Invoke<T>(call, pars).ConfigureAwait(false);
                 return new CallResult<T>(sub, null);
             }
             catch (Exception e)

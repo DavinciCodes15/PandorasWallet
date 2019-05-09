@@ -42,8 +42,9 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiTests.cs" />
+    <Compile Include="BittrexApiTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProxyTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter">
@@ -57,6 +58,10 @@
     <ProjectReference Include="..\..\JKrof\Pandora.Client.Exchange.JKrof.csproj">
       <Project>{6a854399-8f43-416b-a83e-508b625fb135}</Project>
       <Name>Pandora.Client.Exchange.JKrof</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Pandora.Client.Exchange\Pandora.Client.Exchange.csproj">
+      <Project>{22483063-f3be-4f4f-b2d4-d2c0aa9fda82}</Project>
+      <Name>Pandora.Client.Exchange</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

@@ -18,9 +18,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using Pandora.Client.ClientLib;
 using Pandora.Client.Universal;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -28,6 +31,23 @@ namespace Pandora.Client.PandorasWallet
 {
     public static class PandorasExt
     {
+        public static string[] GetAddresses(this TransactionRecord aTxRecord)
+        {
+            List<string> lTransactionAddresses = new List<string>();
+
+            if (aTxRecord.Inputs != null)
+            {
+                lTransactionAddresses.AddRange(aTxRecord.Inputs.Select(x => x.Address).ToArray());
+            }
+
+            if (aTxRecord.Outputs != null)
+            {
+                lTransactionAddresses.AddRange(aTxRecord.Outputs.Select(x => x.Address).ToArray());
+            }
+
+            return lTransactionAddresses.ToArray();
+        }
+
         public static T GetEnumFromDescription<T>(this string description)
         {
             Type type = typeof(T);
@@ -58,7 +78,7 @@ namespace Pandora.Client.PandorasWallet
             throw new ArgumentException("Not found.", nameof(description));
         }
 
-        public static void StandardErrorMsgBox(this Form aform,  string aErrorTitle, string aMsg, params object [] aArgs)
+        public static void StandardErrorMsgBox(this Form aform, string aErrorTitle, string aMsg, params object[] aArgs)
         {
             aMsg = string.Format(aMsg, aArgs);
             Log.Write(LogLevel.Error, "Error Dialog displayed.\nCaption: {0}\nMsg: {1}", aErrorTitle, aMsg);

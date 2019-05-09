@@ -5,7 +5,7 @@ using System;
 namespace Pandora.Client.Exchange.Test
 {
     [TestClass]
-    public class ApiTests
+    public class BittrexApiTests
     {
         private BittrexClient FClient;
 

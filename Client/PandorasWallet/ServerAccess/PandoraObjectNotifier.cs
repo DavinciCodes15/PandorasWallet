@@ -137,6 +137,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             {
                 FExistingCurrencyIds[aCurrencyId].TransactionRecords.AddRange(aTansactionRecords);
                 FExistingCurrencyIds[aCurrencyId].TransactionRecords.Sort(TransactionRecord.GetTransactionRecordIdComparer());
+                FExistingCurrencyIds[aCurrencyId].LastTransactionId = FExistingCurrencyIds[aCurrencyId].TransactionRecords.First().TransactionRecordId - 1;
                 return true;
             }
             return false;

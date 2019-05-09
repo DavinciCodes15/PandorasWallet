@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Class Name="Pandora.Client.ThreadingMgrProposal.Logic.Client.WorkerProcess01">
+    <Position X="10.75" Y="7.25" Width="3.25" />
+    <Members>
+      <Method Name="WorkerProcess01" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAACAAAAAAAgACAAAAAIAAAAAAAAAAAAQCAAA=</HashCode>
+      <FileName>Logic\Client\WorkerProcess01.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Pandora.Client.ThreadingMgrProposal.Logic.Client.WorkerProcess02">
+    <Position X="15.5" Y="7.25" Width="3.75" />
+    <Members>
+      <Method Name="WorkerProcess02" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAAgACAAAAAIAAAAAAIAAAAAACAAA=</HashCode>
+      <FileName>Logic\Client\WorkerProcess02.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Pandora.Client.ThreadingMgrProposal.Logic.Business.EventsArgs.AnotherWorkingEventArgs">
+    <Position X="21.5" Y="8.25" Width="3" />
+    <InheritanceLine Type="System.EventArgs" FixedToPoint="true">
+      <Path>
+        <Point X="20" Y="5.812" />
+        <Point X="20" Y="9" />
+        <Point X="21.5" Y="9" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Logic\Business\EventsArgs\AnotherWorkingEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Pandora.Client.ThreadingMgrProposal.Logic.Business.EventsArgs.FinishEventArgs">
+    <Position X="21.5" Y="10.25" Width="3" />
+    <InheritanceLine Type="System.EventArgs" FixedToPoint="true">
+      <Path>
+        <Point X="20" Y="5.812" />
+        <Point X="20" Y="11" />
+        <Point X="21.5" Y="11" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Logic\Business\EventsArgs\FinishEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Pandora.Client.ThreadingMgrProposal.Logic.Business.EventsArgs.WorkingEventArgs">
+    <Position X="21.5" Y="6" Width="3" />
+    <InheritanceLine Type="System.EventArgs" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="20" Y="5.812" />
+        <Point X="20" Y="7" />
+        <Point X="21.5" Y="7" />
+      </Path>
+    </InheritanceLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Logic\Business\EventsArgs\WorkingEventArgs.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Pandora.Client.ThreadingMgrProposal.Form1">
+    <Position X="0.75" Y="0.5" Width="5.25" />
+    <Members>
+      <Method Name="Dispose" Hidden="true" />
+      <Method Name="InitializeComponent" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAICBQAAAQAACAAIACAABAwAIAEBAIgACAIAA=</HashCode>
+      <FileName>Form1.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="FThreadsMgr" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="System.EventArgs" Collapsed="true">
+    <Position X="19" Y="5.25" Width="2" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Pandora.Client.ThreadingMgrProposal.Logic.Business.Mgr.WorksMgr">
+    <Position X="7.5" Y="3" Width="4.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQCAACAAAAhAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Logic\Business\Mgr\WorksMgr.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Pandora.Client.Universal.Threading.MethodJetThread" Collapsed="true">
+    <Position X="13.5" Y="5.5" Width="3" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="Pandora.Client.Universal.Threading.MethodJet" Collapsed="true">
+    <Position X="13.5" Y="4.25" Width="3" />
+    <TypeIdentifier />
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="Pandora.Client.ThreadingMgrProposal.Logic.Business.Mgr.IWorksMgr">
+    <Position X="7.5" Y="0.75" Width="4.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAhAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Logic\Business\Mgr\IWorksMgr.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Pandora.Client.ThreadingMgrProposal.Logic.Base.IWorkerProcess&lt;T, P&gt;">
+    <Position X="12.75" Y="2" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAIAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Logic\Base\IWorkerProcess.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Pandora.Client.ThreadingMgrProposal.Logic.Base.IBaseWorkerProcess" Collapsed="true">
+    <Position X="12.75" Y="0.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Logic\Base\IWorkerProcess.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -156,7 +156,7 @@ namespace Pandora.Client.PandorasWallet
 
         public string ToSendAddress { get => TxtBoxSendToAddress.Text; set => TxtBoxSendToAddress.Text = value; }
 
-        public decimal ToSendAmount { get => Convert.ToDecimal(QuickAmountTextBox.Text); set => QuickAmountTextBox.Text = value.ToString(); }
+        public decimal ToSendAmount { get => Convert.ToDecimal(QuickAmountTextBox.Text, new System.Globalization.NumberFormatInfo() { NumberDecimalSeparator = ".", NumberGroupSeparator = ",", NumberGroupSizes = new[] { 3 } }); set => QuickAmountTextBox.Text = value.ToString(); }
 
         public bool CoinImageVisibility { get => picCoinImage.Visible; set => picCoinImage.Visible = value; }
 

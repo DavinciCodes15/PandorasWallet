@@ -724,7 +724,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 aTxList = new List<TransactionRecord>();
 
                 string qrywhere = " WHERE currencyid = " + aCurrencyId;
-                string qry = string.Format("SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {0}", aCurrencyId);
+                string qry = string.Format("SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {0} and Valid = 1", aCurrencyId);
 
                 try
                 {
@@ -737,7 +737,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                     lSqLiteReader.GetString(2),
                                     lSqLiteReader.GetDateTime(3),
                                     Convert.ToUInt64(lSqLiteReader.GetInt64(4)),
-                                    lSqLiteReader.GetBoolean(5)));
+                                    lSqLiteReader.GetBoolean(6)));
                     }
                 }
                 catch (Exception ex)

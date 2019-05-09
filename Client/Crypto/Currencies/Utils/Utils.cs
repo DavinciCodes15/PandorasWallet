@@ -547,7 +547,7 @@ namespace Pandora.Client.Crypto.Currencies
             if (dt < unixRef)
                 throw new ArgumentOutOfRangeException("The supplied datetime can't be expressed in unix timestamp");
             var result = (dt - unixRef).Milliseconds;
-            if (result > UInt32.MaxValue)
+            if (result > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("The supplied datetime can't be expressed in unix timestamp");
             return (ulong)result;
         }

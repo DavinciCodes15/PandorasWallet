@@ -27,7 +27,8 @@ namespace Pandora.Client.Crypto.Currencies
             FTxFunc.Add(10100, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //NavCoin
             FTxFunc.Add(10108, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Sequence
             FTxFunc.Add(10098, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //IOCoin
-            FTxFunc.Add(10032, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //IOCoin
+            FTxFunc.Add(10032, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //CloakCoin
+            FTxFunc.Add(10028, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Evergreencoin
         }
 
         private class AltPotCoinTransaction : Transaction

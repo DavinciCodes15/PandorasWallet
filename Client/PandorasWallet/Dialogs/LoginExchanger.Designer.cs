@@ -127,8 +127,6 @@
 
         #endregion
 
-        protected System.Windows.Forms.Button btnCancel;
-        protected System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;

@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-// General Information about an assembly is controlled through the following
+﻿// General Information about an assembly is controlled through the following
 //   Copyright 2017-2019 Davinci Codes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information

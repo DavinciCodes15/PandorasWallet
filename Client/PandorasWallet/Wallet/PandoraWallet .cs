@@ -58,7 +58,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
         private ConcurrentDictionary<uint, List<string>> FAddresses;
 
         private ConcurrentDictionary<uint, BalanceViewModel> FBalance;
-        private ConcurrentDictionary<uint, List<TransactionViewModel>> FTransactions;
+        private ConcurrentDictionary<uint, List<TransactionViewModel>> FTransactionsViewModels;
 
         public Dictionary<uint, BalanceViewModel> BalancesByCurrency
         {
@@ -75,7 +75,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
                         while (!FBalance.TryAdd(it, lBalance)) ;
                     }
 
-                    GetBalanceModels(it);
+                    GetTransactionalStructure(it);
                 }
 
                 return new Dictionary<uint, BalanceViewModel>(FBalance);
@@ -88,16 +88,16 @@ namespace Pandora.Client.PandorasWallet.Wallet
             {
                 foreach (uint it in FUserCoins)
                 {
-                    if (!FTransactions.ContainsKey(it))
+                    if (!FTransactionsViewModels.ContainsKey(it))
                     {
                         //This needs to be added
-                        while (!FTransactions.TryAdd(it, new List<TransactionViewModel>()))
+                        while (!FTransactionsViewModels.TryAdd(it, new List<TransactionViewModel>()))
                         {
                         }
                     }
                 }
 
-                return FTransactions;
+                return FTransactionsViewModels;
             }
         }
 
@@ -179,10 +179,14 @@ namespace Pandora.Client.PandorasWallet.Wallet
                 {
                     if (!FUserCoins.Contains(it))
                     {
+#if DEBUG
+                        lAvaliableCoins.Add(FWalletPandoraServer.GetCurrency(it));
+#else
                         if (FWalletPandoraServer.GetCurrencyStatus(it).Status != CurrencyStatus.Disabled)
                         {
                             lAvaliableCoins.Add(FWalletPandoraServer.GetCurrency(it));
                         }
+#endif
                     }
                 }
 
@@ -320,8 +324,8 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
             FBalance = new ConcurrentDictionary<uint, BalanceViewModel>();
             FBalance.TryAdd(0, new BalanceViewModel());
-            FTransactions = new ConcurrentDictionary<uint, List<TransactionViewModel>>();
-            FTransactions.TryAdd(0, new List<TransactionViewModel>());
+            FTransactionsViewModels = new ConcurrentDictionary<uint, List<TransactionViewModel>>();
+            FTransactionsViewModels.TryAdd(0, new List<TransactionViewModel>());
             FCurrencyAdvocacies = new Dictionary<uint, IClientCurrencyAdvocacy>();
             FAddresses = new ConcurrentDictionary<uint, List<string>>();
             FUnspent = new Dictionary<uint, TransactionUnit[]>();
@@ -353,7 +357,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
                     while (!FBalance.TryAdd(it, new BalanceViewModel())) ;
                 }
 
-                GetBalanceModels(it, true);
+                GetTransactionalStructure(it, true);
             }
 
             if (aisConfirmationUpdate)
@@ -835,15 +839,15 @@ namespace Pandora.Client.PandorasWallet.Wallet
             }
         }
 
-        private void GetBalanceModels(uint aCoinID, bool aEventFlag = false)
+        private void GetTransactionalStructure(uint aCoinID, bool aEventFlag = false)
         {
             if (((!FAddresses.ContainsKey(aCoinID)) || FAddresses[aCoinID] == null) || (!aEventFlag && !FBalance[aCoinID].IsEmpty))
             {
                 return;
             }
 
-            Dictionary<string, Tuple<ulong, ulong>> LConfirmedBalances = new Dictionary<string, Tuple<ulong, ulong>>();
-            Dictionary<string, Tuple<ulong, ulong>> LUnconfirmedBalances = new Dictionary<string, Tuple<ulong, ulong>>();
+            Dictionary<string, Tuple<ulong, ulong>> lConfirmedBalances = new Dictionary<string, Tuple<ulong, ulong>>();
+            Dictionary<string, Tuple<ulong, ulong>> lUnconfirmedBalances = new Dictionary<string, Tuple<ulong, ulong>>();
 
             TransactionRecord[] lTransactions = FWalletPandoraServer.GetTransactions(aCoinID);
 
@@ -851,12 +855,8 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
             foreach (uint it in FUserCoins)
             {
-                if (!FTransactions.ContainsKey(it))
-                {
-                    while (!FTransactions.TryAdd(it, new List<TransactionViewModel>()))
-                    {
-                    }
-                }
+                if (!FTransactionsViewModels.ContainsKey(it))
+                    while (!FTransactionsViewModels.TryAdd(it, new List<TransactionViewModel>())) ;
             }
 
             ulong lPTotalConfirmedBalance = 0;
@@ -867,60 +867,26 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
             List<string> lAccounts = new List<string>(FAddresses[aCoinID]);
 
-            bool lOneShot = true;
+            bool lExecuteOnceFlag = true;
 
             foreach (string lAddress in lAccounts)
             {
                 foreach (TransactionRecord lTransaction in lTransactions)
                 {
-                    List<string> lTransactionAddresses = new List<string>();
-
-                    if (lTransaction.Inputs != null)
-                    {
-                        lTransactionAddresses.AddRange(lTransaction.Inputs.Select(x => x.Address).ToArray());
-                    }
-
-                    if (lTransaction.Outputs != null)
-                    {
-                        lTransactionAddresses.AddRange(lTransaction.Outputs.Select(x => x.Address).ToArray());
-                    }
+                    var lTransactionAddresses = lTransaction.GetAddresses();
 
                     if (!lAccounts.Exists(x => lTransactionAddresses.Contains(x)))
-                    {
                         continue;
-                    }
 
-                    if (lOneShot)
+                    if (lExecuteOnceFlag)
                     {
-                        if (!FTransactions.ContainsKey(aCoinID))
-                        {
-                            FTransactions[aCoinID] = new List<TransactionViewModel>();
-                        }
-
-                        if ((!FTransactions[aCoinID].Exists(x => x.TransactionID == lTransaction.TxId)))
-                        {
-                            FTransactions[aCoinID].Add(new TransactionViewModel(lTransaction, lAccounts));
-                        }
-
-                        if (aCoinID != 0)
-                        {
-                            TransactionViewModel lTransactionViewModel = FTransactions[aCoinID].Find(x => x.TransactionID == lTransaction.TxId);
-
-                            if (lTransaction.Block != 0 && lTransactionViewModel.Block == 0)
-                            {
-                                lTransactionViewModel.Set(lTransaction, lAccounts);
-                            }
-
-                            lTransactionViewModel.SetBlockHeight(FWalletPandoraServer.GetBlockHeight(aCoinID), FWalletPandoraServer.GetCurrency(aCoinID).MinConfirmations);
-
-                            if (!lTransactionViewModel.isConfirmed)
-                            {
-                                FWalletPandoraServer.CheckIfConfirmed(Convert.ToUInt32(aCoinID), lTransaction.Block);
-                            }
-                        }
+                        CreateOrUpdateTransactionViewModel(lTransaction, aCoinID, lAccounts);
                     }
 
                     lBalance = 0;
+
+                    if (!lTransaction.Valid)
+                        continue;
 
                     if (lTransaction.Block > 0)
                     {
@@ -946,15 +912,15 @@ namespace Pandora.Client.PandorasWallet.Wallet
                     }
                 }
 
-                lOneShot = false;
+                lExecuteOnceFlag = false;
 
-                LConfirmedBalances.Add(lAddress, new Tuple<ulong, ulong>(lPTotalConfirmedBalance, lNTotalConfirmedBalance));
-                LUnconfirmedBalances.Add(lAddress, new Tuple<ulong, ulong>(lPTotalUnconfirmedBalance, lNTotalUnconfirmedBalance));
+                lConfirmedBalances.Add(lAddress, new Tuple<ulong, ulong>(lPTotalConfirmedBalance, lNTotalConfirmedBalance));
+                lUnconfirmedBalances.Add(lAddress, new Tuple<ulong, ulong>(lPTotalUnconfirmedBalance, lNTotalUnconfirmedBalance));
             }
 
             List<TransactionUnit> lUnspent = GetUnspentOutputs(aCoinID, lTransactions);
 
-            FBalance[aCoinID].SetNewData(LConfirmedBalances, LUnconfirmedBalances);
+            FBalance[aCoinID].SetNewData(lConfirmedBalances, lUnconfirmedBalances);
 
             ulong lUnspentBalance = 0;
 
@@ -973,6 +939,36 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
             lock (FUnspent)
                 FUnspent[aCoinID] = lUnspent.ToArray();
+        }
+
+        private void CreateOrUpdateTransactionViewModel(TransactionRecord aTransactionRecord, uint aCoinID, IEnumerable<string> aAccounts)
+        {
+            if (!FTransactionsViewModels.ContainsKey(aCoinID))
+            {
+                FTransactionsViewModels[aCoinID] = new List<TransactionViewModel>();
+            }
+
+            if ((!FTransactionsViewModels[aCoinID].Exists(x => x.TransactionID == aTransactionRecord.TxId)))
+            {
+                FTransactionsViewModels[aCoinID].Add(new TransactionViewModel(aTransactionRecord, aAccounts));
+            }
+
+            if (aCoinID != 0)
+            {
+                TransactionViewModel lTransactionViewModel = FTransactionsViewModels[aCoinID].Find(x => x.TransactionID == aTransactionRecord.TxId);
+
+                if (aTransactionRecord.Block != 0 && lTransactionViewModel.Block == 0)
+                {
+                    lTransactionViewModel.Set(aTransactionRecord, aAccounts);
+                }
+
+                lTransactionViewModel.SetBlockHeight(FWalletPandoraServer.GetBlockHeight(aCoinID), FWalletPandoraServer.GetCurrency(aCoinID).MinConfirmations);
+
+                if (!lTransactionViewModel.isConfirmed)
+                {
+                    FWalletPandoraServer.CheckIfConfirmed(Convert.ToUInt32(aCoinID), aTransactionRecord.Block);
+                }
+            }
         }
 
         public bool ScanTransaction(string aAddress, TransactionRecord aTransactionRecord, out ulong aBalance)
@@ -1027,14 +1023,14 @@ namespace Pandora.Client.PandorasWallet.Wallet
             List<TransactionUnit> aInputList = new List<TransactionUnit>();
             List<TransactionUnit> aOutputList = new List<TransactionUnit>();
 
-            foreach (TransactionRecord it in aTransactionRecordArray)
+            foreach (TransactionRecord lTx in aTransactionRecordArray.Where(lTxRecord => lTxRecord.Valid))
             {
-                if (it.Inputs != null)
+                if (lTx.Inputs != null)
                 {
-                    aInputList.AddRange(it.Inputs);
+                    aInputList.AddRange(lTx.Inputs);
                 }
 
-                aOutputList.AddRange(it.Outputs);
+                aOutputList.AddRange(lTx.Outputs);
             }
 
             return aOutputList.Where(x => !(aInputList.Exists(y => y.Id == x.Id)) && FAddresses[aCurrencyID].Contains(x.Address)).ToList();

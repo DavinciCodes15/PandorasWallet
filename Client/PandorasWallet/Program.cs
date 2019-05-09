@@ -48,12 +48,22 @@ namespace Pandora.Client.PandorasWallet
         [STAThread]
         private static void Main()
         {
-#if DEBUG
-            string lString = Environment.ExpandEnvironmentVariables(@"%PW_RootPath%Server\Wallet");
-            (new IisExpressWebServer(lString, 20159)).Start();
-#endif
+            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             PandoraClientControl lControler = null;
             LogInitialize();
+#if DEBUG
+            try
+            {
+                string lString = Environment.ExpandEnvironmentVariables(@"%PW_RootPath%Server\Wallet");
+                (new IisExpressWebServer(lString, 20159)).Start();
+            }
+            catch (Exception ex)
+            {
+                //This will trigger if this is a installed debug version
+                Log.Write(LogLevel.Warning, string.Format("Failed to initialize iisExpress. Details: {0}", ex));
+            }
+#endif
+
             try
             {
                 Application.EnableVisualStyles();
@@ -72,7 +82,7 @@ namespace Pandora.Client.PandorasWallet
                 {
                     lControler.Dispose();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log.Write(ex.Message);
                 }

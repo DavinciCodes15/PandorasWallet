@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text;
 
 #if MONO
 #else
@@ -78,13 +79,26 @@ namespace Pandora.Client.Universal
             if (lList.Length > 0)
                 lResult = lList[0];
 
-
             return lResult;
         }
 
         public static bool IsProcessRunning(string aProcessName)
         {
             return GetProcess(aProcessName) != null;
+        }
+
+        public static bool SendAlertEmail(string aFrom, string aToList, string aSubject, string aBody, string aServer, int aPort, string aUsername, string aPassword, bool aUseSSL, string aCertFile = null)
+        {
+            var lEmailModel = new EmailModel(aFrom, aToList, aSubject, aBody, aServer, aPort, aUsername, aPassword, aUseSSL, aCertFile);
+            //sync method
+            return BatchEmailService.ProcessEmail(lEmailModel);
+        }
+
+        public static bool SendAlertEmail(string aSubject, string aBody)
+        {
+            var lEmailModel = new EmailModel(aSubject, aBody);
+            //async method
+            return BatchEmailService.ProcessEmail(lEmailModel);
         }
 
         public static bool SendEmail(string aFrom, string aToList, string aSubject, string aBody, string aServer, int aPort, string aUsername, string aPassword, bool aUseSSL, string aCertFile = null)
@@ -134,7 +148,8 @@ namespace Pandora.Client.Universal
             if (e is ThreadAbortException) return; // not important
             string s = string.Format("{0}\n{1}.{2}\nServer Name: {3}\n{4}", aMessage, aClassName, aMethodName, Environment.MachineName, FormatException(e));
             Log.Write(LogLevel.Critical, s);
-            SendEmail(SubjectLine, s);
+            //SendEmail(SubjectLine, s);
+            SendAlertEmail(SubjectLine, s);
         }
 
         private static string FormatException(Exception e)
@@ -320,6 +335,181 @@ namespace Pandora.Client.Universal
             {
                 return false;
             }
+        }
+    }
+
+    public class BatchEmailService
+    {
+        private static Timer FTimerAlerts;
+        private static int FNumbersMails = 0;
+        private const int FMaxMailsAlertsByInterval = 3;
+        private const int FTimeIntervalAlerts = 300000;//5 minutes;
+        private static Dictionary<string, List<EmailModel>> FDictMailAlerts = new Dictionary<string, List<EmailModel>>();
+
+        internal static Dictionary<string, List<EmailModel>> DictMailAlerts
+        {
+            get => FDictMailAlerts;
+            set
+            {
+                if (value == null)
+                {
+                    FDictMailAlerts = new Dictionary<string, List<EmailModel>>();
+                    FNumbersMails = 0;
+                    FTimerAlerts.Dispose();
+                    FTimerAlerts = null;
+                }
+                else
+                {
+                    FDictMailAlerts = value;
+                }
+            }
+        }
+
+        private static string ConsolidateMailsMessage(List<EmailModel> aMails)
+        {
+            var lMailBody = new StringBuilder();
+            aMails.ForEach(lMail => lMailBody.Append($"mail orginal date: {lMail.DateOriginal.ToString("yyyy/MM/dd HH:mm:ss.fff")})\n-----------------------------------------\n{lMail.Body}\n\n"));
+            return lMailBody.ToString();
+        }
+
+        private static List<EmailModel> GenerateListEmails()
+        {
+            var lListMails = new List<EmailModel>();
+            foreach (var lMails in FDictMailAlerts.Values)
+            {
+                var lFirstMail = lMails[0];
+                var lMailBody = ConsolidateMailsMessage(lMails);
+                if (lFirstMail.Async)
+                    lListMails.Add(new EmailModel($"Grouped message: {lFirstMail.Subject}", lMailBody));
+                else
+                    lListMails.Add(new EmailModel(lFirstMail.From, lFirstMail.ToList, $"Grouped message: {lFirstMail.Subject}", lMailBody, lFirstMail.Server, lFirstMail.Port, lFirstMail.UserName, lFirstMail.Password, lFirstMail.UseSSL, lFirstMail.CertFile));
+            }
+            return lListMails;
+        }
+
+        private static void SendBatchEmail(object aState)
+        {
+            Log.Write(LogLevel.Info, "On init SendBatchEmail");
+            //Get all emails saved
+            var lListMails = GenerateListEmails();
+
+            //Recycle vars used in loop
+            DictMailAlerts = null;
+
+            //send mails
+            foreach (var lMail in lListMails)
+            {
+                Log.Write(LogLevel.Info, $"Sending mail {lMail.Subject}");
+                if (lMail.Async)
+                    SystemUtils.SendEmail(lMail.Subject, lMail.Body);
+                else
+                    SystemUtils.SendEmail(lMail.From, lMail.ToList, lMail.Subject, lMail.Body, lMail.Server, lMail.Port, lMail.UserName, lMail.Password, lMail.UseSSL, lMail.CertFile);
+            }
+        }
+
+        private static void CheckTimer()
+        {
+            if (FTimerAlerts == null)
+            {
+                Log.Write(LogLevel.Info, "Create new interval of timer");
+                FTimerAlerts = new Timer(new TimerCallback(SendBatchEmail), null, FTimeIntervalAlerts, Timeout.Infinite);
+            }
+        }
+
+        private static void AddEmailToDictionary(EmailModel aEmail)
+        {
+            if (DictMailAlerts.ContainsKey(aEmail.Subject))
+                FDictMailAlerts[aEmail.Subject].Add(aEmail);
+            else
+                FDictMailAlerts.Add(aEmail.Subject, new List<EmailModel> { aEmail });
+        }
+
+        public static bool ProcessEmail(EmailModel aEmail)
+        {
+            Log.Write(LogLevel.Info, "On init ProcessEmail");
+            CheckTimer();
+
+            if (FNumbersMails++ < FMaxMailsAlertsByInterval)
+            {
+                Log.Write(LogLevel.Info, "The limit of emails sent in the interval has not been exceeded. Therefore, send mail directly without queue");
+                if (aEmail.Async)
+                {
+                    if (SystemUtils.EmailSystem != null)
+                        SystemUtils.EmailSystem.SendAsync(aEmail.Subject, aEmail.Body);
+                    return true;
+                }
+                else
+                {
+                    return SystemUtils.SendEmail(aEmail.From, aEmail.ToList, aEmail.Subject, aEmail.Body, aEmail.Server, aEmail.Port, aEmail.UserName, aEmail.Password, aEmail.UseSSL, aEmail.CertFile);
+                }
+            }
+
+            Log.Write(LogLevel.Info, "The limit of emails sent in the interval has been exceeded. Therefore, add mail to the interval queue");
+            AddEmailToDictionary(aEmail);
+            return true;
+        }
+    }
+
+    public class EmailModel
+    {
+        internal string From { get; set; }
+        internal string ToList { get; set; }
+        internal string Subject { get; set; }
+        internal string Body { get; set; }
+        internal string Server { get; set; }
+        internal int Port { get; set; }
+        internal string UserName { get; set; }
+        internal string Password { get; set; }
+        internal bool UseSSL { get; set; }
+        internal string CertFile { get; set; }
+
+        internal bool Async { get; set; }
+        internal DateTime DateOriginal { get; set; }
+
+        /// <summary>
+        /// Constructor used to specify all fields of a new email message. Internally the system mark the message as sync
+        /// </summary>
+        /// <param name="aFrom">address from</param>
+        /// <param name="aToList">a list of address to </param>
+        /// <param name="aSubject">subject of message</param>
+        /// <param name="aBody">content of message</param>
+        /// <param name="aServer">server used to send mail</param>
+        /// <param name="aPort">port used</param>
+        /// <param name="aUsername">username of credencials of service mail</param>
+        /// <param name="aPassword">password of credencials of service mail</param>
+        /// <param name="aUseSSL">boolean valu indicating if the service mail use SLL</param>
+        /// <param name="aCertFile">path of file certificate</param>
+        internal EmailModel(string aFrom, string aToList, string aSubject, string aBody, string aServer, int aPort, string aUsername, string aPassword, bool aUseSSL, string aCertFile = null)
+        {
+            From = aFrom;
+            ToList = aToList;
+            Subject = aSubject;
+            Body = aBody;
+            Server = aServer;
+            Port = aPort;
+            UserName = aUsername;
+            Password = aPassword;
+            UseSSL = aUseSSL;
+            CertFile = aCertFile;
+            DateOriginal = DateTime.Now;
+            Async = false;
+
+            Log.Write(LogLevel.Info, "Created a new instance of EmailModel sync");
+        }
+
+        /// <summary>
+        /// Constructor used to specify only subject and body of a new email message. Internally the system mark the message as async
+        /// </summary>
+        /// <param name="aSubject">subject of message</param>
+        /// <param name="aBody">content of message</param>
+        internal EmailModel(string aSubject, string aBody)
+        {
+            Subject = aSubject;
+            Body = aBody;
+            DateOriginal = DateTime.Now;
+            Async = true;
+
+            Log.Write(LogLevel.Info, "Created a new instance of EmailModel async");
         }
     }
 }

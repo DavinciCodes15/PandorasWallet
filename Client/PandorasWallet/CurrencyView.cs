@@ -166,6 +166,25 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        internal void UpdateStatus(List<Tuple<string, long>> aCoins, Dictionary<uint, ClientLib.CurrencyStatusItem> aCoinStatus)
+        {
+            lock (FListLock)
+            {
+                var lResult = from c in aCoins
+                              join s in aCoinStatus on c.Item2 equals s.Key
+                              select new { c.Item1, s.Value };
+
+                foreach (var item in lResult)
+                {
+                    var lItem = FListView.Items.Cast<ListViewItem>().Where(x => x.Text == item.Item1).FirstOrDefault()?.SubItems.Cast<dynamic>().LastOrDefault();
+                    if (lItem != null)
+                    {
+                        lItem.Text = item.Value.Status.ToString();
+                    }
+                }
+            }
+        }
+
         private ListViewItem ConstructListViewCurrencyItem(CurrencyItem aItem, Icon aCurrencyIcon)
         {
             if (FImageList.Images.ContainsKey(aItem.Id))

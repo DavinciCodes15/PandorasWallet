@@ -55,8 +55,6 @@ namespace Pandora.Client.Crypto.Currencies
 
         public static string AddressToBinString(string aBase58Address, Network aNetwork)
         {
-            const int SCRIPT_ADDRESS = 1;
-            const int PUBKEY_ADDRESS = 0;
             if (aBase58Address == null) return null;
             var data = (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).IsValidData(aBase58Address) ?
                 (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).DecodeData(aBase58Address) : new byte[0];

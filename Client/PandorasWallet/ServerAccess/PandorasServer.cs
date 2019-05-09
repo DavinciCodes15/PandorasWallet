@@ -78,7 +78,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private Dictionary<ulong, ulong> FTransactionCheckpointIds = new Dictionary<ulong, ulong>();
         private List<Tuple<uint, ulong>> FToConfirm;
         private Dictionary<uint, ulong> FBlockHeights = new Dictionary<uint, ulong>();
-        private ulong FTemporalCurrencyCheckpoint = 0;
         private Timer FCurrencyStatusTimer;
         private Timer FCurrencyItemTimer;
 

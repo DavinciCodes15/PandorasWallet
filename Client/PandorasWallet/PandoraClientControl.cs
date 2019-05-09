@@ -529,8 +529,11 @@ namespace Pandora.Client.PandorasWallet
             MainForm.ConfirmedBalanceColor = lBalance.Unconfirmed == 0 ? Color.Gray : Color.Black;
 
             SetBalanceTooltip(lBalance.UnconfirmedSent, lBalance.UnconfirmedReceived);
-
+#if DEBUG
+            MainForm.SetTxSendAreaUsability(true);
+#else
             MainForm.SetTxSendAreaUsability(lCurrencyStatus.Status == CurrencyStatus.Active);
+#endif
 
             MainForm.ReceiveAddress = FWallet.GetCoinAddress(FWallet.ActiveCurrencyID);
 
@@ -585,23 +588,29 @@ namespace Pandora.Client.PandorasWallet
 
             List<TransactionViewModel> lTxViews = FWallet.TransactionsByCurrency[aSelectedCoinId];
 
-            foreach (TransactionViewModel it in lTxViews)
+            foreach (TransactionViewModel lTxView in lTxViews)
             {
-                ListViewItem lItem = new ListViewItem(it.Date.ToString())
+                ListViewItem lItem = new ListViewItem(lTxView.Date.ToString())
                 {
-                    Name = it.TransactionID,
-                    Tag = it
+                    Name = lTxView.TransactionID,
+                    Tag = lTxView
                 };
 
-                lItem.SubItems.Add(it.GetSimpleInputAddress());
-                lItem.SubItems.Add(it.GetSimpleOutputAddress());
+                lItem.SubItems.Add(lTxView.GetSimpleInputAddress());
+                lItem.SubItems.Add(lTxView.GetSimpleOutputAddress());
 
-                lItem.SubItems.Add((it.Debt / FWallet.Coin).ToString());
-                lItem.SubItems.Add((it.Credit / FWallet.Coin).ToString());
+                lItem.SubItems.Add((lTxView.Debt / FWallet.Coin).ToString());
+                lItem.SubItems.Add((lTxView.Credit / FWallet.Coin).ToString());
 
-                lItem.SubItems.Add(it.isConfirmed ? string.Format("Confirmed ({0}+)", it.MinConfirmations) : it.Confirmation.ToString());
+                if (lTxView.Valid)
+                    lItem.SubItems.Add(lTxView.isConfirmed ? string.Format("Confirmed ({0}+)", lTxView.MinConfirmations) : lTxView.Confirmation.ToString());
+                else
+                {
+                    lItem.SubItems.Add("Non valid");
+                    lItem.ForeColor = Color.Gray;
+                }
 
-                switch (it.TransactionType)
+                switch (lTxView.TransactionType)
                 {
                     case TransactionViewType.credit:
 
@@ -894,7 +903,7 @@ namespace Pandora.Client.PandorasWallet
             FWorkingWallet.OnCurrencyItemUpdated += FWallet_OnCurrencyItemUpdated;
             FWorkingWallet.OnNewTxData += FWallet_OnNewTxData;
             FWorkingWallet.OnNewCurrencyStatusData += FWallet_OnNewCurrencyStatusData;
-
+            MainForm?.BeginInvoke(new MethodInvoker(() => MainForm.CurrencyViewControl.UpdateStatus(FWorkingWallet.UserCoins.Select(x => new Tuple<string, long>(x.Name, x.Id)).ToList(), FWallet.CoinStatus)));
             return true;
         }
 
@@ -910,6 +919,7 @@ namespace Pandora.Client.PandorasWallet
             AddCoinsToCurrencyView(FWorkingWallet.UserCoins, FWallet);
 
             MainForm.SelectedCurrencyId = FWallet.ActiveCurrencyID;
+            MainForm.CurrencyViewControl.UpdateStatus(FWorkingWallet.UserCoins.Select(x => new Tuple<string, long>(x.Name, x.Id)).ToList(), FWallet.CoinStatus);
         }
 
         private void FWallet_OnNewTxData()

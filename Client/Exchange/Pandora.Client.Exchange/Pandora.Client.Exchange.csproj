@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExchangeTxHandler.cs" />
+    <Compile Include="PandoraProxy.cs" />
     <Compile Include="PandorasExchanger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="$(SolutionDir)VersionInfo.cs">

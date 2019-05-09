@@ -16,15 +16,22 @@ namespace Pandora.Client.Universal
         ReadWritePosition FOnReadWritePosition;
 
         public ushort LineLenght { get; private set; }
+
         public bool IncludeDate { get; private set; }
+
         public bool IncludeTime { get; private set; }
+
         public ushort MaxSize { get; private set; }
-        
-        public FixedLengthLogFile(string aFileName, 
-            ushort aLineLength = 80, 
-            ushort aMaxSize = 0, 
-            bool aDate = false, 
-            bool aTime = false, 
+
+        public bool FileRollOver { get; private set; }
+
+
+        public FixedLengthLogFile(string aFileName,
+            ushort aLineLength = 80,
+            ushort aMaxSize = 0,
+            bool aDate = false,
+            bool aTime = false,
+            bool aFileRollOver = false,
             ErrorEvent aOnErrorEvent = null,
             ReadWritePosition aOnReadWritePosition = null)
             : base(aFileName)
@@ -35,6 +42,7 @@ namespace Pandora.Client.Universal
             MaxSize = aMaxSize;
             IncludeDate = aDate;
             IncludeTime = aTime;
+            FileRollOver = aFileRollOver;
             FOnErrorEvent = aOnErrorEvent;
             FOnReadWritePosition = aOnReadWritePosition;
             this.OnErrorEvent += new ErrorHandlerDelegate(ErrorHandler);
@@ -48,9 +56,7 @@ namespace Pandora.Client.Universal
             string lLogText = "";
             isHandled = (e is ThreadLogError);
             if (isHandled) lLogText = (e as ThreadLogError).FLogText;
-            if (FOnErrorEvent != null)
-                lock (FOnErrorEvent)
-                    this.FOnErrorEvent(this, e.Message, lLogText);
+            FOnErrorEvent?.Invoke(this, e.Message, lLogText);
         }
 
         protected override void ThreadWrite(string aText, DateTime aTime)
@@ -67,7 +73,7 @@ namespace Pandora.Client.Universal
                 return;
             }
             WriteToStream(AddLineData(lLines, aTime));
-         }
+        }
 
         protected override Stream MakeFileStream()
         {
@@ -77,18 +83,70 @@ namespace Pandora.Client.Universal
                 long lStartPos = -1;
                 const int OneMeg = 1048576;
                 if (lResult is FileStream)
-                { 
-                     ReadPosition(ref lStartPos);
+                {
+                    ReadPosition(ref lStartPos);
                     if (lStartPos == -1)
                         lStartPos = lResult.Position;
-                    else if (lStartPos > lResult.Length)
-                        lStartPos = lResult.Length;
                     if (lStartPos > MaxSize * OneMeg)
-                        lStartPos = 0;
+                        if (FileRollOver)
+                            lResult = DoFileRollOver(lResult);
+                        else
+                            lStartPos = 0;
+                    if (lStartPos > lResult.Length)
+                        lStartPos = lResult.Length;
                     lResult.Position = lStartPos;
                 }
             }
             return lResult;
+        }
+
+        private Stream DoFileRollOver(Stream aLogFileStream)
+        {
+            string lPath = Path.GetDirectoryName(this.FileName);
+            string lNewFileName = Path.GetFileNameWithoutExtension(FileName);
+            string lDate = DateTime.Now.ToString("' 'yyyy'-'MM'-'dd' 'HH'_'mm'_'ss");
+            lNewFileName = string.Format("{0}{1}.log", lNewFileName, lDate);
+            lPath = Path.Combine(lPath, "OldLogs");
+            try
+            {
+                if (!Directory.Exists(lPath))
+                    Directory.CreateDirectory(lPath);
+                lNewFileName = Path.Combine(lPath, lNewFileName);
+            }
+            catch (Exception ex)
+            {
+                this.DoErrorHandler(ex);
+                return aLogFileStream;
+            }
+            if (File.Exists(lNewFileName))
+            {
+                System.Threading.Thread.Sleep(2000);
+                return DoFileRollOver(aLogFileStream);
+            }
+            try
+            {
+                File.Copy(FileName, lNewFileName);
+            }
+            catch (Exception ex)
+            {
+                DoErrorHandler(ex);
+                if (File.Exists(lNewFileName))
+                    File.Delete(lNewFileName);
+                return aLogFileStream;
+            }
+            aLogFileStream.Close();
+            aLogFileStream.Dispose();
+            while (File.Exists(FileName))
+                try
+                {
+                    File.Delete(FileName);
+                }
+                catch (Exception ex)
+                {
+                    System.Threading.Thread.Sleep(3000);
+                    DoErrorHandler(ex);
+                }
+            return base.MakeFileStream();
         }
 
         protected override void CloseStream()
@@ -100,23 +158,19 @@ namespace Pandora.Client.Universal
 
         protected virtual void ReadPosition(ref long aPos)
         {
-            lock (FOnReadWritePosition)
-                if (FOnReadWritePosition != null)
-                    FOnReadWritePosition(this, ref aPos, true);
+            FOnReadWritePosition(this, ref aPos, true);
         }
 
         protected virtual void WritePosition(long aPos)
         {
-            lock (FOnReadWritePosition)
-                if (FOnReadWritePosition != null)
-                    FOnReadWritePosition(this, ref aPos, false);
+            FOnReadWritePosition(this, ref aPos, false);
         }
 
         private string LineFormat(string aLine, DateTime aTime)
         {
             return string.Format("{0}|{1}{2}{3}", aLine.PadRight(LineLenght), IncludeDate ? aTime.ToString("yyyy/MM/dd|") : "", IncludeTime ? aTime.ToString("HH:mm:ss.ffff|") : "", Environment.NewLine);
         }
-                      
+
         private string AddLineData(List<string> lLines, DateTime aTime)
         {
             var lStrBuilder = new StringBuilder();

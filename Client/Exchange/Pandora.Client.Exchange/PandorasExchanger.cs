@@ -14,6 +14,12 @@ namespace Pandora.Client.Exchange
         private BittrexSocketClient FBittrexSocket;
         private ConcurrentDictionary<string, decimal> FMarketPrices;
         private Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription FMarketPriceSubscription;
+
+        /// <summary>
+        /// Tuple with user credentials. First element is Key, second is Secret
+        /// </summary>
+        private Tuple<string, string> FUserCredentials;
+
         private bool FCredentialsSet;
 
         public bool IsCredentialsSet => FCredentialsSet;
@@ -64,7 +70,7 @@ namespace Pandora.Client.Exchange
 
         public void SetCredentials(string aApiKey, string aApiSecret)
         {
-            Pandora.Client.Exchange.JKrof.Authentication.ApiCredentials lCredentials = new Pandora.Client.Exchange.JKrof.Authentication.ApiCredentials(aApiKey, aApiSecret);
+            JKrof.Authentication.ApiCredentials lCredentials = new JKrof.Authentication.ApiCredentials(aApiKey, aApiSecret);
 
             BittrexClientOptions lClientOptions = new Bittrex.Net.Objects.BittrexClientOptions { ApiCredentials = lCredentials };
             BittrexSocketClientOptions lSocketOptions = new Bittrex.Net.Objects.BittrexSocketClientOptions { ApiCredentials = lCredentials };
@@ -82,6 +88,8 @@ namespace Pandora.Client.Exchange
                 }
             }
 
+            //Note: I generate a new instance of ApiCredentials because internally the library dispose it
+            FUserCredentials = new Tuple<string, string>(aApiKey, aApiSecret);
             FCredentialsSet = true;
         }
 
@@ -160,7 +168,7 @@ namespace Pandora.Client.Exchange
             }
         }
 
-        public void PlaceOrder(MarketOrder aOrder, ExchangeMarket aMarket)
+        public bool PlaceOrder(MarketOrder aOrder, ExchangeMarket aMarket, bool aUseProxy = true)
         {
             if (!FCredentialsSet)
             {
@@ -172,7 +180,15 @@ namespace Pandora.Client.Exchange
                 throw new ArgumentNullException(aOrder == null ? nameof(aOrder) : nameof(aMarket), "Invalid argument: " + aOrder == null ? nameof(aOrder) : nameof(aMarket));
             }
 
-            using (BittrexClient lClient = new BittrexClient())
+            if (aOrder.Status != OrderStatus.Waiting)
+                return false;
+
+            BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
+            {
+                Proxy = PandoraProxy.GetApiProxy(),
+                ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials.Item1, FUserCredentials.Item2)
+            };
+            using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
             {
                 CallResult<Bittrex.Net.Objects.BittrexGuid> lResponse;
 
@@ -207,11 +223,11 @@ namespace Pandora.Client.Exchange
                 aOrder.Cancelled = lReceivedOrder.CancelInitiated;
                 aOrder.Completed = lReceivedOrder.QuantityRemaining == 0;
 
-                UpdateOrder(aOrder, OrderStatus.Placed);
+                return true;
             }
         }
 
-        public void UpdateOrder(MarketOrder aNewOrder, OrderStatus aStatus)
+        public void UpdateOrderStatus(MarketOrder aNewOrder, OrderStatus aStatus)
         {
             MarketOrder lOrder;
             lock (FTransactions)
@@ -400,7 +416,15 @@ namespace Pandora.Client.Exchange
             }
         }
 
-        public void WithdrawOrder(ExchangeMarket aMarket, MarketOrder aOrder, string aAddress, decimal aTxFee)
+        /// <summary>
+        /// Tries to withdraw the total amount returned by an order from the exchange
+        /// </summary>
+        /// <param name="aMarket">Market of the order</param>
+        /// <param name="aOrder">Completed order to withdraw</param>
+        /// <param name="aAddress">Coin address to deposit funds</param>
+        /// <param name="aTxFee">Fee to discount from balance withdrawed</param>
+        /// <param name="aUseProxy">Use pandora proxy or not</param>
+        public bool WithdrawOrder(ExchangeMarket aMarket, MarketOrder aOrder, string aAddress, decimal aTxFee, bool aUseProxy = true)
         {
             if (!FCredentialsSet)
             {
@@ -409,10 +433,15 @@ namespace Pandora.Client.Exchange
 
             if (aOrder.Status == OrderStatus.Withdrawed)
             {
-                return;
+                return false;
             }
 
-            using (BittrexClient lClient = new BittrexClient())
+            BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
+            {
+                Proxy = PandoraProxy.GetApiProxy(),
+                ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials.Item1, FUserCredentials.Item2)
+            };
+            using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
             {
                 decimal lRate = aMarket.IsSell ? 1 / aOrder.Rate : aOrder.Rate;
                 decimal lRawAmount = aOrder.SentQuantity / lRate;
@@ -424,7 +453,7 @@ namespace Pandora.Client.Exchange
                 }
             }
 
-            UpdateOrder(aOrder, OrderStatus.Withdrawed);
+            return true;
         }
 
         public void StopMarketUpdating()

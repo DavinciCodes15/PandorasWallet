@@ -151,7 +151,7 @@ namespace Pandora.Client.Universal
 
         protected virtual FixedLengthLogFile NewFixedLenthLogfile()
         {
-            return new FixedLengthLogFile(FileName, LineLength, MaxSize, IncludeDate, IncludeTime, FOnLogError, FOnReadWritePosition);
+            return new FixedLengthLogFile(FileName, LineLength, MaxSize, IncludeDate, IncludeTime, FileRollOver, FOnLogError, FOnReadWritePosition);
         }
 
         public string FileName
@@ -173,6 +173,8 @@ namespace Pandora.Client.Universal
                 FLineLength = value;
             }
         }
+
+        public bool FileRollOver { get; set; }
 
         public bool IncludeTime
         {

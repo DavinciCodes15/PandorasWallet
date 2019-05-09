@@ -649,7 +649,7 @@ namespace Pandora.Client.PandorasWallet
                                 lStatus = OrderStatus.Interrupted;
                             }
 
-                            FExchanger.UpdateOrder(lOrder, lStatus);
+                            FExchanger.UpdateOrderStatus(lOrder, lStatus);
                             WriteTransactionLogEntry(lOrder);
                         }
 
@@ -692,7 +692,8 @@ namespace Pandora.Client.PandorasWallet
             {
                 try
                 {
-                    FExchanger.WithdrawOrder(lMarket, aOrder, FWallet.GetCoinAddress((uint)lCurrencyID), FExchanger.GetTransactionsFee(aOrder.BaseTicker));
+                    if (FExchanger.WithdrawOrder(lMarket, aOrder, FWallet.GetCoinAddress((uint)lCurrencyID), FExchanger.GetTransactionsFee(aOrder.BaseTicker)))
+                        FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Withdrawed);
                     WriteTransactionLogEntry(aOrder);
                     aOrder.ErrorCounter = 0;
                 }
@@ -703,7 +704,7 @@ namespace Pandora.Client.PandorasWallet
                     if (lNumberofretrys >= 9)
                     {
                         aOrder.Cancelled = true;
-                        FExchanger.UpdateOrder(aOrder, OrderStatus.Interrupted);
+                        FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Interrupted);
                         WriteTransactionLogEntry(aOrder);
                     }
 
@@ -788,13 +789,13 @@ namespace Pandora.Client.PandorasWallet
                 string lTxID = ExecuteSendTx(lAmount, aCurrencyID, lTxFee, lExchangeAddress);
                 if (string.IsNullOrEmpty(lTxID)) throw new Exception("Unable to broadcast transaction");
                 aOrder.CoinTxID = lTxID;
-                FExchanger.UpdateOrder(aOrder, OrderStatus.Waiting);
+                FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Waiting);
                 WriteTransactionLogEntry(aOrder);
                 WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, string.Format("Number of confirmations needed: {0} confirmations", FExchanger.GetConfirmations(aMarket.BaseTicker)));
             }
             catch (Exception ex)
             {
-                FExchanger.UpdateOrder(aOrder, OrderStatus.Interrupted);
+                FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Interrupted);
                 WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.FatalError, string.Format("Failed to send transaction. Details: {0}.", ex.Message));
             }
         }
@@ -895,16 +896,19 @@ namespace Pandora.Client.PandorasWallet
                             continue;
                         }
 
-                        List<MarketOrder> lOrdersInitial = FExchangeCurrencyOrders[lCoinId].Where(lOrder => lOrder.Status == OrderStatus.Initial).ToList();
-                        VerifyInitialOrders(lOrdersInitial, lExchangeCoinMarkets, lTicker, lCoinId);
-                        List<MarketOrder> lOrderWaiting = FExchangeCurrencyOrders[lCoinId].Where(lOrder => lOrder.Status == OrderStatus.Waiting).ToList();
-                        VerifyWaitingOrders(lOrderWaiting, lTicker, lTxs[lCoinId], lExchangeCoinMarkets);
+                        if (FExchangeCurrencyOrders.TryGetValue(lCoinId, out List<MarketOrder> lOrders))
+                        {
+                            List<MarketOrder> lOrdersInitial = lOrders.Where(lOrder => lOrder.Status == OrderStatus.Initial).ToList();
+                            VerifyInitialOrders(lOrdersInitial, lExchangeCoinMarkets, lTicker, lCoinId);
+                            List<MarketOrder> lOrderWaiting = lOrders.Where(lOrder => lOrder.Status == OrderStatus.Waiting).ToList();
+                            VerifyWaitingOrders(lOrderWaiting, lTicker, lTxs[lCoinId], lExchangeCoinMarkets);
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Universal.Log.Write(Universal.LogLevel.Error, "Failed to Update Exchange Order. Details: " + ex.Message + " on " + ex.Source);
+                Universal.Log.Write(Universal.LogLevel.Error, string.Format("Failed to Update Exchange Order. Details: {0}", ex));
             }
             finally
             {
@@ -988,7 +992,8 @@ namespace Pandora.Client.PandorasWallet
                 try
                 {
                     WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, "Attempting to place order in exchange.");
-                    FExchanger.PlaceOrder(aOrder, aMarket);
+                    if (FExchanger.PlaceOrder(aOrder, aMarket))
+                        FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Placed);
                     WriteTransactionLogEntry(aOrder);
                     aOrder.ErrorCounter = 0;
                 }
@@ -999,7 +1004,7 @@ namespace Pandora.Client.PandorasWallet
                     if (lNumberofretrys >= 9)
                     {
                         aOrder.Cancelled = true;
-                        FExchanger.UpdateOrder(aOrder, OrderStatus.Interrupted);
+                        FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Interrupted);
                         WriteTransactionLogEntry(aOrder);
                     }
 
