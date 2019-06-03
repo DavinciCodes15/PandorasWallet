@@ -230,13 +230,21 @@ namespace Pandora.Client.PandorasWallet.Utils
             EncryptIntoFile(FEncryptedFilePath, FPasswordHash, lSalt, lKeys);
         }
 
+        public static byte[] GenerateEntropy(int aSize)
+        {
+            var lData = new byte[aSize];
+            var lRandomNumberGenerator = RandomNumberGenerator.Create();
+            lRandomNumberGenerator.GetBytes(lData);
+            return lData;
+        }
+
         private Guid ParseGUID(string aStringGUID)
         {
             Guid lGuid;
 
             if (string.IsNullOrEmpty(aStringGUID))
             {
-                lGuid = Guid.NewGuid();
+                lGuid = new Guid(GenerateEntropy(16));
             }
             else
             {
@@ -249,7 +257,6 @@ namespace Pandora.Client.PandorasWallet.Utils
                     lGuid = Guid.ParseExact(aStringGUID, "N");
                 }
             }
-
             return lGuid;
         }
 
