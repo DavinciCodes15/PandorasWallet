@@ -57,6 +57,7 @@ namespace Pandora.Client.Universal
 
         public static string DecryptText(string aEncryptedText, string aKey = "")
         {
+            if (string.IsNullOrEmpty(aEncryptedText)) return "";
             try
             {
                 aKey += KEY_Filler;

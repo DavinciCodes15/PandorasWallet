@@ -8,7 +8,7 @@ namespace Pandora.Client.ServerAccess
 {
     internal class Defaults
     {
-        public const string PandoraURLPathLocal = "PandoraWalletService1_1.asmx";
-        public const string PandoraURLPathServer = "PandoraWeb/PandoraWalletService1_1.asmx";
+        public const string PandoraURLPathLocal = "PandoraWalletService1_2.asmx";
+        public const string PandoraURLPathServer = "PandoraWeb/PandoraWalletService1_2.asmx";
     }
 }

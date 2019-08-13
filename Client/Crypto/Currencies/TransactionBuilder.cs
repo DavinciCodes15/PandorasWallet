@@ -1,4 +1,5 @@
-﻿using Pandora.Client.Crypto.Currencies.BuilderExtensions;
+﻿using Pandora.Client.Crypto.Currencies.Bitcoin;
+using Pandora.Client.Crypto.Currencies.BuilderExtensions;
 using Pandora.Client.Crypto.Currencies.Crypto;
 
 //using Pandora.Client.Crypto.Currencies.OpenAsset;
@@ -542,6 +543,11 @@ namespace Pandora.Client.Crypto.Currencies
             InitExtensions();
         }
 
+        public TransactionBuilder(Network network) : this()
+        {
+            this.network = network;
+        }
+
         public ICoinSelector CoinSelector
         {
             get;
@@ -594,6 +600,12 @@ namespace Pandora.Client.Crypto.Currencies
         public TransactionBuilder AddKeys(params CCKey[] keys)
         {
             _Keys.AddRange(keys);
+            foreach (var k in keys)
+            {
+                AddKnownRedeems(k.PubKey.ScriptPubKey);
+                AddKnownRedeems(k.PubKey.WitHash.ScriptPubKey);
+                AddKnownRedeems(k.PubKey.Hash.ScriptPubKey);
+            }
             return this;
         }
 
@@ -1044,6 +1056,7 @@ namespace Pandora.Client.Crypto.Currencies
         public Transaction BuildTransaction(bool sign, SigHash sigHash)
         {
             TransactionBuildingContext ctx = new TransactionBuildingContext(this);
+
             if (_CompletedTransaction != null)
             {
                 ctx.Transaction = _CompletedTransaction.Clone(false);
@@ -1053,7 +1066,7 @@ namespace Pandora.Client.Crypto.Currencies
             {
                 ctx.Transaction.LockTime = _LockTime.Value;
             }
-
+            ctx.Transaction.Network = ctx.Transaction.Network ?? this.network;
             foreach (BuilderGroup group in _BuilderGroups)
             {
                 ctx.Group = group;
@@ -1226,8 +1239,8 @@ namespace Pandora.Client.Crypto.Currencies
 
                 if (redeem == null)
                 {
-                    //if (hash is WitScriptId)
-                    //    redeem = PayToWitScriptHashTemplate.Instance.ExtractWitScriptParameters(txIn.WitScript, (WitScriptId)hash);
+                    if (hash is WitScriptId)
+                        redeem = PayToWitScriptHashTemplate.Instance.ExtractWitScriptParameters(txIn.WitScript, (WitScriptId)hash);
                     if (hash is ScriptId)
                     {
                         PayToScriptHashSigParameters parameters = PayToScriptHashTemplate.Instance.ExtractScriptSigParameters(txIn.ScriptSig, (ScriptId)hash);
@@ -1304,7 +1317,7 @@ namespace Pandora.Client.Crypto.Currencies
 
             ICoin[] coins = tx.Inputs.Select(i => FindCoin(i.PrevOut)).Where(c => c != null).ToArray();
             List<TransactionPolicyError> exceptions = new List<TransactionPolicyError>();
-            TransactionPolicyError[] policyErrors = null;// MinerTransactionPolicy.Instance.Check(tx, coins);
+            TransactionPolicyError[] policyErrors = new TransactionPolicyError[0];// MinerTransactionPolicy.Instance.Check(tx, coins);
             exceptions.AddRange(policyErrors);
             policyErrors = StandardTransactionPolicy.Check(tx, coins);
             exceptions.AddRange(policyErrors);
@@ -1597,18 +1610,18 @@ namespace Pandora.Client.Crypto.Currencies
             ScriptCoin scriptCoin = coin as ScriptCoin;
 
             Script signatures = null;
-            //if (coin.GetHashVersion() == HashVersion.Witness)
-            //{
-            //    signatures = txIn.WitScript;
-            //    if (scriptCoin != null)
-            //    {
-            //        if (scriptCoin.IsP2SH)
-            //            txIn.ScriptSig = Script.Empty;
-            //        if (scriptCoin.RedeemType == RedeemType.WitnessV0)
-            //            signatures = RemoveRedeem(signatures);
-            //    }
-            //}
-            //else
+            if (coin.GetHashVersion() == HashVersion.Witness)
+            {
+                signatures = txIn.WitScript;
+                if (scriptCoin != null)
+                {
+                    if (scriptCoin.IsP2SH)
+                        txIn.ScriptSig = Script.Empty;
+                    if (scriptCoin.RedeemType == RedeemType.WitnessV0)
+                        signatures = RemoveRedeem(signatures);
+                }
+            }
+            else
             {
                 signatures = txIn.ScriptSig;
                 if (scriptCoin != null && scriptCoin.RedeemType == RedeemType.P2SH)
@@ -1619,18 +1632,18 @@ namespace Pandora.Client.Crypto.Currencies
 
             signatures = CombineScriptSigs(coin, scriptSig, signatures);
 
-            //if (coin.GetHashVersion() == HashVersion.Witness)
-            //{
-            //    txIn.WitScript = signatures;
-            //    if (scriptCoin != null)
-            //    {
-            //        if (scriptCoin.IsP2SH)
-            //            txIn.ScriptSig = new Script(Op.GetPushOp(scriptCoin.GetP2SHRedeem().ToBytes(true)));
-            //        if (scriptCoin.RedeemType == RedeemType.WitnessV0)
-            //            txIn.WitScript = txIn.WitScript + new WitScript(Op.GetPushOp(scriptCoin.Redeem.ToBytes(true)));
-            //    }
-            //}
-            //else
+            if (coin.GetHashVersion() == HashVersion.Witness)
+            {
+                txIn.WitScript = signatures;
+                if (scriptCoin != null)
+                {
+                    if (scriptCoin.IsP2SH)
+                        txIn.ScriptSig = new Script(Op.GetPushOp(scriptCoin.GetP2SHRedeem().ToBytes(true)));
+                    if (scriptCoin.RedeemType == RedeemType.WitnessV0)
+                        txIn.WitScript = txIn.WitScript + new WitScript(Op.GetPushOp(scriptCoin.Redeem.ToBytes(true)));
+                }
+            }
+            else
             {
                 txIn.ScriptSig = signatures;
                 if (scriptCoin != null && scriptCoin.RedeemType == RedeemType.P2SH)
@@ -1829,6 +1842,7 @@ namespace Pandora.Client.Crypto.Currencies
         }
 
         private Dictionary<Script, Script> _ScriptPubKeyToRedeem = new Dictionary<Script, Script>();
+        private Network network;
 
         public TransactionBuilder AddKnownRedeems(params Script[] knownRedeems)
         {

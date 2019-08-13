@@ -607,9 +607,8 @@ namespace Pandora.Client.Crypto.Currencies
         ////https://en.bitcoin.it/wiki/OP_CHECKSIG
         public static uint256 SignatureHash(Network aNetwork, Script scriptCode, Transaction txTo, int nIn, SigHash nHashType, Money amount, HashVersion sigversion, PrecomputedTransactionData precomputedTransactionData)
         {
-            if ((nHashType & SigHash.ForkId) != 0)
+            if (sigversion == HashVersion.Witness)
             {
-                nHashType = (SigHash)((int)nHashType & 0x1f);
                 if (amount == null)
                     throw new ArgumentException("The amount of the output being signed must be provided", "amount");
                 uint256 hashPrevouts = uint256.Zero;
@@ -658,7 +657,7 @@ namespace Pandora.Client.Crypto.Currencies
                 // Locktime
                 sss.ReadWriteStruct(txTo.LockTime);
                 // Sighash type
-                sss.ReadWrite((uint)nHashType | (uint)SigHash.ForkId);
+                sss.ReadWrite((uint)nHashType);
 
                 return GetHash(sss);
             }

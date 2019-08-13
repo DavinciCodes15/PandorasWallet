@@ -97,6 +97,14 @@ namespace Pandora.Client.Crypto.Currencies
 
         public Bech32Encoder GetBech32Encoder(Bech32Type type, bool throws)
         {
+            if (type == 30)
+            {
+                type = 0;
+            }
+            else if (type == 31)
+            {
+                type = 1;
+            }
             var encoder = bech32Encoders[(int)type];
             if (encoder == null && throws)
                 throw new NotImplementedException("The network " + this + " does not have any prefix for bech32 " + Enum.GetName(typeof(Bech32Type), type));

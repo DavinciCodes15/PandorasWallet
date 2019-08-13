@@ -12,7 +12,7 @@ namespace Pandora.Client.Crypto.Currencies.Controls
         /// <summary>
         /// Currency Id
         /// </summary>
-        uint Id { get; }
+        long Id { get; }
 
         /// <summary>
         /// Provides the types of Address and private key generation
@@ -26,14 +26,14 @@ namespace Pandora.Client.Crypto.Currencies.Controls
         /// This root key is the seed to regenerate everything from any currency placing the same RootKey
         /// will regenerate the same addresses every time.
         /// </summary>
-        string RootSeed { get; set; }
+        string GetRootSeed();
 
         /// <summary>
         /// Gets an address at an index an address at the RootKey is the same every time.
         /// </summary>
         /// <param name="aIndex">Index of the address you want</param>
         /// <returns>returns the address</returns>
-        string GetAddress(uint aIndex);
+        string GetAddress(long aIndex);
 
         /// <summary>
         /// Get sthe private key of each address if the KeyType is PublickKey.
@@ -41,7 +41,7 @@ namespace Pandora.Client.Crypto.Currencies.Controls
         /// </summary>
         /// <param name="aIndex"></param>
         /// <returns></returns>
-        string GetPrivateKey(uint aIndex);
+        string GetPrivateKey(long aIndex);
 
         /// <summary>
         /// Returns ture if the coin is a testnet coin.

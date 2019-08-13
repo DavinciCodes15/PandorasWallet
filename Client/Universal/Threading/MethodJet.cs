@@ -20,7 +20,6 @@ namespace Pandora.Client.Universal.Threading
         private ErrorHandlerDelegate FErrorHandler = null;
         private Queue<DelegateMessage> FMethodQueue;
         private int FActiveThreadID = 0;
-        private ISynchronizeInvoke FSynchronizingObject = null;
         private object FEventLock = new object();
         // private methods
         protected int GetCurrentThreadId()
@@ -155,12 +154,12 @@ namespace Pandora.Client.Universal.Threading
         /// insures that the event is fired only when the thread is in a valid state.</remarks>
         protected virtual void DoEvent(Delegate anEvent, bool asynchronous, params object[] args)
         {
-            if (FSynchronizingObject == null)
+            if (SynchronizingObject == null)
                 anEvent.DynamicInvoke(args);
             else if (asynchronous)
-                FSynchronizingObject.BeginInvoke(anEvent, args);
+                SynchronizingObject.BeginInvoke(anEvent, args);
             else
-                FSynchronizingObject.Invoke(anEvent, args);
+                SynchronizingObject.Invoke(anEvent, args);
         }
 
 
@@ -204,26 +203,7 @@ namespace Pandora.Client.Universal.Threading
             FQueueSignal = new EventWaitHandle(false, EventResetMode.ManualReset);
         }
 
-        public ISynchronizeInvoke SynchronizingObject
-        {
-            get
-            {
-                ISynchronizeInvoke result;
-
-                lock (this)
-                {
-                    result = FSynchronizingObject;
-                }
-                return result;
-            }
-            set
-            {
-                lock (this)
-                {
-                    FSynchronizingObject = value;
-                }
-            }
-        }
+        public ISynchronizeInvoke SynchronizingObject { get; set; }
 
         private void IsRunning()
         {

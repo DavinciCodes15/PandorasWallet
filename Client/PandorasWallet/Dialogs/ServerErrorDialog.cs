@@ -18,39 +18,102 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Pandora.Client.PandorasWallet.Dialogs
 {
     public partial class ServerErrorDialog : Form
     {
-        static ServerErrorDialog FServerErrorDialog;
-
         public static ServerErrorDialog GetInstance()
-        {
-            if (FServerErrorDialog == null)
-                FServerErrorDialog = new ServerErrorDialog();
-            return FServerErrorDialog;
+        { 
+            return new ServerErrorDialog();
         }
 
         public ServerErrorDialog()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
+            Shown += ServerErrorDialog_Shown;
         }
 
-        public string ErrorTitle { get => textBox2.Text; set => textBox2.Text = value; }
+        private void ServerErrorDialog_Shown(object sender, System.EventArgs e)
+        {
+            HideDetails();
 
-        public string ErrorMessage { get => textBox1.Text; set => textBox1.Text = value; }
+            if (lblTitle.Height > 25)
+            {
+                var lNewSize = (lblTitle.Height - 25);
+                this.Height += lNewSize;
+                lblMessageEx.Location = new Point(lblMessageEx.Location.X, lblMessageEx.Location.Y + lNewSize);
+            }
+
+            if (lblMessageEx.Height > 17)
+            {
+                var lNewSize = (lblMessageEx.Height - 17);
+                this.Height += lNewSize;
+            }
+        }
+
+        public string ErrorTitle { get => lblTitle.Text; set => lblTitle.Text = value; }
+
+        public string ErrorDetails { get => textBox1.Text; set => textBox1.Text = value; }
+
+        public string ErrorMessage { get => lblMessageEx.Text; set => lblMessageEx.Text = value; }
 
         public bool Execute()
-        {   
-            
-            if (ParentWindow == null) 
+        {
+
+            if (ParentWindow == null)
                 return ShowDialog() == DialogResult.OK;
             else
                 return ShowDialog(ParentWindow) == DialogResult.OK;
         }
 
         public IWin32Window ParentWindow { get; set; }
+
+        private void HideDetails()
+        {
+            if (textBox1.Visible)
+            {
+                textBox1.Visible = false;
+                Height = Height - textBox1.Height;
+                btnShowDetails.Text = "More Details...";
+                lblCopied.Visible = false;
+                pbCopy.Visible = false;
+            }
+        }
+
+        private void ShowDetails()
+        {
+            if (!textBox1.Visible)
+            {
+                textBox1.Visible = true;
+                Height = Height + textBox1.Height;
+                btnShowDetails.Text = "Less Details...";
+                pbCopy.Visible = true;
+            }
+        }
+
+        private void PbCopy_Click(object sender, System.EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(ErrorDetails))
+            {
+                Clipboard.SetText(ErrorDetails);
+                lblCopied.Visible = true;
+            }
+        }
+
+        private void BtnShowDetails_Click(object sender, System.EventArgs e)
+        {
+            if (textBox1.Visible)
+            {
+                HideDetails();
+            }
+            else
+            {
+                ShowDetails();
+            }
+        }
     }
 }

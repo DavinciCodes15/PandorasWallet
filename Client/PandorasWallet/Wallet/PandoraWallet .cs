@@ -1111,9 +1111,14 @@ namespace Pandora.Client.PandorasWallet.Wallet
             return FWalletPandoraServer.SendTransaction(aCurrencyID, aSignedTx);
         }
 
-        public bool CheckTransactionHandle(long aHandle, out string aTxId)
+        public string GetTxId(long aHandle)
         {
-            return FWalletPandoraServer.CheckTransactionSent(aHandle, out aTxId);
+            return FWalletPandoraServer.GetTxId(aHandle);
+        }
+
+        public bool CheckTransactionHandle(long aHandle)
+        {
+            return FWalletPandoraServer.CheckTransactionSent(aHandle);
         }
 
         private CurrencyTransaction CreateNewCurrencyTransaction(uint aCurrencyID, ulong aAmountToSend, string aToAddress, ulong aTxFee = 0)
@@ -1340,6 +1345,10 @@ namespace Pandora.Client.PandorasWallet.Wallet
             uint lLastBit = aNumbers[10] >> 10;
             lLast8Bits = ((aNumbers[11] & 127) << 1) | lLastBit;
             lLast4BitSum ^= (lLast8Bits & 0xf) ^ ((lLast8Bits >> 4) & 0xf);
+            if (lLast8Bits < 16)
+            {
+                SumAllNumbers += "0";
+            }
             SumAllNumbers = SumAllNumbers + Convert.ToString(lLast8Bits, 16);
             if (lLast4BitSum != (aNumbers[11] >> 7) && (((lLast8Bits >> 1) | (lLast4BitSum << 7)) != aNumbers[11]))
             {

@@ -56,7 +56,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public IDestination GetSigner()
         {
-            return scriptSig.GetSigner();// ?? witScript.GetSigner();
+            return scriptSig.GetSigner() ?? witScript.GetSigner();
         }
 
         public string GetAddress(Network aNetwork)
@@ -65,22 +65,22 @@ namespace Pandora.Client.Crypto.Currencies
             return lItem.GetAddress(aNetwork).ToString();
         }
 
-        //WitScript witScript = WitScript.Empty;
+        private WitScript witScript = WitScript.Empty;
 
-        ///// <summary>
-        ///// The witness script (Witness script is not serialized and deserialized at the TxIn level, but at the Transaction level)
-        ///// </summary>
-        //public WitScript WitScript
-        //{
-        //	get
-        //	{
-        //		return witScript;
-        //	}
-        //	set
-        //	{
-        //		witScript = value;
-        //	}
-        //}
+        /// <summary>
+        /// The witness script (Witness script is not serialized and deserialized at the TxIn level, but at the Transaction level)
+        /// </summary>
+        public WitScript WitScript
+        {
+            get
+            {
+                return witScript;
+            }
+            set
+            {
+                witScript = value;
+            }
+        }
 
         #region ICoinSerializable Members
 
@@ -104,7 +104,7 @@ namespace Pandora.Client.Crypto.Currencies
         public TxIn Clone()
         {
             TxIn txin = CoinSerializableExtensions.Clone(this, 0);
-            //			txin.WitScript = (witScript ?? WitScript.Empty).Clone();
+            txin.WitScript = (witScript ?? WitScript.Empty).Clone();
             return txin;
         }
 
@@ -351,17 +351,18 @@ namespace Pandora.Client.Crypto.Currencies
             set => TxIn.ScriptSig = value;
         }
 
-        //public WitScript WitScript
-        //{
-        //	get
-        //	{
-        //		return TxIn.WitScript;
-        //	}
-        //	set
-        //	{
-        //		TxIn.WitScript = value;
-        //	}
-        //}
+        public WitScript WitScript
+        {
+            get
+            {
+                return TxIn.WitScript;
+            }
+            set
+            {
+                TxIn.WitScript = value;
+            }
+        }
+
         public Transaction Transaction
         {
             get;
@@ -827,14 +828,14 @@ namespace Pandora.Client.Crypto.Currencies
 
         public TxDestination GetSigner()
         {
-            throw new NotImplementedException();
-            //var pubKey = PayToWitPubKeyHashTemplate.Instance.ExtractWitScriptParameters(this);
-            //if(pubKey != null)
-            //{
-            //	return pubKey.PublicKey.WitHash;
-            //}
-            //var p2sh = PayToWitScriptHashTemplate.Instance.ExtractWitScriptParameters(this);
-            //return p2sh != null ? p2sh.WitHash : null;
+            //throw new NotImplementedException();
+            var pubKey = PayToWitPubKeyHashTemplate.Instance.ExtractWitScriptParameters(this);
+            if (pubKey != null)
+            {
+                return pubKey.PublicKey.WitHash;
+            }
+            var p2sh = PayToWitScriptHashTemplate.Instance.ExtractWitScriptParameters(this);
+            return p2sh != null ? p2sh.WitHash : null;
         }
     }
 
@@ -856,28 +857,28 @@ namespace Pandora.Client.Crypto.Currencies
 
         internal bool IsNull()
         {
-            throw new NotImplementedException();
-            //return _Inputs.All(i => i.WitScript.PushCount == 0);
+            //throw new NotImplementedException();
+            return _Inputs.All(i => i.WitScript.PushCount == 0);
         }
 
         internal void ReadWrite(CoinStream stream)
         {
-            throw new NotImplementedException();
-            //         for (int i = 0; i < _Inputs.Count; i++)
-            //{
-            //	if(stream.Serializing)
-            //	{
-            //		var bytes = (_Inputs[i].WitScript ?? WitScript.Empty).ToBytes();
-            //		stream.ReadWrite(ref bytes);
-            //	}
-            //	else
-            //	{
-            //		_Inputs[i].WitScript = WitScript.Load(stream);
-            //	}
-            //}
+            //throw new NotImplementedException();
+            for (int i = 0; i < _Inputs.Count; i++)
+            {
+                if (stream.Serializing)
+                {
+                    var bytes = (_Inputs[i].WitScript ?? WitScript.Empty).ToBytes();
+                    stream.ReadWrite(ref bytes);
+                }
+                else
+                {
+                    _Inputs[i].WitScript = WitScript.Load(stream);
+                }
+            }
 
-            //if(IsNull())
-            //	throw new FormatException("Superfluous witness record");
+            if (IsNull())
+                throw new FormatException("Superfluous witness record");
         }
     }
 
@@ -900,7 +901,7 @@ namespace Pandora.Client.Crypto.Currencies
         protected TxInList vin;
         protected TxOutList vout;
         protected LockTime nLockTime;
-        public Network Network { get; private set; }
+        public Network Network { get; set; }
 
         public Transaction()
         {
@@ -924,7 +925,6 @@ namespace Pandora.Client.Crypto.Currencies
             {
                 this.FromBytes(Encoders.Hex.DecodeData(hex));
             }
-
             ForkID = aNetwork.ChainParams.ForkFromId;
         }
 
@@ -967,6 +967,7 @@ namespace Pandora.Client.Crypto.Currencies
                 if (lResult = lIn.PrevOut.Hash.ToString().ToLower() == aTxId) break;
             return lResult;
         }
+
         //Since it is impossible to serialize a transaction with 0 input without problems during deserialization with wit activated, we fit a flag in the version to workaround it
         private const uint NoDummyInput = (1 << 27);
 
@@ -974,8 +975,18 @@ namespace Pandora.Client.Crypto.Currencies
 
         public virtual void ReadWrite(CoinStream stream)
         {
-            bool witSupported = (((uint)stream.TransactionOptions & (uint)TransactionOptions.Witness) != 0) &&
-                                false; //stream.ProtocolVersion >= ProtocolVersion.WITNESS_VERSION;
+            bool lCapabilitySupportSegWit = false;
+
+            if (Network == null)
+            {
+                lCapabilitySupportSegWit = stream.FProtocolData.Checkif(ProtocolFlags.SupportSegWit);
+            }
+            else
+            {
+                lCapabilitySupportSegWit = Network.ChainParams.Capabilities.HasFlag(CapablityFlags.SupportSegWit);
+            }
+            
+            bool witSupported = ((((uint)stream.TransactionOptions & (uint)TransactionOptions.Witness) != 0)) && lCapabilitySupportSegWit;
 
             byte flags = 0;
             if (!stream.Serializing)
@@ -1254,7 +1265,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// <param name="coins">Coins to sign</param>
         public void Sign(CCKey[] keys, params ICoin[] coins)
         {
-            TransactionBuilder builder = new TransactionBuilder();
+            TransactionBuilder builder = new TransactionBuilder(Network);
             builder.AddKeys(keys);
             builder.AddCoins(coins);
             builder.SignTransactionInPlace(this);
@@ -1608,7 +1619,7 @@ namespace Pandora.Client.Crypto.Currencies
             return instance;
         }
 
-        public bool HasWitness => false;//Inputs.Any(i => i.WitScript != WitScript.Empty && i.WitScript != null);
+        public bool HasWitness => Inputs.Any(i => i.WitScript != WitScript.Empty && i.WitScript != null);
 
         private static readonly uint MAX_BLOCK_SIZE = 1000000;
         private static readonly ulong MAX_MONEY = 21000000ul * Money.COIN;

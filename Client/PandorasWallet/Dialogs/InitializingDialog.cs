@@ -7,6 +7,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public InitializingDialog()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
         public void SetInitialized()

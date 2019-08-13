@@ -27,103 +27,35 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 {
     public partial class SettingsDialog : BaseDialog
     {
-        private string FCachedDatapath;
-        public EventHandler OnOkButtonClick;
-        public EventHandler OnCancelButtonClick;
         public EventHandler OnChangeDefaultCoinClick;
-        public EventHandler OnPrivKeyClick;
+        public EventHandler OnShowPrivateKey;
 
-        public string DefaultPath { get; set; }
+        public long CurrencyId { get; private set; }
 
-        public string DefaultDefaultCoin { get; set; }
+        public string DataPath { get => txtDataPath.Text; set => txtDataPath.Text = value; }
 
-        public string DefaultServer { get; set; }
+        public bool EncryptWallet { get => checkEncryptWallet.Checked; set => checkEncryptWallet.Checked = value; }
 
-        public int DefaultPort { get; set; }
-
-        public Image DefaultcoinImage { get => imgBoxDefaultCoin.Image; set => imgBoxDefaultCoin.Image = value; }
-
-        public string DataPath
+        public void SetDefaultCurrency(long aCurrencyId, string aName, Image aImage)
         {
-            get => txtDataPath.Text;
-            set
-            {
-                if (!Directory.Exists(value))
-                {
-                    throw new ArgumentException("Bad Datapath");
-                }
-                txtDataPath.Text = value;
-                FCachedDatapath = value;
-            }
-        }
-
-        public bool ConnectionSettingsVisible
-        {
-            get => groupConnection.Visible;
-            set
-            {
-                groupConnection.Visible = value;
-                Size = value ? new Size(444, 378) : new Size(444, 234);
-            }
-        }
-
-        public string ServerName
-        {
-            get => txtServerName.Text;
-            set => txtServerName.Text = value;
-        }
-
-        public int PortNumber
-        {
-            get => (int)numPort.Value;
-            set => numPort.Value = value;
-        }
-
-        public bool EncryptConnection
-        {
-            get => checkEncrypted.Checked;
-            set => checkEncrypted.Checked = value;
-        }
-
-        public bool EncryptWallet
-        {
-            get => checkEncryptWallet.Checked;
-            set => checkEncryptWallet.Checked = value;
-        }
-
-        public string DefaultCoin
-        {
-            get => lblDefaultCoin.Text;
-            set => lblDefaultCoin.Text = value;
+            this.imgBoxDefaultCoin.Image = aImage;
+            this.lblDefaultCoin.Text = aName;
+            CurrencyId = aCurrencyId;
         }
 
         public SettingsDialog()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            try
-            {
-                OnOkButtonClick?.Invoke(this, e);
-            }
-            catch (Exception ex)
-            {
-                this.StandardUnhandledErrorMsgBox(ex.Message);
-            }
+ 
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            try
-            {
-                OnCancelButtonClick?.Invoke(this, e);
-            }
-            catch (Exception ex)
-            {
-                this.StandardUnhandledErrorMsgBox(ex.Message);
-            }
         }
 
         private void btnChangeDefaultCoin_Click(object sender, EventArgs e)
@@ -134,127 +66,60 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardUnhandledErrorMsgBox(ex.Message);
-            }
-        }
-
-        private void btnResetDefaults_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                DataPath = DefaultPath;
-            }
-            finally
-            {
-                DefaultCoin = DefaultDefaultCoin;
-                ServerName = DefaultServer;
-                PortNumber = DefaultPort;
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
         private void BrowseButton_Click(object sender, EventArgs e)
         {
             if (SelectFolderDialog.ShowDialog() == DialogResult.OK)
-            {
                 DataPath = SelectFolderDialog.SelectedPath;
-            }
         }
 
         private void SettingsDialogDummy_Shown(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(ServerName))
-            {
-                ServerName = DefaultServer;
-            }
-
-            if (PortNumber == 0)
-            {
-                PortNumber = DefaultPort;
-            }
-
-            if (DefaultCoin.Contains("No Default Chosen") || string.IsNullOrWhiteSpace(DefaultCoin))
-            {
-                DefaultCoin = DefaultDefaultCoin;
-            }
-
-            if (string.IsNullOrWhiteSpace(DataPath))
-            {
-                DataPath = DefaultPath;
-            }
-
-#if DEBUG
-            Size = new Size(444, 373);
-            groupConnection.Visible = true;
-#else
-            Size = new Size(444, 232);
-            groupConnection.Visible = false;
-#endif
         }
 
         private void SettingsDialogDummy_FormClosing(object sender, FormClosingEventArgs e)
         {
-            string s = "";
+            string lErrorMsg = "";
             if (DialogResult == DialogResult.OK)
-            {
-                if (string.IsNullOrEmpty(ServerName) || PortNumber == 0)
+            {    
+                if (string.IsNullOrEmpty(DataPath) || !Directory.Exists(DataPath))
                 {
-                    s += "You must enter a Server Name and Port. \n";
+                    lErrorMsg = "You must specify a valid path";
+                    txtDataPath.SelectAll();
+                    txtDataPath.Focus();
                 }
-
-                if (string.IsNullOrEmpty(DataPath))
-                {
-                    s += "You must specify a datapath. \n";
-                }
-
-                if (DefaultCoin.Contains("No Default Chosen") || string.IsNullOrWhiteSpace(DefaultCoin))
-                {
-                    s += "You must choose a default coin \n";
-                }
-
-                e.Cancel = s != "";
+                e.Cancel = lErrorMsg != "";
                 if (e.Cancel)
-                {
-                    this.StandardUnhandledErrorMsgBox(s, "Settings Error");
-                }
-            }
-            else
-            {
-                DialogResult = DialogResult.Cancel;
+                    this.StandardErrorMsgBox("Settings Error", lErrorMsg);
             }
         }
 
         private void checkEncryptWallet_CheckedChanged(object sender, EventArgs e)
         {
-            if (!checkEncryptWallet.Checked)
-            {
-                this.StandardInfoMsgBox("Beware that disabling wallet encryptation could compromise wallet security.");
-            }
         }
 
         private void txtDataPath_Leave(object sender, EventArgs e)
         {
-            try
-            {
-                DataPath = txtDataPath.Text;
-            }
-            catch
-            {
-                this.StandardUnhandledErrorMsgBox(string.Format("Invalid directory for Data Path\n'{0}'.", txtDataPath.Text), "Settings Error");
-                txtDataPath.Focus();
-                txtDataPath.Text = FCachedDatapath;
-            }
         }
 
         private void btnPrivKey_Click(object sender, EventArgs e)
         {
             try
             {
-                OnPrivKeyClick?.Invoke(this, e);
+                OnShowPrivateKey?.Invoke(this, e);
             }
             catch (Exception ex)
             {
-                this.StandardUnhandledErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
+
+        //private void BtnDefault_Click(object sender, EventArgs e)
+        //{
+        //    DataPath = Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), "Pandora's Wallet");
+        //}
     }
 }

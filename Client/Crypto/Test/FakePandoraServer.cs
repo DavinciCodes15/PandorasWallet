@@ -12,7 +12,7 @@ namespace Pandora.Client.Crypto.Test
 
         public bool Connected => throw new NotImplementedException();
 
-        public ICurrencyAccountList MonitoredAccounts => throw new NotImplementedException();
+        //public ICurrencyAccountList MonitoredAccounts => throw new NotImplementedException();
 
         public string DataPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 

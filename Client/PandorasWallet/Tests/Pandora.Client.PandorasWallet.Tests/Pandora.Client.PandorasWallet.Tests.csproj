@@ -19,6 +19,7 @@
     <TestProjectType>UnitTest</TestProjectType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -59,9 +60,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Pandora.Client.PandorasWallet.csproj">
-      <Project>{0E7309A6-B089-43BC-8F90-466661A46EA4}</Project>
-      <Name>Pandora.Client.PandorasWallet</Name>
+    <ProjectReference Include="..\..\..\ServerAccess\Pandora.Client.ServerAccess.csproj">
+      <Project>{9dee773e-3023-46fe-945b-aff5974d1170}</Project>
+      <Name>Pandora.Client.ServerAccess</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

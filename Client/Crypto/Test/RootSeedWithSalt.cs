@@ -6,6 +6,7 @@ using NBitcoin;
 using Pandora.Client.Crypto.Currencies.Controls;
 using System;
 using System.Collections.Generic;
+using Pandora.Client.Crypto.Currencies;
 
 namespace Pandora.Client.Crypto.Test
 {
@@ -14,13 +15,13 @@ namespace Pandora.Client.Crypto.Test
     {
         public CurrencyControl lCurrencyControl = CurrencyControl.GetCurrencyControl();
 
-        [TestMethod]
-        public void RootSeed()
-        {
-            var guid = Guid.NewGuid();
-            string lRootSeed = lCurrencyControl.GenerateRootSeed("maan221292@gmail.com", "miguel", "103e7eae-8de7-4962-9196-cffb25711055");
-            Assert.AreEqual(lRootSeed, "9DB7353AF6EA48350FFD7127BF65C195");
-        }
+        //[TestMethod]
+        //public void RootSeed()
+        //{
+        //    var guid = Guid.NewGuid();
+        //    string lRootSeed = lCurrencyControl.GenerateRootSeed("maan221292@gmail.com", "miguel", Guid.Parse("103e7eae-8de7-4962-9196-cffb25711055"));
+        //    Assert.AreEqual(lRootSeed, "9DB7353AF6EA48350FFD7127BF65C195");
+        //}
 
         [TestMethod]
         public void Testing()
@@ -30,6 +31,38 @@ namespace Pandora.Client.Crypto.Test
             string lHex = GetHexPassCode(lista);
 
             Assert.AreEqual("9DB7353AF6EA48350FFD7127BF65CC95", lHex.ToUpper());
+        }
+
+        public static byte[] HexStringToByteArray(string aHex)
+        {
+            byte[] lArray = new byte[aHex.Length / 2];
+            for (int i = 0; i < aHex.Length; i += 2)
+                lArray[i / 2] = Byte.Parse(aHex.Substring(i, 2), System.Globalization.NumberStyles.HexNumber);
+            return lArray;
+        }
+
+        [TestMethod]
+        public void TestMyKey()
+        {
+            var lAdvocacy = CurrencyControl.GetClientCurrencyAdvocacy(1, new ChainParams(ChainParams.NetworkType.MainNet), GetSeed);
+            var lSeed = CurrencyControl.GenerateRootSeed("test@test.com", "davincij", new Guid("9DB7353AF6EA48350FFD7127BF65CC95").ToByteArray());
+            if (lSeed != "AC1946EC73DB3A6C5BFB34E23300AF92")
+                throw new Exception();
+
+            var lTestAddress = lAdvocacy.GetAddress(0);
+            var lTestKey = lAdvocacy.GetPrivateKey(0);
+            var lTestKey2 = lAdvocacy.GetPrivateKey(1);
+            var lTestAdderss2 = lAdvocacy.GetAddress(1);
+            Assert.AreEqual(lTestAddress, "16G1qvnTRXdNcf7we1rHTWCKZd7Lbpbh39");
+            Assert.AreEqual(lTestKey, "KxqP92g4DtsvBs9hkz32qZCEvD7p2MkCrMeBNngEDh3guVsvsj5p");
+            Assert.AreEqual(lTestAdderss2, "36Q3MhZhcMz69YE6QJpeKRAJDW32DrV3yx");
+            Assert.AreEqual(lTestKey2, "L2zFMfmB1harosR6wF3MGrkhphBKHmpHoJ3mGqkXPfHhaavEy2Yz");
+        }
+
+        private string GetSeed()
+        {
+            return "AC1946EC73DB3A6C5BFB34E23300AF92AC1946EC73DB3A6C5BFB34E23300AF92";
+            throw new NotImplementedException();
         }
 
         private uint[] Get12NumbersOf11Bits(string aHex)

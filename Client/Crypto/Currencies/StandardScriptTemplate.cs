@@ -802,17 +802,17 @@ namespace Pandora.Client.Crypto.Currencies
 			return pubkeyHash.ScriptPubKey;
 		}
 
-        //public WitScript GenerateWitScript(TransactionSignature signature, PubKey publicKey)
-        //{
-        //    if(publicKey == null)
-        //        throw new ArgumentNullException("publicKey");
-        //    return new WitScript(
-        //        signature == null ? OpcodeType.OP_0 : Op.GetPushOp(signature.ToBytes()),
-        //        Op.GetPushOp(publicKey.ToBytes())
-        //        );
-        //}
+        public WitScript GenerateWitScript(TransactionSignature signature, PubKey publicKey)
+        {
+            if (publicKey == null)
+                throw new ArgumentNullException("publicKey");
+            return new WitScript(
+                signature == null ? OpcodeType.OP_0 : Op.GetPushOp(signature.ToBytes()),
+                Op.GetPushOp(publicKey.ToBytes())
+                );
+        }
 
-		public Script GenerateScriptPubKey(CoinWitPubKeyAddress address)
+        public Script GenerateScriptPubKey(CoinWitPubKeyAddress address)
 		{
 			if(address == null)
 				throw new ArgumentNullException("address");
@@ -836,42 +836,42 @@ namespace Pandora.Client.Crypto.Currencies
 			return new WitKeyId(data);
 		}
 
-        //public PayToWitPubkeyHashScriptSigParameters ExtractWitScriptParameters(WitScript witScript)
-        //{
-        //    if(!CheckWitScriptCore(witScript))
-        //        return null;
-        //    try
-        //    {
-        //        return new PayToWitPubkeyHashScriptSigParameters()
-        //        {
-        //            TransactionSignature = (witScript[0].Length == 1 && witScript[0][0] == 0) ? null : new TransactionSignature(witScript[0]),
-        //            PublicKey = new PubKey(witScript[1], true),
-        //        };
-        //    }
-        //    catch(FormatException)
-        //    {
-        //        return null;
-        //    }
-        //}
-
-        //private bool CheckWitScriptCore(WitScript witScript)
-        //{
-        //    return witScript.PushCount == 2 &&
-        //           ((witScript[0].Length == 1 && witScript[0][0] == 0) || (TransactionSignature.IsValid(witScript[0], ScriptVerify.None))) &&
-        //           PubKey.Check(witScript[1], false);
-        //}
-
-
-        //public WitScript GenerateWitScript(PayToWitPubkeyHashScriptSigParameters parameters)
-        //{
-        //    return GenerateWitScript(parameters.TransactionSignature, parameters.PublicKey);
-        //}
-
-
-        public object ExtractWitScriptParameters(WitScript witScript)
+        public PayToWitPubkeyHashScriptSigParameters ExtractWitScriptParameters(WitScript witScript)
         {
-            throw new NotImplementedException();
+            if (!CheckWitScriptCore(witScript))
+                return null;
+            try
+            {
+                return new PayToWitPubkeyHashScriptSigParameters()
+                {
+                    TransactionSignature = (witScript[0].Length == 1 && witScript[0][0] == 0) ? null : new TransactionSignature(witScript[0]),
+                    PublicKey = new PubKey(witScript[1], true),
+                };
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
         }
+
+        private bool CheckWitScriptCore(WitScript witScript)
+        {
+            return witScript.PushCount == 2 &&
+                   ((witScript[0].Length == 1 && witScript[0][0] == 0) || (TransactionSignature.IsValid(witScript[0], ScriptVerify.None))) &&
+                   PubKey.Check(witScript[1], false);
+        }
+
+
+        public WitScript GenerateWitScript(PayToWitPubkeyHashScriptSigParameters parameters)
+        {
+            return GenerateWitScript(parameters.TransactionSignature, parameters.PublicKey);
+        }
+
+
+        //public object ExtractWitScriptParameters(WitScript witScript)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 
     public class PayToWitScriptHashTemplate : PayToWitTemplate

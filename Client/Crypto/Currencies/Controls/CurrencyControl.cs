@@ -21,26 +21,23 @@ namespace Pandora.Client.Crypto.Currencies.Controls
             return FControl;
         }
 
-        public string GenerateRootSeed(string aEmail, string aUsername, Guid aEntropy)
+        [Obsolete("Use only for backward compatiblity")]
+        public static string GenerateRootSeed(string aEmail, string aUsername, byte[] aEntropy)
         {
             string lString = aEmail + aUsername;
             byte[] lStringdBytes = Encoding.ASCII.GetBytes(lString);
-            byte[] lSalt = aEntropy.ToByteArray();
-            byte[] lHash = Crypto.SCrypt.ComputeDerivedKey(lStringdBytes, lSalt, 16384, 8, 1, null, 16);
+            byte[] lHash = Crypto.SCrypt.ComputeDerivedKey(lStringdBytes, aEntropy, 16384, 8, 1, null, 16);
 
             string s = BitConverter.ToString(lHash);
 
             return s.Replace("-", "");
         }
 
-        public IClientCurrencyAdvocacy GetClientCurrencyAdvocacy(uint aCurrencyId, ChainParams aChainParams)
+        public static IClientCurrencyAdvocacy GetClientCurrencyAdvocacy(long aCurrencyId, ChainParams aChainParams, Func<string> aGetRootSeed)
         {
             if (aChainParams == null)
-            {
                 throw new ArgumentNullException(nameof(aChainParams), "Chain Parameters can not be null");
-            }
-
-            return new ClientCurrencyAdvocacy(aCurrencyId, aChainParams);
+           return new ClientCurrencyAdvocacy(aCurrencyId, aChainParams, aGetRootSeed);
         }
     }
 }

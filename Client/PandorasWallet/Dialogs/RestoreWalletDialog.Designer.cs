@@ -35,13 +35,11 @@
             // btnCancel
             // 
             this.btnCancel.Location = new System.Drawing.Point(307, 166);
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // btnOK
             // 
             this.btnOK.Location = new System.Drawing.Point(226, 166);
             this.btnOK.Text = "Restore";
-            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // richTextBoxInfo
             // 
@@ -59,8 +57,6 @@
             this.Controls.Add(this.richTextBoxInfo);
             this.Name = "RestoreWalletDialog";
             this.Text = "Wallet Restore";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.RestoreWalletDialog_FormClosing);
-            this.Shown += new System.EventHandler(this.RestoreWalletDialog_Shown);
             this.Controls.SetChildIndex(this.btnOK, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.richTextBoxInfo, 0);

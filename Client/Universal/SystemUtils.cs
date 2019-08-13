@@ -4,6 +4,7 @@ using System.Threading;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using System.Linq;
 
 #if MONO
 #else
@@ -16,6 +17,14 @@ namespace Pandora.Client.Universal
 {
     public static class SystemUtils
     {
+        public static Type[] GetChildrenFromBaseClass<T>(this Assembly aAssembly) where T : class
+        {
+            var lTypes = aAssembly.GetTypes()
+                            .Where(lType => lType.IsClass && !lType.IsAbstract && lType.IsSubclassOf(typeof(T)))
+                            .ToArray();
+            return lTypes;
+        }
+
         public static string StandardDateTimeToStringDate(this DateTime aDateTime)
         {
             return aDateTime.ToString("yyyy'/'MM'/'dd HH':'mm':'ss");
@@ -59,26 +68,46 @@ namespace Pandora.Client.Universal
 
         public static Process GetProcess(string aProcessName)
         {
+            if (string.IsNullOrEmpty(aProcessName)) throw new ArgumentException("aProcessName can not be null or empty.");
             Process lResult = null;
-            Process[] lList = Process.GetProcessesByName(aProcessName);
-            if (lList.Length == 0)
-                lList = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(aProcessName));
-            if (lList.Length == 0)
+            try
             {
-                aProcessName = "./" + aProcessName;
-                var lProcesses = Process.GetProcesses();
-                foreach (var lProc in lProcesses)
+                Process[] lList = Process.GetProcessesByName(aProcessName);
+                if (lList.Length == 0)
+                    lList = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(aProcessName));
+                if (lList.Length == 0)
                 {
-                    if (lProc.ProcessName == aProcessName)
+                    aProcessName = "./" + aProcessName;
+                    var lProcesses = Process.GetProcesses();
+                    foreach (var lProc in lProcesses)
                     {
-                        lList = new Process[1] { lProc };
-                        break;
+                        //NOTE: in Mono some case this throws an error because this list is 
+                        //      directly connected to the existing process and not a copy of the 
+                        //      about the process.  So we need to take a copy of the name
+                        //      and catch any excptions cause because the process ended.
+                        string lProcessName = null;
+                        try
+                        {
+                            lProcessName = lProc.ProcessName;
+                        }
+                        catch
+                        {
+                            // we ignore the error here 
+                        }
+                        if (lProcessName == aProcessName)
+                        {
+                            lList = new Process[1] { lProc };
+                            break;
+                        }
                     }
                 }
+                if (lList.Length > 0)
+                    lResult = lList[0];
             }
-            if (lList.Length > 0)
-                lResult = lList[0];
-
+            catch(Exception ex)
+            {
+                Log.Write(LogLevel.Error, "SystemUtils.GetProcess failed for finding process '{0}'\nWith error: {1}\nStack: {2}", aProcessName, ex.Message, ex.StackTrace);
+            }
             return lResult;
         }
 

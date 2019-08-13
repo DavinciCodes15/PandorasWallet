@@ -50,8 +50,35 @@ namespace Pandora.Client.PandorasWallet
         {
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             PandoraClientControl lControler = null;
-            LogInitialize();
 #if DEBUG
+            DebugCode();
+#endif
+
+            try
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                lControler = PandoraClientControl.GetController(new AppMainForm());
+                Application.Run(lControler.AppMainForm);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(String.Format("Error at initialization of Pandoras Wallet.\r\nDetails: \n{0}", ex));
+            }
+            finally
+            {
+               lControler?.Dispose();
+            }
+        }
+
+
+        private static void LogInitialize()
+        {
+        }
+
+#if DEBUG
+        private static void DebugCode()
+        {
             try
             {
                 string lString = Environment.ExpandEnvironmentVariables(@"%PW_RootPath%Server\Wallet");
@@ -62,107 +89,65 @@ namespace Pandora.Client.PandorasWallet
                 //This will trigger if this is a installed debug version
                 Log.Write(LogLevel.Warning, string.Format("Failed to initialize iisExpress. Details: {0}", ex));
             }
+        }
+
+        public class IisExpressWebServer
+        {
+            private int FPort;
+            private string FFullPath;
+            private static Process _webHostProcess;
+
+            public IisExpressWebServer(string aFullPath, int aPortNumber)
+            {
+                FFullPath = aFullPath;
+                FPort = aPortNumber;
+            }
+
+            public void Start()
+            {
+                ProcessStartInfo webHostStartInfo = InitializeIisExpress(FFullPath, FPort);
+                _webHostProcess = Process.Start(webHostStartInfo);
+            }
+
+            public void Stop()
+            {
+                if (_webHostProcess == null)
+                {
+                    return;
+                }
+
+                if (!_webHostProcess.HasExited)
+                {
+                    _webHostProcess.Kill();
+                }
+
+                _webHostProcess.Dispose();
+            }
+
+            public string BaseUrl => string.Format("http://localhost:{0}", FPort);
+
+            private static ProcessStartInfo InitializeIisExpress(string aFullPath, int aPortNumber)
+            {
+                // todo: grab stdout and/or stderr for logging purposes?
+                string key = Environment.Is64BitOperatingSystem ? "programfiles(x86)" : "programfiles";
+                string programfiles = Environment.GetEnvironmentVariable(key);
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    WindowStyle = ProcessWindowStyle.Normal,
+                    ErrorDialog = true,
+                    LoadUserProfile = true,
+                    CreateNoWindow = false,
+                    UseShellExecute = false,
+                    Arguments = string.Format("/path:\"{0}\" /port:{1}", aFullPath, aPortNumber),
+                    FileName = string.Format("{0}\\IIS Express\\iisexpress.exe", programfiles)
+                };
+
+                return startInfo;
+            }
+        }
+
 #endif
 
-            try
-            {
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
-                lControler = PandoraClientControl.GetController(new PandoraClientMainWindow());
-                Application.Run(lControler.MainForm);
-            }
-            catch (Exception ex)
-            {
-                lControler?.MainForm.StandardUnhandledErrorMsgBox(String.Format("Error at initialization of Pandoras Wallet.\n\nDetails: \n{0}", ex));
-                Log.Write("Error at initialization of Pandoras Wallet. Details: {0}", ex);
-            }
-            finally
-            {
-                try
-                {
-                    lControler.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    Log.Write(ex.Message);
-                }
-                (Log.SystemLog as PandoraLog).Active = false;
-            }
-        }
-
-        private static void LogInitialize()
-        {
-            PandoraLog lLog = PandoraLog.GetPandoraLog();
-            Log.LogLevelFlag = LogLevelFlags.All;
-            lLog.FileName = Properties.Settings.Default.LogFileName;
-            Log.WriteAppEvent(string.Format("PandoraClient log file is '{0}", lLog.FileName), System.Diagnostics.EventLogEntryType.Information, 6004);
-            Log.WriteAppEvent(string.Format("Pandora current working folder '{0}'", System.IO.Directory.GetCurrentDirectory()), System.Diagnostics.EventLogEntryType.Information, 6004);
-            lLog.LineLength = 120;
-            lLog.MaxSize = 5;
-            lLog.Active = true;
-            Log.SystemLog = lLog;
-            Log.Write("*********** Pandora Client Started!");
-            Pandora.Client.Universal.Log.WriteAppEvent("Pandora Client log started.", System.Diagnostics.EventLogEntryType.Information, 6005);
-        }
     }
-
-#if DEBUG
-
-    public class IisExpressWebServer
-    {
-        private int FPort;
-        private string FFullPath;
-        private static Process _webHostProcess;
-
-        public IisExpressWebServer(string aFullPath, int aPortNumber)
-        {
-            FFullPath = aFullPath;
-            FPort = aPortNumber;
-        }
-
-        public void Start()
-        {
-            ProcessStartInfo webHostStartInfo = InitializeIisExpress(FFullPath, FPort);
-            _webHostProcess = Process.Start(webHostStartInfo);
-        }
-
-        public void Stop()
-        {
-            if (_webHostProcess == null)
-            {
-                return;
-            }
-
-            if (!_webHostProcess.HasExited)
-            {
-                _webHostProcess.Kill();
-            }
-
-            _webHostProcess.Dispose();
-        }
-
-        public string BaseUrl => string.Format("http://localhost:{0}", FPort);
-
-        private static ProcessStartInfo InitializeIisExpress(string aFullPath, int aPortNumber)
-        {
-            // todo: grab stdout and/or stderr for logging purposes?
-            string key = Environment.Is64BitOperatingSystem ? "programfiles(x86)" : "programfiles";
-            string programfiles = Environment.GetEnvironmentVariable(key);
-
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                WindowStyle = ProcessWindowStyle.Normal,
-                ErrorDialog = true,
-                LoadUserProfile = true,
-                CreateNoWindow = false,
-                UseShellExecute = false,
-                Arguments = string.Format("/path:\"{0}\" /port:{1}", aFullPath, aPortNumber),
-                FileName = string.Format("{0}\\IIS Express\\iisexpress.exe", programfiles)
-            };
-
-            return startInfo;
-        }
-    }
-
-#endif
 }

@@ -1,8 +1,30 @@
-﻿namespace Pandora.Client.ClientLib
-{
-    public delegate void TransactionEvent(uint[] aIds, bool isConfirmationUpdate);
+﻿//   Copyright 2017-2019 Davinci Codes
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// Also use the software for non-commercial purposes.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
 
-    public delegate void CurrencyStatusEvent(uint[] aIds);
+
+namespace Pandora.Client.ClientLib
+{
+    public delegate void TransactionEvent(long[] aIds, bool isConfirmationUpdate);
+
+    public delegate void CurrencyStatusEvent(long[] aIds);
 
     public interface IPandoraServer
     {
@@ -48,7 +70,7 @@
         /// </summary>
         /// <param name="aCurrencId"></param>
         /// <returns></returns>
-        CurrencyItem GetCurrency(uint aCurrencyId);
+        CurrencyItem GetCurrency(long aCurrencyId);
 
         /// <summary>
         /// Provide an array of one currency Id's to get the aditional status information
@@ -56,7 +78,7 @@
         /// </summary>
         /// <param name="aCurrencyIdArray"></param>
         /// <returns></returns>
-        CurrencyStatusItem GetCurrencyStatus(uint aCurrencyId);
+        CurrencyStatusItem GetCurrencyStatus(long aCurrencyId);
 
         /// <summary>
         /// use this object to add remove and find monitored accounts.  Currency accounts in this list will be monitored and if
@@ -69,7 +91,7 @@
         /// </summary>
         /// <param name="aCurrencyId">Currency id of the address you want the transaction</param>
         /// <param name="aAddress">Address of all Transations</param>
-        TransactionRecord[] GetTransactions(uint aCurrencyId, string aAddress);
+        TransactionRecord[] GetTransactions(long aCurrencyId, string aAddress);
 
         /// <summary>
         /// Creates a send transaction data string to be signed on the client side.  If the inputs or outputs are incorrect an exception orccers.
@@ -77,7 +99,7 @@
         /// <param name="aCurrencyId">Currency id of the address you want the transaction</param>
         /// <param name="aSendTx"></param>
         /// <returns></returns>
-        ulong GetTransactionFee(uint aCurrencyId, CurrencyTransaction aCurrencyTransaction);
+        ulong GetTransactionFee(long aCurrencyId, CurrencyTransaction aCurrencyTransaction);
 
         /// <summary>
         /// Creates a send transaction data string to be signed on the client side.  If the inputs or outputs are incorrect an exception orccers.
@@ -85,7 +107,7 @@
         /// <param name="aCurrencyId">Currency id of the address you want the transaction</param>
         /// <param name="aSendTx"></param>
         /// <returns></returns>
-        string CreateTransaction(uint aCurrencyID, CurrencyTransaction aSendTx);
+        string CreateTransaction(long aCurrencyID, CurrencyTransaction aSendTx);
 
         /// <summary>
         /// Sends the transaction if no errors then a Transaction event will fire
@@ -99,7 +121,7 @@
         /// </summary>
         /// <param name="aCurrencyId">The currency id of the Icon you wish to recieve</param>
         /// <returns></returns>
-        byte[] GetCurrencyIcon(uint aCurrencyId);
+        byte[] GetCurrencyIcon(long aCurrencyId);
 
         /// <summary>
         /// The path that this code will store cache data because the code

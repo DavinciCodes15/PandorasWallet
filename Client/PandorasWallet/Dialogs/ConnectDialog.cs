@@ -18,8 +18,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
-using Pandora.Client.PandorasWallet.Wallet;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Forms;
 
@@ -27,6 +27,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 {
     public partial class ConnectDialog : BaseDialog
     {
+        Stack<Keys> KeysConnectionSettings { get; set; } = new Stack<Keys>();
         public string Email { get => txtEmail.Text; set => txtEmail.Text = value; }
         public string Username { get => txtUsername.Text; set => txtUsername.Text = value; }
         public string Password { get => txtPassword.Text; set => txtPassword.Text = value; }
@@ -35,11 +36,16 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public event EventHandler OnOkClick;
 
+        public event EventHandler OnCallSettingDialog;
+
         public bool UserConnected { get; set; }
+
+        public bool SavePassword { get => cbxSavePassword.Checked; set => cbxSavePassword.Checked = value; }
 
         public ConnectDialog()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
             Name = string.Format("Connect to {0} Server", AboutBox.AssemblyProduct);
         }
 
@@ -52,36 +58,41 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         private void btnOK_Click(object sender, EventArgs e)
         {
             FOkPressed = true;
-
             this.SetWaitCursor();
 
             try
             {
                 try
                 {
-                    OnOkClick?.Invoke(this, e);
+                    OnOkClick(this, e);
                 }
                 finally
                 {
                     txtPassword.SelectAll();
                     this.SetArrowCursor();
                 }
-            }
-            catch (ClientExceptions.InvalidOperationException)
-            {
-                this.StandardUnhandledErrorMsgBox("Email, username or password is incorrect,\nplease check your account at www.pandoraswallet.com", "Login failed");
-                DialogResult = DialogResult.None;
+                if (!UserConnected)
+                    this.StandardErrorMsgBox("Login failed", "Email, username or password is incorrect,\nplease check your account at www.pandoraswallet.com");
             }
             catch (ClientExceptions.UserNotActiveException ex)
             {
                 string s = string.Format("{0}\n{1}\n", ex.Data["message"], ex.Data["statustime"]);
-                this.StandardUnhandledErrorMsgBox(s, "Login failed: User not active");
-                DialogResult = DialogResult.None;
+                this.StandardErrorMsgBox("Login failed: User not active", s);
             }
             catch (Exception ex)
             {
-                this.StandardExceptionMsgBox(ex , "Login failed");
+                this.StandardExceptionMsgBox(ex, "Login failed");
             }
+        }
+
+        public void ClearAccounts()
+        {
+            txtEmail.Items.Clear();
+        }
+
+        public void AddLoginAccount(LoginAccount aLoginAccount)
+        {
+            txtEmail.Items.Add(aLoginAccount);
         }
 
         private void ConnectDialog_Validating(object sender, CancelEventArgs e)
@@ -97,5 +108,123 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 e.Cancel = !UserConnected;
             }
         }
+
+        private void txtEmail_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (txtEmail.SelectedItem != null)
+            {
+                var lLoginAccount = txtEmail.SelectedItem as LoginAccount;
+                txtUsername.Text = lLoginAccount.UserName;
+                txtPassword.Text = lLoginAccount.Password;
+            }
+        }
+
+        private void txtEmail_Validating(object sender, CancelEventArgs e)
+        {
+            if (txtEmail.SelectedItem != null)
+            {
+                var lLoginAccount = txtEmail.SelectedItem as LoginAccount;
+                txtEmail.Text = lLoginAccount.Email;
+                txtUsername.Text = lLoginAccount.UserName;
+                txtPassword.Text = lLoginAccount.Password;
+            }
+        }
+
+        private void ConnectDialog_KeyDown(object sender, KeyEventArgs e)
+        {
+            ValidationEventKeyPress(e.KeyCode);
+        }
+
+
+
+        private void ValidationEventKeyPress(Keys e)
+        {
+            switch (e)
+            {
+                case Keys.Left:
+                    KeysConnectionSettings.Clear();
+                    KeysConnectionSettings.Push(e);
+                    break;
+                case Keys.Right:
+                    EvaluateKeysPressed(e, Keys.Left);
+                    break;
+                case Keys.Up:
+                    EvaluateKeysPressed(e, Keys.Right);
+                    break;
+                case Keys.Down:
+                    EvaluateKeysPressed(e, Keys.Up);
+                    break;
+                default:
+                    KeysConnectionSettings.Clear();
+                    break;
+            }
+
+            if (KeysConnectionSettings.Count == 4 && EvaluateCorrectOrder(Keys.Left, Keys.Right, Keys.Up, Keys.Down))
+            {
+                OnCallSettingDialog?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        private void EvaluateKeysPressed(Keys aKeyPressed, Keys aPreviousKey)
+        {
+            if (KeysConnectionSettings.Count < 1)
+            {
+                return;
+            }
+            if (KeysConnectionSettings.Peek() == aPreviousKey)
+            {
+                KeysConnectionSettings.Push(aKeyPressed);
+            }
+            else
+            {
+                KeysConnectionSettings.Clear();
+            }
+        }
+
+        private bool EvaluateCorrectOrder(params Keys[] aKeys)
+        {
+            bool lReturn = true;
+
+            if (aKeys.Length != KeysConnectionSettings.Count)
+            {
+                return lReturn;
+            }
+
+            for (int i = aKeys.Length - 1; i >= 0; i--)
+            {
+                if (KeysConnectionSettings.Pop() == aKeys[i])
+                {
+                    continue;
+                }
+                else
+                {
+                    lReturn = false;
+                    break;
+                }
+            }
+
+            return lReturn;
+        }
+
+        private void ConnectDialog_DoubleClick(object sender, EventArgs e)
+        {
+            if (Form.ModifierKeys == (Keys.Shift | Keys.Control))
+            {
+                OnCallSettingDialog?.Invoke(this, EventArgs.Empty);
+            }
+        }
     }
+
+    public class LoginAccount
+    {
+        public string Email { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
+        public override string ToString()
+        {
+            return $"{Email} - {UserName}";
+        }
+    }
+
+
 }

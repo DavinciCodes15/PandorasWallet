@@ -18,6 +18,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using Pandora.Client.PandorasWallet.Dialogs.Contracts;
+using Pandora.Client.PandorasWallet.Dialogs.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -27,7 +29,7 @@ using static Pandora.Client.PandorasWallet.CurrencyView;
 
 namespace Pandora.Client.PandorasWallet.Dialogs
 {
-    public partial class AddCoinSelector : BaseDialog
+    public partial class AddCoinSelector : BaseDialog, ICoinSelectorWindow
     {
         private bool FOkPressed;
 
@@ -35,39 +37,51 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public event EventHandler OnCancelClickButton;
 
+        public long[] SelectedCurrencyIds => lstViewAddCurrency.CheckedCurrencyIds;
+
+        private List<CurrencyViewItemModel> FCurrencyViewItems;
+
+        public bool ShowMaintenanceWarning
+        {
+            get => lblMaintenanceWarning.Visible || pictureWarning.Visible;
+            set
+            {
+                lblMaintenanceWarning.Visible = pictureWarning.Visible = value;
+                lstViewAddCurrency.Height = value ? 300 : 337;
+            }
+        }
+
         public AddCoinSelector()
         {
             InitializeComponent();
-            lstViewAddCurrency.SetVisualOptions((VisualOptionFlags.CurrencyNameVisible | VisualOptionFlags.TickerColunmVisible | VisualOptionFlags.IconVisible | VisualOptionFlags.UseCheckBoxes));
+            ConfigureCurrencyView();
+            FCurrencyViewItems = new List<CurrencyViewItemModel>();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
+        }
+
+        private void ConfigureCurrencyView()
+        {
+            lstViewAddCurrency.SetVisualOptions((VisualOptionFlags.CurrencyNameVisible | VisualOptionFlags.TickerColunmVisible | VisualOptionFlags.IconVisible | VisualOptionFlags.UseCheckBoxes), new string[] { "Status" });
+            lstViewAddCurrency.ChangeColumnWidth(0, 160);
+            lstViewAddCurrency.ChangeColumnWidth(1, 60);
+            lstViewAddCurrency.ChangeColumnWidth(2, 80);
             lstViewAddCurrency.OnItemChecked += LstViewAddCurrency_OnItemChecked;
-            lstViewAddCurrency.ChangeColumnWidth(0, 200);
-            lstViewAddCurrency.ChangeColumnWidth(1, 95);
         }
 
         private void LstViewAddCurrency_OnItemChecked(object sender, ItemCheckedEventArgs e)
         {
-            if (lstViewAddCurrency.CheckedCurrencyIds.Count() > 0)
-            {
-                btnOK.Enabled = true;
-            }
-            else
-            {
-                btnOK.Enabled = false;
-            }
-        }
-
-        public long[] SelectedItems
-        {
-            get;
-            private set;
+            btnOK.Enabled = lstViewAddCurrency.CheckedCurrencyIds.Count() > 0;
+            var lCheckedCurrencies = lstViewAddCurrency.CheckedCurrencyIds;
+            ShowMaintenanceWarning = FCurrencyViewItems.Any(lCurrencyView => lCheckedCurrencies.Contains(lCurrencyView.CurrencyID) &&
+                                                                             lCurrencyView.Status == "Maintenance");
+            lstViewAddCurrency.Refresh();
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            UpdateSelectedCoins();
+            this.Cursor = Cursors.WaitCursor;
             try
             {
-                this.SetWaitCursor();
                 OnOkClickButton?.Invoke(sender, e);
             }
             catch (Exception ex)
@@ -76,15 +90,13 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             finally
             {
-                this.SetArrowCursor();
+                this.Cursor = Cursors.Arrow;
             }
-
             FOkPressed = true;
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            UpdateSelectedCoins();
             try
             {
                 this.SetWaitCursor();
@@ -100,18 +112,24 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
         }
 
-        private void UpdateSelectedCoins()
+        public void AddCurrencies(IEnumerable<CurrencyViewItemModel> aListOfCurrencyModel)
         {
-            SelectedItems = new long[lstViewAddCurrency.CheckedCurrencyIds.Count()];
-            Array.Copy(lstViewAddCurrency.CheckedCurrencyIds, SelectedItems, SelectedItems.Count());
+            foreach (CurrencyViewItemModel lCurrencyModel in aListOfCurrencyModel)
+            {
+                AddCurrency(lCurrencyModel);
+            }
         }
 
-        public void AddItemsToShow(IEnumerable<lstCurrencyViewItem> aListOfCurrencyItems)
+        public void AddCurrency(CurrencyViewItemModel lCurrencyModel)
         {
-            foreach (lstCurrencyViewItem it in aListOfCurrencyItems)
-            {
-                lstViewAddCurrency.AddCurrency(it.CurrencyID, it.CurrencyName, it.CurrencySimbol, it.CurrencyIcon);
-            }
+            lstViewAddCurrency.AddCurrency(lCurrencyModel.CurrencyID, lCurrencyModel.CurrencyName, lCurrencyModel.CurrencySymbol, lCurrencyModel.CurrencyIcon, new string[] { lCurrencyModel.Status.ToString() });
+            if (!FCurrencyViewItems.Contains(lCurrencyModel))
+                FCurrencyViewItems.Add(lCurrencyModel);
+        }
+
+        public void AddCurrency(long aCurrencyID, string aCurrencyName, string aCurrencySymbol, Icon aCurrencyIcon, string aStatus)
+        {
+            AddCurrency(new CurrencyViewItemModel(aCurrencyID, aCurrencyName, aCurrencySymbol, aCurrencyIcon, aStatus));
         }
 
         private void AddCoinSelector_FormClosing(object sender, FormClosingEventArgs e)
@@ -121,23 +139,31 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 FOkPressed = false;
                 e.Cancel = !lstViewAddCurrency.CheckedCurrencyIds.Any();
             }
-
-            UpdateSelectedCoins();
-
-            lstViewAddCurrency.ClearCurrencies();
         }
 
-        public class lstCurrencyViewItem
+        public void Clear()
         {
-            public long CurrencyID { get; set; }
-            public string CurrencyName { get; set; }
-            public string CurrencySimbol { get; set; }
-            public Icon CurrencyIcon { get; set; }
+            lstViewAddCurrency.ClearCurrencies();
+            FCurrencyViewItems.Clear();
         }
 
-        private void AddCoinSelectorDummy_Shown(object sender, EventArgs e)
+        private void AddCoinSelector_Shown(object sender, EventArgs e)
         {
             btnOK.Enabled = false;
+        }
+
+        private void btnSelectAll_Click(object sender, EventArgs e)
+        {
+            if (btnSelectAll.Text == "Select all")
+            {
+                lstViewAddCurrency.CheckAllItems();
+                btnSelectAll.Text = "Unselect all";
+            }
+            else
+            {
+                lstViewAddCurrency.CheckAllItems(false);
+                btnSelectAll.Text = "Select all";
+            }
         }
     }
 }

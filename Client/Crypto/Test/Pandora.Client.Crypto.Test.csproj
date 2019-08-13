@@ -6,8 +6,8 @@
     <ProjectGuid>{DB846D23-234B-49DE-BD4E-B32840179807}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Test</RootNamespace>
-    <AssemblyName>Test</AssemblyName>
+    <RootNamespace>Pandora.Client.Crypto.Test</RootNamespace>
+    <AssemblyName>Pandora.Client.Crypto.Test</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -16,15 +16,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-    <SccProjectName>
-    </SccProjectName>
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccAuxPath>
-    </SccAuxPath>
-    <SccProvider>
-    </SccProvider>
-    <TargetFrameworkProfile />
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,13 +43,19 @@
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Buffers.4.0.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
-    </Reference>
+    <PackageReference Include="MSTest.TestAdapter">
+      <Version>1.4.0</Version>
+    </PackageReference>
+    <PackageReference Include="MSTest.TestFramework">
+      <Version>1.4.0</Version>
+    </PackageReference>
+    <PackageReference Include="NBitcoin">
+      <Version>4.1.2.37</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="QBitNinja.Client">
+      <Version>1.0.3.50</Version>
+    </PackageReference>
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -65,15 +63,9 @@
         <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
       </ItemGroup>
     </When>
-    <Otherwise>
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework" />
-      </ItemGroup>
-    </Otherwise>
+    <Otherwise />
   </Choose>
   <ItemGroup>
-    <Compile Include="TrackerTests.cs" />
-    <Compile Include="FakePandoraServer.cs" />
     <Compile Include="RootSeedWithSalt.cs" />
     <Compile Include="TestCryptoCurrencies.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -82,6 +74,14 @@
     <ProjectReference Include="..\..\..\Client\ClientLib\Pandora.Client.ClientLib.csproj">
       <Project>{196973BD-A463-4897-AC95-E537CC85EF33}</Project>
       <Name>Pandora.Client.ClientLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Server\Crypto\Pandora.Server.Crypto.csproj">
+      <Project>{03EC0808-A8E6-40A9-801B-EF66C4BBA98A}</Project>
+      <Name>Pandora.Server.Crypto</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Server\Data\Pandora.Server.Data.csproj">
+      <Project>{04905670-45A4-42BD-B941-5E81BCD2BFD3}</Project>
+      <Name>Pandora.Server.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Universal\Pandora.Client.Universal.csproj">
       <Project>{e798fc0d-eafd-49a9-b5fb-5391ad59364f}</Project>
@@ -130,6 +130,18 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <!--<Import Project="..\..\..\packages\Brutal.Dev.StrongNameSigner.2.3.0\build\Brutal.Dev.StrongNameSigner.targets" Condition="Exists('..\..\..\packages\Brutal.Dev.StrongNameSigner.2.3.0\build\Brutal.Dev.StrongNameSigner.targets')" />-->
+  <!--<Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\..\packages\Brutal.Dev.StrongNameSigner.2.3.0\build\Brutal.Dev.StrongNameSigner.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Brutal.Dev.StrongNameSigner.2.3.0\build\Brutal.Dev.StrongNameSigner.targets'))" />
+  </Target>-->
 </Project>

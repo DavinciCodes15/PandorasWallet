@@ -29,5 +29,8 @@
     <Setting Name="LogFileName" Type="System.String" Scope="Application">
       <Value Profile="(Default)">./Client.log</Value>
     </Setting>
+    <Setting Name="FontFamily" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Tahoma</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -68,9 +68,10 @@ namespace Pandora.Client.Crypto.Currencies
 			{
 				return _OverrideScriptCode != null || !ScriptPubKey.IsPayToScriptHash && !PayToWitScriptHashTemplate.Instance.CheckScriptPubKey(ScriptPubKey);
 			}
-		}
+        }
 
-		public virtual HashVersion GetHashVersion()
+
+        public virtual HashVersion GetHashVersion()
 		{
 			if(PayToWitTemplate.Instance.CheckScriptPubKey(ScriptPubKey))
 				return HashVersion.Witness;

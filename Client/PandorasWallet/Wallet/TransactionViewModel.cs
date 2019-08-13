@@ -38,7 +38,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
     {
         public bool IsEmpty { get; private set; }
 
-        public ulong Block
+        public long Block
         {
             get
             {
@@ -57,7 +57,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         private List<string> FAddresses;
 
-        private ulong FBlockHeight;
+        private long FBlockHeight;
 
         public int MinConfirmations { get; private set; }
 
@@ -145,7 +145,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             IsEmpty = false;
         }
 
-        public void SetBlockHeight(ulong aBlockHeigth, int aMinConfirmations)
+        public void SetBlockHeight(long aBlockHeigth, int aMinConfirmations)
         {
             FBlockHeight = aBlockHeigth;
             MinConfirmations = aMinConfirmations;
@@ -243,22 +243,22 @@ namespace Pandora.Client.PandorasWallet.Wallet
             }
         }
 
-        public ulong Confirmation
+        public long Confirmation
         {
             get
             {
-                ulong lBlock = FRecord.Block;
+                long lBlock = FRecord.Block;
 
-                if (lBlock == 0 || FBlockHeight < 0 || lBlock > (ulong)FBlockHeight)
+                if (lBlock == 0 || FBlockHeight < 0 || lBlock > FBlockHeight)
                 {
                     return 0;
                 }
 
-                return (ulong)FBlockHeight - lBlock + 1;
+                return FBlockHeight - lBlock + 1;
             }
         }
 
-        public bool isConfirmed => Confirmation >= (ulong)MinConfirmations;
+        public bool isConfirmed => Confirmation >= MinConfirmations;
 
         public string TransactionID => FRecord.TxId;
     }

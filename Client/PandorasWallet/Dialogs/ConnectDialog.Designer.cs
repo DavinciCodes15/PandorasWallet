@@ -30,7 +30,8 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ConnectDialog));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.txtEmail = new System.Windows.Forms.TextBox();
+            this.cbxSavePassword = new System.Windows.Forms.CheckBox();
+            this.txtEmail = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.txtPassword = new System.Windows.Forms.TextBox();
@@ -47,7 +48,8 @@
             this.btnCancel.Location = new System.Drawing.Point(364, 234);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4);
             this.btnCancel.Size = new System.Drawing.Size(131, 37);
-            this.btnCancel.TabIndex = 4;
+            this.btnCancel.TabIndex = 9;
+            this.btnCancel.Text = "&Cancel";
             // 
             // btnOK
             // 
@@ -55,11 +57,13 @@
             this.btnOK.Location = new System.Drawing.Point(208, 234);
             this.btnOK.Margin = new System.Windows.Forms.Padding(4);
             this.btnOK.Size = new System.Drawing.Size(137, 37);
-            this.btnOK.TabIndex = 3;
+            this.btnOK.TabIndex = 8;
+            this.btnOK.Text = "&OK";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.cbxSavePassword);
             this.groupBox1.Controls.Add(this.txtEmail);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.pictureBox1);
@@ -77,25 +81,36 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Account Credentials";
             // 
+            // cbxSavePassword
+            // 
+            this.cbxSavePassword.AutoSize = true;
+            this.cbxSavePassword.Location = new System.Drawing.Point(188, 175);
+            this.cbxSavePassword.Name = "cbxSavePassword";
+            this.cbxSavePassword.Size = new System.Drawing.Size(110, 19);
+            this.cbxSavePassword.TabIndex = 7;
+            this.cbxSavePassword.Text = "&Save Password";
+            this.cbxSavePassword.UseVisualStyleBackColor = true;
+            // 
             // txtEmail
             // 
-            this.txtEmail.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtEmail.Location = new System.Drawing.Point(188, 42);
-            this.txtEmail.Margin = new System.Windows.Forms.Padding(4);
+            this.txtEmail.FormattingEnabled = true;
+            this.txtEmail.Location = new System.Drawing.Point(188, 39);
             this.txtEmail.Name = "txtEmail";
-            this.txtEmail.Size = new System.Drawing.Size(276, 20);
-            this.txtEmail.TabIndex = 0;
+            this.txtEmail.Size = new System.Drawing.Size(276, 23);
+            this.txtEmail.TabIndex = 2;
+            this.txtEmail.SelectedIndexChanged += new System.EventHandler(this.txtEmail_SelectedIndexChanged);
+            this.txtEmail.Validating += new System.ComponentModel.CancelEventHandler(this.txtEmail_Validating);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label3.Location = new System.Drawing.Point(188, 14);
+            this.label3.Location = new System.Drawing.Point(185, 23);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(73, 13);
-            this.label3.TabIndex = 20;
-            this.label3.Text = "Email Address";
+            this.label3.TabIndex = 1;
+            this.label3.Text = "&Email Address";
             // 
             // pictureBox1
             // 
@@ -107,47 +122,48 @@
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 19;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.DoubleClick += new System.EventHandler(this.ConnectDialog_DoubleClick);
             // 
             // txtPassword
             // 
             this.txtPassword.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPassword.Location = new System.Drawing.Point(188, 167);
+            this.txtPassword.Location = new System.Drawing.Point(188, 148);
             this.txtPassword.Margin = new System.Windows.Forms.Padding(4);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(276, 20);
-            this.txtPassword.TabIndex = 2;
+            this.txtPassword.TabIndex = 6;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(188, 140);
+            this.label2.Location = new System.Drawing.Point(185, 131);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(53, 13);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Password";
+            this.label2.TabIndex = 5;
+            this.label2.Text = "&Password";
             // 
             // txtUsername
             // 
             this.txtUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtUsername.Location = new System.Drawing.Point(188, 106);
+            this.txtUsername.Location = new System.Drawing.Point(188, 95);
             this.txtUsername.Margin = new System.Windows.Forms.Padding(4);
             this.txtUsername.Name = "txtUsername";
             this.txtUsername.Size = new System.Drawing.Size(276, 20);
-            this.txtUsername.TabIndex = 1;
+            this.txtUsername.TabIndex = 4;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(188, 78);
+            this.label1.Location = new System.Drawing.Point(185, 78);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(55, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Username";
+            this.label1.TabIndex = 3;
+            this.label1.Text = "&Username";
             // 
             // ConnectDialog
             // 
@@ -156,12 +172,15 @@
             this.ClientSize = new System.Drawing.Size(512, 286);
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.KeyPreview = true;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "ConnectDialog";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Connect to Pandora\'s  Server";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ConnectDialog_FormClosing);
             this.Shown += new System.EventHandler(this.ConnectDialog_Shown);
+            this.DoubleClick += new System.EventHandler(this.ConnectDialog_DoubleClick);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ConnectDialog_KeyDown);
             this.Validating += new System.ComponentModel.CancelEventHandler(this.ConnectDialog_Validating);
             this.Controls.SetChildIndex(this.btnOK, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
@@ -180,8 +199,9 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox txtUsername;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox txtEmail;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ComboBox txtEmail;
+        private System.Windows.Forms.CheckBox cbxSavePassword;
     }
 }

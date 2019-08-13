@@ -38,37 +38,38 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(170, 261);
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnCancel.Location = new System.Drawing.Point(167, 226);
             this.btnCancel.Visible = false;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(170, 261);
+            this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
+            this.btnOK.Location = new System.Drawing.Point(167, 226);
             // 
             // TxId
             // 
-            this.TxId.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.TxId.Location = new System.Drawing.Point(14, 214);
+            this.TxId.Location = new System.Drawing.Point(11, 170);
             this.TxId.Name = "TxId";
             this.TxId.ReadOnly = true;
             this.TxId.Size = new System.Drawing.Size(387, 20);
             this.TxId.TabIndex = 8;
+            this.TxId.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.TxId.Visible = false;
             // 
             // TxIdLabel
             // 
-            this.TxIdLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.TxIdLabel.AutoSize = true;
-            this.TxIdLabel.Location = new System.Drawing.Point(14, 198);
+            this.TxIdLabel.Location = new System.Drawing.Point(166, 154);
             this.TxIdLabel.Name = "TxIdLabel";
-            this.TxIdLabel.Size = new System.Drawing.Size(80, 13);
+            this.TxIdLabel.Size = new System.Drawing.Size(77, 13);
             this.TxIdLabel.TabIndex = 10;
-            this.TxIdLabel.Text = "Transaction ID:";
+            this.TxIdLabel.Text = "Transaction ID";
             // 
             // StatusPictureBox
             // 
             this.StatusPictureBox.InitialImage = ((System.Drawing.Image)(resources.GetObject("StatusPictureBox.InitialImage")));
-            this.StatusPictureBox.Location = new System.Drawing.Point(143, 12);
+            this.StatusPictureBox.Location = new System.Drawing.Point(140, 12);
             this.StatusPictureBox.Name = "StatusPictureBox";
             this.StatusPictureBox.Size = new System.Drawing.Size(128, 128);
             this.StatusPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -79,17 +80,18 @@
             // 
             this.StatusLabel.BackColor = System.Drawing.SystemColors.Control;
             this.StatusLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.StatusLabel.Location = new System.Drawing.Point(12, 152);
+            this.StatusLabel.Location = new System.Drawing.Point(10, 152);
             this.StatusLabel.Multiline = true;
             this.StatusLabel.Name = "StatusLabel";
             this.StatusLabel.ReadOnly = true;
-            this.StatusLabel.Size = new System.Drawing.Size(389, 103);
+            this.StatusLabel.Size = new System.Drawing.Size(389, 75);
             this.StatusLabel.TabIndex = 11;
+            this.StatusLabel.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // SendingTxDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(411, 296);
+            this.ClientSize = new System.Drawing.Size(411, 261);
             this.Controls.Add(this.TxIdLabel);
             this.Controls.Add(this.StatusPictureBox);
             this.Controls.Add(this.TxId);

@@ -64,8 +64,8 @@
             // 
             // btnNext
             // 
-            this.btnNext.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.btnNext.Location = new System.Drawing.Point(555, 214);
+            this.btnNext.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnNext.Location = new System.Drawing.Point(560, 246);
             this.btnNext.Name = "btnNext";
             this.btnNext.Size = new System.Drawing.Size(99, 34);
             this.btnNext.TabIndex = 26;
@@ -75,8 +75,8 @@
             // 
             // btnBack
             // 
-            this.btnBack.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.btnBack.Location = new System.Drawing.Point(450, 214);
+            this.btnBack.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnBack.Location = new System.Drawing.Point(455, 246);
             this.btnBack.Name = "btnBack";
             this.btnBack.Size = new System.Drawing.Size(99, 34);
             this.btnBack.TabIndex = 25;
@@ -86,8 +86,8 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Anchor = System.Windows.Forms.AnchorStyles.Left;
-            this.btnCancel.Location = new System.Drawing.Point(345, 214);
+            this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnCancel.Location = new System.Drawing.Point(350, 246);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(99, 34);
             this.btnCancel.TabIndex = 24;
@@ -97,26 +97,30 @@
             // 
             // tabControl1
             // 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.Introduction);
             this.tabControl1.Controls.Add(this.OptionChoose);
             this.tabControl1.Controls.Add(this.File);
             this.tabControl1.Controls.Add(this.TwelveWords);
             this.tabControl1.Controls.Add(this.Finish);
-            this.tabControl1.Location = new System.Drawing.Point(3, -6);
+            this.tabControl1.Location = new System.Drawing.Point(12, 13);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(655, 217);
+            this.tabControl1.Size = new System.Drawing.Size(655, 215);
             this.tabControl1.TabIndex = 23;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // Introduction
             // 
             this.Introduction.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.Introduction.Controls.Add(this.pictureBox1);
             this.Introduction.Controls.Add(this.lblIntroductionText);
             this.Introduction.Location = new System.Drawing.Point(4, 22);
             this.Introduction.Name = "Introduction";
             this.Introduction.Padding = new System.Windows.Forms.Padding(3);
-            this.Introduction.Size = new System.Drawing.Size(647, 191);
+            this.Introduction.Size = new System.Drawing.Size(647, 189);
             this.Introduction.TabIndex = 0;
             this.Introduction.Text = "Introduction";
             // 
@@ -124,7 +128,7 @@
             // 
             this.lblIntroductionText.AutoSize = true;
             this.lblIntroductionText.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            this.lblIntroductionText.Location = new System.Drawing.Point(160, 20);
+            this.lblIntroductionText.Location = new System.Drawing.Point(165, 21);
             this.lblIntroductionText.Name = "lblIntroductionText";
             this.lblIntroductionText.Size = new System.Drawing.Size(208, 13);
             this.lblIntroductionText.TabIndex = 0;
@@ -139,7 +143,7 @@
             this.OptionChoose.Location = new System.Drawing.Point(4, 22);
             this.OptionChoose.Name = "OptionChoose";
             this.OptionChoose.Padding = new System.Windows.Forms.Padding(3);
-            this.OptionChoose.Size = new System.Drawing.Size(647, 191);
+            this.OptionChoose.Size = new System.Drawing.Size(647, 170);
             this.OptionChoose.TabIndex = 1;
             this.OptionChoose.Text = "OptionChoose";
             // 
@@ -189,7 +193,7 @@
             this.File.Controls.Add(this.lblFile);
             this.File.Location = new System.Drawing.Point(4, 22);
             this.File.Name = "File";
-            this.File.Size = new System.Drawing.Size(647, 191);
+            this.File.Size = new System.Drawing.Size(647, 170);
             this.File.TabIndex = 2;
             this.File.Text = "File";
             // 
@@ -228,7 +232,7 @@
             this.TwelveWords.Controls.Add(this.twelveWords1);
             this.TwelveWords.Location = new System.Drawing.Point(4, 22);
             this.TwelveWords.Name = "TwelveWords";
-            this.TwelveWords.Size = new System.Drawing.Size(647, 191);
+            this.TwelveWords.Size = new System.Drawing.Size(647, 189);
             this.TwelveWords.TabIndex = 4;
             this.TwelveWords.Text = "TwelveWords";
             this.TwelveWords.UseVisualStyleBackColor = true;
@@ -289,7 +293,7 @@
             this.Finish.Controls.Add(this.lbl1);
             this.Finish.Location = new System.Drawing.Point(4, 22);
             this.Finish.Name = "Finish";
-            this.Finish.Size = new System.Drawing.Size(647, 191);
+            this.Finish.Size = new System.Drawing.Size(647, 170);
             this.Finish.TabIndex = 3;
             this.Finish.Text = "Finish";
             // 
@@ -322,11 +326,14 @@
             // 
             // pictureBox1
             // 
+            this.pictureBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(24, 23);
+            this.pictureBox1.Location = new System.Drawing.Point(7, 7);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(141, 171);
+            this.pictureBox1.Size = new System.Drawing.Size(141, 179);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBox1.TabIndex = 27;
             this.pictureBox1.TabStop = false;
@@ -335,8 +342,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(660, 254);
-            this.Controls.Add(this.pictureBox1);
+            this.ClientSize = new System.Drawing.Size(682, 303);
             this.Controls.Add(this.btnNext);
             this.Controls.Add(this.btnBack);
             this.Controls.Add(this.btnCancel);

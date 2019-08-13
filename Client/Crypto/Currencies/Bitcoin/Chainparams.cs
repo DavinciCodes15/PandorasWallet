@@ -6,7 +6,9 @@ namespace Pandora.Client.Crypto.Currencies
     [Serializable]
     public class ChainParams : IChianParams
     {
+ 
         public enum NetworkType { MainNet = 0, TestNet = 1};
+
 
         public ChainParams()
         {
@@ -45,6 +47,7 @@ namespace Pandora.Client.Crypto.Currencies
             StealthAddress = new byte[] { 0x2a };
             AssetId = new byte[] { 23 };
             ColoredAddress = new byte[] { 0x13 };
+            Capabilities = CapablityFlags.SupportSegWit;
             Encoder = "bc";
         }
 
@@ -66,6 +69,7 @@ namespace Pandora.Client.Crypto.Currencies
             aDest.AssetId = this.AssetId;
             aDest.ColoredAddress = this.ColoredAddress;
             aDest.Encoder = this.Encoder;
+            aDest.Capabilities = this.Capabilities;
         }
 
         public virtual void CopyFrom(IChianParams aSource)
@@ -86,6 +90,7 @@ namespace Pandora.Client.Crypto.Currencies
             this.AssetId = aSource.AssetId;
             this.ColoredAddress = aSource.ColoredAddress;
             this.Encoder = aSource.Encoder;
+            this.Capabilities = aSource.Capabilities;
          }
 
 
@@ -105,8 +110,13 @@ namespace Pandora.Client.Crypto.Currencies
         public byte[] AssetId { get; set; }
         public byte[] ColoredAddress { get; set; }
         public string Encoder { get; set; }
+        public CapablityFlags Capabilities { get; set; }
 
-
+    }
+    [Flags]
+    public enum CapablityFlags
+    {
+        None = 0, SupportSegWit = 16
     }
 
     public interface IChianParams
@@ -127,5 +137,6 @@ namespace Pandora.Client.Crypto.Currencies
         byte[] AssetId { get; set; }
         byte[] ColoredAddress { get; set; }
         string Encoder { get; set; }
+        CapablityFlags Capabilities { get; set; }
     }
 }

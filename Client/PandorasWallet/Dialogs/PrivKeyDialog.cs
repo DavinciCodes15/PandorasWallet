@@ -7,6 +7,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public PrivKeyDialog()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
         public event EventHandler OnOkBtnClick;
@@ -27,7 +28,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardUnhandledErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
     }

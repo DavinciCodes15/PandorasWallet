@@ -1,5 +1,6 @@
 ﻿using Pandora.Client.Crypto.Currencies.Crypto;
 using System;
+using System.Threading;
 
 namespace Pandora.Client.Crypto.Currencies
 {
@@ -35,8 +36,10 @@ namespace Pandora.Client.Crypto.Currencies
         private uint nHashFuncs;
         private uint nTweak;
         private byte nFlags;
-        private bool isFull = false;
+        public bool IsFull => FElementsCounter >= ElementsNumber;
         private bool isEmpty;
+        private int FElementsCounter;
+        public int ElementsNumber { get; private set; }
 
         public BloomFilter(int nElements, double nFPRate, BloomFlags nFlagsIn = BloomFlags.UPDATE_ALL)
             : this(nElements, nFPRate, RandomUtils.GetUInt32(), nFlagsIn)
@@ -45,6 +48,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public BloomFilter(int nElements, double nFPRate, uint nTweakIn, BloomFlags nFlagsIn = BloomFlags.UPDATE_ALL)
         {
+            ElementsNumber = nElements;
             // The ideal size for a bloom filter with a given number of elements and false positive rate is:
             // - nElements * log(fp rate) / ln(2)^2
             // We ignore filter parameters which will create a bloom filter larger than the protocol limits
@@ -69,8 +73,6 @@ namespace Pandora.Client.Crypto.Currencies
 
         public void Insert(byte[] vKey)
         {
-            if (isFull)
-                return;
             for (uint i = 0; i < nHashFuncs; i++)
             {
                 uint nIndex = Hash(i, vKey);
@@ -78,12 +80,11 @@ namespace Pandora.Client.Crypto.Currencies
                 vData[nIndex >> 3] |= (byte)(1 << (7 & (int)nIndex));
             }
             isEmpty = false;
+            Interlocked.Increment(ref FElementsCounter);
         }
 
         public bool Contains(byte[] vKey)
         {
-            if (isFull)
-                return true;
             if (isEmpty)
                 return false;
             for (uint i = 0; i < nHashFuncs; i++)
@@ -149,8 +150,6 @@ namespace Pandora.Client.Crypto.Currencies
             bool fFound = false;
             // Match if the filter contains the hash of tx
             //  for finding tx when they appear in a block
-            if (isFull)
-                return true;
             if (isEmpty)
                 return false;
             if (Contains(hash))

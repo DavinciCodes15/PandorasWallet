@@ -12,21 +12,10 @@
     <AssemblyName>PandorasWallet</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SccProjectName>
-    </SccProjectName>
-    <SccLocalPath>
-    </SccLocalPath>
-    <SccAuxPath>
-    </SccAuxPath>
-    <SccProvider>
-    </SccProvider>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -35,7 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Deterministic>true</Deterministic>
@@ -80,6 +69,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Properties\app.manifest" />
+    <None Include="Properties\DataSources\Pandora.Client.PandorasWallet.Dialogs.LoginAccount.datasource" />
     <None Include="Resources\cancel.png" />
     <None Include="Resources\ok.png" />
     <None Include="Resources\Puzzle-128px.gif" />
@@ -101,6 +91,8 @@
     <Reference Include="System.Data.SQLite.Linq, Version=1.0.109.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Data.SQLite.Linq.1.0.109.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
     </Reference>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.111" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
@@ -113,16 +105,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>11.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="System.Data.SQLite.Core">
-      <Version>1.0.108.0</Version>
-    </PackageReference>
     <Compile Include="$(SolutionDir)VersionInfo.cs">
       <Link>Properties\VersionInfo.cs</Link>
       <Visible>true</Visible>
     </Compile>
+    <Compile Include="SystemBackup\BackupController.cs" />
+    <Compile Include="SystemBackup\BackupObjects.cs" />
+    <Compile Include="SystemBackup\BackupDelegates.cs" />
+    <Compile Include="Dialogs\ConnectionSettingsDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\ConnectionSettingsDialog.Designer.cs">
+      <DependentUpon>ConnectionSettingsDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\Contracts\IBackupWindow.cs" />
+    <Compile Include="Dialogs\Contracts\IBaseDialogWindow.cs" />
+    <Compile Include="Dialogs\Contracts\ICoinSelectorWindow.cs" />
+    <Compile Include="Dialogs\Contracts\IRestoreWindow.cs" />
+    <Compile Include="SystemBackup\OldRestoreByFile.cs" />
+    <Compile Include="SystemBackup\RestoreController.cs" />
+    <Compile Include="CoreSettings.cs" />
     <Compile Include="CurrencyView.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -141,11 +143,11 @@
     <Compile Include="Dialogs\AddCoinSelector.Designer.cs">
       <DependentUpon>AddCoinSelector.cs</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\DefaultCoinSelector.cs">
+    <Compile Include="Dialogs\DefaultCurrencySelectorDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Dialogs\DefaultCoinSelector.Designer.cs">
-      <DependentUpon>DefaultCoinSelector.cs</DependentUpon>
+    <Compile Include="Dialogs\DefaultCurrencySelectorDialog.Designer.cs">
+      <DependentUpon>DefaultCurrencySelectorDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\InitializingDialog.cs">
       <SubType>Form</SubType>
@@ -158,6 +160,19 @@
     </Compile>
     <Compile Include="Dialogs\LoginExchanger.Designer.cs">
       <DependentUpon>LoginExchanger.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\MessageBoxDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\MessageBoxDialog.Designer.cs">
+      <DependentUpon>MessageBoxDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\Models\CurrencyViewItemModel.cs" />
+    <Compile Include="Dialogs\NewBackupProcessWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\NewBackupProcessWizard.Designer.cs">
+      <DependentUpon>NewBackupProcessWizard.cs</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\PrivKeyDialog.cs">
       <SubType>Form</SubType>
@@ -189,42 +204,46 @@
     <Compile Include="Dialogs\SettingsDialog.Designer.cs">
       <DependentUpon>SettingsDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\WalletPasswordDialog.cs">
+    <Compile Include="Dialogs\PasswordDialog.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Dialogs\WalletPasswordDialog.Designer.cs">
-      <DependentUpon>WalletPasswordDialog.cs</DependentUpon>
+    <Compile Include="Dialogs\PasswordDialog.Designer.cs">
+      <DependentUpon>PasswordDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="MenuButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controlers\PandoraBackupControler.cs" />
     <Compile Include="PandoraClientControl.cs" />
-    <Compile Include="PandoraClientMainWindow.cs">
+    <Compile Include="AppMainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PandoraClientMainWindow.designer.cs">
-      <DependentUpon>PandoraClientMainWindow.cs</DependentUpon>
+    <Compile Include="AppMainForm.designer.cs">
+      <DependentUpon>AppMainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PandoraEnchangeControl.cs" />
-    <Compile Include="ServerAccess\ClientJsonConverter.cs" />
+    <Compile Include="Controlers\PandoraEnchangeControl.cs" />
+    <Compile Include="NewPandoraExchangeController.cs" />
+    <Compile Include="ServerAccess\LocalCacheDB.cs" />
     <Compile Include="ServerAccess\PandoraObjectNotifier.cs" />
+    <Compile Include="ServerAccess\ServerConnection.cs" />
     <Compile Include="StatusControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="StatusControl.Designer.cs">
       <DependentUpon>StatusControl.cs</DependentUpon>
     </Compile>
-    <Compile Include="PandoraRestoreControl.cs" />
+    <Compile Include="Controlers\PandoraRestoreControl.cs" />
     <Compile Include="TwelveWords.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="TwelveWords.Designer.cs">
       <DependentUpon>TwelveWords.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utils\AssetValuationItem.cs" />
+    <Compile Include="Utils\ChangeFontUtil.cs" />
+    <Compile Include="Utils\OldFileStructureUtils.cs" />
     <Compile Include="Utils\PandorasEncryptor.cs" />
     <Compile Include="PandorasExt.cs" />
-    <Compile Include="Utils\WordList.cs" />
-    <Compile Include="Wallet\BalanceViewModel.cs" />
     <Compile Include="Wallet\ClientExceptions.cs" />
     <Compile Include="Dialogs\BaseDialog.cs">
       <SubType>Form</SubType>
@@ -261,7 +280,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Utils\SettingsManager.cs" />
-    <Compile Include="Wallet\PandoraWallet .cs" />
+    <Compile Include="Wallet\KeyManager.cs" />
     <Compile Include="Wallet\TransactionViewModel.cs" />
     <EmbeddedResource Include="CurrencyView.resx">
       <DependentUpon>CurrencyView.cs</DependentUpon>
@@ -278,14 +297,23 @@
     <EmbeddedResource Include="Dialogs\BaseDialog.resx">
       <DependentUpon>BaseDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Dialogs\DefaultCoinSelector.resx">
-      <DependentUpon>DefaultCoinSelector.cs</DependentUpon>
+    <EmbeddedResource Include="Dialogs\ConnectionSettingsDialog.resx">
+      <DependentUpon>ConnectionSettingsDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\DefaultCurrencySelectorDialog.resx">
+      <DependentUpon>DefaultCurrencySelectorDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\InitializingDialog.resx">
       <DependentUpon>InitializingDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\LoginExchanger.resx">
       <DependentUpon>LoginExchanger.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\MessageBoxDialog.resx">
+      <DependentUpon>MessageBoxDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\NewBackupProcessWizard.resx">
+      <DependentUpon>NewBackupProcessWizard.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\PrivKeyDialog.resx">
       <DependentUpon>PrivKeyDialog.cs</DependentUpon>
@@ -302,15 +330,16 @@
     <EmbeddedResource Include="Dialogs\SettingsDialog.resx">
       <DependentUpon>SettingsDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Dialogs\WalletPasswordDialog.resx">
-      <DependentUpon>WalletPasswordDialog.cs</DependentUpon>
+    <EmbeddedResource Include="Dialogs\PasswordDialog.resx">
+      <DependentUpon>PasswordDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MenuButton.resx">
       <DependentUpon>MenuButton.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PandoraClientMainWindow.resx">
-      <DependentUpon>PandoraClientMainWindow.cs</DependentUpon>
+    <EmbeddedResource Include="AppMainForm.resx">
+      <DependentUpon>AppMainForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Properties\licenses.licx" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
@@ -349,15 +378,32 @@
     <Content Include="Resources\16x16%28Pandora%29.ico" />
     <Content Include="Resources\300x300%28pandora%29-01.png" />
     <Content Include="Resources\32x32%28Pandora%29 1.ico" />
+    <None Include="Resources\magnifiying_glass.png" />
+    <None Include="Resources\BUG2.png" />
+    <None Include="Resources\BUG.png" />
+    <None Include="Resources\Warning2.png" />
+    <None Include="Resources\Information.png" />
+    <None Include="Resources\ask.png" />
+    <None Include="Resources\Error.png" />
+    <None Include="Resources\Copy.png" />
+    <None Include="Resources\warning.png" />
     <None Include="Resources\Pandora%27s Wallet Error.png" />
     <None Include="Resources\Bang.png" />
     <None Include="Resources\if_102_111044.png" />
     <None Include="Resources\if_103_111043.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Libs\AutocompleteMenu\AutocompleteMenu.csproj">
+      <Project>{43cbc9aa-6a8e-463f-83a9-aff3124afdb6}</Project>
+      <Name>AutocompleteMenu</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Libs\CryptSharp\CryptSharp.csproj">
       <Project>{5e33051d-1471-4e5a-b94e-bd0e8ffff99e}</Project>
       <Name>CryptSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SystemBackup\Pandora.Client.SystemBackup.csproj">
+      <Project>{9CC59458-5803-42FE-BC76-8FC3EC82829F}</Project>
+      <Name>Pandora.Client.SystemBackup</Name>
     </ProjectReference>
     <ProjectReference Include="..\Crypto\Pandora.Client.Crypto.csproj">
       <Project>{74bf1128-0e40-4d89-814b-9b7565c211b8}</Project>

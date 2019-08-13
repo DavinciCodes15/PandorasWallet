@@ -25,68 +25,10 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 {
     public partial class RestoreWalletDialog : BaseDialog
     {
-        public event EventHandler OnRestoreBtnClick;
-
-        public event EventHandler OnCancelBtnClick;
-
-        public string Info { get => richTextBoxInfo.Text; set => richTextBoxInfo.Text = value; }
-
-        public string OkBtnName { get => btnOK.Name; set => btnOK.Name = value; }
-
-        public string InitialErrorMessage { get; set; }
-
-        public bool Restored { get; set; }
-
         public RestoreWalletDialog()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
-
-        private void btnOK_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                OnRestoreBtnClick?.Invoke(sender, e);
-            }
-            catch (Exception ex)
-            {
-                this.StandardExceptionMsgBox(ex);
-            }
-        }
-
-
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                OnCancelBtnClick?.Invoke(sender, e);
-            }
-            catch (Exception ex)
-            {
-                this.StandardExceptionMsgBox(ex);
-            }
-        }
-
-        private void RestoreWalletDialog_Shown(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrEmpty(InitialErrorMessage))
-            {
-                this.StandardUnhandledErrorMsgBox(InitialErrorMessage, "Wallet Restoe Error");
-            }
-        }
-
-        private void RestoreWalletDialog_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            InitialErrorMessage = string.Empty;
-
-            if (Restored)
-            {
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                DialogResult = DialogResult.Cancel;
-            }
-        }
-    }
+     }
 }

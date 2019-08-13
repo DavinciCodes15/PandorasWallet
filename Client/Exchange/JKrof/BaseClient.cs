@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace Pandora.Client.Exchange.JKrof
 {
-    public abstract class BaseClient: IDisposable
+    public abstract class BaseClient : IDisposable
     {
         public string BaseAddress { get; private set; }
         protected Log log;
@@ -49,7 +49,7 @@ namespace Pandora.Client.Exchange.JKrof
             BaseAddress = exchangeOptions.BaseAddress;
             apiProxy = exchangeOptions.Proxy;
             if (apiProxy != null)
-                log.Write(LogVerbosity.Info, $"Setting api proxy to {exchangeOptions.Proxy.Host}:{exchangeOptions.Proxy.Port}");
+                log.Write(LogVerbosity.Debug, $"Setting api proxy to {exchangeOptions.Proxy.Host}:{exchangeOptions.Proxy.Port}");
         }
 
         /// <summary>

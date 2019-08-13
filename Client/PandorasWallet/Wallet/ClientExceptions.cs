@@ -20,119 +20,129 @@
 // THE SOFTWARE
 using System;
 
-namespace Pandora.Client.PandorasWallet.Wallet
+namespace Pandora.Client.PandorasWallet.ClientExceptions
 {
-    public static class ClientExceptions
+    public class InvalidOperationException : Exception
     {
-        public class InvalidOperationException : Exception
+        public InvalidOperationException(string message)
+            : base(message)
         {
-            public InvalidOperationException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class EncryptedKeysException : Exception
+    public class EncryptedKeysException : Exception
+    {
+        public EncryptedKeysException(string message)
+            : base(message)
         {
-            public EncryptedKeysException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class ExchangeException : Exception
+    public class ExchangeException : Exception
+    {
+        public ExchangeException(string message) : base(message)
         {
-            public ExchangeException(string message) : base(message)
-            {
-            }
         }
+    }
 
-        public class ConnectionTimeoutException : Exception
+    public class ConnectionTimeoutException : Exception
+    {
+        public ConnectionTimeoutException(string message)
+            : base(message)
         {
-            public ConnectionTimeoutException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class WalletCorruptionException : Exception
+    public class WalletCorruptionException : Exception
+    {
+        public WalletCorruptionException(string message) : base(message)
         {
-            public WalletCorruptionException(string message) : base(message)
-            {
-            }
         }
+    }
 
-        public class WrongPasswordException : Exception
+    public class WrongPasswordException : Exception
+    {
+        public WrongPasswordException(string message)
+            : base(message)
         {
-            public WrongPasswordException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class InvalidAddressException : Exception
+    public class InvalidAddressException : Exception
+    {
+        public InvalidAddressException(string message)
+            : base(message)
         {
-            public InvalidAddressException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class SettingsFailureException : Exception
+    public class SettingsFailureException : Exception
+    {
+        public SettingsFailureException(string message)
+            : base(message)
         {
-            public SettingsFailureException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class InvalidSeedException : Exception
+    public class InvalidSeedException : Exception
+    {
+        public InvalidSeedException(string message)
+            : base(message)
         {
-            public InvalidSeedException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class AddressSynchException : Exception
+    public class AddressSynchException : Exception
+    {
+        public AddressSynchException(string message)
+            : base(message)
         {
-            public AddressSynchException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class UserNotActiveException : Exception
+    public class UserNotActiveException : Exception
+    {
+        public UserNotActiveException(string message, DateTime aDate)
+            : base(message)
         {
-            public UserNotActiveException(string message, DateTime aDate)
-                : base(message)
-            {
-                Data.Add("message", message);
-                Data.Add("statustime", aDate);
-            }
+            Data.Add("message", message);
+            Data.Add("statustime", aDate);
         }
+    }
 
-        public class InsufficientFundsException : Exception
+    public class InsufficientFundsException : Exception
+    {
+        public InsufficientFundsException(string message)
+            : base(message)
         {
-            public InsufficientFundsException(string message)
-                : base(message)
-            {
-            }
         }
+    }
 
-        public class CacheDBException : Exception
+    public class CacheDBException : Exception
+    {
+        public CacheDBException(string message) : base(message)
         {
-            public CacheDBException(string message) : base(message)
-            {
-            }
         }
+    }
 
-        public class MisspelledWord : Exception
+    public class MisspelledWord : Exception
+    {
+        public MisspelledWord(string message)
+            : base(message)
         {
-            public MisspelledWord(string message)
-                : base(message)
-            {
-            }
+        }
+    }
+
+
+    [Serializable]
+    public class LoginFailedException : Exception
+    {
+        public LoginFailedException() { }
+        public LoginFailedException(string message) : base(message) { }
+
+        public override string ToString()
+        {
+            return base.Message ?? "Failed to authenticate successfully";
         }
     }
 }

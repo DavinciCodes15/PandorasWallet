@@ -19,6 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 using Pandora.Client.ClientLib;
+using Pandora.Client.PandorasWallet.ClientExceptions;
+using Pandora.Client.PandorasWallet.Dialogs;
 using Pandora.Client.Universal;
 using System;
 using System.Collections.Generic;
@@ -53,7 +55,7 @@ namespace Pandora.Client.PandorasWallet
             Type type = typeof(T);
             if (!type.IsEnum)
             {
-                throw new InvalidOperationException();
+                throw new System.InvalidOperationException();
             }
 
             foreach (FieldInfo field in type.GetFields())
@@ -78,37 +80,70 @@ namespace Pandora.Client.PandorasWallet
             throw new ArgumentException("Not found.", nameof(description));
         }
 
-        public static void StandardErrorMsgBox(this Form aform, string aErrorTitle, string aMsg, params object[] aArgs)
-        {
-            aMsg = string.Format(aMsg, aArgs);
-            Log.Write(LogLevel.Error, "Error Dialog displayed.\nCaption: {0}\nMsg: {1}", aErrorTitle, aMsg);
-            MessageBox.Show(aMsg, aErrorTitle, MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-
-        public static void StandardUnhandledErrorMsgBox(this Form aform, string aMsg, string aErrorTitle = "Unhandled System Error")
-        {
-            var lDlg = Dialogs.ServerErrorDialog.GetInstance();
-            Log.Write(LogLevel.Error, "Error Dialog displayed.\nCaption: {0}\nMsg: {1}", aErrorTitle, aMsg);
-            lDlg.ErrorTitle = aErrorTitle;
-            lDlg.ErrorMessage = aMsg;
-            lDlg.ParentWindow = aform;
-            lDlg.Execute();
-        }
+        //public static void StandardUnhandledErrorMsgBox(this Form aform, string aMsg, string aErrorTitle = "Unhandled System Error")
+        //{
+        //    var lDlg = Dialogs.ServerErrorDialog.GetInstance();
+        //    Log.Write(LogLevel.Critical, "Error Dialog displayed.\r\nCaption: {0}\r\nMsg: {1}", aErrorTitle, aMsg);
+        //    lDlg.ErrorTitle = aErrorTitle;
+        //    lDlg.ErrorDetails = aMsg;
+        //    lDlg.ParentWindow = aform;
+        //    lDlg.Execute();
+        //}
 
         public static void StandardExceptionMsgBox(this Form aform, Exception ex, string aErrorTitle = "Unhandled System Exception")
         {
-            var lDlg = Dialogs.ServerErrorDialog.GetInstance();
-            lDlg.ErrorTitle = aErrorTitle;
-            lDlg.ErrorMessage = string.Format("{0}\r\n----------------------------------------------------------------------------------\r\nUTC Date : {1}\r\n\r\n{2}", ex.Message, DateTime.Now.ToUniversalTime(), ex.StackTrace);
-            lDlg.ParentWindow = aform;
-            Log.Write(LogLevel.Error, "Error Dialog displayed.\nCaption: {0}\nMsg: {1}", aErrorTitle, lDlg.ErrorMessage);
-            lDlg.Execute();
+            if (ex is LoginFailedException)
+            {
+                StandardErrorMsgBox(aform, "Login Failed", ex.Message);
+                return;
+            }
+
+            using (var lDlg = Dialogs.ServerErrorDialog.GetInstance())
+            {
+                lDlg.ErrorMessage = ex.Message;
+                lDlg.ErrorTitle = aErrorTitle;
+                lDlg.ErrorDetails = string.Format("{0}\r\n----------------------------------------------------------------------------------\r\nUTC Date : {1}\r\n\r\n{2}", ex.Message, DateTime.Now.ToUniversalTime(), ex.StackTrace);
+                lDlg.ParentWindow = aform;
+                Log.Write(LogLevel.Critical, "Error Dialog displayed.\r\nCaption: {0}\r\nMsg: {1}", aErrorTitle, lDlg.ErrorDetails);
+                lDlg.Execute();
+            }
         }
 
-        public static void StandardInfoMsgBox(this Form aform, string aString)
+
+        public static void StandardInfoMsgBox(this Form aform, string aTitle, string aDescription = null)
         {
-            MessageBox.Show(aString, "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            Log.Write(LogLevel.Info, "Info Dialog displayed.\nMsg: {0}", aString);
+            using (var lMsgBox = MessageBoxDialog.GetInfoBoxDialog(aTitle, aDescription, aform))
+            {
+                lMsgBox.Execute();
+                Log.Write(LogLevel.Info, "Info Dialog displayed.\r\nMsg: {0}", aTitle);
+            }
+        }
+
+        public static void StandardWarningMsgBox(this Form aform, string aTitle, string aDescription = null)
+        {
+            using (var lMsgBox = MessageBoxDialog.GetWarningBoxDialog(aTitle, aDescription, aform))
+            {
+                lMsgBox.Execute();
+                Log.Write(LogLevel.Warning, "Warning Dialog displayed.\r\nMsg: {0}", aTitle);
+            }
+        }
+
+        public static void StandardErrorMsgBox(this Form aform, string aTitle, string aDescription = null)
+        {
+            using (var lMsgBox = MessageBoxDialog.GetErrorBoxDialog(aTitle, aDescription, aform))
+            {
+                lMsgBox.Execute();
+                Log.Write(LogLevel.Error, "Error Dialog displayed.\r\nCaption: {0}\r\nMsg: {1}", aTitle, aDescription);
+            }
+        }
+
+        public static bool StandardAskMsgBox(this Form aform, string aTitle, string aDescription = null)
+        {
+            using (var lMsgBox = MessageBoxDialog.GetAskBoxDialog(aTitle, aDescription, aform))
+            {
+                Log.Write(LogLevel.Info, "Question Dialog displayed.\r\nMsg: {0}", aTitle);
+                return lMsgBox.Execute();
+            }
         }
 
         public static string GetEnumDescription(this Enum value)

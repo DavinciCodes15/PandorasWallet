@@ -560,32 +560,31 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        /// <summary>
+        /// Add or replace a coin item inside coins to exchange listview
+        /// </summary>
+        /// <param name="aCurrencyId">Currency id of item to update</param>
+        /// <param name="aCurrencyName">Currency name of item to update</param>
+        /// <param name="aCurrencySymbol">Currency ticker of item to update</param>
+        /// <param name="aPrice">Market price in BTC for currency item to update</param>
         public void AddCoinExchangeTo(long aCurrencyId, string aCurrencyName, string aCurrencySymbol, decimal aPrice)
         {
-            ListViewItem lSelectedCurrency = null;
-            if (SelectedExchangeMarket != null)
-            {
-                lSelectedCurrency = SelectedExchangeMarket;
-            }
+            string lCurrencyIDString = aCurrencyId.ToString();
+            ListViewItem lNewItemToAdd = new ListViewItem();
+            lNewItemToAdd.Name = lCurrencyIDString;
+            lNewItemToAdd.Text = aCurrencyName;
+            lNewItemToAdd.SubItems.Add(aCurrencySymbol);
+            lNewItemToAdd.SubItems.Add(aPrice.ToString());
+            lNewItemToAdd.ImageKey = aCurrencyId.ToString();
 
-            for (int it = 0; it < lstCoinAvailable.Items.Count; it++)
+            lock (lstCoinAvailable)
             {
-                if (lstCoinAvailable.Items[it].ImageKey == aCurrencyId.ToString())
-                {
-                    lstCoinAvailable.Items.RemoveAt(it);
-                    break;
-                }
-            }
-
-            ListViewItem item = lstCoinAvailable.Items.Add(string.Format("{0}", aCurrencyName));
-            item.SubItems.Add(aCurrencySymbol);
-            item.SubItems.Add(aPrice.ToString());
-
-            item.ImageKey = aCurrencyId.ToString();
-            if (lSelectedCurrency != null)
-            {
-                item.Selected = (lSelectedCurrency.SubItems[1].Text == item.SubItems[1].Text);
-                item.Focused = (lSelectedCurrency.SubItems[1].Text == item.SubItems[1].Text);
+                lstCoinAvailable.BeginUpdate();
+                bool isSelected = SelectedExchangeMarket != null ? SelectedExchangeMarket.Name == lCurrencyIDString : false;
+                lstCoinAvailable.Items.RemoveByKey(lCurrencyIDString);
+                lstCoinAvailable.Items.Add(lNewItemToAdd);
+                lNewItemToAdd.Selected = lNewItemToAdd.Focused = isSelected;
+                lstCoinAvailable.EndUpdate();
             }
         }
 

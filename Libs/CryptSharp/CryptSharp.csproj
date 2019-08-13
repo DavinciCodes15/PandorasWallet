@@ -30,30 +30,33 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin</OutputPath>
+    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
-    <DocumentationFile>..\bin\CryptSharp.XML</DocumentationFile>
+    <DocumentationFile>$(SolutionDir)bin\$(Configuration)\CryptSharp.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Deterministic>true</Deterministic>
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin</OutputPath>
+    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
     <DefineConstants>
     </DefineConstants>
     <DebugSymbols>true</DebugSymbols>
-    <DocumentationFile>..\bin\CryptSharp.XML</DocumentationFile>
+    <DocumentationFile>$(SolutionDir)bin\$(Configuration)\CryptSharp.XML</DocumentationFile>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>

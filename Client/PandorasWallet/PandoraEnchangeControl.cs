@@ -20,6 +20,7 @@
 // THE SOFTWARE
 using Pandora.Client.ClientLib;
 using Pandora.Client.Exchange;
+using Pandora.Client.Exchange.SaveManagers;
 using Pandora.Client.PandorasWallet.Dialogs;
 using Pandora.Client.PandorasWallet.Wallet;
 using Pandora.Client.Universal;
@@ -42,7 +43,7 @@ namespace Pandora.Client.PandorasWallet
         private CancellationTokenSource FExchangeTaskCancellationSource;
         private Task[] FExchangeTasks;
         private PandoraExchanger.ExchangeMarket FExchangeSelectedCoin;
-        private ExchangeTxDBHandler FDBExchanger;
+        private PandoraExchangeSQLiteSaveManager FDBExchanger;
         private string FLastExchangeSelectedCurrency = "";
         private bool FDisableUpdating;
 
@@ -97,7 +98,9 @@ namespace Pandora.Client.PandorasWallet
                 {
                     FExchangeCurrencyOrders[(uint)it.Id] = new List<MarketOrder>();
                 }
-                FExchangeCurrencyOrders[(uint)it.Id].AddRange(FExchanger.LoadTransactions(it.Ticker));
+
+                var lSavedOrders = FExchanger.LoadTransactions(it.Ticker);
+                FExchangeCurrencyOrders[(uint)it.Id].AddRange(lSavedOrders);
             }
         }
 
@@ -110,6 +113,7 @@ namespace Pandora.Client.PandorasWallet
 
             FExchangeCoinMarket = new ConcurrentBag<PandoraExchanger.ExchangeMarket>();
             FExchangeCurrencyOrders = new ConcurrentDictionary<uint, List<MarketOrder>>();
+            FOrdersWatched = new Dictionary<int, DateTime>();
 
             MainForm.OnExhangeCurrencySelectionChanged += MainForm_OnExhangeMarketSelectionChanged;
             MainForm.OnLabelEstimatePriceClick += MainForm_OnLabelEstimatePriceClick;
@@ -213,7 +217,7 @@ namespace Pandora.Client.PandorasWallet
                 throw new ClientExceptions.InvalidOperationException("Invalid target or stop price amount.");
             }
 
-            if (MainForm.ExchangeQuantity > FWallet.GetBalance(FWallet.ActiveCurrencyID).Confirmed)
+            if (MainForm.ExchangeQuantity > FWallet.GetBalance(FWallet.ActiveCurrencyID).Total)
             {
                 throw new ClientExceptions.InvalidOperationException("Not enough confirmed balance to do transaction");
             }
@@ -509,13 +513,13 @@ namespace Pandora.Client.PandorasWallet
 
         private void SetOrderDBHandler(string aDataFolder, string aInstanceID)
         {
-            ExchangeTxDBHandler lOldDBExchanger = null;
+            PandoraExchangeSQLiteSaveManager lOldDBExchanger = null;
             if (FDBExchanger != null)
             {
                 lOldDBExchanger = FDBExchanger;
             }
 
-            FDBExchanger = new ExchangeTxDBHandler(aDataFolder, aInstanceID);
+            FDBExchanger = new PandoraExchangeSQLiteSaveManager(aDataFolder, aInstanceID);
             FExchanger.TransactionHandler = FDBExchanger;
 
             lOldDBExchanger?.Dispose();
@@ -627,7 +631,7 @@ namespace Pandora.Client.PandorasWallet
                     {
                         foreach (MarketOrder lOrder in OrderList.Where(x => x.Status == OrderStatus.Placed))
                         {
-                            MarketOrder lRemoteOrder = FExchanger.GetOrder(lOrder.ID);
+                            MarketOrder lRemoteOrder = FExchanger.GetOrder(new Guid(lOrder.ID));
 
                             if (!lRemoteOrder.Completed && !lRemoteOrder.Cancelled)
                             {
@@ -786,18 +790,45 @@ namespace Pandora.Client.PandorasWallet
                 decimal lBalance = Convert.ToDecimal(lBalanceModel.ToString());
                 decimal lDecimalTxFee = (lTxFee / (decimal)FWallet.Coin);
                 if (lBalance == 0 || (lAmount + lDecimalTxFee) > lBalance) throw new Exception("Not enough balance to transfer to the exchange");
-                string lTxID = ExecuteSendTx(lAmount, aCurrencyID, lTxFee, lExchangeAddress);
-                if (string.IsNullOrEmpty(lTxID)) throw new Exception("Unable to broadcast transaction");
-                aOrder.CoinTxID = lTxID;
-                FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Waiting);
-                WriteTransactionLogEntry(aOrder);
-                WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, string.Format("Number of confirmations needed: {0} confirmations", FExchanger.GetConfirmations(aMarket.BaseTicker)));
+                if (ExecuteSendTx(lAmount, aCurrencyID, lTxFee, lExchangeAddress, out string lTxID))
+                {
+                    SetOrderToWaiting(aOrder, aMarket, lTxID);
+                }
+                else
+                {
+                    if (lTxID.Contains("Transaction Timeout. TxId:"))
+                    {
+                        WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, "There was a timeout when sending coins. Process will continue but will fail if coin tx does not show in 5 Minutes.");
+                        SetOrderWatcherForTransactionID(aOrder, aMarket, lTxID);
+                    }
+                    else
+                        throw new Exception(lTxID);
+                }
             }
             catch (Exception ex)
             {
                 FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Interrupted);
-                WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.FatalError, string.Format("Failed to send transaction. Details: {0}.", ex.Message));
+                WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.FatalError, string.Format("Failed to send transaction. Details: {0}.", ex));
             }
+        }
+
+        private void SetOrderToWaiting(MarketOrder aOrder, PandoraExchanger.ExchangeMarket aMarket, string aTxID)
+        {
+            aOrder.CoinTxID = aTxID;
+            FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Waiting);
+            WriteTransactionLogEntry(aOrder);
+            WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, string.Format("Number of confirmations needed: {0} confirmations", FExchanger.GetConfirmations(aMarket.BaseTicker)));
+        }
+
+        private Dictionary<int, DateTime> FOrdersWatched;
+
+        private void SetOrderWatcherForTransactionID(MarketOrder aOrder, PandoraExchanger.ExchangeMarket aMarket, string aMessage)
+        {
+            var lSplitMessage = aMessage.Split(new char[] { '.' });
+            var lTxId = lSplitMessage.Where(lMessage => lMessage.Contains("TxId:")).FirstOrDefault()?.Split(new char[] { ':' })[1].Trim();
+            SetOrderToWaiting(aOrder, aMarket, aMessage);
+            lock (FOrdersWatched)
+                FOrdersWatched.Add(aOrder.InternalID, DateTime.UtcNow);
         }
 
         /// <summary>
@@ -808,27 +839,29 @@ namespace Pandora.Client.PandorasWallet
         /// <param name="aTxFee">Transaction calculated txfee</param>
         /// <param name="aExchangeAddress">Destination address (exchange address)</param>
         /// <returns></returns>
-        private string ExecuteSendTx(decimal aAmount, uint aActiveCurrencyID, ulong aTxFee, string aExchangeAddress)
+        private bool ExecuteSendTx(decimal aAmount, uint aActiveCurrencyID, ulong aTxFee, string aExchangeAddress, out string aTxID)
         {
+            bool lResult;
             FWallet.InitializeRootSeed();
             string lTx = FWallet.PrepareNewTransaction(aExchangeAddress, aAmount, aActiveCurrencyID, aTxFee);
             long lTxHandle = FWallet.SendNewTransaction(lTx, aActiveCurrencyID);
-            string lReturnedTxID = null;
-
+            aTxID = null;
             try
             {
-                string lTxID;
-                while (!FWallet.CheckTransactionHandle(lTxHandle, out lTxID)) //Waits endlessly until server response
+                while (!FWallet.CheckTransactionHandle(lTxHandle)) //Waits endlessly until server response
+                {
                     System.Threading.Thread.Sleep(1000);
-                lReturnedTxID = lTxID;
+                }
+                aTxID = FWallet.GetTxId(lTxHandle);
+                lResult = true;
             }
             catch (Exception ex)
             {
                 string s = string.Format("Unhandled error on sending transaction. Details: {0}", ex);
                 Log.Write("Unhandled error on sending transaction. Details: {0}", ex);
+                lResult = false;
             }
-
-            return lReturnedTxID;
+            return lResult;
         }
 
         /// <summary>
@@ -961,13 +994,13 @@ namespace Pandora.Client.PandorasWallet
         {
             if (!aWaitingOrders.Any())
                 return;
-
             int lExchangeminConf = FExchanger.GetConfirmations(aCoinTicker);
-
             if (lExchangeminConf < 0)
                 return;
 
             IEnumerable<TransactionViewModel> lConfirmedTxs = aCurrencyTransactions.Where(x => x.Confirmation >= (ulong)lExchangeminConf);
+            SearchForUnlinkedOrders(aWaitingOrders, aCurrencyTransactions);
+            ExecuteCoinTxWatcher(aWaitingOrders);
 
             foreach (TransactionViewModel lTx in lConfirmedTxs)
             {
@@ -975,14 +1008,49 @@ namespace Pandora.Client.PandorasWallet
 
                 if (lItem == null)
                     continue;
-
-                PandoraExchanger.ExchangeMarket lMarket = aListExchangeCoinMarket.Find(x => x.BaseTicker == aCoinTicker && lItem.Market == x.MarketName);
-
-                if (lItem.Status == OrderStatus.Waiting && lMarket != null)
+                lock (FOrdersWatched)
                 {
+                    if (FOrdersWatched.ContainsKey(lItem.InternalID))
+                        FOrdersWatched.Remove(lItem.InternalID);
+                }
+                PandoraExchanger.ExchangeMarket lMarket = aListExchangeCoinMarket.Find(x => x.BaseTicker == aCoinTicker && lItem.Market == x.MarketName);
+                if (lItem.Status == OrderStatus.Waiting && lMarket != null)
                     TryToPlaceOrder(lItem, lMarket);
+            }
+        }
+
+        private void SearchForUnlinkedOrders(IEnumerable<MarketOrder> aOrders, IEnumerable<TransactionViewModel> aCurrencyTransactions)
+        {
+            var lOrdersWithoutTx = aOrders.Where(lWaitOrder => !aCurrencyTransactions.Any(aTx => aTx.TransactionID == lWaitOrder.CoinTxID));
+            foreach (var lOrder in lOrdersWithoutTx)
+            {
+                lock (FOrdersWatched)
+                {
+                    if (!FOrdersWatched.ContainsKey(lOrder.InternalID))
+                        FOrdersWatched.Add(lOrder.InternalID, DateTime.UtcNow);
                 }
             }
+        }
+
+        private void ExecuteCoinTxWatcher(List<MarketOrder> aWaitingOrders)
+        {
+            KeyValuePair<int, DateTime>[] lOrdersWatched;
+            lock (FOrdersWatched)
+                lOrdersWatched = FOrdersWatched.ToArray();
+            foreach (var lWatchedOrder in lOrdersWatched)
+            {
+                if (lWatchedOrder.Value < DateTime.UtcNow.AddMinutes(-5))
+                    MarkOrderAsInterrupted(aWaitingOrders.Find(lWOrder => lWOrder.InternalID == lWatchedOrder.Key));
+            }
+        }
+
+        private void MarkOrderAsInterrupted(MarketOrder aOrder)
+        {
+            if (aOrder == null)
+                return;
+            FExchanger.UpdateOrderStatus(aOrder, OrderStatus.Interrupted);
+            WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, "Coin transaction not found to continue. Interrupting order.");
+            WriteTransactionLogEntry(aOrder);
         }
 
         private void TryToPlaceOrder(MarketOrder aOrder, PandoraExchanger.ExchangeMarket aMarket)
@@ -1060,10 +1128,16 @@ namespace Pandora.Client.PandorasWallet
                     break;
             }
             List<MarketOrder> lOrders = FExchangeCurrencyOrders[FWallet.ActiveCurrencyID];
+            try
+            {
+                RefreshStatusOrderLog(lOrders, aOrder.InternalID);
 
-            RefreshStatusOrderLog(lOrders, aOrder.InternalID);
-
-            RefreshIfSelectedOrderlog(aOrder.InternalID);
+                RefreshIfSelectedOrderlog(aOrder.InternalID);
+            }
+            catch (Exception ex)
+            {
+                Universal.Log.Write(LogLevel.Error, $"Error refreshing interface. Exception: {ex}");
+            }
         }
     }
 }

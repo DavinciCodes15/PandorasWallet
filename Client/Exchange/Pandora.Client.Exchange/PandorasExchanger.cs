@@ -1,6 +1,7 @@
 ﻿using Bittrex.Net;
 using Bittrex.Net.Objects;
 using Pandora.Client.Exchange.JKrof.Objects;
+using Pandora.Client.Exchange.SaveManagers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,13 +25,15 @@ namespace Pandora.Client.Exchange
 
         public bool IsCredentialsSet => FCredentialsSet;
 
-        public event Action OnMarketPricesChanging;
+        public event Action<IEnumerable<string>> OnMarketPricesChanging;
 
         public string CurrentExchange => "Bittrex";
 
         public Dictionary<long, string> ExchangeList { get; private set; }
 
-        public ExchangeTxDBHandler TransactionHandler { get; set; }
+        public PandoraExchangeSQLiteSaveManager TransactionHandler { get; set; }
+
+        public string DBFile => TransactionHandler.DBFilePath;
 
         private List<MarketOrder> FTransactions;
         private ConcurrentDictionary<string, decimal> FCurrencyFees;
@@ -81,13 +84,9 @@ namespace Pandora.Client.Exchange
             using (BittrexClient lClient = new BittrexClient())
             {
                 CallResult<BittrexBalance> lResponse = lClient.GetBalance("BTC");
-
                 if (!lResponse.Success)
-                {
-                    throw new Exception("Incorrect Key Pair for selected exchange");
-                }
+                    throw new PandoraExchangeExceptions.InvalidExchangeCredentials("Incorrect Key Pair for selected exchange");
             }
-
             //Note: I generate a new instance of ApiCredentials because internally the library dispose it
             FUserCredentials = new Tuple<string, string>(aApiKey, aApiSecret);
             FCredentialsSet = true;
@@ -206,9 +205,9 @@ namespace Pandora.Client.Exchange
                     throw new Exception("Bittrex Error. Message: " + lResponse.Error.Message);
                 }
 
-                Guid lUuid = lResponse.Data.Uuid;
+                string lUuid = lResponse.Data.Uuid.ToString();
 
-                CallResult<BittrexAccountOrder> lResponse2 = lClient.GetOrder(lUuid);
+                CallResult<BittrexAccountOrder> lResponse2 = lClient.GetOrder(new Guid(lUuid));
 
                 if (!lResponse.Success)
                 {
@@ -296,6 +295,27 @@ namespace Pandora.Client.Exchange
             return lTransactions;
         }
 
+        public void CancelOrder(MarketOrder aOrder, bool aUseProxy = true)
+        {
+            if (!FCredentialsSet)
+                throw new Exception("No Credentials were set");
+
+            if (aOrder == null)
+                throw new ArgumentNullException(nameof(aOrder), "Invalid argument: " + nameof(aOrder));
+
+            BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
+            {
+                Proxy = PandoraProxy.GetApiProxy(),
+                ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials.Item1, FUserCredentials.Item2)
+            };
+            using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
+            {
+                var lResponse = lClient.CancelOrder(new Guid(aOrder.ID));
+                if (!lResponse.Success)
+                    throw new Exception("Failed to cancel order in exchange. Message: " + lResponse.Error.Message);
+            }
+        }
+
         public ExchangeMarket[] GetMarketCoins(string aTicker)
         {
             if (FLastRetrieval == DateTime.MinValue || FLastRetrieval < DateTime.UtcNow.AddHours(-1))
@@ -377,16 +397,23 @@ namespace Pandora.Client.Exchange
                 }
             }
 
-            CallResult<Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription> lResult = FBittrexSocket.SubscribeToMarketSummariesLiteUpdate((data) =>
-        {
-            foreach (BittrexStreamMarketSummaryLite it in data)
+            CallResult<Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription> lResult = FBittrexSocket.SubscribeToMarketSummariesLiteUpdate((lFullData) =>
             {
-                if (it.Last.HasValue)
-                    FMarketPrices.AddOrUpdate(it.MarketName, it.Last.Value, (key, oldValue) => it.Last.Value);
-            }
-
-            OnMarketPricesChanging?.Invoke();
-        });
+                List<string> lChanged = new List<string>();
+                foreach (BittrexStreamMarketSummaryLite lData in lFullData)
+                    if (lData.Last.HasValue)
+                    {
+                        decimal lPrice;
+                        while (!FMarketPrices.TryGetValue(lData.MarketName, out lPrice)) ;
+                        if (lPrice != lData.Last.Value)
+                        {
+                            FMarketPrices.AddOrUpdate(lData.MarketName, lData.Last.Value, (key, oldValue) => lData.Last.Value);
+                            lChanged.Add(lData.MarketName);
+                        }
+                    }
+                if (lChanged.Any())
+                    OnMarketPricesChanging?.Invoke(lChanged);
+            });
 
             if (!lResult.Success)
             {
@@ -408,12 +435,49 @@ namespace Pandora.Client.Exchange
 
                 return new MarketOrder
                 {
-                    ID = lResponse.Data.OrderUuid,
+                    ID = lResponse.Data.OrderUuid.ToString(),
                     Completed = lResponse.Data.QuantityRemaining == 0,
                     Cancelled = lResponse.Data.CancelInitiated,
                     Market = lResponse.Data.Exchange
                 };
             }
+        }
+
+        /// <summary>
+        /// Tries to withdraw the total amount returned by an order from the exchange
+        /// </summary>
+        /// <param name="aMarket">Market of the order</param>
+        /// <param name="aOrder">Completed order to withdraw</param>
+        /// <param name="aAddress">Coin address to deposit funds</param>
+        /// <param name="aTxFee">Fee to discount from balance withdrawed</param>
+        /// <param name="aUseProxy">Use pandora proxy or not</param>
+        public bool RefundOrder(ExchangeMarket aMarket, MarketOrder aOrder, string aAddress, bool aUseProxy = true)
+        {
+            if (!FCredentialsSet)
+            {
+                throw new Exception("No Credentials were set");
+            }
+
+            if (aOrder.Status == OrderStatus.Withdrawed)
+            {
+                return false;
+            }
+
+            BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
+            {
+                Proxy = PandoraProxy.GetApiProxy(),
+                ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials.Item1, FUserCredentials.Item2)
+            };
+            using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
+            {
+                CallResult<BittrexGuid> lResponse = lClient.Withdraw(aMarket.BaseTicker, aOrder.SentQuantity, aAddress);
+                if (!lResponse.Success)
+                {
+                    throw new Exception("Failed to withdraw. Error message:" + lResponse.Error.Message);
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -445,7 +509,7 @@ namespace Pandora.Client.Exchange
             {
                 decimal lRate = aMarket.IsSell ? 1 / aOrder.Rate : aOrder.Rate;
                 decimal lRawAmount = aOrder.SentQuantity / lRate;
-                decimal lQuantity = lRawAmount - aTxFee - (lRawAmount * (decimal)0.0025);
+                decimal lQuantity = lRawAmount - (lRawAmount * (decimal)0.0025);
                 CallResult<BittrexGuid> lResponse = lClient.Withdraw(aMarket.CoinTicker, lQuantity, aAddress);
                 if (!lResponse.Success)
                 {
@@ -497,49 +561,6 @@ namespace Pandora.Client.Exchange
             public string MarketName { get; set; }
             public decimal MinimumTrade { get; set; }
             public bool IsSell { get; set; }
-        }
-    }
-
-    public enum OrderStatus
-    {
-        Waiting, Placed, Interrupted, Completed, Withdrawed, Initial
-    }
-
-    public class MarketOrder
-    {
-        public decimal SentQuantity { get; set; }
-        public decimal Rate { get; set; }
-        public Guid ID { get; set; }
-        public DateTime OpenTime { get; set; }
-        public bool Cancelled { get; set; }
-        public bool Completed { get; set; }
-        public string Market { get; set; }
-        public OrderStatus Status { get; set; }
-        public string CoinTxID { get; set; }
-        public int InternalID { get; set; }
-        public string BaseTicker { get; set; }
-        public string Name { get; set; }
-        public int ErrorCounter { get; set; }
-        public decimal StopPrice { get; set; }
-    }
-
-    public class OrderMessage : System.Collections.IComparer
-    {
-        public enum OrderMessageLevel
-        {
-            None = 0, Info = 1, StageChange = 2, Error = 3, FatalError = 4, Finisher = 5
-        }
-
-        public string Message { get; set; }
-        public DateTime Time { get; set; }
-        public OrderMessageLevel Level { get; set; }
-
-        public int Compare(object x, object y)
-        {
-            OrderMessage lx = (OrderMessage)x;
-            OrderMessage ly = (OrderMessage)y;
-
-            return lx.Time.CompareTo(ly.Time);
         }
     }
 }

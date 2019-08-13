@@ -18,6 +18,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using Pandora.Client.PandorasWallet.SystemBackup;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -41,6 +42,10 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public event EventHandler OnFileBtnClick;
 
         public event EventHandler OnButtonCopyClick;
+
+        public event Func<string[]> On12WordsNeeded;
+
+        public event Action<string> OnBackupByFileNeeded;
 
         public bool CopyButtonVisibility { set => btnCopy.Visible = value; }
 
@@ -95,6 +100,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public BaseWizzard()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
             tabControl1.Region = new Region(tabControl1.DisplayRectangle);
         }
 

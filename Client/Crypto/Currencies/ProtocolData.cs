@@ -9,7 +9,7 @@ namespace Pandora.Client.Crypto.Currencies
     [Flags]
     public enum ProtocolFlags
     {
-        None = 0, UsesInvPayloadforGetHeader = 1, FailsToVerAck = 2, UseRPC = 4, UsesOldVersionPayload = 8
+        None = 0, UsesInvPayloadforGetHeader = 1, FailsToVerAck = 2, UseRPC = 4, UsesOldVersionPayload = 8, SupportSegWit = 16
     }
 
     public class ProtocolData
@@ -88,7 +88,7 @@ namespace Pandora.Client.Crypto.Currencies
                 SupportSendHeaders = true,
                 SupportTimeAddress = true,
                 SupportUserAgent = true,
-                SupportWitness = true,
+                SupportWitness = FPeculiarities.HasFlag(ProtocolFlags.SupportSegWit),
                 SupportVersionRelay = !Checkif(ProtocolFlags.UsesOldVersionPayload)
 
                 //PeerTooOld = protocolVersion < 209U,

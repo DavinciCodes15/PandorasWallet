@@ -18,6 +18,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -42,6 +43,8 @@ namespace Pandora.Client.PandorasWallet
         public event EventHandler OnSelectedIndexChanged;
 
         public ImageList ImageList => FImageList;
+
+        public string CurrentFilterApplied { get; private set; }
 
         public CurrencyView()
         {
@@ -81,7 +84,7 @@ namespace Pandora.Client.PandorasWallet
 
             if (TickerColunmVisible)
             {
-                FTickerHeader = FListView.Columns.Add("Ticker Symbol", 90, HorizontalAlignment.Left);
+                FTickerHeader = FListView.Columns.Add("Ticker", 60, HorizontalAlignment.Left);
             }
 
             if (IdColumnVisable)
@@ -106,6 +109,95 @@ namespace Pandora.Client.PandorasWallet
                     FListView.Columns.Add(lName, 90, HorizontalAlignment.Right);
                 }
             }
+        }
+
+        public void ApplyFilter(string aFilter)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(aFilter)) throw new ArgumentException(nameof(aFilter), "Filter must be a value");
+                List<long> lNotFoundKeys = new List<long>();
+                List<long> lFoundKeys = new List<long>();
+                foreach (var lCurrencyItem in FCurrencyItems.Values)
+                {
+                    var lNameMatch = System.Text.RegularExpressions.Regex.IsMatch(lCurrencyItem.Name, aFilter, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    var lTickerMatch = System.Text.RegularExpressions.Regex.IsMatch(lCurrencyItem.Ticker, aFilter, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    if (lNameMatch || lTickerMatch) lFoundKeys.Add(lCurrencyItem.Id);
+                    else lNotFoundKeys.Add(lCurrencyItem.Id);
+                }
+                var lListViewItems = FListView.Items.Cast<ListViewItem>();
+                foreach (long ID in lFoundKeys)
+                {
+                    bool lHaveItem = lListViewItems.Any(lstItem => lstItem.ImageKey == ID.ToString());
+                    if (!lHaveItem)
+                    {
+                        var lCurrencyItem = FCurrencyItems[ID];
+                        FListView.Items.Add(FListViewCache[ID]);
+                    }
+                }
+                foreach (long ID in lNotFoundKeys)
+                {
+                    bool lHaveItem = lListViewItems.Any(lstItem => lstItem.ImageKey == ID.ToString());
+                    if (lHaveItem)
+                        FListView.Items.Remove(FListViewCache[ID]);
+                }
+                CurrentFilterApplied = aFilter;
+            }
+            catch
+            {
+                ClearFilter();
+                throw;
+            }
+        }
+
+        public void ClearFilter()
+        {
+            if (string.IsNullOrEmpty(CurrentFilterApplied)) return;
+            FListView.Items.Clear();
+            FListView.Items.AddRange(FListViewCache.Values.ToArray());
+            CurrentFilterApplied = string.Empty;
+        }
+
+        public bool UpdateCurrency(long aCurrencyID, string aCurrencyName, string aTicker, Icon aCurrencyIcon, string[] aCustomColumnValues = null)
+        {
+            ListViewItem lListViewItem = null;
+            foreach (var lItem in FListView.Items)
+                if (((lItem as ListViewItem).Tag as CurrencyItem).Id == aCurrencyID)
+                    lListViewItem = lItem as ListViewItem;
+            if (lListViewItem != null)
+            {
+                List<string> lColumnValues = new List<string>();
+                //Updating the icon may be too disruptive
+                //when the user reloads the program then we can change it.
+                //if (FImageList.Images.ContainsKey(aCurrencyID.ToString()))
+                //    FImageList.Images.RemoveByKey(aCurrencyID.ToString());
+                //FImageList.Images.Add(aCurrencyID.ToString(), aCurrencyIcon);
+
+                if (CurrencyNameVisible)
+                {
+                    lColumnValues.Add(aCurrencyName);
+                }
+
+                if (TickerColunmVisible)
+                {
+                    lColumnValues.Add(aTicker);
+                }
+
+                if (IdColumnVisable)
+                {
+                    lColumnValues.Add(aCurrencyID.ToString());
+                }
+
+                if (IncludeTickerWithCurrencyName)
+                {
+                    lColumnValues[0] = string.Format("{0} ({1})", aCurrencyName, aTicker);
+                }
+
+                lColumnValues.AddRange(aCustomColumnValues);
+                for (int i = 1; i < lColumnValues.Count; i++)
+                    lListViewItem.SubItems[i].Text = lColumnValues[i];
+            }
+            return lListViewItem != null;
         }
 
         public void AddCurrency(long aCurrencyID, string aCurrencyName, string aCurrencySymbol, Icon aCurrencyIcon, string[] aCustomColumnValues = null)
@@ -187,12 +279,12 @@ namespace Pandora.Client.PandorasWallet
 
         private ListViewItem ConstructListViewCurrencyItem(CurrencyItem aItem, Icon aCurrencyIcon)
         {
-            if (FImageList.Images.ContainsKey(aItem.Id))
+            if (FImageList.Images.ContainsKey(aItem.Id.ToString()))
             {
-                FImageList.Images.RemoveByKey(aItem.Id);
+                FImageList.Images.RemoveByKey(aItem.Id.ToString());
             }
 
-            FImageList.Images.Add(aItem.Id, aCurrencyIcon);
+            FImageList.Images.Add(aItem.Id.ToString(), aCurrencyIcon);
             List<string> lColumnValues = new List<string>();
 
             if (CurrencyNameVisible)
@@ -207,7 +299,7 @@ namespace Pandora.Client.PandorasWallet
 
             if (IdColumnVisable)
             {
-                lColumnValues.Add(aItem.Id);
+                lColumnValues.Add(aItem.Id.ToString());
             }
 
             if (IncludeTickerWithCurrencyName)
@@ -217,8 +309,8 @@ namespace Pandora.Client.PandorasWallet
 
             lColumnValues.AddRange(aItem.CustomValues);
 
-            ListViewItem lItem = new ListViewItem(lColumnValues[0], aItem.Id);
-
+            ListViewItem lItem = new ListViewItem(lColumnValues[0], aItem.Id.ToString());
+            lItem.Tag = aItem;
             for (int i = 1; i < lColumnValues.Count; i++)
             {
                 lItem.SubItems.Add(lColumnValues[i]);
@@ -304,6 +396,13 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        public void CheckAllItems(bool select = true)
+        {
+            if (!UseCheckBoxes) throw new InvalidOperationException("This method only can be used when UseCheckBoxes property is set to true");
+            foreach (ListViewItem lItem in FListView.Items)
+                lItem.Checked = select;
+        }
+
         public long[] CurrencyIds { get; set; }
 
         public bool IdColumnVisable { get; private set; }
@@ -318,11 +417,11 @@ namespace Pandora.Client.PandorasWallet
 
         public bool UseCheckBoxes { get; private set; }
 
-        private class CurrencyItem
+        public class CurrencyItem
         {
             public CurrencyItem(long aCurrencyID, string aCurrencyName, string aCurrencySymbol, string[] aCustomValues)
             {
-                Id = aCurrencyID.ToString();
+                Id = aCurrencyID;
                 Name = aCurrencyName;
                 Ticker = aCurrencySymbol;
                 if (aCustomValues == null)
@@ -340,7 +439,7 @@ namespace Pandora.Client.PandorasWallet
                 return (aObj.Id == Id && aObj.Name == Name && aObj.Ticker == Ticker && aObj.CustomValues.SequenceEqual(CustomValues));
             }
 
-            public string Id { get; set; }
+            public long Id { get; set; }
 
             public string Name { get; set; }
 

@@ -1,8 +1,25 @@
-﻿using System;
+﻿//   Copyright 2017-2019 Davinci Codes
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// Also use the software for non-commercial purposes.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Pandora.Client.Crypto.Currencies.Controls;
 
@@ -14,7 +31,7 @@ namespace Pandora.Client.ClientLib
         {
         }
 
-        public CurrencyTransaction(TransactionUnit[] aInputs, TransactionUnit[] aOutputs, ulong aTxFee, ulong aCurrencyId)
+        public CurrencyTransaction(TransactionUnit[] aInputs, TransactionUnit[] aOutputs, long aTxFee, long aCurrencyId)
         {
             Inputs = aInputs;
             Outputs = aOutputs;
@@ -26,11 +43,10 @@ namespace Pandora.Client.ClientLib
 
         public TransactionUnit[] Outputs { get; private set; }
 
-        public virtual ulong TxFee { get; set; }
+        public virtual long TxFee { get; set; }
 
-        public ulong CurrencyId { get; set; }
+        public long CurrencyId { get; set; }
 
- 
         ITransactionUnit[] ICurrencyTransaction.Inputs => this.Inputs;
 
         ITransactionUnit[] ICurrencyTransaction.Outputs => this.Outputs;
@@ -53,7 +69,7 @@ namespace Pandora.Client.ClientLib
             Inputs = lList.ToArray();
         }
 
-        public virtual void AddInput(ulong aAmount, string aAddress, ulong aId = 0)
+        public virtual void AddInput(long aAmount, string aAddress, long aId = 0)
         {
             var lList = new List<TransactionUnit>();
             if (Inputs != null)
@@ -71,12 +87,12 @@ namespace Pandora.Client.ClientLib
             Outputs = lList.ToArray();
         }
 
-        public virtual void AddOutput(ulong aAmount, string aAddress, ulong aId = 0)
+        public virtual void AddOutput(long aAmount, string aAddress, int aIndex = -1, long aId = 0, string aTxID = null)
         {
             var lList = new List<TransactionUnit>();
             if (Outputs != null)
                 lList.AddRange(Outputs);
-            lList.Add(new TransactionUnit(aId, aAmount, aAddress));
+            lList.Add(new TransactionUnit(aId, aAmount, aAddress, aIndex, aTxID));
             Outputs = lList.ToArray();
         }
 

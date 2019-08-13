@@ -322,9 +322,9 @@
             // 
             this.lblWarning.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
             this.lblWarning.ForeColor = System.Drawing.Color.Red;
-            this.lblWarning.Location = new System.Drawing.Point(622, 300);
+            this.lblWarning.Location = new System.Drawing.Point(504, 300);
             this.lblWarning.Name = "lblWarning";
-            this.lblWarning.Size = new System.Drawing.Size(235, 17);
+            this.lblWarning.Size = new System.Drawing.Size(353, 17);
             this.lblWarning.TabIndex = 19;
             this.lblWarning.Text = "Warning";
             this.lblWarning.TextAlign = System.Drawing.ContentAlignment.MiddleRight;

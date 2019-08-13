@@ -48,13 +48,11 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public decimal TxFeeRate { get => FTxFeeRate; set { FTxFeeRate = value; lblTxFeeRate.Text = value.ToString() + Ticker; } }
 
-        public bool SubstractFeeVisible { set => checkSubsFee.Visible = value; }
-
-        public bool isSubstractFeeChecked => checkSubsFee.Checked;
+        public bool SubstractFee { get => checkSubsFee.Checked; set => checkSubsFee.Checked = value; }
 
         public string Ticker { get; set; }
 
-        private decimal BalanceAfter
+        private decimal BalanceAfterSend
         {
             get => FBalanceAfter;
             set
@@ -64,7 +62,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 if (value < 0)
                 {
                     lblBalanceAfter.ForeColor = Color.Red;
-                    lblWarning.Text = "Not enough coins to do transaction with TxFee.";
+                    lblWarning.Text = "Not enough coins to send transaction with TxFee.";
                     lblWarning.Visible = true;
                     btnOK.Enabled = false;
                 }
@@ -91,6 +89,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public SendTransactionDialog()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -105,37 +104,23 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public new bool Execute()
         {
-            Cursor.Current = Cursors.Default;
-
-            if (ShowDialog() == DialogResult.OK)
-            {
-                return true;
-            }
-            return false;
+            FCachedAmount = FAmount;
+            return ShowDialog() == DialogResult.OK;
         }
 
         private void checkSubtFee_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkSubsFee.Checked)
-            {
-                BalanceAfter = Balance - Amount;
-                Discounted = Amount * (-1);
-                Amount = FCachedAmount - TxFee;
-            }
+            if (SubstractFee)
+                Discounted = TxFee;
             else
-            {
-                Amount = FCachedAmount;
-                BalanceAfter = Balance - TxFee - Amount;
-                Discounted = (TxFee + Amount) * (-1);
-            }
+                Discounted = 0;
+            Amount = FCachedAmount - Discounted;
+            BalanceAfterSend = Balance - (Amount + TxFee);
         }
 
         private void SendTransaction_Shown(object sender, EventArgs e)
         {
-            BalanceAfter = Balance - TxFee - Amount;
-            FCachedAmount = FAmount;
-            Discounted = (TxFee + Amount) * (-1);
-            checkSubsFee.Checked = false;
+            checkSubtFee_CheckedChanged(this, null);
         }
     }
 }

@@ -29,6 +29,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public AboutBox()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
             Text = string.Format("About {0}", AssemblyTitle);
             labelProductName.Text = AssemblyProduct;
             labelVersion.Text = string.Format("Version {0}", AssemblyVersion);

@@ -118,14 +118,14 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="richTextBoxInfo.Text" xml:space="preserve">
-    <value>Looks like there is some problems with your current wallet data. Here is some actions you can do:
+    <value>You account exists on our servers, but your wallet key data does not exist on this computer or possibly have been corrupted.
 
 If you want to try restore, click on Restore to begin the wizard.
 
 If you want a new wallet, create a new username with your current email at:
 http://www.pandoraswallet.com
 
-If you need support, contact us at:
+If you need help, or feel this is incorrect contact us at:
 support@davincicodes.net</value>
   </data>
 </root>

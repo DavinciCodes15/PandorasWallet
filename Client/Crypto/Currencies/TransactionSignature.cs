@@ -45,16 +45,16 @@ namespace Pandora.Client.Crypto.Currencies
 				return false;
 			}
 			error = ScriptError.OK;
-			//var ctx = new ScriptEvaluationContext()
-			//{
-			//	ScriptVerify = scriptVerify
-			//};
-			//if(!ctx.CheckSignatureEncoding(sig))
-			//{
-			//	error = ctx.Error;
-			//	return false;
-			//}
-			return true;
+            //var ctx = new ScriptEvaluationContext()
+            //{
+            //    ScriptVerify = scriptVerify
+            //};
+            //if (!ctx.CheckSignatureEncoding(sig))
+            //{
+            //    error = ctx.Error;
+            //    return false;
+            //}
+            return true;
 		}
 		public TransactionSignature(ECDSASignature signature, SigHash sigHash)
 		{
@@ -118,12 +118,12 @@ namespace Pandora.Client.Crypto.Currencies
 		public bool Check(PubKey pubKey, Script scriptPubKey, Transaction tx, uint nIndex, ScriptVerify verify = ScriptVerify.Standard)
 		{
             return true;
-   //             new ScriptEvaluationContext()
-			//{
-			//	ScriptVerify = verify,
-			//	SigHash = SigHash
-			//}.CheckSig(this, pubKey, scriptPubKey, tx, nIndex);
-		}
+            //new ScriptEvaluationContext()
+            //{
+            //    ScriptVerify = verify,
+            //    SigHash = SigHash
+            //}.CheckSig(this, pubKey, scriptPubKey, tx, nIndex);
+        }
 
 		string _Id;
 		private string Id

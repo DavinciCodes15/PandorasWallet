@@ -23,21 +23,21 @@ namespace Pandora.Client.Crypto.Currencies.Controls
         /// </summary>
         /// <param name="aAmount">This value is irrelavent as all coins are taken from the address.</param>
         /// <param name="aAddress">Address that the amount is comming from.</param>
-        void AddInput(ulong aAmount, string aAddress, ulong aId = 0);
+        void AddInput(long aAmount, string aAddress, long aId = 0);
 
         /// <summary>
         /// Where to send the coins to
         /// </summary>
         /// <param name="aAmount">Amount to send to what address.</param>
         /// <param name="aAddress">The address that will get the coins.</param>
-        void AddOutput(ulong aAmount, string aAddress, ulong aId = 0);
+        void AddOutput(long aAmount, string aAddress, int aIndex = -1, long aId = 0, string aTxID = null);
 
         /// <summary>
         /// The amount of fee that will used to send the coins.
         /// </summary>
-        ulong TxFee { get; set; }
+        long TxFee { get; set; }
 
-        ulong CurrencyId { get; set; }
+        long CurrencyId { get; set; }
 
         ///// <summary>
         ///// Some cases a currency is built on top of another currency

@@ -27,6 +27,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public SendingTxDialog()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
         public string Status { get => StatusLabel.Text; set => StatusLabel.Text = value; }
@@ -61,8 +62,10 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 TxId.Text = aTxID;
                 TxId.Visible = true;
             }
+
             StatusLabel.Text = aMessage;
             btnOK.Visible = true;
+            btnOK.Focus();
         }
 
     }

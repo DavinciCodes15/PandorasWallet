@@ -36,7 +36,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 {
     public partial class PandorasCache
     {
-        internal class DBManager : IDisposable
+        public class DBManager : IDisposable
 
         {
             private SQLiteConnection FDBConnection;
@@ -70,7 +70,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             /// </summary>
             /// <param name="aFilename">SqlLite File name with or without extention</param>
             /// <returns>Currency account array of users coin data</returns>
-            /// <exception cref="Pandora.Client.PandorasWallet.Wallet.ClientExceptions.CacheDBException">Throw when there is an SQLite problem when perfoming query</exception>
+            /// <exception cref="Pandora.Client.PandorasWallet.ClientExceptions.CacheDBException">Throw when there is an SQLite problem when perfoming query</exception>
             public static CurrencyAccount[] GetUserAddressesFromFile(string aDataPath, string aSQLiteFilename)
             {
                 List<CurrencyAccount> lResult = new List<CurrencyAccount>();
@@ -82,7 +82,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     lConnection.Open();
                     if (ReadCurrencyAccount(out List<CurrencyAccount> lCurrencyAccountsLists, lConnection))
                         lResult.AddRange(lCurrencyAccountsLists);
-                    else throw new Pandora.Client.PandorasWallet.Wallet.ClientExceptions.CacheDBException(string.Format("Error retrieving User addresses from file. Connection string: {0}", lConnection.ConnectionString));
+                    else throw new Pandora.Client.PandorasWallet.ClientExceptions.CacheDBException(string.Format("Error retrieving User addresses from file. Connection string: {0}", lConnection.ConnectionString));
                     lConnection.Close();
                 }
 
@@ -490,7 +490,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 return true;
             }
 
-            public bool Write(TransactionRecord aTxRecord, ulong aCurrencyId)
+            public bool WriteTransactionRecord(TransactionRecord aTxRecord, long aCurrencyId)
             {
                 using (SQLiteCommand WriteTxRecord = new SQLiteCommand("INSERT OR REPLACE INTO TxTable (internalid, currencyid, id, dattime, block, TxFee, Valid) VALUES (@internalid, @currencyid, @id, @dattime, @block, @TxFee, @Valid)", FDBConnection))
                 {
@@ -558,7 +558,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 return true;
             }
 
-            public bool Write(List<TransactionRecord> aTxRecord, uint aCurrencyId)
+            public bool WriteTransactionRecords(List<TransactionRecord> aTxRecord, long aCurrencyId)
             {
                 if (!aTxRecord.Any())
                 {
@@ -566,9 +566,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
                 using (SQLiteTransaction lTransaction = FDBConnection.BeginTransaction())
                 {
-                    foreach (TransactionRecord it in aTxRecord)
+                    foreach (TransactionRecord lTransactionRecord in aTxRecord)
                     {
-                        if (!Write(it, aCurrencyId))
+                        if (!WriteTransactionRecord(lTransactionRecord, aCurrencyId))
                         {
                             lTransaction.Rollback();
                             return false;
@@ -601,12 +601,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
-            public bool Read(out List<CurrencyAccount> aCurrencyAccountsList, uint? aCurrencyId = null)
+            public bool Read(out List<CurrencyAccount> aCurrencyAccountsList, long? aCurrencyId = null)
             {
                 return DBManager.ReadCurrencyAccount(out aCurrencyAccountsList, FDBConnection, aCurrencyId);
             }
 
-            private static bool ReadCurrencyAccount(out List<CurrencyAccount> aCurrencyAccountsList, SQLiteConnection aConnection, uint? aCurrencyId = null)
+            private static bool ReadCurrencyAccount(out List<CurrencyAccount> aCurrencyAccountsList, SQLiteConnection aConnection, long? aCurrencyId = null)
             {
                 aCurrencyAccountsList = new List<CurrencyAccount>();
 
@@ -621,7 +621,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         {
                             while (rdr.Read())
                             {
-                                aCurrencyAccountsList.Add(new CurrencyAccount(Convert.ToUInt32(rdr.GetInt64(0)), Convert.ToUInt32(rdr.GetInt32(1)), rdr.GetString(2)));
+                                aCurrencyAccountsList.Add(new CurrencyAccount(rdr.GetInt64(0), rdr.GetInt32(1), rdr.GetString(2)));
                             }
                             return true;
                         }
@@ -634,7 +634,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
-            public bool Read(out List<CurrencyItem> aCurrencyList, uint? aId = null)
+            public bool Read(out List<CurrencyItem> aCurrencyList, long? aId = null)
             {
                 aCurrencyList = new List<CurrencyItem>();
 
@@ -668,12 +668,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 lParams.CopyFrom(lChainParamsObject);
 
                                 aCurrencyList.Add(new CurrencyItem(
-                                    Convert.ToUInt32(rdr.GetInt32(0)),
+                                    Convert.ToInt32(rdr.GetInt32(0)),
                                     rdr.GetString(1),
                                     rdr.GetString(2),
-                                    Convert.ToUInt16(rdr.GetInt16(3)),
+                                    (ushort)rdr.GetInt16(3),
                                     rdr.GetDateTime(5),
-                                    Convert.ToUInt16(rdr.GetInt16(4)),
+                                    Convert.ToInt16(rdr.GetInt16(4)),
                                     lIcon,
                                     rdr.GetInt32(8),
                                     lParams,
@@ -691,7 +691,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 return true;
             }
 
-            public bool Read(out List<CurrencyStatusItem> aCurrencyStatusList, uint? aCurrencyId = null)
+            public bool Read(out List<CurrencyStatusItem> aCurrencyStatusList, long? aCurrencyId = null)
             {
                 aCurrencyStatusList = new List<CurrencyStatusItem>();
 
@@ -706,7 +706,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         {
                             while (rdr.Read())
                             {
-                                aCurrencyStatusList.Add(new CurrencyStatusItem(Convert.ToInt64(rdr.GetInt64(0)), Convert.ToUInt32(rdr.GetInt32(1)), rdr.GetDateTime(2), (CurrencyStatus)Enum.Parse(typeof(CurrencyStatus), rdr.GetString(3)), rdr.GetString(4), Convert.ToUInt64(rdr.GetInt64(5))));
+                                aCurrencyStatusList.Add(new CurrencyStatusItem(Convert.ToInt64(rdr.GetInt64(0)), rdr.GetInt32(1), rdr.GetDateTime(2), (CurrencyStatus)Enum.Parse(typeof(CurrencyStatus), rdr.GetString(3)), rdr.GetString(4), rdr.GetInt64(5)));
                             }
                             return true;
                         }
@@ -719,7 +719,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
-            public bool Read(out List<TransactionRecord> aTxList, uint aCurrencyId)
+            public bool Read(out List<TransactionRecord> aTxList, long aCurrencyId)
             {
                 aTxList = new List<TransactionRecord>();
 
@@ -733,10 +733,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         using (SQLiteDataReader lSqLiteReader = lSqlCommand.ExecuteReader())
                             while (lSqLiteReader.Read())
                                 aTxList.Add(new TransactionRecord(
-                                    Convert.ToUInt64(lSqLiteReader.GetInt64(0)),
+                                    lSqLiteReader.GetInt64(0),
+                                    lSqLiteReader.GetInt64(1),
                                     lSqLiteReader.GetString(2),
                                     lSqLiteReader.GetDateTime(3),
-                                    Convert.ToUInt64(lSqLiteReader.GetInt64(4)),
+                                    Convert.ToInt64(lSqLiteReader.GetInt64(4)),
                                     lSqLiteReader.GetBoolean(6)));
                     }
                 }
@@ -759,7 +760,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             {
                                 while (rdr.Read())
                                 {
-                                    it.AddInput(Convert.ToUInt64(rdr.GetInt64(3)), rdr.GetString(2), Convert.ToUInt64(rdr.GetInt64(1)));
+                                    it.AddInput(Convert.ToInt64(rdr.GetInt64(3)), rdr.GetString(2), Convert.ToInt64(rdr.GetInt64(1)));
                                 }
                             }
                         }
@@ -781,7 +782,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             {
                                 while (rdr.Read())
                                 {
-                                    it.AddOutput(Convert.ToUInt64(rdr.GetInt64(3)), rdr.GetString(2), Convert.ToUInt64(rdr.GetInt64(1)));
+                                    it.AddOutput(rdr.GetInt64(3), rdr.GetString(2), aId: rdr.GetInt32(1));
                                 }
                             }
                         }
@@ -817,7 +818,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
                 string qryWhere = " WHERE type = '" + aType + "'";
                 string qry = "SELECT lastdataretrieval FROM DataReferences" + qryWhere;
-                uint count = 0;
+                long count = 0;
                 DateTime lLastDataRetrieval = new DateTime();
 
                 using (SQLiteCommand command = new SQLiteCommand(qry, FDBConnection))
@@ -949,6 +950,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             public byte[] AssetId { get; set; }
             public byte[] ColoredAddress { get; set; }
             public string Encoder { get; set; }
+            public CapablityFlags Capabilities { get; set; }
         }
     }
 }

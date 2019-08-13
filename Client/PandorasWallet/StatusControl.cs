@@ -32,10 +32,19 @@ namespace Pandora.Client.PandorasWallet
 
         public string StatusName { set => lblStatusBar.Text = value; get => lblStatusBar.Text; }
 
-        public void AddStatus(DateTime aDate, string aStatus)
+        public void AddStatus(int aOrderID, string aDate, string aStatus)
         {
-            ListViewItem item = lstStatus.Items.Add(aDate.ToString());
-            item.SubItems.Add(aStatus);
+            string aKey = aOrderID.ToString();
+            if (!lstStatus.Items.ContainsKey(aKey))
+            {
+                ListViewItem lItem = new ListViewItem()
+                {
+                    Name = aOrderID.ToString(),
+                    Text = aDate
+                };
+                lItem.SubItems.Add(aStatus);
+                lstStatus.Items.Add(lItem);
+            }
         }
 
         public void ClearStatusList()

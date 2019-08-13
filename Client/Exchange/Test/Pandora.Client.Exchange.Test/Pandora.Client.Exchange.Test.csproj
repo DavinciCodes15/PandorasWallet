@@ -19,6 +19,7 @@
     <TestProjectType>UnitTest</TestProjectType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,6 +46,9 @@
     <Compile Include="BittrexApiTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProxyTests.cs" />
+    <Compile Include="FactoryTests.cs" />
+    <Compile Include="ExchangeEntityTests.cs" />
+    <Compile Include="TestExchangeSQlite.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter">
@@ -55,10 +59,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\JKrof\Pandora.Client.Exchange.JKrof.csproj">
-      <Project>{6a854399-8f43-416b-a83e-508b625fb135}</Project>
-      <Name>Pandora.Client.Exchange.JKrof</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Pandora.Client.Exchange\Pandora.Client.Exchange.csproj">
       <Project>{22483063-f3be-4f4f-b2d4-d2c0aa9fda82}</Project>
       <Name>Pandora.Client.Exchange</Name>

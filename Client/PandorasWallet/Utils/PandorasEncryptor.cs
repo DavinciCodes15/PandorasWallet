@@ -43,15 +43,13 @@ namespace Pandora.Client.PandorasWallet.Utils
         private DirectoryInfo FDataFolder;
         private string FInternalID;
         private string FEncryptedFilePath;
-        private SettingsManager FSettingsManager;
-        private Guid FUserGuid = Guid.Empty;
         private PandoraKeys.ExchangeKeys[] FExchangeKeys;
         private string FPasswordHash;
         private KeyInventoryItem[] FInventory;
         private string FSalt = null;
         private int FEncryptionEnd;
 
-        public Guid UserGuid => FUserGuid;
+        public Guid PasscodeEntropy { get; private set; }
 
         public string[] Inventory
         {
@@ -76,7 +74,7 @@ namespace Pandora.Client.PandorasWallet.Utils
         private static UnicodeEncoding FUE = new UnicodeEncoding();
         private bool FPendingChanges;
 
-        public bool isPasswordSet => File.Exists(FEncryptedFilePath);
+        public bool IsPasswordSet => File.Exists(FEncryptedFilePath);
 
         public Tuple<string, string> GetExchangeKeyPair(KeyInventoryItem aInventoryItem)
         {
@@ -97,7 +95,7 @@ namespace Pandora.Client.PandorasWallet.Utils
 
         public void AddOrReplaceInventoryItem(KeyInventoryItem aItem, params string[] aArgs)
         {
-            if (FUserGuid == Guid.Empty)
+            if (PasscodeEntropy == Guid.Empty)
             {
                 throw new InvalidOperationException("To add or replace items the wallet must be decrypted");
             }
@@ -111,7 +109,7 @@ namespace Pandora.Client.PandorasWallet.Utils
                         throw new ArgumentOutOfRangeException(nameof(aArgs), "For GUID only one param is needed");
                     }
 
-                    FUserGuid = ParseGUID(aArgs[0]);
+                    PasscodeEntropy = ParseGUID(aArgs[0]);
 
                     break;
 
@@ -158,7 +156,7 @@ namespace Pandora.Client.PandorasWallet.Utils
 
         public void OverwriteWallet(string aNewPassword = null)
         {
-            if (FUserGuid == Guid.Empty)
+            if (PasscodeEntropy == Guid.Empty)
             {
                 throw new InvalidOperationException("To overwrite wallet first needs to be decrypted");
             }
@@ -170,7 +168,7 @@ namespace Pandora.Client.PandorasWallet.Utils
 
             string lTempFilePath = Path.Combine(FDataFolder.FullName, "_" + FInternalID + ".secret");
 
-            PandoraKeys lPandoraKeys = new PandoraKeys { AccountGuid = FUserGuid, ExchangeCredentials = FExchangeKeys, Inventory = FInventory };
+            PandoraKeys lPandoraKeys = new PandoraKeys { AccountGuid = PasscodeEntropy, ExchangeCredentials = FExchangeKeys, Inventory = FInventory };
 
             File.Copy(FEncryptedFilePath, lTempFilePath);
 
@@ -206,19 +204,18 @@ namespace Pandora.Client.PandorasWallet.Utils
             }
         }
 
-        public PandorasEncryptor(DirectoryInfo aDataFolder, string aInternalID, SettingsManager aSettingManager)
+        public PandorasEncryptor(DirectoryInfo aDataFolder, string aInternalID)
         {
             FDataFolder = aDataFolder;
             FInternalID = aInternalID;
             FEncryptedFilePath = Path.Combine(FDataFolder.FullName, FInternalID + ".secret");
-            FSettingsManager = aSettingManager;
         }
 
         public void CreateEncryptedWalletKeys(string aPassword, string aGuid = "")
         {
-            if (isPasswordSet)
+            if (IsPasswordSet)
             {
-                throw new Wallet.ClientExceptions.EncryptedKeysException("Encrypted key file already exists");
+                throw new ClientExceptions.EncryptedKeysException("Encrypted key file already exists");
             }
 
             Guid lGuid = ParseGUID(aGuid);
@@ -230,21 +227,13 @@ namespace Pandora.Client.PandorasWallet.Utils
             EncryptIntoFile(FEncryptedFilePath, FPasswordHash, lSalt, lKeys);
         }
 
-        public static byte[] GenerateEntropy(int aSize)
-        {
-            var lData = new byte[aSize];
-            var lRandomNumberGenerator = RandomNumberGenerator.Create();
-            lRandomNumberGenerator.GetBytes(lData);
-            return lData;
-        }
-
         private Guid ParseGUID(string aStringGUID)
         {
             Guid lGuid;
 
             if (string.IsNullOrEmpty(aStringGUID))
             {
-                lGuid = new Guid(GenerateEntropy(16));
+                lGuid = Guid.NewGuid();
             }
             else
             {
@@ -257,6 +246,7 @@ namespace Pandora.Client.PandorasWallet.Utils
                     lGuid = Guid.ParseExact(aStringGUID, "N");
                 }
             }
+
             return lGuid;
         }
 
@@ -281,7 +271,7 @@ namespace Pandora.Client.PandorasWallet.Utils
         }
 
         [System.Runtime.InteropServices.DllImport("kernel32")]
-        static extern bool FlushFileBuffers(IntPtr handle);
+        private static extern bool FlushFileBuffers(IntPtr handle);
 
         ///<summary>
         /// Encrypts a file using Rijndael algorithm.
@@ -315,7 +305,6 @@ namespace Pandora.Client.PandorasWallet.Utils
                                 RMCrypto.CreateEncryptor(lkey, lIV),
                                 CryptoStreamMode.Write))
                         {
-                       
                             lCryptoStream.Write(lData, 0, lData.Length);
                             lCryptoStream.FlushFinalBlock();
                             lData = lMemoryStream.ToArray();
@@ -326,9 +315,7 @@ namespace Pandora.Client.PandorasWallet.Utils
 
                         lSalt = lSalt.Concat(BitConverter.GetBytes(lSaltLenght)).ToArray();
 
-
                         lFile.Write(lSalt, 0, lSalt.Length);
-
 
                         byte[] lInventory;
                         if (aKeys.Inventory == null || !aKeys.Inventory.Any())
@@ -343,7 +330,6 @@ namespace Pandora.Client.PandorasWallet.Utils
                         uint lInventoryLenght = (uint)lInventory.Length;
 
                         lInventory = lInventory.Concat(BitConverter.GetBytes(lInventoryLenght)).ToArray();
-
 
                         lFile.Write(lInventory, 0, lInventory.Length);
                         lFile.Flush();
@@ -360,12 +346,12 @@ namespace Pandora.Client.PandorasWallet.Utils
 
         public string GetSecretRootSeed(string aEmail, string aUsername)
         {
-            if (FUserGuid == Guid.Empty)
+            if (PasscodeEntropy == Guid.Empty)
             {
-                throw new Wallet.ClientExceptions.InvalidOperationException("Wallet needs to be decrypt before asking for root seed");
+                throw new ClientExceptions.InvalidOperationException("Wallet needs to be decrypt before asking for root seed");
             }
 
-            return Crypto.Currencies.Controls.CurrencyControl.GetCurrencyControl().GenerateRootSeed(aEmail, aUsername, FUserGuid);
+            return Crypto.Currencies.Controls.CurrencyControl.GenerateRootSeed(aEmail, aUsername, PasscodeEntropy.ToByteArray());
         }
 
         public Tuple<string, string> GetExchangeKeys(string aExchange)
@@ -385,7 +371,7 @@ namespace Pandora.Client.PandorasWallet.Utils
             return CryptSharp.Crypter.CheckPassword(aPassword, FPasswordHash);
         }
 
-        private string GetSaltFromFile(string aEncryptedFile, out int aEndPosition, int aOffSet)
+        private static string GetSaltFromFile(string aEncryptedFile, out int aEndPosition, int aOffSet)
         {
             string lSalt;
 
@@ -394,7 +380,7 @@ namespace Pandora.Client.PandorasWallet.Utils
             return lSalt;
         }
 
-        private KeyInventoryItem[] GetInventoryFromFile(string aEncryptedFile, out int aEndPosition)
+        private static KeyInventoryItem[] GetInventoryFromFile(string aEncryptedFile, out int aEndPosition)
         {
             List<KeyInventoryItem> lInventory = new List<KeyInventoryItem>();
 
@@ -412,7 +398,7 @@ namespace Pandora.Client.PandorasWallet.Utils
             return lInventory.ToArray();
         }
 
-        public byte[] GetUncryptedData(string aEncryptedFile, out int aEndPosition, int aOffSet = 0)
+        public static byte[] GetUncryptedData(string aEncryptedFile, out int aEndPosition, int aOffSet = 0)
         {
             byte[] lOutArray;
 
@@ -467,11 +453,8 @@ namespace Pandora.Client.PandorasWallet.Utils
             try
             {
                 PandoraKeys lKeys = DecryptFile(lPasswordHash, FEncryptedFilePath, FEncryptionEnd);
-
-                FUserGuid = lKeys.AccountGuid;
-
+                PasscodeEntropy = lKeys.AccountGuid;
                 FExchangeKeys = lKeys.ExchangeCredentials;
-
                 FPasswordHash = lPasswordHash;
             }
             catch
@@ -480,6 +463,25 @@ namespace Pandora.Client.PandorasWallet.Utils
             }
 
             return true;
+        }
+
+        public static OldPandoraSecretFileData ReadAllFromOldFile(string aFile, string aPassword)
+        {
+            OldPandoraSecretFileData lOldPandoraSecretFileData = new OldPandoraSecretFileData();
+            lOldPandoraSecretFileData.PandoraKeys.Inventory = GetInventoryFromFile(aFile, out int lInventoryEnd);
+            lOldPandoraSecretFileData.Salt = GetSaltFromFile(aFile, out int lEncryptionEnd, lInventoryEnd);
+
+            string lPasswordHash = GetSecureHash(aPassword, lOldPandoraSecretFileData.Salt);
+            try
+            {
+                lOldPandoraSecretFileData.PandoraKeys = DecryptFile(lPasswordHash, aFile, lInventoryEnd);
+            }
+            catch
+            {
+                return null;
+            }
+
+            return lOldPandoraSecretFileData;
         }
 
         private static Tuple<byte[], byte[]> GetCryptoKeyAndIV(string aPassword)
@@ -500,7 +502,7 @@ namespace Pandora.Client.PandorasWallet.Utils
         ///<summary>
         /// Decrypts a file using Rijndael algorithm.
         ///</summary>
-        private PandoraKeys DecryptFile(string aPassword, string aEncryptedFile, int aEndPosition)
+        private static PandoraKeys DecryptFile(string aPassword, string aEncryptedFile, int aEndPosition)
         {
             Tuple<byte[], byte[]> lkeys = GetCryptoKeyAndIV(aPassword);
 
@@ -544,6 +546,12 @@ namespace Pandora.Client.PandorasWallet.Utils
                 return lKeys;
             }
         }
+    }
+
+    internal class OldPandoraSecretFileData
+    {
+        public PandoraKeys PandoraKeys;
+        public string Salt;
     }
 
     [Serializable]

@@ -18,11 +18,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
+using Pandora.Client.PandorasWallet.Dialogs.Contracts;
 using System.Windows.Forms;
 
 namespace Pandora.Client.PandorasWallet.Dialogs
 {
-    public partial class BaseDialog : Form
+    public partial class BaseDialog : Form, IBaseDialogWindow
     {
         public BaseDialog()
         {
@@ -30,14 +31,13 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         }
 
         public bool Execute()
-        {   
-            
-            if (ParentWindow == null) 
+        {
+            if (ParentWindow == null)
                 return ShowDialog() == DialogResult.OK;
             else
-                return ShowDialog(ParentWindow) == DialogResult.OK;
+                return ShowDialog((IWin32Window)ParentWindow) == DialogResult.OK;
         }
 
-        public IWin32Window ParentWindow { get; set; }
+        public object ParentWindow { get; set; }
     }
 }

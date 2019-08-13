@@ -18,8 +18,7 @@
     <ReferencePath>$(ProgramFiles)\Common Files\microsoft shared\VSTT\$(VisualStudioVersion)\UITestExtensionPackages</ReferencePath>
     <IsCodedUITest>False</IsCodedUITest>
     <TestProjectType>UnitTest</TestProjectType>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -58,10 +57,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ThreadingMgrProposal\Pandora.Client.ThreadingMgrProposal.csproj">
-      <Project>{27366928-e5b1-47e9-90c5-641e2235a55e}</Project>
-      <Name>Pandora.Client.ThreadingMgrProposal</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Pandora.Client.Universal.csproj">
       <Project>{e798fc0d-eafd-49a9-b5fb-5391ad59364f}</Project>
       <Name>Pandora.Client.Universal</Name>

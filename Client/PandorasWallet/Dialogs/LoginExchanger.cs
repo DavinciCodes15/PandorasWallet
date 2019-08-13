@@ -32,6 +32,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public LoginExchanger()
         {
             InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
         public string ExchageKey => Regex.Replace(txtKey.Text, " ", "");
@@ -59,7 +60,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardUnhandledErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 
@@ -71,7 +72,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
             catch (Exception ex)
             {
-                this.StandardUnhandledErrorMsgBox(ex.Message);
+                this.StandardExceptionMsgBox(ex);
             }
         }
 

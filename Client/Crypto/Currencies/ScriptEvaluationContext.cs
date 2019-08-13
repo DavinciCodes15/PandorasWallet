@@ -400,7 +400,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         public bool VerifyScript(Script scriptSig, Script scriptPubKey, TransactionChecker checker)
         {
-            WitScript witness = null;//checker.Input.WitScript;
+            WitScript witness = checker.Input.WitScript;
             SetError(ScriptError.UnknownError);
             if ((ScriptVerify & ScriptVerify.SigPushOnly) != 0 && !scriptSig.IsPushOnly)
                 return SetError(ScriptError.SigPushOnly);
