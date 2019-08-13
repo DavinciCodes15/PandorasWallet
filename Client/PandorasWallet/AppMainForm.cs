@@ -154,9 +154,9 @@ namespace Pandora.Client.PandorasWallet
 
         public Color UnconfirmedBalanceColor { get => lblUnconfirmed.ForeColor; set => lblUnconfirmed.ForeColor = lblNameUnconfirmed.ForeColor = value; }
 
-        public Color ConfirmedBalanceColor { get => lblConfirmed.ForeColor; set => lblConfirmed.ForeColor = lblNameConfirmed.ForeColor = value; }
+        //public Color ConfirmedBalanceColor { get => lblConfirmed.ForeColor; set => lblConfirmed.ForeColor = lblNameConfirmed.ForeColor = value; }
 
-        public string Confirmed { get => lblConfirmed.Text; set => lblConfirmed.Text = value; }
+        //public string Confirmed { get => lblConfirmed.Text; set => lblConfirmed.Text = value; }
 
         public string SearchBar { get => txtBoxSearchCoin.Text; set => txtBoxSearchCoin.Text = value; }
 
@@ -254,7 +254,7 @@ namespace Pandora.Client.PandorasWallet
         {
             this.TotalCoins = FormatedAmount(SelectedCurrency.Balance, SelectedCurrency.Precision);
             this.UnconfirmedBalance = FormatedAmount(SelectedCurrency.UnconfirmedBalance, SelectedCurrency.Precision);
-            this.Confirmed = FormatedAmount(SelectedCurrency.ConfirmedBalance, SelectedCurrency.Precision);
+            //this.Confirmed = FormatedAmount(SelectedCurrency.ConfirmedBalance, SelectedCurrency.Precision);
             this.CoinName = SelectedCurrency.Name;
             this.CoinStatus = SelectedCurrency.CurrentStatus.ToString();
             this.ReceiveAddress = SelectedCurrency.LastAddress;
