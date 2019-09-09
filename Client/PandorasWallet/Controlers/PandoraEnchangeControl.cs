@@ -46,9 +46,13 @@ namespace Pandora.Client.PandorasWallet.Controlers
         private PandoraExchangeSQLiteSaveManager FDBExchanger;
         private string FLastExchangeSelectedCurrency = "";
         private PandoraClientControl FPandoraClientControl;
-        private ServerAccess.ServerConnection FPandorasWalletConnection { get;
+
+        private ServerAccess.ServerConnection FPandorasWalletConnection
+        {
+            get;
             set;
         }
+
         private bool FDisableUpdating;
 
         private readonly object FExchangeInterfaceLock = new object();
@@ -164,9 +168,11 @@ namespace Pandora.Client.PandorasWallet.Controlers
             if (!FExchangeCurrencyOrders[aCurrencyItem.Id].Any())
                 FExchangeCurrencyOrders[aCurrencyItem.Id].AddRange(FExchanger.LoadTransactions(aCurrencyItem.Ticker));
             PandoraExchanger.ExchangeMarket[] lMarkets = FExchanger.GetMarketCoins(aCurrencyItem.Ticker);
-            PandoraExchanger.ExchangeMarket lMarket = lMarkets.ToList().Find(x => x.BaseTicker == aCurrencyItem.Ticker);
-            foreach (var lOrder in FExchangeCurrencyOrders)
-                AddCurrencyOrdersToGUI(lOrder.Key, lMarket, lOrder.Value, false);
+            foreach (var lOrder in FExchangeCurrencyOrders[aCurrencyItem.Id])
+            {
+                PandoraExchanger.ExchangeMarket lMarket = lMarkets.ToList().Find(x => x.MarketName == lOrder.Market);
+                AddCurrencyOrdersToGUI(aCurrencyItem.Id, lMarket, lOrder, false);
+            }
         }
 
         public void SaveRestoredKeyAndSecret(string aEncryptedKey, string aEncryptedSecret)
@@ -567,32 +573,33 @@ namespace Pandora.Client.PandorasWallet.Controlers
             SetGUILastTransaction(lMarketOrder);
         }
 
-        private void AddCurrencyOrdersToGUI(long aCurrencyID, PandoraExchanger.ExchangeMarket aMarket, IEnumerable<MarketOrder> aMarketOrders, bool aUpdateGUI = true)
+        private void AddCurrencyOrdersToGUI(long aCurrencyID, PandoraExchanger.ExchangeMarket aMarket, MarketOrder aMarketOrder, bool aUpdateGUI = true)
         {
-            if (aMarket == null) return;
-            foreach (var lMarketOrder in aMarketOrders)
+            if (aMarket == null)
             {
-                decimal lRate = aMarket.IsSell ? 1 / lMarketOrder.Rate : lMarketOrder.Rate;
-                decimal lRawAmount = lMarketOrder.SentQuantity / lRate;
-                decimal lQuantity = Math.Round(lRawAmount - FExchanger.GetTransactionsFee(aMarket.CoinTicker) - (lRawAmount * (decimal)0.0025), FPandorasWalletConnection.GetDefaultCurrency().Precision);
-                var lOrderView = new AppMainForm.ExchangeOrderViewModel(lMarketOrder, new AppMainForm.ExchangeOrderViewModel.ExchangeOrderViewModelContextData
-                {
-                    ExchangeFee = FExchanger.GetTransactionsFee(aMarket.CoinTicker),
-                    MainForm = MainForm,
-                    Market = aMarket,
-                    Precision = FPandorasWalletConnection.GetDefaultCurrency().Precision,
-                    TradeComission = 0.0025M
-                });
-                FDBExchanger.ReadOrderLogs(lMarketOrder.InternalID, out List<OrderMessage> lMessages);
-                lOrderView.AddLog(lMessages.Select(lMessage => new AppMainForm.ExchangeOrderLogViewModel
-                {
-                    ID = lMessage.ID,
-                    Message = lMessage.Message,
-                    Time = lMessage.Time.ToLocalTime().ToString()
-                }));
-                var lAsyncResult = MainForm.BeginInvoke(new MethodInvoker(() => MainForm.AddOrUpdateOrder(lOrderView, aCurrencyID, aUpdateGUI)));
-                MainForm.EndInvoke(lAsyncResult);
+                Log.Write(LogLevel.Error, $"Exchange GUI: Market not present for order with name {aMarketOrder.Name}.");
+                return;
             }
+            decimal lRate = aMarket.IsSell ? 1 / aMarketOrder.Rate : aMarketOrder.Rate;
+            decimal lRawAmount = aMarketOrder.SentQuantity / lRate;
+            decimal lQuantity = Math.Round(lRawAmount - FExchanger.GetTransactionsFee(aMarket.CoinTicker) - (lRawAmount * (decimal)0.0025), FPandorasWalletConnection.GetDefaultCurrency().Precision);
+            var lOrderView = new AppMainForm.ExchangeOrderViewModel(aMarketOrder, new AppMainForm.ExchangeOrderViewModel.ExchangeOrderViewModelContextData
+            {
+                ExchangeFee = FExchanger.GetTransactionsFee(aMarket.CoinTicker),
+                MainForm = MainForm,
+                Market = aMarket,
+                Precision = FPandorasWalletConnection.GetDefaultCurrency().Precision,
+                TradeComission = 0.0025M
+            });
+            FDBExchanger.ReadOrderLogs(aMarketOrder.InternalID, out List<OrderMessage> lMessages);
+            lOrderView.AddLog(lMessages.Select(lMessage => new AppMainForm.ExchangeOrderLogViewModel
+            {
+                ID = lMessage.ID,
+                Message = lMessage.Message,
+                Time = lMessage.Time.ToLocalTime().ToString()
+            }));
+            var lAsyncResult = MainForm.BeginInvoke(new MethodInvoker(() => MainForm.AddOrUpdateOrder(lOrderView, aCurrencyID, aUpdateGUI)));
+            MainForm.EndInvoke(lAsyncResult);
         }
 
         private int RandomNumber(int aMin, int aMax)
@@ -645,6 +652,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
         public void StopProcess()
         {
             if (!Started) return;
+            FExchanger?.StopMarketUpdating();
             StopTasks();
             ResetInterface();
             ClearResources();
@@ -842,6 +850,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 decimal lAmount = aMarket.IsSell ? aOrder.SentQuantity : aOrder.SentQuantity + (aOrder.SentQuantity * (decimal)0.025);
                 decimal lTxFee = 0;
                 int lCounter = 0;
+                string lExceptionMessage = string.Empty;
                 do
                 {
                     lCounter++;
@@ -850,12 +859,17 @@ namespace Pandora.Client.PandorasWallet.Controlers
                         lTxFee = PandoraClientControl.GetInstance().CalculateTxFee(lExchangeAddress, lAmount, aCurrencyID);
                         break;
                     }
-                    catch
+                    catch (SubscriptionOverException)
                     {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        lExceptionMessage = ex.Message;
                         continue;
                     }
                 } while (lCounter < 6);
-                if (lTxFee == 0) throw new Exception("Failed to get transaction txfee");
+                if (lTxFee == 0) throw new Exception($"Failed to get transaction txfee. Details: {lExceptionMessage}");
                 decimal lBalance = PandoraClientControl.GetInstance().GetBalance(aCurrencyID);
                 decimal lDecimalTxFee = (lTxFee / (decimal)Math.Pow(10, FPandorasWalletConnection.GetDefaultCurrency().Precision));
                 if (lBalance == 0 || (lAmount + lDecimalTxFee) > lBalance) throw new Exception("Not enough balance to transfer to the exchange");
@@ -939,9 +953,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 FExchangeCurrencyOrders[ActiveCurrencyID].Add(lOrderWithID);
                 var lCurrency = FPandoraClientControl.GetCurrency(ActiveCurrencyID);
 
-                PandoraExchanger.ExchangeMarket[] lMarkets = FExchanger.GetMarketCoins(lCurrency.Ticker);
-                PandoraExchanger.ExchangeMarket lMarket = lMarkets.ToList().Find(x => x.BaseTicker == lCurrency.Ticker);
-                AddCurrencyOrdersToGUI(ActiveCurrencyID, lMarket, new[] { lOrderWithID });
+                AddCurrencyOrdersToGUI(ActiveCurrencyID, aMarket, lOrderWithID);
 
                 WriteTransactionLogEntry(lOrderWithID);
                 SetGUILastTransaction(lOrderWithID);
@@ -1165,7 +1177,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
             MainForm.OnTxtTotalLeave -= MainForm_OnTotalReceivedChanged;
             MainForm.OnCheckAllOrderHistory -= MainForm_OnCheckAllOrderHistory;
             StopProcess();
-
         }
     }
 }

@@ -36,25 +36,29 @@
             this.btnChangeDefaultCoin = new System.Windows.Forms.Button();
             this.BrowseButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.btnPrivKey = new System.Windows.Forms.Button();
+            this.lblSelectedCoin = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.imgCurrentCoin = new System.Windows.Forms.PictureBox();
             this.imgBoxDefaultCoin = new System.Windows.Forms.PictureBox();
+            this.btnPrivKey = new System.Windows.Forms.Button();
             this.checkEncryptWallet = new System.Windows.Forms.CheckBox();
             this.SelectFolderDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.imgCurrentCoin)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.imgBoxDefaultCoin)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.BackColor = System.Drawing.Color.Transparent;
-            this.btnCancel.Location = new System.Drawing.Point(341, 158);
+            this.btnCancel.Location = new System.Drawing.Point(341, 260);
             this.btnCancel.UseVisualStyleBackColor = false;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // btnOK
             // 
             this.btnOK.BackColor = System.Drawing.Color.Transparent;
-            this.btnOK.Location = new System.Drawing.Point(259, 158);
+            this.btnOK.Location = new System.Drawing.Point(259, 260);
             this.btnOK.UseVisualStyleBackColor = false;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
@@ -88,7 +92,7 @@
             // 
             this.lblDefaultCoin.AutoSize = true;
             this.lblDefaultCoin.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDefaultCoin.Location = new System.Drawing.Point(136, 34);
+            this.lblDefaultCoin.Location = new System.Drawing.Point(136, 30);
             this.lblDefaultCoin.Name = "lblDefaultCoin";
             this.lblDefaultCoin.Size = new System.Drawing.Size(118, 17);
             this.lblDefaultCoin.TabIndex = 17;
@@ -120,8 +124,11 @@
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.btnPrivKey);
+            this.groupBox2.Controls.Add(this.lblSelectedCoin);
+            this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Controls.Add(this.imgCurrentCoin);
             this.groupBox2.Controls.Add(this.imgBoxDefaultCoin);
+            this.groupBox2.Controls.Add(this.btnPrivKey);
             this.groupBox2.Controls.Add(this.checkEncryptWallet);
             this.groupBox2.Controls.Add(this.txtDataPath);
             this.groupBox2.Controls.Add(this.lblDataPath);
@@ -131,35 +138,67 @@
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Location = new System.Drawing.Point(16, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(400, 140);
+            this.groupBox2.Size = new System.Drawing.Size(400, 242);
             this.groupBox2.TabIndex = 22;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Wallet";
             // 
-            // btnPrivKey
+            // lblSelectedCoin
             // 
-            this.btnPrivKey.Location = new System.Drawing.Point(325, 109);
-            this.btnPrivKey.Name = "btnPrivKey";
-            this.btnPrivKey.Size = new System.Drawing.Size(65, 23);
-            this.btnPrivKey.TabIndex = 23;
-            this.btnPrivKey.Text = "Priv. Key";
-            this.btnPrivKey.UseVisualStyleBackColor = true;
-            this.btnPrivKey.Click += new System.EventHandler(this.btnPrivKey_Click);
+            this.lblSelectedCoin.AutoSize = true;
+            this.lblSelectedCoin.Location = new System.Drawing.Point(70, 177);
+            this.lblSelectedCoin.Name = "lblSelectedCoin";
+            this.lblSelectedCoin.Size = new System.Drawing.Size(49, 13);
+            this.lblSelectedCoin.TabIndex = 26;
+            this.lblSelectedCoin.Text = "%COIN%";
+            this.lblSelectedCoin.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(19, 140);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(110, 13);
+            this.label2.TabIndex = 25;
+            this.label2.Text = "Current selected coin:";
+            // 
+            // imgCurrentCoin
+            // 
+            this.imgCurrentCoin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.imgCurrentCoin.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.imgCurrentCoin.Location = new System.Drawing.Point(23, 164);
+            this.imgCurrentCoin.Name = "imgCurrentCoin";
+            this.imgCurrentCoin.Size = new System.Drawing.Size(40, 40);
+            this.imgCurrentCoin.TabIndex = 24;
+            this.imgCurrentCoin.TabStop = false;
             // 
             // imgBoxDefaultCoin
             // 
+            this.imgBoxDefaultCoin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.imgBoxDefaultCoin.Location = new System.Drawing.Point(90, 19);
             this.imgBoxDefaultCoin.Name = "imgBoxDefaultCoin";
             this.imgBoxDefaultCoin.Size = new System.Drawing.Size(40, 40);
             this.imgBoxDefaultCoin.TabIndex = 22;
             this.imgBoxDefaultCoin.TabStop = false;
             // 
+            // btnPrivKey
+            // 
+            this.btnPrivKey.AutoSize = true;
+            this.btnPrivKey.Location = new System.Drawing.Point(187, 174);
+            this.btnPrivKey.MaximumSize = new System.Drawing.Size(210, 0);
+            this.btnPrivKey.Name = "btnPrivKey";
+            this.btnPrivKey.Size = new System.Drawing.Size(186, 23);
+            this.btnPrivKey.TabIndex = 23;
+            this.btnPrivKey.Text = "View %COIN% private key...";
+            this.btnPrivKey.UseVisualStyleBackColor = true;
+            this.btnPrivKey.Click += new System.EventHandler(this.btnPrivKey_Click);
+            // 
             // checkEncryptWallet
             // 
             this.checkEncryptWallet.AutoSize = true;
             this.checkEncryptWallet.Checked = true;
             this.checkEncryptWallet.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkEncryptWallet.Location = new System.Drawing.Point(19, 113);
+            this.checkEncryptWallet.Location = new System.Drawing.Point(175, 122);
             this.checkEncryptWallet.Name = "checkEncryptWallet";
             this.checkEncryptWallet.Size = new System.Drawing.Size(215, 17);
             this.checkEncryptWallet.TabIndex = 21;
@@ -171,7 +210,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.BackColor = System.Drawing.SystemColors.InactiveCaption;
-            this.ClientSize = new System.Drawing.Size(428, 193);
+            this.ClientSize = new System.Drawing.Size(428, 295);
             this.Controls.Add(this.groupBox2);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(500, 500);
@@ -186,6 +225,7 @@
             this.Controls.SetChildIndex(this.groupBox2, 0);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.imgCurrentCoin)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.imgBoxDefaultCoin)).EndInit();
             this.ResumeLayout(false);
 
@@ -203,5 +243,8 @@
         private System.Windows.Forms.FolderBrowserDialog SelectFolderDialog;
         private System.Windows.Forms.PictureBox imgBoxDefaultCoin;
         private System.Windows.Forms.Button btnPrivKey;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.PictureBox imgCurrentCoin;
+        private System.Windows.Forms.Label lblSelectedCoin;
     }
 }

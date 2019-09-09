@@ -102,18 +102,15 @@ namespace Pandora.Client.PandorasWallet
 
             lstExchangeMarket.LargeImageList = lstViewCurrencies.ImageList;
             lstExchangeMarket.SmallImageList = lstViewCurrencies.ImageList;
-            this.FormClosed += AppMainForm_FormClosed;
-        }
-
-        private void AppMainForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
         }
 
         public void SetUserStatus(UserStatuses aStatus, string aEmail = null, string aUsername = null)
         {
+            string lAppTitle = "Pandora's Wallet";
             if (aUsername != null)
             {
                 toolStripStatusUsername.Text = aUsername;
+                lAppTitle += $" - {aUsername}";
             }
             else
             {
@@ -123,6 +120,7 @@ namespace Pandora.Client.PandorasWallet
             if (aEmail != null)
             {
                 toolStripStatusEmail.Text = aEmail;
+                lAppTitle += $" - {aEmail}";
             }
             else
             {
@@ -130,6 +128,7 @@ namespace Pandora.Client.PandorasWallet
             }
 
             toolStripConnectionStatus.Text = aStatus.GetEnumDescription();
+            FormName = lAppTitle;
         }
 
         private CurrencyView CurrencyViewControl => lstViewCurrencies;
@@ -203,11 +202,6 @@ namespace Pandora.Client.PandorasWallet
             QuickAmountTextBox.Enabled = aEnabled;
         }
 
-        public void AddOrUpdateCurrencyToListView(CurrencyItem aCoin)
-        {
-            uint lId = Convert.ToUInt32(aCoin.Id);
-        }
-
         public void ClearAll()
         {
             TransactionView.Items.Clear();
@@ -236,7 +230,7 @@ namespace Pandora.Client.PandorasWallet
                 {
                     SelectedCurrency = FCurrencyLookup[SelectedCurrencyId];
                     this.CoinImage = Globals.BytesToIcon(SelectedCurrency.Icon).ToBitmap();
-                    UpdateCurrncyView();
+                    UpdateCurrencyView();
                     this.NotesBox = "";
 
                     foreach (var lTransaction in SelectedCurrency.Transactions)
@@ -250,7 +244,7 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void UpdateCurrncyView()
+        private void UpdateCurrencyView()
         {
             this.TotalCoins = FormatedAmount(SelectedCurrency.Balance, SelectedCurrency.Precision);
             this.UnconfirmedBalance = FormatedAmount(SelectedCurrency.UnconfirmedBalance, SelectedCurrency.Precision);
@@ -302,20 +296,18 @@ namespace Pandora.Client.PandorasWallet
 
         public bool UpdateCurrency(Currency aCurrency)
         {
-            FCurrencyLookup.TryGetValue(aCurrency.Id, out Currency lCurrency);
-            if (lCurrency == aCurrency)
+            bool lResult = FCurrencyLookup.TryGetValue(aCurrency.Id, out Currency lCurrency) && ReferenceEquals(lCurrency, aCurrency);
+            if (lResult)
             {
                 var lCustomValues = new string[] { FormatedAmount(aCurrency.Balance, aCurrency.Precision), aCurrency.CurrentStatus.ToString() };
-                CurrencyViewControl.UpdateCurrency(aCurrency.Id, aCurrency.Name, aCurrency.Ticker, Globals.BytesToIcon(aCurrency.Icon), lCustomValues);
+                CurrencyViewControl.UpdateCurrency(aCurrency.Id, aCurrency.Name, aCurrency.Ticker, lCustomValues);
                 if (SelectedCurrency.Id == aCurrency.Id)
-                    UpdateCurrncyView();
+                    UpdateCurrencyView();
             }
-            else
-                lCurrency = null;
-            return lCurrency == null;
+            return lResult;
         }
 
-        public bool RemeveTransaction(Transaction aTransaction)
+        public bool RemoveTransaction(Transaction aTransaction)
         {
             ListViewItem lListViewItem = null;
             foreach (var lObj in TransactionView.Items)
@@ -333,6 +325,16 @@ namespace Pandora.Client.PandorasWallet
                 UpdateCurrency(SelectedCurrency);
             }
             return lListViewItem != null;
+        }
+
+        public void RefreshTransactions(long aCurrencyID = -1)
+        {
+            if (SelectedCurrency.Id == aCurrencyID || aCurrencyID < 0)
+            {
+                TransactionView.Items.Clear();
+                foreach (var lTransaction in SelectedCurrency.Transactions)
+                    AddTransaction(lTransaction);
+            }
         }
 
         private void listTransactions_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
@@ -426,6 +428,10 @@ namespace Pandora.Client.PandorasWallet
             try
             {
                 OnTransactionSend(sender, e);
+            }
+            catch (SubscriptionOverException ex)
+            {
+                this.StandardErrorMsgBox("Subscription period over!", ex.Message);
             }
             catch (Exception ex)
             {
@@ -1116,6 +1122,10 @@ namespace Pandora.Client.PandorasWallet
             {
                 OnSendAllMenuClick?.Invoke(sender, e);
             }
+            catch (SubscriptionOverException ex)
+            {
+                this.StandardErrorMsgBox("Subscription period over!", ex.Message);
+            }
             catch (Exception ex)
             {
                 this.StandardExceptionMsgBox(ex);
@@ -1247,6 +1257,11 @@ namespace Pandora.Client.PandorasWallet
                 return lResult;
             }
 
+            public void ClearTransactions()
+            {
+                FTransactions.Clear();
+            }
+
             public void UpdateBalance()
             {
                 UnconfirmedBalance = 0;
@@ -1285,9 +1300,9 @@ namespace Pandora.Client.PandorasWallet
 
                 public decimal GetReceivingQuantity(decimal aSentQuantity, decimal aOrderRate)
                 {
-                    decimal lRate = Market.IsSell ? 1 / aOrderRate : aOrderRate;
-                    decimal lRawAmount = aSentQuantity / lRate;
-                    decimal lQuantity = Math.Round(lRawAmount - ExchangeFee - (lRawAmount * TradeComission), Precision);
+                    decimal lRate = Market.IsSell ? aOrderRate : 1 / aOrderRate;
+                    decimal lRawAmount = aSentQuantity * lRate;
+                    decimal lQuantity = Math.Round(lRawAmount - (lRawAmount * TradeComission), Precision);
                     return lQuantity;
                 }
             }

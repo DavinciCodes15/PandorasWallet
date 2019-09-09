@@ -80,7 +80,8 @@ namespace Pandora.Client.ClientLib
                                 AssetId =  aItem["AssetId"].ToObject<byte[]>(aSerializer),
                                 Capabilities =  (CapablityFlags)aItem["Capabilities"].Value<int>(),
                                 ColoredAddress =  aItem["ColoredAddress"].ToObject<byte[]>(aSerializer),
-                                Encoder = aItem["Encoder"].Value<string>()
+                                Encoder = aItem["Encoder"].Value<string>(),
+                                Version = aItem["Version"].Value<long>()
                             };
                         }
                     },

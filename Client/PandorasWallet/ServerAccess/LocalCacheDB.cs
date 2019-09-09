@@ -12,7 +12,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     internal class LocalCacheDB : IDisposable
 
     {
-        private SQLiteConnection FSQLiteConnection;
+        protected SQLiteConnection FSQLiteConnection;
 
         public string FileName { get; private set; }
 
@@ -33,7 +33,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        private string[] GetTableNames()
+        protected virtual string[] GetTableNames()
         {
             List<string> lTableNames = new List<string>();
 
@@ -60,7 +60,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         private const int VERSION = 10013;
 
-        private void CreateTables()
+        protected virtual void CreateTables()
         {
             using (SQLiteTransaction lTransaction = FSQLiteConnection.BeginTransaction())
             {
@@ -199,7 +199,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return lResult;
         }
 
-        public void WriteMonitoredAccount(CurrencyAccount aCurrencyAccount)
+        public virtual void WriteMonitoredAccount(CurrencyAccount aCurrencyAccount)
         {
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO MonitoredAccounts (id, currencyid, address) VALUES (@Id, @currencyId, @address)", FSQLiteConnection))
             {
@@ -210,7 +210,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        public void Write(List<CurrencyAccount> aCurrencyList)
+        public virtual void Write(IEnumerable<CurrencyAccount> aCurrencyList)
         {
             if (!aCurrencyList.Any()) return;
             using (SQLiteTransaction lSQLiteTransaction = FSQLiteConnection.BeginTransaction())
@@ -227,7 +227,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
         }
 
-        public void Write(CurrencyItem aCurrencyItem)
+        public virtual void Write(CurrencyItem aCurrencyItem)
         {
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO Currencies (id, name, ticker, precision, MinConfirmations,livedate,Icon,IconSize,FeePerKb, ChainParams, Status) VALUES (@id,@name,@ticker,@precision,@MinConfirmations,@LiveDate,@Icon,@IconSize,@FeePerKb, @ChainParams,@Status)", FSQLiteConnection))
             {
@@ -257,7 +257,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        public void WriteBlockHeight(long aCurrencyId, long aBlockHeight)
+        public virtual void WriteBlockHeight(long aCurrencyId, long aBlockHeight)
         {
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO BlockHeight (blockcount , currencyid) VALUES (@height,@id)", FSQLiteConnection))
             {
@@ -280,7 +280,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        public void Write(List<CurrencyItem> aCurrItemList)
+        public virtual void Write(List<CurrencyItem> aCurrItemList)
         {
             if (!aCurrItemList.Any()) return;
 
@@ -298,7 +298,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
         }
 
-        public void Write(CurrencyStatusItem aCurrencyStatusItem)
+        public virtual void Write(CurrencyStatusItem aCurrencyStatusItem)
         {
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO CurrenciesStatus (id, currencyid, statustime, status, extinfo, blockheight) VALUES (@StatusId,@currencyid,@statustime,@status,@extinfo,@blockheight)", FSQLiteConnection))
             {
@@ -329,7 +329,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
         }
 
-        public void Write(List<CurrencyStatusItem> aCurrencyStatusItemList)
+        public virtual void Write(List<CurrencyStatusItem> aCurrencyStatusItemList)
         {
             if (!aCurrencyStatusItemList.Any()) return;
             using (SQLiteTransaction lSQLiteTransaction = FSQLiteConnection.BeginTransaction())
@@ -346,46 +346,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
         }
 
-        public void Write(TransactionRecord aTransactionRecord)
+        public virtual void Write(TransactionRecord aTransactionRecord)
         {
             using (SQLiteTransaction lSQLiteTransaction = FSQLiteConnection.BeginTransaction())
                 try
                 {
-                    using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TxTable (internalid, currencyid, id, dattime, block, TxFee, Valid) VALUES (@internalid, @currencyid, @id, @dattime, @block, @TxFee, @Valid)", FSQLiteConnection))
-                    {
-                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("internalid", aTransactionRecord.TransactionRecordId));
-                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("currencyid", aTransactionRecord.CurrencyId));
-                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("id", aTransactionRecord.TxId));
-                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("dattime", aTransactionRecord.TxDate));
-                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("block", aTransactionRecord.Block));
-                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("TxFee", aTransactionRecord.TxFee));
-                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("Valid", aTransactionRecord.Valid));
-
-                        lSQLiteCommand.ExecuteNonQuery();
-                    }
-
-                    foreach (TransactionUnit lTransactionUnit in aTransactionRecord.Inputs)
-                        using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TxIn (internalid, id, address, ammount) VALUES (@internalid, @id, @address, @ammount)", FSQLiteConnection))
-                        {
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("internalid", aTransactionRecord.TransactionRecordId));
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("id", lTransactionUnit.Id));
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("address", lTransactionUnit.Address));
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("ammount", lTransactionUnit.Amount));
-
-                            lSQLiteCommand.ExecuteNonQuery();
-                        }
-
-                    foreach (TransactionUnit lTransactionUnit in aTransactionRecord.Outputs)
-                        using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TxOut (internalid, id, address, ammount, nindex) VALUES (@internalid, @id, @address, @ammount, @nindex)", FSQLiteConnection))
-                        {
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("internalid", aTransactionRecord.TransactionRecordId));
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("id", lTransactionUnit.Id));
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("address", lTransactionUnit.Address));
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("ammount", lTransactionUnit.Amount));
-                            lSQLiteCommand.Parameters.Add(new SQLiteParameter("nindex", lTransactionUnit.Index));
-
-                            lSQLiteCommand.ExecuteNonQuery();
-                        }
+                    WriteTransaction(aTransactionRecord, FSQLiteConnection);
                     lSQLiteTransaction.Commit();
                 }
                 catch
@@ -395,7 +361,46 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
         }
 
-        public void Write(List<TransactionRecord> aTransactionRecordList, long aCurrencyId)
+        protected void WriteTransaction(TransactionRecord aTransactionRecord, SQLiteConnection aSQLConnection)
+        {
+            using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TxTable (internalid, currencyid, id, dattime, block, TxFee, Valid) VALUES (@internalid, @currencyid, @id, @dattime, @block, @TxFee, @Valid)", aSQLConnection))
+            {
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("internalid", aTransactionRecord.TransactionRecordId));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("currencyid", aTransactionRecord.CurrencyId));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("id", aTransactionRecord.TxId));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("dattime", aTransactionRecord.TxDate));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("block", aTransactionRecord.Block));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("TxFee", aTransactionRecord.TxFee));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("Valid", aTransactionRecord.Valid));
+
+                lSQLiteCommand.ExecuteNonQuery();
+            }
+            if (aTransactionRecord.Inputs != null)
+                foreach (TransactionUnit lTransactionUnit in aTransactionRecord.Inputs)
+                    using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TxIn (internalid, id, address, ammount) VALUES (@internalid, @id, @address, @ammount)", aSQLConnection))
+                    {
+                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("internalid", aTransactionRecord.TransactionRecordId));
+                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("id", lTransactionUnit.Id));
+                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("address", lTransactionUnit.Address));
+                        lSQLiteCommand.Parameters.Add(new SQLiteParameter("ammount", lTransactionUnit.Amount));
+
+                        lSQLiteCommand.ExecuteNonQuery();
+                    }
+
+            foreach (TransactionUnit lTransactionUnit in aTransactionRecord.Outputs)
+                using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TxOut (internalid, id, address, ammount, nindex) VALUES (@internalid, @id, @address, @ammount, @nindex)", aSQLConnection))
+                {
+                    lSQLiteCommand.Parameters.Add(new SQLiteParameter("internalid", aTransactionRecord.TransactionRecordId));
+                    lSQLiteCommand.Parameters.Add(new SQLiteParameter("id", lTransactionUnit.Id));
+                    lSQLiteCommand.Parameters.Add(new SQLiteParameter("address", lTransactionUnit.Address));
+                    lSQLiteCommand.Parameters.Add(new SQLiteParameter("ammount", lTransactionUnit.Amount));
+                    lSQLiteCommand.Parameters.Add(new SQLiteParameter("nindex", lTransactionUnit.Index));
+
+                    lSQLiteCommand.ExecuteNonQuery();
+                }
+        }
+
+        public virtual void Write(IEnumerable<TransactionRecord> aTransactionRecordList, long aCurrencyId)
         {
             if (!aTransactionRecordList.Any()) return;
             foreach (TransactionRecord lTransactionRecord in aTransactionRecordList)
@@ -478,10 +483,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         internal CurrencyItem ReadCurrency(long aCurrencyId)
         {
             ReadCurrencies(out List<CurrencyItem> lList, aCurrencyId);
-            if (lList.Any())
-                return lList[0];
-            else
-                return null;
+            return lList.FirstOrDefault();
         }
 
         private static void SqlReadCurrencyIntoList(List<CurrencyItem> aCurrencyList, SQLiteDataReader aSQLiteDataReader)
@@ -530,19 +532,19 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     return null;
         }
 
-        public List<TransactionRecord> ReadTransactionRecords(long aCurrencyId)
+        public virtual List<TransactionRecord> ReadTransactionRecords(long aCurrencyId)
         {
             var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {aCurrencyId} and Valid = 1 order by internalid desc";
             return ReadTransactionRecords(lQuery);
         }
 
-        public List<TransactionRecord> ReadTransactionRecords(long aCurrencyId, long aMaxBlockHeight)
+        public virtual List<TransactionRecord> ReadTransactionRecords(long aCurrencyId, long aMaxBlockHeight)
         {
             var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {aCurrencyId} and (block > {aMaxBlockHeight} or block = 0) order by internalid desc";
             return ReadTransactionRecords(lQuery);
         }
 
-        public TransactionRecord ReadLastTransactionRecord(long aCurrencyId)
+        public virtual TransactionRecord ReadLastTransactionRecord(long aCurrencyId)
         {
             var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {aCurrencyId} order by internalid desc limit 1";
 

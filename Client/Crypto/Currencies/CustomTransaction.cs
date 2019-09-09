@@ -30,7 +30,7 @@ namespace Pandora.Client.Crypto.Currencies
             FTxFunc.Add(10032, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //CloakCoin
             FTxFunc.Add(10028, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Evergreencoin
             FTxFunc.Add(10056, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //PinkCoin
-    }
+        }
 
         private class AltPotCoinTransaction : Transaction
         {

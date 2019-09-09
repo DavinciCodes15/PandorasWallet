@@ -9,7 +9,7 @@ namespace Pandora.Client.Crypto.Currencies.Controls
     {
         private readonly Func<string> FGetRootSeed;
 
-        public ClientCurrencyAdvocacy(long aId, IChianParams aChainparams, Func<string> aGetRootSeed)
+        public ClientCurrencyAdvocacy(long aId, IChainParams aChainparams, Func<string> aGetRootSeed)
         {
             Id = aId;
             ForkFromId = aChainparams.ForkFromId;

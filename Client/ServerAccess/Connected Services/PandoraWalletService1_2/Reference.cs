@@ -164,7 +164,7 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.2612.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.3062.0")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -188,7 +188,7 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
     
     /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PandoraLogonResult))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.2612.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.3062.0")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -198,6 +198,8 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
         private object resultField;
         
         private string errorMsgField;
+        
+        private string errorTypeField;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlElementAttribute(Order=0)]
@@ -220,6 +222,18 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
             set {
                 this.errorMsgField = value;
                 this.RaisePropertyChanged("ErrorMsg");
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlElementAttribute(Order=2)]
+        public string ErrorType {
+            get {
+                return this.errorTypeField;
+            }
+            set {
+                this.errorTypeField = value;
+                this.RaisePropertyChanged("ErrorType");
             }
         }
         

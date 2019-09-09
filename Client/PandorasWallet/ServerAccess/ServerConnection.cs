@@ -46,6 +46,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             DataPath = aDataPath;
             SynchronizingObject = aSynchronizingObject;
+            CacheHelper = new CacheServerAccessHelper(this);
         }
 
         public static void RestoreLocalCasheDB(string aRestoreDBFile, ServerConnection aServerConnection)
@@ -96,6 +97,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         /// the cache
         /// </summary>
         public event DelegateOnTransaction OnUpdatedTransaction;
+
+        /// <summary>
+        /// If there is a change on the chain params parameter after receiving an update of a currency, this event will fire.
+        /// </summary>
+        public event DelegateOnUpdatedCurrencyParams OnUpdatedCurrencyParams;
+
+        public CacheServerAccessHelper CacheHelper { get; private set; }
 
         public bool Connected { get => FPandoraWalletServiceAccess != null; }
 
@@ -282,6 +290,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             if (FLocalCacheDB == null) return; // Note: if the thread sent out this message before the object was terminated
             Log.Write(LogLevel.Debug, "Updated currency writen {0}  ID: {1} ", aCurrencyItem.Name, aCurrencyItem.Id);
+            //Intercept
+            var lOldChainParams = GetCurrency(aCurrencyItem.Id)?.ChainParamaters;
+            if (lOldChainParams != null && lOldChainParams.Version < aCurrencyItem.ChainParamaters.Version)
+                OnUpdatedCurrencyParams?.Invoke(aCurrencyItem, lOldChainParams);
             FLocalCacheDB.Write(aCurrencyItem);
             OnUpdatedCurrency?.Invoke(this, aCurrencyItem);
         }
@@ -333,7 +345,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         }
 
         public List<CurrencyAccount> DirectGetMonitoredAcccounts(long aCurrencyId, long aStartAddressId)
-        {            
+        {
             CheckConnected();
             Log.Write(LogLevel.Debug, "A call to DirectGetMonitoredAcccounts");
             return JsonConvert.DeserializeObject<List<CurrencyAccount>>(FPandoraWalletServiceAccess.GetMonitoredAcccounts(aCurrencyId, aStartAddressId));
@@ -366,6 +378,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             CheckConnected();
             Log.Write(LogLevel.Warning, "A direct call to DirectGetCurrencyStatus should not be made.");
             return JsonConvert.DeserializeObject<CurrencyStatusItem>(FPandoraWalletServiceAccess.GetLastCurrencyStatus(aCurrencyId), FConverter);
+        }
+
+        public IEnumerable<TransactionRecord> DirectGetTransactionRecords(long aCurrencyId, long aStartTxRecordId)
+        {
+            CheckConnected();
+            Log.Write(LogLevel.Warning, "A direct call to DirectGetCurrencyStatus should not be made.");
+            return JsonConvert.DeserializeObject<List<TransactionRecord>>(FPandoraWalletServiceAccess.GetTransactionRecords(aCurrencyId, aStartTxRecordId), FConverter);
         }
 
         public string DirectCreateTransaction(CurrencyTransaction aSendTx)
@@ -446,7 +465,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             CheckConnected();
             FLocalCacheDB.WriteDisplayedCurrencyId(aCurrencyId, aDisplayed);
-            FPandoraObjectNotifier.AddCurrencyToBeNotified(aCurrencyId);
+            if (FPandoraObjectNotifier == null) Log.Write(LogLevel.Warning, "ObjectNotifier is null at set display currency.");
+            FPandoraObjectNotifier?.AddCurrencyToBeNotified(aCurrencyId);
         }
 
         public CurrencyItem GetDefaultCurrency()
@@ -495,6 +515,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public void Logoff()
         {
+            CacheHelper.Dispose();
             FPandoraObjectNotifier?.Terminate();
             try
             {
@@ -540,10 +561,15 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return FPandoraWalletServiceAccess.SendTransaction(aCurrencyId, aSignedTxData);
         }
 
-        internal void DirectAddMonitoredAccount(string aAddress, long aCurrencyId)
+        internal void AddMonitoredAccount(string aAddress, long aCurrencyId)
         {
             CheckConnected();
-            FLocalCacheDB.WriteMonitoredAccount(new CurrencyAccount(FPandoraWalletServiceAccess.AddMonitoredAccount(aCurrencyId, aAddress), aCurrencyId, aAddress));
+            FLocalCacheDB.WriteMonitoredAccount(DirectAddMonitoredAccount(aAddress, aCurrencyId));
+        }
+
+        internal CurrencyAccount DirectAddMonitoredAccount(string aAddress, long aCurrencyId)
+        {
+            return new CurrencyAccount(FPandoraWalletServiceAccess.AddMonitoredAccount(aCurrencyId, aAddress), aCurrencyId, aAddress);
         }
 
         internal void WriteKeyValue(string aKeyName, string aValue)
@@ -610,12 +636,26 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             if (FTempServiceAccess != null) return;
             CheckConnected();
-            FPandoraObjectNotifier.Dispose();
-            FPandoraObjectNotifier = null;
+            StopDataUpdating();
             FTempServiceAccess = FPandoraWalletServiceAccess;
             FPandoraWalletServiceAccess = null;
             FLocalCacheDB.Dispose();
             FLocalCacheDB = null;
+        }
+
+        public void StopDataUpdating()
+        {
+            if (FPandoraObjectNotifier != null)
+            {
+                FPandoraObjectNotifier.Dispose();
+                FPandoraObjectNotifier = null;
+            }
+        }
+
+        public void StartDataUpdating()
+        {
+            if (FPandoraObjectNotifier == null)
+                CreatePandoraObjectNotifier(FPandoraWalletServiceAccess);
         }
 
         internal void EndBackupRestore()

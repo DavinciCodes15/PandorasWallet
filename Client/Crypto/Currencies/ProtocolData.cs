@@ -14,14 +14,7 @@ namespace Pandora.Client.Crypto.Currencies
 
     public class ProtocolData
     {
-        public string GenesisBlockHash { get; private set; }
-
-        public string GenesisMerkleRoot { get; private set; }
-
-        public uint GenesisTime { get; private set; }
-
-        public uint InitialBlockHeight { get; private set; }
-
+        public long ParamsVersion { get; private set; }
         public uint MaxP2PVersion { get; private set; }
 
         public int DefaultPort { get; private set; }
@@ -54,17 +47,13 @@ namespace Pandora.Client.Crypto.Currencies
             }
         }
 
-        public ProtocolData(string aGenesisBlockHash, string aGenesisMerkleRoot, uint aGenesisTime, uint aGenesisHeight, uint aMaxP2PVersion, int aDefaultPort, uint aMagic, IConsensusFactory aConsensus, string aDNSSeed = "", ProtocolFlags aPeculiarities = ProtocolFlags.None)
+        public ProtocolData(long aParamsVersion, uint aMaxP2PVersion, int aDefaultPort, uint aMagic, IConsensusFactory aConsensus, ProtocolFlags aPeculiarities = ProtocolFlags.None)
         {
-            GenesisBlockHash = aGenesisBlockHash;
-            GenesisMerkleRoot = aGenesisMerkleRoot;
-            GenesisTime = aGenesisTime;
-            InitialBlockHeight = aGenesisHeight;
+            ParamsVersion = aParamsVersion;
             MaxP2PVersion = aMaxP2PVersion;
             DefaultPort = aDefaultPort;
             Magic = aMagic;
             Consensus = aConsensus;
-            DNSSeed = aDNSSeed;
             FPeculiarities = aPeculiarities;
         }
 

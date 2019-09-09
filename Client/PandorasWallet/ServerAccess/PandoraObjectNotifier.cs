@@ -21,6 +21,7 @@
 
 using Newtonsoft.Json;
 using Pandora.Client.ClientLib;
+using Pandora.Client.Crypto.Currencies;
 using Pandora.Client.ServerAccess;
 using Pandora.Client.Universal;
 using Pandora.Client.Universal.Threading;
@@ -42,6 +43,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     public delegate void DelegateOnSendTransactionCompleted(object aSender, string aErrorMsg, string aTxId);
 
     public delegate void DelegateOnSentTransaction(object aSender, string aTxData, string aTxId, long aCurrencyId, DateTime aStartTime, DateTime aEndTime);
+
+    public delegate void DelegateOnUpdatedCurrencyParams(CurrencyItem aCurrencyItem, IChainParams aPreviousChainParams);
 
     /// <summary>
     /// Notifies user of changes in the server
@@ -199,7 +202,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             base.InternalInitialize();
             FFindServerItemsTimer = new Timer((ex) => Timer_FindServerItems(), null, Timeout.Infinite, Timeout.Infinite);
-            BeginInvoke(new EventHandler(ThreadEventFindServerItems), this, null);
+            BeginInvoke(new Action(ThreadEventFindServerItems));
             FExecuted = true;
         }
 
@@ -256,9 +259,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         {
                             aDataPackage.ErrorCount++;
                             Log.Write(LogLevel.Critical, "Error getting send result {0} - {1}", ex.Message, ex.StackTrace);
-                            if (aDataPackage.ErrorCount > 10 || ex is PandoraServerException) // retried 20 times for 30 secs so its dead.
+                            if (aDataPackage.ErrorCount > 20 || ex is PandoraServerException) // retried 20 times for 20 secs so its dead.
                                 throw;
-                            Thread.Sleep(3000);
+                            Thread.Sleep(1000);
                         }
                     else
                         Thread.Sleep(100);
@@ -294,19 +297,23 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             aTimer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
-        private void StartTimer(Timer aTimer, double aMilliSec)
+        //I make this to be one shoot his default behavior, this is because we are going to be using starttimer to reset the process anyways
+        private void StartTimer(Timer aTimer, int aMilliSec, bool aIsOneShot = true)
         {
-            aTimer.Change(TimeSpan.FromMilliseconds(aMilliSec), TimeSpan.FromMilliseconds(aMilliSec));
+            if (aIsOneShot)
+                aTimer.Change(aMilliSec, Timeout.Infinite);
+            else
+                aTimer.Change(aMilliSec, aMilliSec);
         }
 
         private void Timer_FindServerItems()
         {
-            StopTimer(FFindServerItemsTimer);
+            //StopTimer(FFindServerItemsTimer); //As is going to be stopped at this point, there is no need to stop again
             if (Terminated) return;
-            BeginInvoke(new EventHandler(ThreadEventFindServerItems), this, null);
+            BeginInvoke(new Action(ThreadEventFindServerItems));
         }
 
-        private void ThreadEventFindServerItems(object sender, EventArgs e)
+        private void ThreadEventFindServerItems()
         {
             try
             {
@@ -314,6 +321,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 GetBlockHeight();
                 GetLatestStatus();
                 GetTransactions();
+            }
+            catch (Exception ex)
+            {
+                Log.Write(LogLevel.Error, $"Exception thrown at FindServerItems retrieving thread. Exception: {ex}");
             }
             finally
             {
@@ -331,7 +342,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private void GetCurrencies()
         {
             if (LastNotifiedCurrencyId == uint.MaxValue) return; // not set yet
-            var lList = JsonConvert.DeserializeObject<List<long>>(FServerAccess.GetCurrencyList(LastNotifiedCurrencyId), FConverter);
+            var lStringValueList = FServerAccess.GetCurrencyList(LastNotifiedCurrencyId);
+            if (lStringValueList == null)   // this should never return a null!!! but sometimes does.
+                throw new Exception("Error in GetCurrencies from server.");
+            var lList = JsonConvert.DeserializeObject<List<long>>(lStringValueList, FConverter);
             if (Terminated) return;
             if (lList.Any())
                 BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), lList.ToArray(), 0);
@@ -418,7 +432,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             if (FUpdated = lCurrencyStatusItem.Status == CurrencyStatus.Updated) break;
                         if (FUpdated)
                         {
-                            lKeyValue.Value.CurrencyItem = JsonConvert.DeserializeObject<CurrencyItem>(FServerAccess.GetCurrency(lKeyValue.Key), FConverter);
+                            var lJsonResponse = FServerAccess.GetCurrency(lKeyValue.Key);
+                            lKeyValue.Value.CurrencyItem = JsonConvert.DeserializeObject<CurrencyItem>(lJsonResponse, FConverter);
                             if (Terminated) return;
                             DoOnUpdatedCurrency(lKeyValue.Value.CurrencyItem);
                         }

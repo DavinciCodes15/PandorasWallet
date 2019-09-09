@@ -4,11 +4,9 @@ using System;
 namespace Pandora.Client.Crypto.Currencies
 {
     [Serializable]
-    public class ChainParams : IChianParams
+    public class ChainParams : IChainParams
     {
- 
-        public enum NetworkType { MainNet = 0, TestNet = 1};
-
+        public enum NetworkType { MainNet = 0, TestNet = 1 };
 
         public ChainParams()
         {
@@ -30,6 +28,7 @@ namespace Pandora.Client.Crypto.Currencies
                 Encoder = "tb";
             }
         }
+
         private void Init()
         {
             NetworkName = "Bitcoin";
@@ -51,7 +50,7 @@ namespace Pandora.Client.Crypto.Currencies
             Encoder = "bc";
         }
 
-        public virtual void CopyTo(IChianParams aDest)
+        public virtual void CopyTo(IChainParams aDest)
         {
             aDest.NetworkName = this.NetworkName;
             aDest.Network = (ChainParams.NetworkType)this.Network;
@@ -70,11 +69,12 @@ namespace Pandora.Client.Crypto.Currencies
             aDest.ColoredAddress = this.ColoredAddress;
             aDest.Encoder = this.Encoder;
             aDest.Capabilities = this.Capabilities;
+            aDest.Version = this.Version;
         }
 
-        public virtual void CopyFrom(IChianParams aSource)
-            {
-                this.NetworkName = aSource.NetworkName;
+        public virtual void CopyFrom(IChainParams aSource)
+        {
+            this.NetworkName = aSource.NetworkName;
             this.Network = (ChainParams.NetworkType)aSource.Network;
             this.PublicKeyAddress = aSource.PublicKeyAddress;
             this.ScriptAddress = aSource.ScriptAddress;
@@ -91,8 +91,8 @@ namespace Pandora.Client.Crypto.Currencies
             this.ColoredAddress = aSource.ColoredAddress;
             this.Encoder = aSource.Encoder;
             this.Capabilities = aSource.Capabilities;
-         }
-
+            this.Version = aSource.Version;
+        }
 
         public long ForkFromId { get; set; }
         public NetworkType Network { get; set; }
@@ -111,15 +111,16 @@ namespace Pandora.Client.Crypto.Currencies
         public byte[] ColoredAddress { get; set; }
         public string Encoder { get; set; }
         public CapablityFlags Capabilities { get; set; }
-
+        public long Version { get; set; }
     }
+
     [Flags]
     public enum CapablityFlags
     {
         None = 0, SupportSegWit = 16
     }
 
-    public interface IChianParams
+    public interface IChainParams
     {
         long ForkFromId { get; set; }
         ChainParams.NetworkType Network { get; set; }
@@ -138,5 +139,6 @@ namespace Pandora.Client.Crypto.Currencies
         byte[] ColoredAddress { get; set; }
         string Encoder { get; set; }
         CapablityFlags Capabilities { get; set; }
+        long Version { get; set; }
     }
 }

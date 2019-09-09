@@ -59,6 +59,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\JKrof\Pandora.Client.Exchange.JKrof.csproj">
+      <Project>{6A854399-8F43-416B-A83E-508B625FB135}</Project>
+      <Name>Pandora.Client.Exchange.JKrof</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Pandora.Client.Exchange\Pandora.Client.Exchange.csproj">
       <Project>{22483063-f3be-4f4f-b2d4-d2c0aa9fda82}</Project>
       <Name>Pandora.Client.Exchange</Name>

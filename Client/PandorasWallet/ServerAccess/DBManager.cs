@@ -932,7 +932,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         }
 
         [Serializable]
-        public class MyCacheChainParams : IChianParams
+        public class MyCacheChainParams : IChainParams
         {
             public long ForkFromId { get; set; }
             public ChainParams.NetworkType Network { get; set; }
@@ -951,6 +951,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             public byte[] ColoredAddress { get; set; }
             public string Encoder { get; set; }
             public CapablityFlags Capabilities { get; set; }
+            public long Version { get; set; }
         }
     }
 }

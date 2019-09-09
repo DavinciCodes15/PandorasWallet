@@ -158,7 +158,7 @@ namespace Pandora.Client.PandorasWallet
             CurrentFilterApplied = string.Empty;
         }
 
-        public bool UpdateCurrency(long aCurrencyID, string aCurrencyName, string aTicker, Icon aCurrencyIcon, string[] aCustomColumnValues = null)
+        public bool UpdateCurrency(long aCurrencyID, string aCurrencyName, string aTicker, string[] aCustomColumnValues = null)
         {
             ListViewItem lListViewItem = null;
             foreach (var lItem in FListView.Items)
@@ -172,28 +172,20 @@ namespace Pandora.Client.PandorasWallet
                 //if (FImageList.Images.ContainsKey(aCurrencyID.ToString()))
                 //    FImageList.Images.RemoveByKey(aCurrencyID.ToString());
                 //FImageList.Images.Add(aCurrencyID.ToString(), aCurrencyIcon);
-
                 if (CurrencyNameVisible)
-                {
                     lColumnValues.Add(aCurrencyName);
-                }
 
                 if (TickerColunmVisible)
-                {
                     lColumnValues.Add(aTicker);
-                }
 
                 if (IdColumnVisable)
-                {
                     lColumnValues.Add(aCurrencyID.ToString());
-                }
 
                 if (IncludeTickerWithCurrencyName)
-                {
                     lColumnValues[0] = string.Format("{0} ({1})", aCurrencyName, aTicker);
-                }
 
                 lColumnValues.AddRange(aCustomColumnValues);
+                lListViewItem.Text = lColumnValues.First();
                 for (int i = 1; i < lColumnValues.Count; i++)
                     lListViewItem.SubItems[i].Text = lColumnValues[i];
             }
@@ -202,29 +194,18 @@ namespace Pandora.Client.PandorasWallet
 
         public void AddCurrency(long aCurrencyID, string aCurrencyName, string aCurrencySymbol, Icon aCurrencyIcon, string[] aCustomColumnValues = null)
         {
-            CurrencyItem lItem = new CurrencyItem(aCurrencyID, aCurrencyName, aCurrencySymbol, aCustomColumnValues);
-
-            if (FCurrencyItems.TryGetValue(aCurrencyID, out CurrencyItem lSavedItem) && lSavedItem.AreEqual(lItem))
-            {
+            CurrencyItem lCurrencyItem = new CurrencyItem(aCurrencyID, aCurrencyName, aCurrencySymbol, aCustomColumnValues);
+            if (FCurrencyItems.TryGetValue(aCurrencyID, out CurrencyItem lSavedItem) && lSavedItem.AreEqual(lCurrencyItem))
                 return;
-            }
-
             lock (FListLock)
             {
-                FCurrencyItems[aCurrencyID] = lItem;
-
-                ListViewItem lListItem = ConstructListViewCurrencyItem(lItem, aCurrencyIcon);
-
+                FCurrencyItems[aCurrencyID] = lCurrencyItem;
+                ListViewItem lListItem = ConstructListViewCurrencyItem(lCurrencyItem, aCurrencyIcon);
                 FListViewCache[aCurrencyID] = lListItem;
-
                 if (FSearching.HasValue && FSearching.Value)
-                {
                     AddToCurrencyList(lListItem, true);
-                }
                 else
-                {
                     AddToCurrencyList(lListItem);
-                }
             }
         }
 
@@ -280,43 +261,27 @@ namespace Pandora.Client.PandorasWallet
         private ListViewItem ConstructListViewCurrencyItem(CurrencyItem aItem, Icon aCurrencyIcon)
         {
             if (FImageList.Images.ContainsKey(aItem.Id.ToString()))
-            {
                 FImageList.Images.RemoveByKey(aItem.Id.ToString());
-            }
-
             FImageList.Images.Add(aItem.Id.ToString(), aCurrencyIcon);
             List<string> lColumnValues = new List<string>();
-
             if (CurrencyNameVisible)
-            {
                 lColumnValues.Add(aItem.Name);
-            }
-
             if (TickerColunmVisible)
-            {
                 lColumnValues.Add(aItem.Ticker);
-            }
-
             if (IdColumnVisable)
-            {
                 lColumnValues.Add(aItem.Id.ToString());
-            }
-
             if (IncludeTickerWithCurrencyName)
-            {
                 lColumnValues[0] = string.Format("{0} ({1})", aItem.Name, aItem.Ticker);
-            }
-
             lColumnValues.AddRange(aItem.CustomValues);
-
-            ListViewItem lItem = new ListViewItem(lColumnValues[0], aItem.Id.ToString());
-            lItem.Tag = aItem;
+            string lCurrencyID = aItem.Id.ToString();
+            ListViewItem lListViewItem = new ListViewItem();
+            lListViewItem.Text = lColumnValues.First();
+            lListViewItem.ImageKey = lCurrencyID;
+            lListViewItem.Name = lCurrencyID;
+            lListViewItem.Tag = aItem;
             for (int i = 1; i < lColumnValues.Count; i++)
-            {
-                lItem.SubItems.Add(lColumnValues[i]);
-            }
-
-            return lItem;
+                lListViewItem.SubItems.Add(lColumnValues[i]);
+            return lListViewItem;
         }
 
         private void AddToCurrencyList(ListViewItem aItem, bool aOnlyReplace = false)

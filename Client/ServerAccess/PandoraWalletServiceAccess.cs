@@ -37,13 +37,12 @@ namespace Pandora.Client.ServerAccess
     }
 
     public delegate void OnDiconnectEventHandler();
+
     public class PandoraServiceError : Exception
     {
         public PandoraServiceError(string aMessage) : base(aMessage)
         {
-
         }
-
     }
 
     public delegate void ServerEvent(object sender, string aResult);
@@ -52,25 +51,39 @@ namespace Pandora.Client.ServerAccess
     {
         public event EventHandler OnDiconnect;
 
-
         private delegate bool LogonDelegate(string aEmail, string aUserName, string aPassword);
-        private delegate bool Logon2Delegate(string aEmail, string aUserName, string aPassword, string aVersion);
-        private delegate string GetCurrencyListDelegate(long aStartId);
-        private delegate string GetCurrencyStatusListDelegate(long aCurrencyId, long aStartId);
-        private delegate long AddMonitoredAccountDelegate(long aCurrencyId, string aAddress);
-        private delegate string GetMonitoredAcccountsDelegate(long aCurrencyId, long aStartCurrencyAccountId);
-        private delegate bool RemoveMonitoredAcccountsDelegate(long aCurrencyAccountId);
-        private delegate string GetTransactionRecordsDelegate(long aCurrencyId, long aStartTxRecordId);
-        private delegate string CreateTransactionDelegate(CurrencyTransaction aCurrencyTransaction);
-        private delegate long SendTransactionDelegate(long aCurrencyId, string aSignedTxData);
-        private delegate bool IsTransactionSentDelegate(long aSendTxHandle);
-        private delegate string GetTransactionIdDelegate(long aSendTxHandle);
-        private delegate string GetCurrencyIconDelegate(long aCurrencyId);
-        private delegate long GetBlockHeightDelegate(long aCurrencyId);
-        private delegate bool CheckAddressDelegate(long aCurrencyId, string aAddress);
-        private delegate string GetCurrencyDelegate(long aCurrencyId);
-        private delegate bool MarkOldUserDelegate(string aEmail, string aUserName);
 
+        private delegate bool Logon2Delegate(string aEmail, string aUserName, string aPassword, string aVersion);
+
+        private delegate string GetCurrencyListDelegate(long aStartId);
+
+        private delegate string GetCurrencyStatusListDelegate(long aCurrencyId, long aStartId);
+
+        private delegate long AddMonitoredAccountDelegate(long aCurrencyId, string aAddress);
+
+        private delegate string GetMonitoredAcccountsDelegate(long aCurrencyId, long aStartCurrencyAccountId);
+
+        private delegate bool RemoveMonitoredAcccountsDelegate(long aCurrencyAccountId);
+
+        private delegate string GetTransactionRecordsDelegate(long aCurrencyId, long aStartTxRecordId);
+
+        private delegate string CreateTransactionDelegate(CurrencyTransaction aCurrencyTransaction);
+
+        private delegate long SendTransactionDelegate(long aCurrencyId, string aSignedTxData);
+
+        private delegate bool IsTransactionSentDelegate(long aSendTxHandle);
+
+        private delegate string GetTransactionIdDelegate(long aSendTxHandle);
+
+        private delegate string GetCurrencyIconDelegate(long aCurrencyId);
+
+        private delegate long GetBlockHeightDelegate(long aCurrencyId);
+
+        private delegate bool CheckAddressDelegate(long aCurrencyId, string aAddress);
+
+        private delegate string GetCurrencyDelegate(long aCurrencyId);
+
+        private delegate bool MarkOldUserDelegate(string aEmail, string aUserName);
 
         private PandoraWalletWebService FServer;
         private PandoraWalletWebService FPandoraWalletWebService;
@@ -148,11 +161,18 @@ namespace Pandora.Client.ServerAccess
         private PandoraWalletWebService CreatePandoraWalletServer()
         {
             PandoraWalletWebService lResult;
-            Binding lBinding = new BasicHttpBinding();
-            lBinding.OpenTimeout = new TimeSpan(0, 2, 30);
-            lBinding.ReceiveTimeout = lBinding.OpenTimeout;
+            Binding lBinding;
             if (EncryptedConnection)
                 lBinding = new BasicHttpsBinding();
+            else
+            {
+                lBinding = new BasicHttpBinding();
+                ((BasicHttpBinding)lBinding).MaxReceivedMessageSize = Int32.MaxValue;
+                ((BasicHttpBinding)lBinding).MaxBufferSize = Int32.MaxValue;
+            }
+
+            lBinding.OpenTimeout = new TimeSpan(0, 2, 30);
+            lBinding.ReceiveTimeout = lBinding.OpenTimeout;
 
             EndpointAddress lAddress = new EndpointAddress(GetConnectionURL(RemoteServer));
             lResult = new PandoraWalletWebService(lBinding, lAddress);
@@ -162,10 +182,10 @@ namespace Pandora.Client.ServerAccess
             return lResult;
         }
 
-        // 
+        //
         // By default this object remains connected even if there is an error
-        // If the users connection got expired we need to 
-        // disconnect from the server and make this connection 
+        // If the users connection got expired we need to
+        // disconnect from the server and make this connection
         //
         public override object Invoke(Delegate method, params object[] args)
         {
@@ -184,7 +204,12 @@ namespace Pandora.Client.ServerAccess
         private object ReadServerResult(PandoraResult aServerResult)
         {
             if (!string.IsNullOrEmpty(aServerResult.ErrorMsg)) // server sside error occured.
-                throw new PandoraServerException("Server Error: " + aServerResult.ErrorMsg);
+            {
+                if (aServerResult.ErrorType == typeof(SubscriptionOverException).Name)
+                    throw new SubscriptionOverException(aServerResult.ErrorMsg);
+                else
+                    throw new PandoraServerException("Server Error: " + aServerResult.ErrorMsg);
+            }
             return aServerResult.result;
         }
 
@@ -211,8 +236,8 @@ namespace Pandora.Client.ServerAccess
         }
 
         // This method is overrdden so that we can try reconnecting when ever the ThreadXXX method is called
-        // so we can do what ever w can to recover from bad connections or if the one server 
-        // goes down for maintainane 
+        // so we can do what ever w can to recover from bad connections or if the one server
+        // goes down for maintainane
         protected override bool InvokeMethodMessage(DelegateMessage aMethodMessage)
         {
             aMethodMessage.OnAfterEvent += MethodMessage_OnAfterEvent;
@@ -226,7 +251,7 @@ namespace Pandora.Client.ServerAccess
 
             if (lMethodMessage.ExceptionObject != null) // do not try reconnect if the logon method is called
             {
-                /// if we cant connet to the server because its down 
+                /// if we cant connet to the server because its down
                 if (lMethodMessage.ExceptionObject is System.ServiceModel.EndpointNotFoundException)
                 {
                     Log.Write(LogLevel.Error, lMethodMessage.ExceptionObject.Message);
@@ -235,27 +260,27 @@ namespace Pandora.Client.ServerAccess
                 var lName = lMethodMessage.ToString();
 
                 // an exception occured
-                // Now test if the error is because of a communication issue or 
+                // Now test if the error is because of a communication issue or
                 // if the error is because the server sent the error to be thrown
                 if (!(lMethodMessage.ExceptionObject is PandoraServerException) && lName != "ThreadLogon")
                 {      // if there is a comunication faild we need to reconnect
                     int lCounter = 0;
                     double lsecondsToWait = 0;
+                    PandoraWalletWebService lServer = null;
                     do
                     {
                         try
                         {
-                            lMethodMessage.ExceptionObject = null;
-                            FServer = CreatePandoraWalletServer();
+                            lServer = CreatePandoraWalletServer();
+                            FServer = lServer;
                         }
-                        catch (Exception ex)
+                        catch
                         {
                             lsecondsToWait = Math.Pow(2, lCounter);
                             System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(lsecondsToWait)).Wait();
                             lCounter++;
-                            lMethodMessage.ExceptionObject = ex;
                         }
-                    } while (lMethodMessage.ExceptionObject != null && lsecondsToWait < 65);
+                    } while (lServer == null && lsecondsToWait < 4);
                 }
             }
         }
@@ -266,9 +291,9 @@ namespace Pandora.Client.ServerAccess
         {
             try
             {
-                // only this thread an no other app has access to the 
-                // Only one method will be executed at a time 
-                // 
+                // only this thread an no other app has access to the
+                // Only one method will be executed at a time
+                //
                 //  This Method will create an test the conneciton and find
                 //  Other servers to connect to.
                 FServer = CreatePandoraWalletServer();
@@ -281,7 +306,6 @@ namespace Pandora.Client.ServerAccess
                 UserName = aUserName;
                 Email = aEmail;
                 return Connected;
-
             }
             catch (EndpointNotFoundException ex)
             {
@@ -300,7 +324,7 @@ namespace Pandora.Client.ServerAccess
                 throw;
             }
         }
-        
+
         private string ThreadGetCurrencyList(long aStartId)
         {
             return (string)ReadServerResult(FServer.GetCurrencyList(ConnectionId, aStartId));
@@ -310,6 +334,7 @@ namespace Pandora.Client.ServerAccess
         {
             return (string)ReadServerResult(FServer.GetCurrencyStatusList(ConnectionId, aCurrencyId, aStartId));
         }
+
         private long ThreadAddMonitoredAccount(long aCurrencyId, string aAddress)
         {
             return (long)ReadServerResult(FServer.AddMonitoredAccount(ConnectionId, aCurrencyId, aAddress));
@@ -317,7 +342,7 @@ namespace Pandora.Client.ServerAccess
 
         private string ThreadGetMonitoredAcccounts(long aCurrencyId, long aStartCurrencyAccountId)
         {
-            return (string)ReadServerResult(FServer.GetMonitoredAcccounts(ConnectionId,aCurrencyId, aStartCurrencyAccountId));
+            return (string)ReadServerResult(FServer.GetMonitoredAcccounts(ConnectionId, aCurrencyId, aStartCurrencyAccountId));
         }
 
         private bool ThreadRemoveMonitoredAcccounts(long aCurrencyAccountId)
@@ -402,7 +427,7 @@ namespace Pandora.Client.ServerAccess
         {
             get
             {
-                    return ConnectionId != null;
+                return ConnectionId != null;
             }
 
             private set
@@ -523,7 +548,6 @@ namespace Pandora.Client.ServerAccess
             return (string)this.Invoke(new GetMonitoredAcccountsDelegate(ThreadGetMonitoredAcccounts), aCurrencyId, aStartCurrencyAccountId);
         }
 
-
         public bool RemoveMonitoredAcccounts(long aCurrencyAccountId)
         {
             CheckConnected();
@@ -617,6 +641,5 @@ namespace Pandora.Client.ServerAccess
             CheckConnected();
             return (string)this.Invoke(new GetCurrencyDelegate(ThreadGetLastCurrencyStatus), aCurrencyId);
         }
-
     }
 }

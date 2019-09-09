@@ -491,14 +491,10 @@ namespace Pandora.Client.Exchange
         public bool WithdrawOrder(ExchangeMarket aMarket, MarketOrder aOrder, string aAddress, decimal aTxFee, bool aUseProxy = true)
         {
             if (!FCredentialsSet)
-            {
                 throw new Exception("No Credentials were set");
-            }
 
             if (aOrder.Status == OrderStatus.Withdrawed)
-            {
                 return false;
-            }
 
             BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
             {
@@ -507,23 +503,31 @@ namespace Pandora.Client.Exchange
             };
             using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
             {
-                decimal lRate = aMarket.IsSell ? 1 / aOrder.Rate : aOrder.Rate;
-                decimal lRawAmount = aOrder.SentQuantity / lRate;
-                decimal lQuantity = lRawAmount - (lRawAmount * (decimal)0.0025);
-                CallResult<BittrexGuid> lResponse = lClient.Withdraw(aMarket.CoinTicker, lQuantity, aAddress);
-                if (!lResponse.Success)
-                {
-                    throw new Exception("Failed to withdraw. Error message:" + lResponse.Error.Message);
-                }
+                decimal lQuantityToWithdraw = 0;
+                CallResult<BittrexAccountOrder> lGetOrderResponse = lClient.GetOrder(new Guid(aOrder.ID));
+                if (!lGetOrderResponse.Success)
+                    throw new Exception("Failed to get order to withdraw. Error message:" + lGetOrderResponse.Error.Message);
+                var lRemoteOrder = lGetOrderResponse.Data;
+                if (lRemoteOrder.Price <= 0 || !lRemoteOrder.PricePerUnit.HasValue)
+                    throw new Exception("Order is not fulfilled or data from server is missing");
+                if (lRemoteOrder.Type == OrderSideExtended.LimitBuy)
+                    lQuantityToWithdraw = (lRemoteOrder.Price - lRemoteOrder.CommissionPaid) / lRemoteOrder.PricePerUnit.Value;
+                else if (lRemoteOrder.Type == OrderSideExtended.LimitSell)
+                    lQuantityToWithdraw = (lRemoteOrder.Price - lRemoteOrder.CommissionPaid);
+                CallResult<BittrexGuid> lWithdrawResponse = lClient.Withdraw(aMarket.CoinTicker, lQuantityToWithdraw, aAddress);
+                if (!lWithdrawResponse.Success)
+                    throw new Exception("Failed to withdraw. Error message:" + lWithdrawResponse.Error.Message);
             }
-
             return true;
         }
 
-        public void StopMarketUpdating()
+        public async void StopMarketUpdating()
         {
-            FBittrexSocket.Unsubscribe(FMarketPriceSubscription).Wait();
-            FMarketPriceSubscription = null;
+            if (FMarketPriceSubscription != null)
+            {
+                await FBittrexSocket.Unsubscribe(FMarketPriceSubscription);
+                FMarketPriceSubscription = null;
+            }
         }
 
         public static PandoraExchanger GetInstance()

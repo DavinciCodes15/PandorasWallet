@@ -112,9 +112,12 @@ namespace Pandora.Client.PandorasWallet
             this.label8 = new System.Windows.Forms.Label();
             this.txtBoxReceiveAddress = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.picCoinImage = new System.Windows.Forms.PictureBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.pictureBoxBalanceInfo = new System.Windows.Forms.PictureBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.lblUnconfirmed = new System.Windows.Forms.Label();
-            this.picCoinImage = new System.Windows.Forms.PictureBox();
             this.lblNameUnconfirmed = new System.Windows.Forms.Label();
             this.statusStripWallet = new System.Windows.Forms.StatusStrip();
             this.toolStripConnectionStatus = new System.Windows.Forms.ToolStripStatusLabel();
@@ -126,9 +129,6 @@ namespace Pandora.Client.PandorasWallet
             this.ctxMenuOrderMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuItemCancel = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.pictureBoxBalanceInfo = new System.Windows.Forms.PictureBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.QuickSendButton = new Pandora.Client.PandorasWallet.MenuButton();
             this.lstViewCurrencies = new Pandora.Client.PandorasWallet.CurrencyView();
             this.statsctrlExchage = new Pandora.Client.PandorasWallet.StatusControl();
@@ -142,13 +142,13 @@ namespace Pandora.Client.PandorasWallet
             this.tabPage4.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.panel1.SuspendLayout();
-            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picCoinImage)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBalanceInfo)).BeginInit();
+            this.panel2.SuspendLayout();
             this.statusStripWallet.SuspendLayout();
             this.ctxMenuOrderMenu.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBalanceInfo)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // imageListTx
@@ -175,18 +175,20 @@ namespace Pandora.Client.PandorasWallet
             this.lblTotal.AutoSize = true;
             this.lblTotal.Font = new System.Drawing.Font("Calibri", 10F);
             this.lblTotal.ForeColor = System.Drawing.Color.Black;
-            this.lblTotal.Location = new System.Drawing.Point(110, 3);
+            this.lblTotal.Location = new System.Drawing.Point(100, 4);
+            this.lblTotal.MaximumSize = new System.Drawing.Size(160, 0);
             this.lblTotal.Name = "lblTotal";
             this.lblTotal.Size = new System.Drawing.Size(75, 17);
             this.lblTotal.TabIndex = 22;
             this.lblTotal.Text = "0.00000000";
+            this.lblTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblStatus
             // 
             this.lblStatus.AutoSize = true;
             this.lblStatus.Font = new System.Drawing.Font("Calibri", 10F);
             this.lblStatus.ForeColor = System.Drawing.Color.Black;
-            this.lblStatus.Location = new System.Drawing.Point(183, 85);
+            this.lblStatus.Location = new System.Drawing.Point(183, 89);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(83, 17);
             this.lblStatus.TabIndex = 21;
@@ -195,7 +197,7 @@ namespace Pandora.Client.PandorasWallet
             // LabelStatus
             // 
             this.LabelStatus.Font = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Bold);
-            this.LabelStatus.Location = new System.Drawing.Point(130, 85);
+            this.LabelStatus.Location = new System.Drawing.Point(130, 89);
             this.LabelStatus.Name = "LabelStatus";
             this.LabelStatus.Size = new System.Drawing.Size(63, 18);
             this.LabelStatus.TabIndex = 20;
@@ -205,18 +207,19 @@ namespace Pandora.Client.PandorasWallet
             // 
             this.labelTotal.AutoSize = true;
             this.labelTotal.Font = new System.Drawing.Font("Calibri", 10F);
-            this.labelTotal.Location = new System.Drawing.Point(20, 3);
+            this.labelTotal.Location = new System.Drawing.Point(17, 4);
             this.labelTotal.Margin = new System.Windows.Forms.Padding(0);
             this.labelTotal.Name = "labelTotal";
             this.labelTotal.Size = new System.Drawing.Size(75, 17);
             this.labelTotal.TabIndex = 19;
             this.labelTotal.Text = "Total Coins :";
+            this.labelTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblCoinName
             // 
             this.lblCoinName.AutoSize = true;
             this.lblCoinName.Font = new System.Drawing.Font("Calibri", 16F, System.Drawing.FontStyle.Bold);
-            this.lblCoinName.Location = new System.Drawing.Point(128, 50);
+            this.lblCoinName.Location = new System.Drawing.Point(128, 54);
             this.lblCoinName.Name = "lblCoinName";
             this.lblCoinName.Size = new System.Drawing.Size(112, 27);
             this.lblCoinName.TabIndex = 17;
@@ -265,7 +268,7 @@ namespace Pandora.Client.PandorasWallet
             this.tabControl.Location = new System.Drawing.Point(12, 218);
             this.tabControl.Name = "tabControl";
             this.tabControl.SelectedIndex = 0;
-            this.tabControl.Size = new System.Drawing.Size(1079, 551);
+            this.tabControl.Size = new System.Drawing.Size(1129, 551);
             this.tabControl.TabIndex = 24;
             // 
             // tabPage1
@@ -276,7 +279,7 @@ namespace Pandora.Client.PandorasWallet
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(1071, 525);
+            this.tabPage1.Size = new System.Drawing.Size(1121, 525);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Cryptocurrencies";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -286,7 +289,7 @@ namespace Pandora.Client.PandorasWallet
             this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel3.Controls.Add(this.iconSearch);
             this.panel3.Controls.Add(this.txtBoxSearchCoin);
-            this.panel3.Location = new System.Drawing.Point(851, 0);
+            this.panel3.Location = new System.Drawing.Point(901, 0);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(217, 30);
             this.panel3.TabIndex = 34;
@@ -331,7 +334,7 @@ namespace Pandora.Client.PandorasWallet
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(1071, 525);
+            this.tabPage2.Size = new System.Drawing.Size(1121, 525);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Transactions";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -356,7 +359,7 @@ namespace Pandora.Client.PandorasWallet
             this.listTransactions.Location = new System.Drawing.Point(9, 6);
             this.listTransactions.MultiSelect = false;
             this.listTransactions.Name = "listTransactions";
-            this.listTransactions.Size = new System.Drawing.Size(1056, 445);
+            this.listTransactions.Size = new System.Drawing.Size(1106, 445);
             this.listTransactions.SmallImageList = this.imageListTx;
             this.listTransactions.Sorting = System.Windows.Forms.SortOrder.Descending;
             this.listTransactions.TabIndex = 18;
@@ -403,7 +406,7 @@ namespace Pandora.Client.PandorasWallet
             this.txtNotesBox.Multiline = true;
             this.txtNotesBox.Name = "txtNotesBox";
             this.txtNotesBox.ReadOnly = true;
-            this.txtNotesBox.Size = new System.Drawing.Size(1056, 49);
+            this.txtNotesBox.Size = new System.Drawing.Size(1106, 49);
             this.txtNotesBox.TabIndex = 17;
             // 
             // label9
@@ -442,7 +445,7 @@ namespace Pandora.Client.PandorasWallet
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(1071, 525);
+            this.tabPage3.Size = new System.Drawing.Size(1121, 525);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Exchange";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -682,7 +685,7 @@ namespace Pandora.Client.PandorasWallet
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage4.Size = new System.Drawing.Size(1071, 525);
+            this.tabPage4.Size = new System.Drawing.Size(1121, 525);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Trade History";
             this.tabPage4.UseVisualStyleBackColor = true;
@@ -693,7 +696,7 @@ namespace Pandora.Client.PandorasWallet
             | System.Windows.Forms.AnchorStyles.Right)));
             this.chckOrderHistory.AutoSize = true;
             this.chckOrderHistory.Enabled = false;
-            this.chckOrderHistory.Location = new System.Drawing.Point(939, 6);
+            this.chckOrderHistory.Location = new System.Drawing.Point(989, 6);
             this.chckOrderHistory.Name = "chckOrderHistory";
             this.chckOrderHistory.Size = new System.Drawing.Size(126, 17);
             this.chckOrderHistory.TabIndex = 43;
@@ -729,7 +732,7 @@ namespace Pandora.Client.PandorasWallet
             this.lstOrderHistory.Location = new System.Drawing.Point(6, 30);
             this.lstOrderHistory.MultiSelect = false;
             this.lstOrderHistory.Name = "lstOrderHistory";
-            this.lstOrderHistory.Size = new System.Drawing.Size(1059, 313);
+            this.lstOrderHistory.Size = new System.Drawing.Size(1109, 313);
             this.lstOrderHistory.TabIndex = 39;
             this.lstOrderHistory.UseCompatibleStateImageBehavior = false;
             this.lstOrderHistory.View = System.Windows.Forms.View.Details;
@@ -785,7 +788,7 @@ namespace Pandora.Client.PandorasWallet
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1103, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1153, 24);
             this.menuStrip1.TabIndex = 28;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -876,7 +879,7 @@ namespace Pandora.Client.PandorasWallet
             this.label8.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label8.AutoSize = true;
             this.label8.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.label8.Location = new System.Drawing.Point(700, 36);
+            this.label8.Location = new System.Drawing.Point(727, 163);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(94, 13);
             this.label8.TabIndex = 29;
@@ -885,10 +888,12 @@ namespace Pandora.Client.PandorasWallet
             // txtBoxReceiveAddress
             // 
             this.txtBoxReceiveAddress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtBoxReceiveAddress.Location = new System.Drawing.Point(703, 52);
+            this.txtBoxReceiveAddress.BackColor = System.Drawing.Color.MintCream;
+            this.txtBoxReceiveAddress.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtBoxReceiveAddress.Location = new System.Drawing.Point(730, 179);
             this.txtBoxReceiveAddress.Name = "txtBoxReceiveAddress";
             this.txtBoxReceiveAddress.ReadOnly = true;
-            this.txtBoxReceiveAddress.Size = new System.Drawing.Size(365, 20);
+            this.txtBoxReceiveAddress.Size = new System.Drawing.Size(395, 21);
             this.txtBoxReceiveAddress.TabIndex = 30;
             // 
             // panel1
@@ -910,50 +915,83 @@ namespace Pandora.Client.PandorasWallet
             this.panel1.Font = new System.Drawing.Font("Segoe UI", 8.25F);
             this.panel1.Location = new System.Drawing.Point(19, 39);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(652, 158);
+            this.panel1.Size = new System.Drawing.Size(702, 161);
             this.panel1.TabIndex = 21;
-            // 
-            // panel2
-            // 
-            this.panel2.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel2.Controls.Add(this.lblTotal);
-            this.panel2.Controls.Add(this.labelTotal);
-            this.panel2.Font = new System.Drawing.Font("Calibri", 9F);
-            this.panel2.Location = new System.Drawing.Point(412, 92);
-            this.panel2.Margin = new System.Windows.Forms.Padding(0);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(215, 24);
-            this.panel2.TabIndex = 23;
-            // 
-            // lblUnconfirmed
-            // 
-            this.lblUnconfirmed.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.lblUnconfirmed.AutoSize = true;
-            this.lblUnconfirmed.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblUnconfirmed.ForeColor = System.Drawing.Color.Gray;
-            this.lblUnconfirmed.Location = new System.Drawing.Point(523, 66);
-            this.lblUnconfirmed.Name = "lblUnconfirmed";
-            this.lblUnconfirmed.Size = new System.Drawing.Size(75, 17);
-            this.lblUnconfirmed.TabIndex = 22;
-            this.lblUnconfirmed.Text = "0.00000000";
             // 
             // picCoinImage
             // 
             this.picCoinImage.Image = global::Pandora.Client.PandorasWallet.Properties.Resources.goldbars;
-            this.picCoinImage.Location = new System.Drawing.Point(43, 72);
+            this.picCoinImage.Location = new System.Drawing.Point(43, 76);
             this.picCoinImage.Name = "picCoinImage";
             this.picCoinImage.Size = new System.Drawing.Size(32, 32);
             this.picCoinImage.TabIndex = 18;
             this.picCoinImage.TabStop = false;
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.BackgroundImage")));
+            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pictureBox1.Location = new System.Drawing.Point(22, 30);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
+            this.pictureBox1.TabIndex = 26;
+            this.pictureBox1.TabStop = false;
+            // 
+            // label2
+            // 
+            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.label2.Font = new System.Drawing.Font("Calibri", 11F, System.Drawing.FontStyle.Bold);
+            this.label2.Location = new System.Drawing.Point(423, 35);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(178, 23);
+            this.label2.TabIndex = 25;
+            this.label2.Text = "Balance details:";
+            // 
+            // pictureBoxBalanceInfo
+            // 
+            this.pictureBoxBalanceInfo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxBalanceInfo.Image")));
+            this.pictureBoxBalanceInfo.Location = new System.Drawing.Point(767, 3);
+            this.pictureBoxBalanceInfo.Name = "pictureBoxBalanceInfo";
+            this.pictureBoxBalanceInfo.Size = new System.Drawing.Size(15, 15);
+            this.pictureBoxBalanceInfo.TabIndex = 24;
+            this.pictureBoxBalanceInfo.TabStop = false;
+            this.pictureBoxBalanceInfo.Visible = false;
+            // 
+            // panel2
+            // 
+            this.panel2.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.panel2.AutoSize = true;
+            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.lblTotal);
+            this.panel2.Controls.Add(this.labelTotal);
+            this.panel2.Font = new System.Drawing.Font("Calibri", 8F);
+            this.panel2.Location = new System.Drawing.Point(417, 89);
+            this.panel2.Margin = new System.Windows.Forms.Padding(0);
+            this.panel2.Name = "panel2";
+            this.panel2.Padding = new System.Windows.Forms.Padding(2);
+            this.panel2.Size = new System.Drawing.Size(206, 25);
+            this.panel2.TabIndex = 23;
+            // 
+            // lblUnconfirmed
+            // 
+            this.lblUnconfirmed.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.lblUnconfirmed.AutoSize = true;
+            this.lblUnconfirmed.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblUnconfirmed.ForeColor = System.Drawing.Color.Gray;
+            this.lblUnconfirmed.Location = new System.Drawing.Point(519, 66);
+            this.lblUnconfirmed.MaximumSize = new System.Drawing.Size(160, 0);
+            this.lblUnconfirmed.Name = "lblUnconfirmed";
+            this.lblUnconfirmed.Size = new System.Drawing.Size(75, 17);
+            this.lblUnconfirmed.TabIndex = 22;
+            this.lblUnconfirmed.Text = "0.00000000";
+            // 
             // lblNameUnconfirmed
             // 
-            this.lblNameUnconfirmed.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.lblNameUnconfirmed.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.lblNameUnconfirmed.AutoSize = true;
             this.lblNameUnconfirmed.Font = new System.Drawing.Font("Calibri", 10F);
             this.lblNameUnconfirmed.ForeColor = System.Drawing.Color.Gray;
-            this.lblNameUnconfirmed.Location = new System.Drawing.Point(420, 64);
+            this.lblNameUnconfirmed.Location = new System.Drawing.Point(423, 65);
             this.lblNameUnconfirmed.Name = "lblNameUnconfirmed";
             this.lblNameUnconfirmed.Size = new System.Drawing.Size(88, 17);
             this.lblNameUnconfirmed.TabIndex = 19;
@@ -973,7 +1011,7 @@ namespace Pandora.Client.PandorasWallet
             this.toolStripStatusEmail});
             this.statusStripWallet.Location = new System.Drawing.Point(0, 772);
             this.statusStripWallet.Name = "statusStripWallet";
-            this.statusStripWallet.Size = new System.Drawing.Size(1103, 20);
+            this.statusStripWallet.Size = new System.Drawing.Size(1153, 20);
             this.statusStripWallet.TabIndex = 32;
             this.statusStripWallet.Text = "statusStrip1";
             // 
@@ -1043,42 +1081,12 @@ namespace Pandora.Client.PandorasWallet
             this.groupBox1.Controls.Add(this.QuickAmmountLabel);
             this.groupBox1.Controls.Add(this.label4);
             this.groupBox1.Font = new System.Drawing.Font("Segoe UI", 8.25F);
-            this.groupBox1.Location = new System.Drawing.Point(692, 79);
+            this.groupBox1.Location = new System.Drawing.Point(730, 32);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(395, 124);
             this.groupBox1.TabIndex = 34;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Quick Send";
-            // 
-            // pictureBoxBalanceInfo
-            // 
-            this.pictureBoxBalanceInfo.Image = ((System.Drawing.Image)(resources.GetObject("pictureBoxBalanceInfo.Image")));
-            this.pictureBoxBalanceInfo.Location = new System.Drawing.Point(767, 3);
-            this.pictureBoxBalanceInfo.Name = "pictureBoxBalanceInfo";
-            this.pictureBoxBalanceInfo.Size = new System.Drawing.Size(15, 15);
-            this.pictureBoxBalanceInfo.TabIndex = 24;
-            this.pictureBoxBalanceInfo.TabStop = false;
-            this.pictureBoxBalanceInfo.Visible = false;
-            // 
-            // label2
-            // 
-            this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.label2.Font = new System.Drawing.Font("Calibri", 11F, System.Drawing.FontStyle.Bold);
-            this.label2.Location = new System.Drawing.Point(420, 31);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(178, 23);
-            this.label2.TabIndex = 25;
-            this.label2.Text = "Balance details:";
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBox1.BackgroundImage")));
-            this.pictureBox1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBox1.Location = new System.Drawing.Point(22, 26);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
-            this.pictureBox1.TabIndex = 26;
-            this.pictureBox1.TabStop = false;
             // 
             // QuickSendButton
             // 
@@ -1100,7 +1108,7 @@ namespace Pandora.Client.PandorasWallet
             this.lstViewCurrencies.Location = new System.Drawing.Point(3, 35);
             this.lstViewCurrencies.Name = "lstViewCurrencies";
             this.lstViewCurrencies.SelectedCurrencyId = ((long)(0));
-            this.lstViewCurrencies.Size = new System.Drawing.Size(1065, 487);
+            this.lstViewCurrencies.Size = new System.Drawing.Size(1115, 487);
             this.lstViewCurrencies.TabIndex = 20;
             this.lstViewCurrencies.OnSelectedIndexChanged += new System.EventHandler(this.CurrencyListView_OnSelectedIndexChanged);
             // 
@@ -1111,7 +1119,7 @@ namespace Pandora.Client.PandorasWallet
             | System.Windows.Forms.AnchorStyles.Right)));
             this.statsctrlExchage.Location = new System.Drawing.Point(350, 16);
             this.statsctrlExchage.Name = "statsctrlExchage";
-            this.statsctrlExchage.Size = new System.Drawing.Size(718, 503);
+            this.statsctrlExchage.Size = new System.Drawing.Size(768, 503);
             this.statsctrlExchage.StatusName = "";
             this.statsctrlExchage.TabIndex = 78;
             // 
@@ -1121,7 +1129,7 @@ namespace Pandora.Client.PandorasWallet
             | System.Windows.Forms.AnchorStyles.Right)));
             this.statscntrlTradeHistory.Location = new System.Drawing.Point(3, 349);
             this.statscntrlTradeHistory.Name = "statscntrlTradeHistory";
-            this.statscntrlTradeHistory.Size = new System.Drawing.Size(1062, 169);
+            this.statscntrlTradeHistory.Size = new System.Drawing.Size(1112, 169);
             this.statscntrlTradeHistory.StatusName = "";
             this.statscntrlTradeHistory.TabIndex = 44;
             // 
@@ -1130,7 +1138,7 @@ namespace Pandora.Client.PandorasWallet
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.InactiveCaption;
-            this.ClientSize = new System.Drawing.Size(1103, 791);
+            this.ClientSize = new System.Drawing.Size(1153, 791);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.statusStripWallet);
             this.Controls.Add(this.panel1);
@@ -1140,7 +1148,7 @@ namespace Pandora.Client.PandorasWallet
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.MinimumSize = new System.Drawing.Size(950, 600);
+            this.MinimumSize = new System.Drawing.Size(1119, 830);
             this.Name = "AppMainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Pandora\'s Wallet";
@@ -1162,16 +1170,16 @@ namespace Pandora.Client.PandorasWallet
             this.menuStrip1.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.picCoinImage)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBalanceInfo)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.picCoinImage)).EndInit();
             this.statusStripWallet.ResumeLayout(false);
             this.statusStripWallet.PerformLayout();
             this.ctxMenuOrderMenu.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBalanceInfo)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 

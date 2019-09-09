@@ -76,21 +76,21 @@ namespace Pandora.Client.Crypto.Test
             //}
         }
 
-        private ServerCurrencyAdvocacy GetAdvocacy(long aId, string secret, out IChianParams aParams)
+        private ServerCurrencyAdvocacy GetAdvocacy(long aId, string secret, out IChainParams aParams)
         {
             var FSqlSettings = DatabaseSettings.LoadDatabaseSettings();
             var FPandoraWalletServerDataThreadContained = new PandoraWalletServerData(FSqlSettings);
             DBServerChainParams lServerParams = new MyDBServerChainParams();
             FPandoraWalletServerDataThreadContained.GetDBServerChainParams(aId, ref lServerParams);
             ServerCurrencyAdvocacy lAdvocacy = ServerCurrencyControl.GetServerCurrencyAdvocacy((uint)aId, lServerParams as IServerChainParams, () => secret) as ServerCurrencyAdvocacy;
-            aParams = lServerParams as IChianParams;
+            aParams = lServerParams as IChainParams;
             return lAdvocacy;
         }
 
         internal class MyDBServerChainParams : DBServerChainParams, IServerChainParams
         {
             public CapablityFlags Capabilities { get => (CapablityFlags)Peculiarity; set => throw new NotImplementedException(); }
-            ChainParams.NetworkType IChianParams.Network { get => (ChainParams.NetworkType)Network; set => Network = (short)value; }
+            ChainParams.NetworkType IChainParams.Network { get => (ChainParams.NetworkType)Network; set => Network = (short)value; }
             ProtocolFlags IServerChainParams.ProtocolFlags { get => (ProtocolFlags)Peculiarity; set => Peculiarity = (int)value; }
         }
 
@@ -106,7 +106,7 @@ namespace Pandora.Client.Crypto.Test
             var lP2SHScriptBytes = new byte[] { (byte)OpcodeType.OP_HASH160, (byte)lWitnessScriptHashBytes.Length }.Concat(lWitnessScriptHashBytes).Concat(new byte[] { (byte)OpcodeType.OP_EQUAL });
 
             string lSecret = "7A41F49D98D83DF2EEB89F8E895D2269";
-            var lAdvocacy = GetAdvocacy(10001, lSecret, out IChianParams lParams);
+            var lAdvocacy = GetAdvocacy(10001, lSecret, out IChainParams lParams);
             var lTestKey = new Currencies.CCKey(Encoding.ASCII.GetBytes(GetIndexKey(1, lSecret)));
             Network lNetwork = new BitcoinNetwork(lParams);
             var lSegWitAddress = lTestKey.PubKey.GetSegwitAddress(lNetwork);
@@ -137,7 +137,7 @@ namespace Pandora.Client.Crypto.Test
             //string hexPrevTx = "020000000001024c2371b49adc3f74f61e15c3c538d5a2575905a5eb7dfe3e688acdd132c3718f0100000017160014047159b5cb265030a03b092bfca1bb78fdefe419fdfffffffb75d065f9d2f97ee1fdac06166ab424ae8df473e52dea80b1dc0a7e94d3411d01000000171600142744d06614f6110a5ba3f3117c135dcf73b319c8fdffffff02040216000000000017a914d65a928554f7a244b869425a26a441bcbc038cf68740420f000000000017a9143ba46d160700c4070d7f55a17ae3d3d7cf8e225687024730440220361fed7166591fb2a84d6013e4086af3f1cd0dc320f2858a5be0b92df91a09d102201430cae5e3345728dbb7e2aca02889eee3fbacef9fe670a882c53607d076342c01210244180ec09d8a5b5e7c6831acf2bbfeaf966d427310e2f641d55fecbb44b57f260247304402203eb8b817d168734e96d14a7c4e4fe9f66b6c2cdb69a034e910aeefc02ad85b2302205399d4357ba1aab68425738facc0416a216e258bad13e1578306ad3715a1b17b012102806aa44c0ee00ed79e1e81a54afccabdc053c01b7f97b593b09132d6dfa337544cfb1700";
             string secret = "ae23adb80ce408f4de45ace1fa0a91a793e60f26004a1055f5561006df56e326";
 
-            var cp = GetAdvocacy(10001, secret, out IChianParams lParams);
+            var cp = GetAdvocacy(10001, secret, out IChainParams lParams);
             // ChainParams cp = new ChainParams(ChainParams.NetworkType.TestNet);
             BitcoinNetwork network = new BitcoinNetwork(lParams);
 

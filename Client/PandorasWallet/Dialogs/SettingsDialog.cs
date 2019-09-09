@@ -19,6 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -28,19 +29,33 @@ namespace Pandora.Client.PandorasWallet.Dialogs
     public partial class SettingsDialog : BaseDialog
     {
         public EventHandler OnChangeDefaultCoinClick;
-        public EventHandler OnShowPrivateKey;
+        public Func<long, IDictionary<string, string>> OnGetPrivateKey;
 
-        public long CurrencyId { get; private set; }
+        public long DefaultCurrencyId { get; private set; }
+
+        public long ActiveCurrencyId { get; private set; }
 
         public string DataPath { get => txtDataPath.Text; set => txtDataPath.Text = value; }
 
         public bool EncryptWallet { get => checkEncryptWallet.Checked; set => checkEncryptWallet.Checked = value; }
 
+        public string PrivateKeyBtnText { get => btnPrivKey.Text; set => btnPrivKey.Text = $"View {FCurrencyName = value} private key..."; }
+
+        private string FCurrencyName;
+
         public void SetDefaultCurrency(long aCurrencyId, string aName, Image aImage)
         {
-            this.imgBoxDefaultCoin.Image = aImage;
+            this.imgBoxDefaultCoin.BackgroundImage = aImage;
             this.lblDefaultCoin.Text = aName;
-            CurrencyId = aCurrencyId;
+            DefaultCurrencyId = aCurrencyId;
+        }
+
+        public void SetActiveCurrency(long aCurrencyId, string aName, Image aImage)
+        {
+            this.imgCurrentCoin.BackgroundImage = aImage;
+            lblSelectedCoin.Text = aName;
+            PrivateKeyBtnText = aName;
+            ActiveCurrencyId = aCurrencyId;
         }
 
         public SettingsDialog()
@@ -51,7 +66,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         private void btnOK_Click(object sender, EventArgs e)
         {
- 
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -84,7 +98,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         {
             string lErrorMsg = "";
             if (DialogResult == DialogResult.OK)
-            {    
+            {
                 if (string.IsNullOrEmpty(DataPath) || !Directory.Exists(DataPath))
                 {
                     lErrorMsg = "You must specify a valid path";
@@ -109,7 +123,14 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         {
             try
             {
-                OnShowPrivateKey?.Invoke(this, e);
+                var lPrivateKey = OnGetPrivateKey?.Invoke(ActiveCurrencyId);
+                if (lPrivateKey != null)
+                    using (PrivKeyDialog lPrivateKeyDialog = new PrivKeyDialog())
+                    {
+                        lPrivateKeyDialog.TitleMessage = FCurrencyName;
+                        lPrivateKeyDialog.SetPrivateKeys(lPrivateKey);
+                        lPrivateKeyDialog.Execute();
+                    }
             }
             catch (Exception ex)
             {

@@ -27,7 +27,7 @@ namespace Pandora.Client.Crypto.Currencies
         public const int BEACH32_WITNESS_SCRIPT_ADDRESS = 31;
 
 
-        protected Network(IChianParams aChainParams)
+        protected Network(IChainParams aChainParams)
         {
             ChainParams = aChainParams;
             Net = (int)aChainParams.Network;
@@ -35,7 +35,7 @@ namespace Pandora.Client.Crypto.Currencies
             SetChainParams();
         }
 
-        public IChianParams ChainParams { get; protected set; }
+        public IChainParams ChainParams { get; protected set; }
 
 
         protected abstract void SetChainParams();

@@ -27,7 +27,7 @@ namespace Pandora.Client.Crypto.Currencies.Bitcoin
             WITNESS_SCRIPT_ADDRESS
         }
 
-        public BitcoinNetwork(IChianParams aChainparams) : base(aChainparams)
+        public BitcoinNetwork(IChainParams aChainparams) : base(aChainparams)
         {
 
         }
