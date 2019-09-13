@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using System.Linq;
+using System.Threading.Tasks;
 
 #if MONO
 #else
@@ -81,8 +82,8 @@ namespace Pandora.Client.Universal
                     var lProcesses = Process.GetProcesses();
                     foreach (var lProc in lProcesses)
                     {
-                        //NOTE: in Mono some case this throws an error because this list is 
-                        //      directly connected to the existing process and not a copy of the 
+                        //NOTE: in Mono some case this throws an error because this list is
+                        //      directly connected to the existing process and not a copy of the
                         //      about the process.  So we need to take a copy of the name
                         //      and catch any excptions cause because the process ended.
                         string lProcessName = null;
@@ -92,7 +93,7 @@ namespace Pandora.Client.Universal
                         }
                         catch
                         {
-                            // we ignore the error here 
+                            // we ignore the error here
                         }
                         if (lProcessName == aProcessName)
                         {
@@ -104,7 +105,7 @@ namespace Pandora.Client.Universal
                 if (lList.Length > 0)
                     lResult = lList[0];
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Write(LogLevel.Error, "SystemUtils.GetProcess failed for finding process '{0}'\nWith error: {1}\nStack: {2}", aProcessName, ex.Message, ex.StackTrace);
             }
@@ -333,8 +334,13 @@ namespace Pandora.Client.Universal
 
         public void SendAsync(string aSubject, string aBody)
         {
-            Thread lNewThread = new Thread(() => SendThread(aSubject, aBody, new EmailSystem(this)));
-            lNewThread.Start();
+            Task.Factory.StartNew((() => SendThread(aSubject, aBody, new EmailSystem(this))))
+                .ContinueWith((aTask)
+                =>
+                {
+                    if (aTask.IsFaulted)
+                        Log.Write(LogLevel.Error, $"Error sending email async with subject {aSubject}. Exception: {aTask.Exception?.Flatten()}");
+                });
         }
 
         private void SendThread(string aSubject, string aBody, EmailSystem aEmailSystem)

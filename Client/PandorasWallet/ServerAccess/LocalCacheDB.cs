@@ -446,7 +446,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             var lResult = new List<CurrencyItem>();
 
-            string lQuery = "SELECT c2.id, name, ticker, precision, MinConfirmations, livedate, Icon, IconSize, FeePerKb, ChainParams, Status FROM Currencies c2, CurrencyVisible m where c2.id = m.CurrencyId AND m.Visible = true";
+            string lQuery = "SELECT c1.id, name, ticker, precision, MinConfirmations, livedate, Icon, IconSize, FeePerKb, ChainParams, CASE WHEN cs.status IS NULL THEN c1.status ELSE cs.status END as 'Status' FROM Currencies c1 inner join CurrencyVisible c2 on c1.id = c2.CurrencyId left join CurrenciesStatus cs on c2.CurrencyId = cs.currencyid";
 
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, FSQLiteConnection))
             using (SQLiteDataReader lSQLiteDataReader = lSQLiteCommand.ExecuteReader())
