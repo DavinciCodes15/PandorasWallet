@@ -574,12 +574,23 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        private enum CommandKeyCodes
+        {
+            Copy = 22, Cut = 24, Undo = 26, Redo = 25, Space = 32, Backspace = 8
+        }
+
         private void TxtBoxSendToAddress_KeyPress(object sender, KeyPressEventArgs e)
         {
             try
             {
                 System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"[^a-zA-Z0-9\s]");
-                e.Handled = (regex.IsMatch(e.KeyChar.ToString()) && e.KeyChar != 8);
+                e.Handled = regex.IsMatch(e.KeyChar.ToString());
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Backspace);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Copy);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Cut);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Undo);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Redo);
+                e.Handled |= (e.KeyChar == (int) CommandKeyCodes.Space);
             }
             catch (Exception ex)
             {

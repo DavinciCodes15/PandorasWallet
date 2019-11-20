@@ -258,8 +258,9 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         private void BtnBackupFolder_Click(object sender, EventArgs e)
         {
+            DlgFolderBrowser.FileName = $"PWBACKUP_{DateTime.Now.ToString("yyyyMMddTHHmmss")}.bkp";
             if (DlgFolderBrowser.ShowDialog() == DialogResult.OK)
-                txtBoxBackupSelectedDir.Text = System.IO.Path.Combine(DlgFolderBrowser.SelectedPath, $"PWBACKUP_{DateTime.Now.ToString("yyyyMMddTHHmmss")}.bkp");
+                txtBoxBackupSelectedDir.Text = DlgFolderBrowser.FileName;
         }
 
         private void BtnCopyWords_Click(object sender, EventArgs e)

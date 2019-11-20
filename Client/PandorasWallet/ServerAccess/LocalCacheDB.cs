@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Pandora.Client.PandorasWallet.ServerAccess
@@ -386,7 +387,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
                         lSQLiteCommand.ExecuteNonQuery();
                     }
-
+            if (aTransactionRecord.Outputs == null) throw new InvalidDataException($"Invalid tx '{aTransactionRecord.TxId}' it contains no outputs.");
             foreach (TransactionUnit lTransactionUnit in aTransactionRecord.Outputs)
                 using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TxOut (internalid, id, address, ammount, nindex) VALUES (@internalid, @id, @address, @ammount, @nindex)", aSQLConnection))
                 {
@@ -497,7 +498,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             using (MemoryStream ms = new MemoryStream(lChainParams))
             {
                 BinaryFormatter lBf = new BinaryFormatter();
-
+                lBf.Binder = PandorasCache.MyCacheChainParams.GetSerializationBinder();
                 lChainParamsObject = (PandorasCache.MyCacheChainParams)lBf.Deserialize(ms);
             }
 
@@ -519,6 +520,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 (CurrencyStatus)Enum.Parse(typeof(CurrencyStatus), aSQLiteDataReader.GetString(10))
                 ));
         }
+
+      
 
         public CurrencyStatusItem ReadCurrencyStatus(long aCurrencyId)
         {

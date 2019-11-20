@@ -251,7 +251,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     if (aDataPackage.NextRequestTime < DateTime.Now)
                         try
                         {
-                            aDataPackage.NextRequestTime = DateTime.Now.AddMilliseconds(RandomNumber(2000, 3000));
+                            aDataPackage.NextRequestTime = DateTime.Now.AddMilliseconds(RandomNumber(500, 1000));
                             if (FServerAccess.IsTransactionSent(aDataPackage.SendHandle))
                                 lTxId = FServerAccess.GetTransactionId(aDataPackage.SendHandle);
                         }
@@ -268,7 +268,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     if (lTxId == null)
                         BeginInvoke(new DelegateThreadSendTransaction(ThreadSendTransaction), aDataPackage);
                     else
-                        DoSendTransactionCompleted(aDataPackage, "", lTxId);
+                    {
+                        if (IsByteArray(lTxId))
+                            DoSendTransactionCompleted(aDataPackage, "", lTxId);
+                        else
+                            DoSendTransactionCompleted(aDataPackage, lTxId, "");
+                    }
                 }
             }
             catch (Exception e)
@@ -276,6 +281,21 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 DoSendTransactionCompleted(aDataPackage, e.Message, "");
                 DoErrorHandler(e);
             }
+        }
+
+        private static bool IsHex(char c)
+        {
+            return (c >= '0' && c <= '9') ||
+                     (c >= 'a' && c <= 'f') ||
+                     (c >= 'A' && c <= 'F');
+        }
+
+        private bool IsByteArray(string aText)
+        {
+            bool lResult = true;
+            foreach (char c in aText)
+                if (!(lResult = IsHex(c))) break;
+            return lResult;
         }
 
         private void DoSendTransactionCompleted(SendTxPackage aDataPackage, string aErrorMsg, string aTxId)

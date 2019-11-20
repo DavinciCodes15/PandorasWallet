@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Pandora.Client.PandorasWallet</RootNamespace>
-    <AssemblyName>PandorasWallet</AssemblyName>
+    <AssemblyName>Pandora%27s Wallet</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

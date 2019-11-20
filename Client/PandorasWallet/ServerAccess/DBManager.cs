@@ -658,7 +658,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 using (MemoryStream ms = new MemoryStream(lChainParams))
                                 {
                                     BinaryFormatter lBf = new BinaryFormatter();
-
+                                    lBf.Binder = MyCacheChainParams.GetSerializationBinder();
                                     lChainParamsObject = (MyCacheChainParams)lBf.Deserialize(ms);
                                 }
 
@@ -690,6 +690,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
                 return true;
             }
+
+
 
             public bool Read(out List<CurrencyStatusItem> aCurrencyStatusList, long? aCurrencyId = null)
             {
@@ -952,6 +954,32 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             public string Encoder { get; set; }
             public CapablityFlags Capabilities { get; set; }
             public long Version { get; set; }
+
+            public static System.Runtime.Serialization.SerializationBinder GetSerializationBinder()
+            {
+                return new ChainParamsBinder();
+            }
+
+            private class ChainParamsBinder : System.Runtime.Serialization.SerializationBinder
+            {
+                private List<Type> FTypesHandled;
+                public ChainParamsBinder() : base()
+                {
+                    FTypesHandled = new List<Type>();
+                    FTypesHandled.Add(typeof(PandorasCache.MyCacheChainParams));
+                    FTypesHandled.Add(typeof(ChainParams.NetworkType));
+                    FTypesHandled.Add(typeof(CapablityFlags));
+                }
+                public override Type BindToType(string assemblyName, string aTypeName)
+                {
+                    foreach (var lType in FTypesHandled)
+                    {
+                        if (aTypeName.Contains(lType.Name))
+                            return lType;
+                    }
+                    return Type.GetType(aTypeName);
+                }
+            }
         }
     }
 }

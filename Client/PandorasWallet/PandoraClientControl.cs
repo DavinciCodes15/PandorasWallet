@@ -346,7 +346,7 @@ namespace Pandora.Client.PandorasWallet
             };
 
             Log.Write(LogLevel.Debug, "OnConnect called to log into server");
-            AppMainForm.Connected = FServerConnection != null && FServerConnection.Connected;
+            //AppMainForm.Connected = FServerConnection != null && FServerConnection.Connected;
             // Create login dialog and setup
             lConnectDialog.Username = Settings.UserName;
             lConnectDialog.Email = Settings.Email;
@@ -391,8 +391,8 @@ namespace Pandora.Client.PandorasWallet
             else
                 Log.Write(LogLevel.Debug, "Not connected.. last User: {0} - {1} ", lConnectDialog.Username, lConnectDialog.Email);
             CoreSettings.SaveSettings(Settings, FSettingsFile);
-            AppMainForm.Connected = (FServerConnection == null || !FServerConnection.Connected);
-            if (AppMainForm.Connected)
+            AppMainForm.Connected = FServerConnection != null && FServerConnection.Connected;
+            if (!AppMainForm.Connected)
                 AppMainForm.Close();
         }
 

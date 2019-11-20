@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DOCUMENT Type="Advanced Installer" CreateVersion="15.1" version="15.8" PreviousModules="simple" Modules="enterprise" RootPath="." Language="en" Id="{011E0EA6-A7D2-4072-BB19-019DD7A57009}">
+<DOCUMENT Type="Advanced Installer" CreateVersion="15.1" version="16.4.1" PreviousModules="simple" Modules="enterprise" RootPath="." Language="en" Id="{011E0EA6-A7D2-4072-BB19-019DD7A57009}">
   <COMPONENT cid="caphyon.advinst.msicomp.ProjectOptionsComponent">
     <ROW Name="HiddenItems" Value="MsiJavaComponent;MsiExtComponent;MsiDriverPackagesComponent;MsiClassComponent;MsiOdbcDataSrcComponent;SharePointSlnComponent;SilverlightSlnComponent;AppXAppDetailsComponent;AppXCapabilitiesComponent;AppXDependenciesComponent;AppXProductDetailsComponent;AppXVisualAssetsComponent;AppXAppDeclarationsComponent;AppXUriRulesComponent;FixupComponent"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
+    <ROW Property="AI_PRODUCTNAME_ARP" Value="Pandora&apos;s Wallet v1.1"/>
+    <ROW Property="AI_UNINSTALLER" Value="msiexec.exe"/>
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
+    <ROW Property="ARPNOREPAIR" Value="1"/>
     <ROW Property="ARPPRODUCTICON" Value="PandorasWallet_1.exe" Type="8"/>
+    <ROW Property="ARPSYSTEMCOMPONENT" Value="1"/>
     <ROW Property="DBName" Value="Pandora"/>
     <ROW Property="DBPassword" Value="support"/>
     <ROW Property="DBServer" Value="ontime\davinciaxosoft"/>
     <ROW Property="DBUser" Value="cat"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{0C4EDEEC-77C7-4C5B-ADE4-634B0D593510} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{7FC75FFE-084B-42DC-81E3-09DEC2E0981B} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet v1.1"/>
-    <ROW Property="ProductVersion" Value="1.1.24.1730" Type="32" TargetFile="PandorasWallet.exe"/>
+    <ROW Property="ProductVersion" Value="1.1.27.2080" Type="32" TargetFile="PandorasWallet.exe_1"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{15B4F25B-B7AD-4B1B-9D26-98A1319C788C}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -38,12 +42,14 @@
     <ROW Directory="Assets" Directory_Parent="TARGETDIR" DefaultDir="Assets" IsPseudoRoot="1"/>
     <ROW Directory="DesktopFolder" Directory_Parent="TARGETDIR" DefaultDir="DESKTO~1|DesktopFolder" IsPseudoRoot="1"/>
     <ROW Directory="Log_Dir" Directory_Parent="APPDIR" DefaultDir="Log"/>
-    <ROW Directory="SHORTCUTDIR" Directory_Parent="TARGETDIR" DefaultDir="SHORTC~1|SHORTCUTDIR" IsPseudoRoot="1"/>
+    <ROW Directory="PandorasWallet_Dir" Directory_Parent="StartMenuFolder" DefaultDir="PANDOR~1.1|Pandora&apos;s Wallet v1.1"/>
+    <ROW Directory="StartMenuFolder" Directory_Parent="TARGETDIR" DefaultDir="STARTM~1|StartMenuFolder" IsPseudoRoot="1"/>
     <ROW Directory="TARGETDIR" DefaultDir="SourceDir"/>
     <ROW Directory="x64_Dir" Directory_Parent="APPDIR" DefaultDir="x64"/>
     <ROW Directory="x86_Dir" Directory_Parent="APPDIR" DefaultDir="x86"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCompsComponent">
+    <ROW Component="AI_CustomARPName" ComponentId="{A4811F5A-628B-4A65-AE87-97D4943A060D}" Directory_="APPDIR" Attributes="4" KeyPath="DisplayName" Options="1"/>
     <ROW Component="APPDIR" ComponentId="{96C46B93-6199-4A9B-AD08-B6A14B1E76DB}" Directory_="APPDIR" Attributes="0"/>
     <ROW Component="Assets" ComponentId="{F1D1FC4D-D54C-4931-AE5A-2718C17849EE}" Directory_="Assets" Attributes="0"/>
     <ROW Component="AutocompleteMenu.dll" ComponentId="{B50E45E3-5DE6-48E4-B581-8238962E2C28}" Directory_="APPDIR" Attributes="0" KeyPath="AutocompleteMenu.dll"/>
@@ -59,9 +65,9 @@
     <ROW Component="Pandora.Client.ServerAccess.dll" ComponentId="{9EABB609-B5C3-48B8-82FD-9602211E03AB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.ServerAccess.dll"/>
     <ROW Component="Pandora.Client.SystemBackup.dll" ComponentId="{DC2D064B-03C0-4F32-BD23-C5D34A8F66CB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.SystemBackup.dll"/>
     <ROW Component="Pandora.Client.Universal.dll" ComponentId="{0A7F2746-683E-4F7E-A716-338FF00DACB2}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Universal.dll"/>
-    <ROW Component="PandorasWallet.exe" ComponentId="{383C312B-05D9-46BE-A6BB-6265AC37C88A}" Directory_="APPDIR" Attributes="0" KeyPath="PandorasWallet.exe"/>
+    <ROW Component="PandorasWallet" ComponentId="{3C7AC804-B853-4FD8-A2B8-0856F3DE1911}" Directory_="PandorasWallet_Dir" Attributes="0"/>
+    <ROW Component="PandorasWallet.exe_1" ComponentId="{E6F903BC-5821-42A6-BB00-0515E56E4382}" Directory_="APPDIR" Attributes="0" KeyPath="PandorasWallet.exe_1"/>
     <ROW Component="ProductInformation" ComponentId="{9A30C750-3C4C-4952-85DE-1D3B88868BFF}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
-    <ROW Component="SHORTCUTDIR" ComponentId="{DBE0CF84-23F0-4C22-992A-9D7340550501}" Directory_="SHORTCUTDIR" Attributes="0"/>
     <ROW Component="SQLite.Interop.dll" ComponentId="{5F98BFC1-0AB8-44A8-824F-3BD9347D879A}" Directory_="x64_Dir" Attributes="256" KeyPath="SQLite.Interop.dll"/>
     <ROW Component="SQLite.Interop.dll_1" ComponentId="{9BF7E384-C766-4F27-8AC9-810B6431E370}" Directory_="x86_Dir" Attributes="0" KeyPath="SQLite.Interop.dll_1"/>
     <ROW Component="SuperSocket.ClientEngine.dll" ComponentId="{588814F4-9243-4471-87F4-94C3D1A387EF}" Directory_="APPDIR" Attributes="0" KeyPath="SuperSocket.ClientEngine.dll"/>
@@ -81,42 +87,42 @@
     <ROW Component="WebSocket4Net.dll" ComponentId="{854CFFE8-1F3D-4E8E-BEA2-18E683782480}" Directory_="APPDIR" Attributes="0" KeyPath="WebSocket4Net.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
-    <ROW Feature="ClientsFeature" Title="MainClients" Description="Pandora Client Server Setup" Display="3" Level="1" Directory_="APPDIR" Attributes="0" Components="APPDIR Assets AutocompleteMenu.dll CryptSharp.dll HashLib.dll Log Microsoft.AspNet.SignalR.Client.dll Newtonsoft.Json.dll Pandora.Client.ClientLib.dll Pandora.Client.Crypto.dll Pandora.Client.Exchange.JKrof.dll Pandora.Client.Exchange.dll Pandora.Client.ServerAccess.dll Pandora.Client.SystemBackup.dll Pandora.Client.Universal.dll PandorasWallet.exe ProductInformation SHORTCUTDIR SQLite.Interop.dll SQLite.Interop.dll_1 SuperSocket.ClientEngine.dll System.Buffers.dll System.Collections.Specialized.dll System.Data.SQLite.EF6.dll System.Data.SQLite.Linq.dll System.Data.SQLite.dll System.Data.SQLite.dll.config System.Net.NameResolution.dll System.Net.Security.dll System.Net.Sockets.dll System.Security.Cryptography.Algorithms.dll System.Security.Cryptography.Encoding.dll System.Security.Cryptography.Primitives.dll System.Security.Cryptography.X509Certificates.dll WebSocket4Net.dll"/>
+    <ROW Feature="ClientsFeature" Title="MainClients" Description="Pandora Client Server Setup" Display="3" Level="1" Directory_="APPDIR" Attributes="0"/>
     <ATTRIBUTE name="CurrentFeature" value="ClientsFeature"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
-    <ROW File="AutocompleteMenu.dll" Component_="AutocompleteMenu.dll" FileName="AUTOCO~1.DLL|AutocompleteMenu.dll" Attributes="0" SourcePath="..\..\bin\Release\AutocompleteMenu.dll" SelfReg="false" NextFile="HashLib.dll"/>
-    <ROW File="CryptSharp.dll" Component_="CryptSharp.dll" FileName="CRYPTS~1.DLL|CryptSharp.dll" Attributes="0" SourcePath="..\..\bin\Release\CryptSharp.dll" SelfReg="false" NextFile="Microsoft.AspNet.SignalR.Client.dll"/>
-    <ROW File="HashLib.dll" Component_="HashLib.dll" FileName="HashLib.dll" Attributes="0" SourcePath="..\..\bin\Release\HashLib.dll" SelfReg="false" NextFile="Pandora.Client.SystemBackup.dll"/>
-    <ROW File="Microsoft.AspNet.SignalR.Client.dll" Component_="Microsoft.AspNet.SignalR.Client.dll" FileName="MICROS~1.DLL|Microsoft.AspNet.SignalR.Client.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.AspNet.SignalR.Client.dll" SelfReg="false" NextFile="Newtonsoft.Json.dll"/>
-    <ROW File="Newtonsoft.Json.dll" Component_="Newtonsoft.Json.dll" FileName="NEWTON~1.DLL|Newtonsoft.Json.dll" Attributes="0" SourcePath="..\..\bin\Release\Newtonsoft.Json.dll" SelfReg="false" NextFile="Pandora.Client.ClientLib.dll"/>
-    <ROW File="Pandora.Client.ClientLib.dll" Component_="Pandora.Client.ClientLib.dll" FileName="PANDOR~1.DLL|Pandora.Client.ClientLib.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ClientLib.dll" SelfReg="false" NextFile="Pandora.Client.Crypto.dll"/>
-    <ROW File="Pandora.Client.Crypto.dll" Component_="Pandora.Client.Crypto.dll" FileName="PANDOR~2.DLL|Pandora.Client.Crypto.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Crypto.dll" SelfReg="false" NextFile="Pandora.Client.Exchange.dll"/>
-    <ROW File="Pandora.Client.Exchange.JKrof.dll" Component_="Pandora.Client.Exchange.JKrof.dll" FileName="PANDOR~4.DLL|Pandora.Client.Exchange.JKrof.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.JKrof.dll" SelfReg="false" NextFile="Pandora.Client.ServerAccess.dll"/>
-    <ROW File="Pandora.Client.Exchange.dll" Component_="Pandora.Client.Exchange.dll" FileName="PANDOR~3.DLL|Pandora.Client.Exchange.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.dll" SelfReg="false" NextFile="Pandora.Client.Exchange.JKrof.dll"/>
-    <ROW File="Pandora.Client.Exchange.dll.config" Component_="System.Data.SQLite.dll.config" FileName="PANDOR~1.CON|Pandora.Client.Exchange.dll.config" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.dll.config" SelfReg="false" NextFile="Pandora.Client.ServerAccess.dll.config"/>
-    <ROW File="Pandora.Client.ServerAccess.dll" Component_="Pandora.Client.ServerAccess.dll" FileName="PANDOR~5.DLL|Pandora.Client.ServerAccess.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ServerAccess.dll" SelfReg="false" NextFile="Pandora.Client.Universal.dll"/>
-    <ROW File="Pandora.Client.ServerAccess.dll.config" Component_="System.Data.SQLite.dll.config" FileName="PANDOR~2.CON|Pandora.Client.ServerAccess.dll.config" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ServerAccess.dll.config" SelfReg="false" NextFile="AutocompleteMenu.dll"/>
+    <ROW File="SQLite.Interop.dll" Component_="SQLite.Interop.dll" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="0" SourcePath="..\..\bin\Release\x64\SQLite.Interop.dll" SelfReg="false"/>
+    <ROW File="SQLite.Interop.dll_1" Component_="SQLite.Interop.dll_1" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="512" SourcePath="..\..\bin\Release\x86\SQLite.Interop.dll" SelfReg="false"/>
+    <ROW File="System.Data.SQLite.dll.config" Component_="System.Data.SQLite.dll.config" FileName="SYSTEM~1.CON|System.Data.SQLite.dll.config" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll.config" SelfReg="false"/>
+    <ROW File="System.Security.Cryptography.Primitives.dll" Component_="System.Security.Cryptography.Primitives.dll" FileName="SYSTEM~1.DLL|System.Security.Cryptography.Primitives.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Primitives.dll" SelfReg="false"/>
+    <ROW File="System.Security.Cryptography.X509Certificates.dll" Component_="System.Security.Cryptography.X509Certificates.dll" FileName="SYSTEM~2.DLL|System.Security.Cryptography.X509Certificates.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.X509Certificates.dll" SelfReg="false"/>
+    <ROW File="WebSocket4Net.dll" Component_="WebSocket4Net.dll" FileName="WEBSOC~1.DLL|WebSocket4Net.dll" Attributes="0" SourcePath="..\..\bin\Release\WebSocket4Net.dll" SelfReg="false"/>
+    <ROW File="CryptSharp.dll" Component_="CryptSharp.dll" FileName="CRYPTS~1.DLL|CryptSharp.dll" Attributes="0" SourcePath="..\..\bin\Release\CryptSharp.dll" SelfReg="false"/>
+    <ROW File="Microsoft.AspNet.SignalR.Client.dll" Component_="Microsoft.AspNet.SignalR.Client.dll" FileName="MICROS~1.DLL|Microsoft.AspNet.SignalR.Client.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.AspNet.SignalR.Client.dll" SelfReg="false"/>
+    <ROW File="Newtonsoft.Json.dll" Component_="Newtonsoft.Json.dll" FileName="NEWTON~1.DLL|Newtonsoft.Json.dll" Attributes="0" SourcePath="..\..\bin\Release\Newtonsoft.Json.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.ClientLib.dll" Component_="Pandora.Client.ClientLib.dll" FileName="PANDOR~1.DLL|Pandora.Client.ClientLib.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ClientLib.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.Crypto.dll" Component_="Pandora.Client.Crypto.dll" FileName="PANDOR~2.DLL|Pandora.Client.Crypto.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Crypto.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.Exchange.dll" Component_="Pandora.Client.Exchange.dll" FileName="PANDOR~3.DLL|Pandora.Client.Exchange.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.Exchange.JKrof.dll" Component_="Pandora.Client.Exchange.JKrof.dll" FileName="PANDOR~4.DLL|Pandora.Client.Exchange.JKrof.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.JKrof.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.ServerAccess.dll" Component_="Pandora.Client.ServerAccess.dll" FileName="PANDOR~5.DLL|Pandora.Client.ServerAccess.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ServerAccess.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.Universal.dll" Component_="Pandora.Client.Universal.dll" FileName="PANDOR~6.DLL|Pandora.Client.Universal.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Universal.dll" SelfReg="false"/>
+    <ROW File="SuperSocket.ClientEngine.dll" Component_="SuperSocket.ClientEngine.dll" FileName="SUPERS~1.DLL|SuperSocket.ClientEngine.dll" Attributes="0" SourcePath="..\..\bin\Release\SuperSocket.ClientEngine.dll" SelfReg="false"/>
+    <ROW File="System.Buffers.dll" Component_="System.Buffers.dll" FileName="SYSTEM~3.DLL|System.Buffers.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Buffers.dll" SelfReg="false"/>
+    <ROW File="System.Collections.Specialized.dll" Component_="System.Collections.Specialized.dll" FileName="SYSTEM~4.DLL|System.Collections.Specialized.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Collections.Specialized.dll" SelfReg="false"/>
+    <ROW File="System.Data.SQLite.dll" Component_="System.Data.SQLite.dll" FileName="SYSTEM~5.DLL|System.Data.SQLite.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll" SelfReg="false"/>
+    <ROW File="System.Data.SQLite.EF6.dll" Component_="System.Data.SQLite.EF6.dll" FileName="SYSTEM~6.DLL|System.Data.SQLite.EF6.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.EF6.dll" SelfReg="false"/>
+    <ROW File="System.Data.SQLite.Linq.dll" Component_="System.Data.SQLite.Linq.dll" FileName="SYSTEM~7.DLL|System.Data.SQLite.Linq.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.Linq.dll" SelfReg="false"/>
+    <ROW File="System.Net.NameResolution.dll" Component_="System.Net.NameResolution.dll" FileName="SYSTEM~8.DLL|System.Net.NameResolution.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.NameResolution.dll" SelfReg="false"/>
+    <ROW File="System.Net.Security.dll" Component_="System.Net.Security.dll" FileName="SYSTEM~9.DLL|System.Net.Security.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Security.dll" SelfReg="false"/>
+    <ROW File="System.Net.Sockets.dll" Component_="System.Net.Sockets.dll" FileName="SYSTE~10.DLL|System.Net.Sockets.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Sockets.dll" SelfReg="false"/>
+    <ROW File="System.Security.Cryptography.Algorithms.dll" Component_="System.Security.Cryptography.Algorithms.dll" FileName="SYSTE~11.DLL|System.Security.Cryptography.Algorithms.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Algorithms.dll" SelfReg="false"/>
+    <ROW File="System.Security.Cryptography.Encoding.dll" Component_="System.Security.Cryptography.Encoding.dll" FileName="SYSTE~12.DLL|System.Security.Cryptography.Encoding.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Encoding.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.Exchange.dll.config" Component_="System.Data.SQLite.dll.config" FileName="PANDOR~1.CON|Pandora.Client.Exchange.dll.config" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.dll.config" SelfReg="false"/>
+    <ROW File="Pandora.Client.ServerAccess.dll.config" Component_="System.Data.SQLite.dll.config" FileName="PANDOR~2.CON|Pandora.Client.ServerAccess.dll.config" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ServerAccess.dll.config" SelfReg="false"/>
+    <ROW File="AutocompleteMenu.dll" Component_="AutocompleteMenu.dll" FileName="AUTOCO~1.DLL|AutocompleteMenu.dll" Attributes="0" SourcePath="..\..\bin\Release\AutocompleteMenu.dll" SelfReg="false"/>
+    <ROW File="HashLib.dll" Component_="HashLib.dll" FileName="HashLib.dll" Attributes="0" SourcePath="..\..\bin\Release\HashLib.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.SystemBackup.dll" Component_="Pandora.Client.SystemBackup.dll" FileName="PANDOR~7.DLL|Pandora.Client.SystemBackup.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.SystemBackup.dll" SelfReg="false"/>
-    <ROW File="Pandora.Client.Universal.dll" Component_="Pandora.Client.Universal.dll" FileName="PANDOR~6.DLL|Pandora.Client.Universal.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Universal.dll" SelfReg="false" NextFile="SuperSocket.ClientEngine.dll"/>
-    <ROW File="PandorasWallet.exe" Component_="PandorasWallet.exe" FileName="PANDOR~1.EXE|PandorasWallet.exe" Attributes="0" SourcePath="..\..\bin\Release\PandorasWallet.exe" SelfReg="false" NextFile="SQLite.Interop.dll" DigSign="true"/>
-    <ROW File="SQLite.Interop.dll" Component_="SQLite.Interop.dll" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="0" SourcePath="..\..\bin\Release\x64\SQLite.Interop.dll" SelfReg="false" NextFile="SQLite.Interop.dll_1"/>
-    <ROW File="SQLite.Interop.dll_1" Component_="SQLite.Interop.dll_1" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="512" SourcePath="..\..\bin\Release\x86\SQLite.Interop.dll" SelfReg="false" NextFile="System.Data.SQLite.dll.config"/>
-    <ROW File="SuperSocket.ClientEngine.dll" Component_="SuperSocket.ClientEngine.dll" FileName="SUPERS~1.DLL|SuperSocket.ClientEngine.dll" Attributes="0" SourcePath="..\..\bin\Release\SuperSocket.ClientEngine.dll" SelfReg="false" NextFile="System.Buffers.dll"/>
-    <ROW File="System.Buffers.dll" Component_="System.Buffers.dll" FileName="SYSTEM~3.DLL|System.Buffers.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Buffers.dll" SelfReg="false" NextFile="System.Collections.Specialized.dll"/>
-    <ROW File="System.Collections.Specialized.dll" Component_="System.Collections.Specialized.dll" FileName="SYSTEM~4.DLL|System.Collections.Specialized.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Collections.Specialized.dll" SelfReg="false" NextFile="System.Data.SQLite.dll"/>
-    <ROW File="System.Data.SQLite.EF6.dll" Component_="System.Data.SQLite.EF6.dll" FileName="SYSTEM~6.DLL|System.Data.SQLite.EF6.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.EF6.dll" SelfReg="false" NextFile="System.Data.SQLite.Linq.dll"/>
-    <ROW File="System.Data.SQLite.Linq.dll" Component_="System.Data.SQLite.Linq.dll" FileName="SYSTEM~7.DLL|System.Data.SQLite.Linq.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.Linq.dll" SelfReg="false" NextFile="System.Net.NameResolution.dll"/>
-    <ROW File="System.Data.SQLite.dll" Component_="System.Data.SQLite.dll" FileName="SYSTEM~5.DLL|System.Data.SQLite.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll" SelfReg="false" NextFile="System.Data.SQLite.EF6.dll"/>
-    <ROW File="System.Data.SQLite.dll.config" Component_="System.Data.SQLite.dll.config" FileName="SYSTEM~1.CON|System.Data.SQLite.dll.config" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll.config" SelfReg="false" NextFile="System.Security.Cryptography.Primitives.dll"/>
-    <ROW File="System.Net.NameResolution.dll" Component_="System.Net.NameResolution.dll" FileName="SYSTEM~8.DLL|System.Net.NameResolution.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.NameResolution.dll" SelfReg="false" NextFile="System.Net.Security.dll"/>
-    <ROW File="System.Net.Security.dll" Component_="System.Net.Security.dll" FileName="SYSTEM~9.DLL|System.Net.Security.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Security.dll" SelfReg="false" NextFile="System.Net.Sockets.dll"/>
-    <ROW File="System.Net.Sockets.dll" Component_="System.Net.Sockets.dll" FileName="SYSTE~10.DLL|System.Net.Sockets.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Sockets.dll" SelfReg="false" NextFile="System.Security.Cryptography.Algorithms.dll"/>
-    <ROW File="System.Security.Cryptography.Algorithms.dll" Component_="System.Security.Cryptography.Algorithms.dll" FileName="SYSTE~11.DLL|System.Security.Cryptography.Algorithms.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Algorithms.dll" SelfReg="false" NextFile="System.Security.Cryptography.Encoding.dll"/>
-    <ROW File="System.Security.Cryptography.Encoding.dll" Component_="System.Security.Cryptography.Encoding.dll" FileName="SYSTE~12.DLL|System.Security.Cryptography.Encoding.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Encoding.dll" SelfReg="false" NextFile="Pandora.Client.Exchange.dll.config"/>
-    <ROW File="System.Security.Cryptography.Primitives.dll" Component_="System.Security.Cryptography.Primitives.dll" FileName="SYSTEM~1.DLL|System.Security.Cryptography.Primitives.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Primitives.dll" SelfReg="false" NextFile="System.Security.Cryptography.X509Certificates.dll"/>
-    <ROW File="System.Security.Cryptography.X509Certificates.dll" Component_="System.Security.Cryptography.X509Certificates.dll" FileName="SYSTEM~2.DLL|System.Security.Cryptography.X509Certificates.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.X509Certificates.dll" SelfReg="false" NextFile="WebSocket4Net.dll"/>
-    <ROW File="WebSocket4Net.dll" Component_="WebSocket4Net.dll" FileName="WEBSOC~1.DLL|WebSocket4Net.dll" Attributes="0" SourcePath="..\..\bin\Release\WebSocket4Net.dll" SelfReg="false" NextFile="CryptSharp.dll"/>
+    <ROW File="PandorasWallet.exe_1" Component_="PandorasWallet.exe_1" FileName="PANDOR~2.EXE|Pandora&apos;s Wallet.exe" Attributes="0" SourcePath="..\..\bin\Release\Pandora&apos;s Wallet.exe" SelfReg="false" DigSign="true"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
     <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="2"/>
@@ -198,10 +204,10 @@
     <ROW Dialog_="PrerequisitesDlg" Control_="Back" Event="NewDialog" Argument="WelcomePrereqDlg" Condition="AI_BOOTSTRAPPER" Ordering="1"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCreateFolderComponent">
-    <ROW Directory_="SHORTCUTDIR" Component_="SHORTCUTDIR" ManualDelete="false"/>
     <ROW Directory_="Log_Dir" Component_="Log" ManualDelete="false"/>
     <ROW Directory_="Assets" Component_="Assets" ManualDelete="false"/>
     <ROW Directory_="APPDIR" Component_="APPDIR" ManualDelete="true"/>
+    <ROW Directory_="PandorasWallet_Dir" Component_="PandorasWallet" ManualDelete="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiCustActComponent">
     <ROW Action="AI_AppSearchEx" Type="1" Source="Prereq.dll" Target="DoAppSearchEx"/>
@@ -214,6 +220,7 @@
     <ROW Action="AI_DOWNGRADE" Type="19" Target="4010"/>
     <ROW Action="AI_DpiContentScale" Type="1" Source="aicustact.dll" Target="DpiContentScale"/>
     <ROW Action="AI_EnableDebugLog" Type="321" Source="aicustact.dll" Target="EnableDebugLog"/>
+    <ROW Action="AI_GetArpIconPath" Type="1" Source="aicustact.dll" Target="GetArpIconPath"/>
     <ROW Action="AI_InstallModeCheck" Type="1" Source="aicustact.dll" Target="UpdateInstallMode" WithoutSeq="true"/>
     <ROW Action="AI_PREPARE_UPGRADE" Type="65" Source="aicustact.dll" Target="PrepareUpgrade"/>
     <ROW Action="AI_PinShortcuts" Type="1" Source="ShortcutFlags.dll" Target="PinShortcuts"/>
@@ -241,6 +248,44 @@
     <ROW Action="SET_SHORTCUTDIR" Type="307" Source="SHORTCUTDIR" Target="[ProgramMenuFolder][ProductName]"/>
     <ROW Action="SET_TARGETDIR_TO_APPDIR" Type="51" Source="TARGETDIR" Target="[APPDIR]"/>
   </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatCompsComponent">
+    <ROW Feature_="ClientsFeature" Component_="AI_CustomARPName"/>
+    <ROW Feature_="ClientsFeature" Component_="APPDIR"/>
+    <ROW Feature_="ClientsFeature" Component_="Assets"/>
+    <ROW Feature_="ClientsFeature" Component_="AutocompleteMenu.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="CryptSharp.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="HashLib.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Log"/>
+    <ROW Feature_="ClientsFeature" Component_="Microsoft.AspNet.SignalR.Client.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Newtonsoft.Json.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.ClientLib.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Crypto.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Exchange.JKrof.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Exchange.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.ServerAccess.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.SystemBackup.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Universal.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="ProductInformation"/>
+    <ROW Feature_="ClientsFeature" Component_="SQLite.Interop.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="SQLite.Interop.dll_1"/>
+    <ROW Feature_="ClientsFeature" Component_="SuperSocket.ClientEngine.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Buffers.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Collections.Specialized.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.EF6.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.Linq.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.dll.config"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Net.NameResolution.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Net.Security.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Net.Sockets.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Security.Cryptography.Algorithms.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Security.Cryptography.Encoding.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Security.Cryptography.Primitives.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="System.Security.Cryptography.X509Certificates.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="WebSocket4Net.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="PandorasWallet.exe_1"/>
+    <ROW Feature_="ClientsFeature" Component_="PandorasWallet"/>
+  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
     <ROW Name="PandorasWallet_1.exe" SourcePath="..\Icons\Pandora&apos;s Wallet.ico" Index="0"/>
   </COMPONENT>
@@ -249,7 +294,7 @@
     <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
     <ROW Action="AI_STORE_LOCATION" Condition="(Not Installed) OR REINSTALL" Sequence="1501"/>
     <ROW Action="AI_PREPARE_UPGRADE" Condition="AI_UPGRADE=&quot;No&quot; AND (Not Installed)" Sequence="1399"/>
-    <ROW Action="AI_ResolveKnownFolders" Sequence="54"/>
+    <ROW Action="AI_ResolveKnownFolders" Sequence="55"/>
     <ROW Action="AI_EnableDebugLog" Sequence="53"/>
     <ROW Action="AI_ResolveLocalizedCredentials" Sequence="51"/>
     <ROW Action="AI_ConfigPermissions" Condition="REMOVE &lt;&gt; &quot;ALL&quot;" Sequence="5852"/>
@@ -262,6 +307,8 @@
     <ROW Action="AI_PrepareShortcutFlags" Condition="(VersionNT &gt; 501) AND ((NOT Installed) OR (Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;)))" Sequence="4501"/>
     <ROW Action="AI_PinShortcuts" Condition="(VersionNT &gt; 600) AND ((NOT Installed) OR (Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;)))" Sequence="6499"/>
     <ROW Action="AI_UnpinShortcuts" Condition="(VersionNT &gt; 600) AND (REMOVE = &quot;ALL&quot;)" Sequence="3199"/>
+    <ROW Action="AI_GetArpIconPath" Sequence="1401"/>
+    <ROW Action="AI_DETECT_MODERNWIN" Condition="(VersionNT &gt;= 603)" Sequence="54" MsiKey="AI_DETECT_MODERNWIN"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
     <ROW Action="AI_RESTORE_LOCATION" Condition="APPDIR=&quot;&quot;" Sequence="749"/>
@@ -286,12 +333,31 @@
     <ROW LockObject="APPDIR" Table="CreateFolder" User="[GRP_EVERYONE]" Permission="1880096767" Flags="0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiRegsComponent">
+    <ROW Registry="Comments" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="Comments" Value="[ARPCOMMENTS]" Component_="AI_CustomARPName"/>
+    <ROW Registry="Contact" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="Contact" Value="[ARPCONTACT]" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayIcon" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="DisplayIcon" Value="[ARP_ICON_PATH]" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayName" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="DisplayName" Value="[AI_PRODUCTNAME_ARP]" Component_="AI_CustomARPName"/>
+    <ROW Registry="DisplayVersion" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="DisplayVersion" Value="[ProductVersion]" Component_="AI_CustomARPName"/>
+    <ROW Registry="EstimatedSize" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="EstimatedSize" Value="#[AI_ARP_SIZE]" Component_="AI_CustomARPName"/>
+    <ROW Registry="HelpLink" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="HelpLink" Value="[ARPHELPLINK]" Component_="AI_CustomARPName"/>
+    <ROW Registry="HelpTelephone" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="HelpTelephone" Value="[ARPHELPTELEPHONE]" Component_="AI_CustomARPName"/>
+    <ROW Registry="InstallLocation" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="InstallLocation" Value="[APPDIR]" Component_="AI_CustomARPName"/>
+    <ROW Registry="ModifyPath" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="ModifyPath" Value="[AI_UNINSTALLER] /i [ProductCode] AI_UNINSTALLER_CTP=1" Component_="AI_CustomARPName"/>
+    <ROW Registry="NoRepair" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="NoRepair" Value="#1" Component_="AI_CustomARPName"/>
     <ROW Registry="Path" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Path" Value="[APPDIR]" Component_="ProductInformation"/>
+    <ROW Registry="Publisher" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="Publisher" Value="[Manufacturer]" Component_="AI_CustomARPName"/>
+    <ROW Registry="Readme" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="Readme" Value="[ARPREADME]" Component_="AI_CustomARPName"/>
+    <ROW Registry="URLInfoAbout" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="URLInfoAbout" Value="[ARPURLINFOABOUT]" Component_="AI_CustomARPName"/>
+    <ROW Registry="URLUpdateInfo" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="URLUpdateInfo" Value="[ARPURLUPDATEINFO]" Component_="AI_CustomARPName"/>
+    <ROW Registry="UninstallPath" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="UninstallPath" Value="[AI_UNINSTALLER] /x [ProductCode] AI_UNINSTALLER_CTP=1" Component_="AI_CustomARPName"/>
+    <ROW Registry="UninstallString" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="UninstallString" Value="[AI_UNINSTALLER] /x [ProductCode] AI_UNINSTALLER_CTP=1" Component_="AI_CustomARPName"/>
     <ROW Registry="Version" Root="-1" Key="Software\[Manufacturer]\[ProductName]" Name="Version" Value="[ProductVersion]" Component_="ProductInformation"/>
+    <ROW Registry="VersionMajor" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="VersionMajor" Value="#1" Component_="AI_CustomARPName"/>
+    <ROW Registry="VersionMinor" Root="-1" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[ProductName] [ProductVersion]" Name="VersionMinor" Value="#1" Component_="AI_CustomARPName"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiShortsComponent">
-    <ROW Shortcut="PandorasWallet" Directory_="SHORTCUTDIR" Name="PANDOR~1.1|Pandora&apos;s Wallet v1.1" Component_="PandorasWallet.exe" Target="[#PandorasWallet.exe]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR" CustomFlags="1"/>
-    <ROW Shortcut="PandorasWallet_1" Directory_="DesktopFolder" Name="PANDOR~1.1|Pandora&apos;s Wallet v1.1" Component_="PandorasWallet.exe" Target="[#PandorasWallet.exe]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR"/>
+    <ROW Shortcut="PandorasWalletv1.1" Directory_="DesktopFolder" Name="PANDOR~1.1|Pandora&apos;s Wallet v1.1" Component_="PandorasWallet.exe_1" Target="[#PandorasWallet.exe_1]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR" CustomFlags="1"/>
+    <ROW Shortcut="PandorasWalletv1.1_1" Directory_="PandorasWallet_Dir" Name="PANDOR~1.1|Pandora&apos;s Wallet v1.1" Component_="PandorasWallet.exe_1" Target="[#PandorasWallet.exe_1]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR" CustomFlags="1"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
     <ATTRIBUTE name="UsedTheme" value="classic"/>
@@ -413,6 +479,6 @@
     <ROW XmlElement="value_7" ParentElement="setting_7" Name="value" Condition="1" Order="0" Flags="14"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlFileComponent">
-    <ROW XmlFile="PandorasWallet.exe.config" FileName="PANDOR~1.CON|PandorasWallet.exe.config" DirProperty="APPDIR" Component="System.Buffers.dll" RootElement="configuration" Flags="89" Version="1.0" Encoding="UTF-8" IndentUnits="2"/>
+    <ROW XmlFile="PandorasWallet.exe.config" FileName="PANDOR~2.CON|Pandora&apos;s Wallet.exe.config" DirProperty="APPDIR" Component="System.Buffers.dll" RootElement="configuration" Flags="89" Version="1.0" Encoding="UTF-8" IndentUnits="2"/>
   </COMPONENT>
 </DOCUMENT>

@@ -32,6 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewBackupProcessWizard));
             this.tabStepsControl = new System.Windows.Forms.TabControl();
             this.InitialTab = new System.Windows.Forms.TabPage();
+            this.label2 = new System.Windows.Forms.Label();
             this.lblTypeProcess = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.SelectorTab = new System.Windows.Forms.TabPage();
@@ -43,7 +44,6 @@
             this.radioBtnFile = new System.Windows.Forms.RadioButton();
             this.RestoreWordTab = new System.Windows.Forms.TabPage();
             this.label5 = new System.Windows.Forms.Label();
-            this.txtBoxRecoveryWordsRestore = new System.Windows.Forms.TextBox();
             this.RestoreFileTab = new System.Windows.Forms.TabPage();
             this.btnRestoreOpenFileDialog = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
@@ -68,10 +68,10 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.lblContinue = new System.Windows.Forms.Label();
             this.openFileDlg = new System.Windows.Forms.OpenFileDialog();
-            this.DlgFolderBrowser = new System.Windows.Forms.FolderBrowserDialog();
             this.WizardToolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.DlgFolderBrowser = new System.Windows.Forms.SaveFileDialog();
+            this.txtBoxRecoveryWordsRestore = new System.Windows.Forms.TextBox();
             this.autoCompleteMenu = new AutocompleteMenuNS.AutocompleteMenu();
-            this.label2 = new System.Windows.Forms.Label();
             this.tabStepsControl.SuspendLayout();
             this.InitialTab.SuspendLayout();
             this.SelectorTab.SuspendLayout();
@@ -115,6 +115,16 @@
             this.InitialTab.Size = new System.Drawing.Size(497, 330);
             this.InitialTab.TabIndex = 0;
             this.InitialTab.Text = "Initial";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.Location = new System.Drawing.Point(14, 20);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(385, 17);
+            this.label2.TabIndex = 2;
+            this.label2.Text = "Welcome to Pandora\'s Wallet backup/restore wizard";
             // 
             // lblTypeProcess
             // 
@@ -244,20 +254,6 @@
             this.label5.TabIndex = 1;
             this.label5.Text = "Please write down your wallet 12 or 24 word recovery phrase in the following box." +
     " \r\n\r\nEnsure that each word is separated by a white space.";
-            // 
-            // txtBoxRecoveryWordsRestore
-            // 
-            this.autoCompleteMenu.SetAutocompleteMenu(this.txtBoxRecoveryWordsRestore, this.autoCompleteMenu);
-            this.txtBoxRecoveryWordsRestore.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txtBoxRecoveryWordsRestore.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.txtBoxRecoveryWordsRestore.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBoxRecoveryWordsRestore.Location = new System.Drawing.Point(19, 84);
-            this.txtBoxRecoveryWordsRestore.Multiline = true;
-            this.txtBoxRecoveryWordsRestore.Name = "txtBoxRecoveryWordsRestore";
-            this.txtBoxRecoveryWordsRestore.ShortcutsEnabled = false;
-            this.txtBoxRecoveryWordsRestore.Size = new System.Drawing.Size(465, 201);
-            this.txtBoxRecoveryWordsRestore.TabIndex = 0;
-            this.txtBoxRecoveryWordsRestore.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtBoxRecoveryWordsRestore_KeyPress);
             // 
             // RestoreFileTab
             // 
@@ -507,6 +503,25 @@
             this.openFileDlg.Filter = "Backup files|*.bkp|All Files|*.*";
             this.openFileDlg.Title = "Select a file to restore";
             // 
+            // DlgFolderBrowser
+            // 
+            this.DlgFolderBrowser.DefaultExt = "*.bkp";
+            this.DlgFolderBrowser.Filter = "Pandora Backup File (*.bkp)|*.bkp";
+            // 
+            // txtBoxRecoveryWordsRestore
+            // 
+            this.autoCompleteMenu.SetAutocompleteMenu(this.txtBoxRecoveryWordsRestore, this.autoCompleteMenu);
+            this.txtBoxRecoveryWordsRestore.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txtBoxRecoveryWordsRestore.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.txtBoxRecoveryWordsRestore.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtBoxRecoveryWordsRestore.Location = new System.Drawing.Point(19, 84);
+            this.txtBoxRecoveryWordsRestore.Multiline = true;
+            this.txtBoxRecoveryWordsRestore.Name = "txtBoxRecoveryWordsRestore";
+            this.txtBoxRecoveryWordsRestore.ShortcutsEnabled = false;
+            this.txtBoxRecoveryWordsRestore.Size = new System.Drawing.Size(465, 201);
+            this.txtBoxRecoveryWordsRestore.TabIndex = 0;
+            this.txtBoxRecoveryWordsRestore.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtBoxRecoveryWordsRestore_KeyPress);
+            // 
             // autoCompleteMenu
             // 
             this.autoCompleteMenu.AllowsTabKey = true;
@@ -516,16 +531,6 @@
             this.autoCompleteMenu.ImageList = null;
             this.autoCompleteMenu.Items = new string[0];
             this.autoCompleteMenu.TargetControlWrapper = null;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.5F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(14, 20);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(385, 17);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Welcome to Pandora\'s Wallet backup/restore wizard";
             // 
             // NewBackupProcessWizard
             // 
@@ -598,7 +603,6 @@
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Button btnBackupFolder;
         private System.Windows.Forms.TextBox txtBoxBackupSelectedDir;
-        private System.Windows.Forms.FolderBrowserDialog DlgFolderBrowser;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label lblWords;
         private System.Windows.Forms.Button btnCopyWords;
@@ -610,5 +614,6 @@
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.SaveFileDialog DlgFolderBrowser;
     }
 }
