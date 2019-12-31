@@ -19,15 +19,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 using System;
+using System.Windows.Forms;
 
 namespace Pandora.Client.PandorasWallet.Dialogs
 {
     public partial class SendingTxDialog : BaseDialog
     {
+        private TimerCounter FTimeCounter;
         public SendingTxDialog()
         {
             InitializeComponent();
             Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
+            FTimeCounter = new TimerCounter();
+            FTimeCounter.OnSecondPassed += FTimeCounter_OnSecondPassed;
+        }
+
+        private void FTimeCounter_OnSecondPassed()
+        {
+            lblTimePassed.Text = FTimeCounter.GetCurrentTime();
         }
 
         public string Status { get => StatusLabel.Text; set => StatusLabel.Text = value; }
@@ -39,11 +48,15 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             btnOK.Visible = false;
             TxIdLabel.Visible = false;
 
+            lblTimePassed.Font = new System.Drawing.Font(lblTimePassed.Font, System.Drawing.FontStyle.Regular);
+            FTimeCounter.Reset();
+            FTimeCounter.Start();
+
             StatusPictureBox.Image = Properties.Resources.Waiting;
 
-            Status = "In Progress...";
-
+            Status = "Working...";
             StatusPictureBox.Refresh();
+            StatusPictureBox.Focus();
         }
 
         public void Response(string aMessage, string aTxID = null)
@@ -62,10 +75,59 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 TxId.Text = aTxID;
                 TxId.Visible = true;
             }
-
+            FTimeCounter.Stop();
+            lblTimePassed.Font = new System.Drawing.Font(lblTimePassed.Font, System.Drawing.FontStyle.Bold);
             StatusLabel.Text = aMessage;
             btnOK.Visible = true;
             btnOK.Focus();
+        }
+
+        private class TimerCounter
+        {
+            private Timer FTimer;
+            public TimeSpan TimePassed { get; private set; }
+
+            public event Action OnSecondPassed;
+            public TimerCounter()
+            {
+                FTimer = new Timer();
+                FTimer.Interval = 100;
+                FTimer.Tick += CoreTimer_Tick;
+                Reset();
+            }
+
+            public void Start()
+            {
+                FTimer.Start();
+            }
+
+            public void Stop()
+            {
+                FTimer.Stop();
+            }
+
+            public string GetCurrentTime()
+            {
+                return TimePassed.ToString(@"mm\:ss\.f");
+            }
+
+            public void Reset()
+            {
+                TimePassed = new TimeSpan(0, 0, 0);
+            }
+
+            private void CoreTimer_Tick(object sender, EventArgs e)
+            {
+                try
+                {
+                    TimePassed = TimePassed.Add(new TimeSpan(0,0,0,0,100));
+                    OnSecondPassed?.Invoke();
+                }
+                catch(Exception ex)
+                {
+                    Universal.Log.Write($"Error in core timer tick with TimerCounter. Exception thrown: {ex}");        
+                }
+            }
         }
 
     }

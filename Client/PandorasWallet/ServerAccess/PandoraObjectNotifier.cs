@@ -201,7 +201,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         protected override void InternalInitialize()
         {
             base.InternalInitialize();
+            // Create the timer that will be called to do all polling of the sever
             FFindServerItemsTimer = new Timer((ex) => Timer_FindServerItems(), null, Timeout.Infinite, Timeout.Infinite);
+            // Call the the event that will actually do the work and set the timer.
             BeginInvoke(new Action(ThreadEventFindServerItems));
             FExecuted = true;
         }
@@ -298,20 +300,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return lResult;
         }
 
-        private void DoSendTransactionCompleted(SendTxPackage aDataPackage, string aErrorMsg, string aTxId)
-        {
-            try
-            {
-                this.SynchronizingObject?.BeginInvoke(aDataPackage.CompletedEvent, new object[] { this, aErrorMsg, aTxId });
-                if (aTxId != null)
-                    this.SynchronizingObject?.Invoke(OnSentTransaction, new object[] { this, aDataPackage.TransactionData, aTxId, aDataPackage.CurrencyId, aDataPackage.StartTime, DateTime.Now });
-            }
-            catch (Exception e)
-            {
-                DoErrorHandler(e);
-            }
-        }
-
         private void StopTimer(Timer aTimer)
         {
             aTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -320,15 +308,20 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         //I make this to be one shoot his default behavior, this is because we are going to be using starttimer to reset the process anyways
         private void StartTimer(Timer aTimer, int aMilliSec, bool aIsOneShot = true)
         {
+            Log.Write(LogLevel.Debug, "StartTimer: aMilliSec = {0}, aIsOneShot = {1}", aMilliSec, aIsOneShot);
             if (aIsOneShot)
                 aTimer.Change(aMilliSec, Timeout.Infinite);
             else
                 aTimer.Change(aMilliSec, aMilliSec);
         }
 
+        /// <summary>
+        /// This Timer call is executed in an another thread so I don't want to do the work here
+        /// so we will invoke a call on actual thread that will do the work.
+        /// </summary>
         private void Timer_FindServerItems()
         {
-            //StopTimer(FFindServerItemsTimer); //As is going to be stopped at this point, there is no need to stop again
+            Log.Write(LogLevel.Debug, "Timer_FindServerItems: fired");
             if (Terminated) return;
             BeginInvoke(new Action(ThreadEventFindServerItems));
         }
@@ -337,20 +330,27 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             try
             {
+                Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetCurrencies.");
                 GetCurrencies();
-                GetBlockHeight();
+                Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetBlockHeight.");
+                GetAllBlockHeights();
+                Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetLatestStatus.");
                 GetLatestStatus();
+                Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetTransactions");
                 GetTransactions();
             }
             catch (Exception ex)
             {
-                Log.Write(LogLevel.Error, $"Exception thrown at FindServerItems retrieving thread. Exception: {ex}");
+                Log.Write(LogLevel.Error, $"ThreadEventFindServerItems: {ex}");
             }
             finally
             {
                 if (!Terminated)
-                    StartTimer(FFindServerItemsTimer, RandomNumber(10000, 15000));
+                    StartTimer(FFindServerItemsTimer, RandomNumber(5000, 10000));
+                else
+                    Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: Terminated");
             }
+            Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: Completed--------------------------------------------------------");
         }
 
         private int RandomNumber(int aMin, int aMax)
@@ -368,59 +368,41 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             var lList = JsonConvert.DeserializeObject<List<long>>(lStringValueList, FConverter);
             if (Terminated) return;
             if (lList.Any())
-                BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), lList.ToArray(), 0);
+                BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), lList.ToArray(), 0); // do this work later so I don't waste time here as I must do other work
         }
 
         private void ThreadDoNewCurrency(long[] aCurrencyIdArray, int aStartIndex)
         {
-            if (Terminated) return;
-            if (aStartIndex >= aCurrencyIdArray.Length)
-            {
-                var lList = JsonConvert.DeserializeObject<List<long>>(FServerAccess.GetCurrencyList(LastNotifiedCurrencyId), FConverter);
-                if (Terminated) return;
-                if (lList.Any())
-                    BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), lList.ToArray(), 0);
-            }
-            else if (!FExistingCurrencyIds.ContainsKey(aCurrencyIdArray[aStartIndex]))
-            {
-                var lCurrencyItem = JsonConvert.DeserializeObject<CurrencyItem>(FServerAccess.GetCurrency(aCurrencyIdArray[aStartIndex]), FConverter);
-                if (Terminated) return;
-                var lCurrencyStatusItem = JsonConvert.DeserializeObject<CurrencyStatusItem>(FServerAccess.GetLastCurrencyStatus(lCurrencyItem.Id), FConverter);
-                if (Terminated) return;
-                DoOnNewCurrency(lCurrencyItem);
-                DoOnCurrencyStatusChange(lCurrencyStatusItem);
-                LastNotifiedCurrencyId = lCurrencyItem.Id;
-                lock (FExistingCurrencyIds)
-                    FExistingCurrencyIds.Add(LastNotifiedCurrencyId, new CurrencyInfo() { CurrencyItem = lCurrencyItem, LastCurrencyStatusItem = lCurrencyStatusItem });
-                BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), aCurrencyIdArray, ++aStartIndex);
-            }
+            Log.Write(LogLevel.Debug, "ThreadDoNewCurrency: Begin");
+            if (!Terminated)
+                if (aStartIndex >= aCurrencyIdArray.Length)
+                {
+                    var lList = JsonConvert.DeserializeObject<List<long>>(FServerAccess.GetCurrencyList(LastNotifiedCurrencyId), FConverter);
+                    if (!Terminated)
+                        if (lList.Any())
+                            BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), lList.ToArray(), 0);
+                }
+                else if (!FExistingCurrencyIds.ContainsKey(aCurrencyIdArray[aStartIndex]))
+                {
+                    var lCurrencyItem = JsonConvert.DeserializeObject<CurrencyItem>(FServerAccess.GetCurrency(aCurrencyIdArray[aStartIndex]), FConverter);
+                    if (!Terminated)
+                    {
+                        var lCurrencyStatusItem = JsonConvert.DeserializeObject<CurrencyStatusItem>(FServerAccess.GetLastCurrencyStatus(lCurrencyItem.Id), FConverter);
+                        if (!Terminated)
+                        {
+                            DoOnNewCurrency(lCurrencyItem);
+                            DoOnCurrencyStatusChange(lCurrencyStatusItem);
+                            LastNotifiedCurrencyId = lCurrencyItem.Id;
+                            lock (FExistingCurrencyIds)
+                                FExistingCurrencyIds.Add(LastNotifiedCurrencyId, new CurrencyInfo() { CurrencyItem = lCurrencyItem, LastCurrencyStatusItem = lCurrencyStatusItem });
+                            BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), aCurrencyIdArray, ++aStartIndex);
+                        }
+                    }
+                }
+            Log.Write(LogLevel.Debug, "ThreadDoNewCurrency: End");
         }
 
-        private void DoOnCurrencyStatusChange(CurrencyStatusItem aCurrencyStatusItem)
-        {
-            try
-            {
-                this.SynchronizingObject?.Invoke(OnCurrencyStatusChange, new object[] { this, aCurrencyStatusItem });
-            }
-            catch (Exception e)
-            {
-                DoErrorHandler(e);
-            }
-        }
-
-        private void DoOnNewCurrency(CurrencyItem aCurrencyItem)
-        {
-            try
-            {
-                this.SynchronizingObject.Invoke(OnNewCurrency, new object[] { this, aCurrencyItem });
-            }
-            catch (Exception e)
-            {
-                DoErrorHandler(e);
-            }
-        }
-
-        private void GetBlockHeight()
+        private void GetAllBlockHeights()
         {
             if (Terminated) return;
             foreach (var lKeyValue in FExistingCurrencyIds)
@@ -478,8 +460,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             foreach (var lCurrencyInfo in FExistingCurrencyIds.Values)
                 if (lCurrencyInfo.MonitoredCurrency)
                 {
+                    // Get trasactions from server that is greater than > the current ID.
+                    // thus this tx id must the oldest tx and has less than max Confimations 
+                    // just incase the tx moves to a new block in a chain reorg
                     string s = FServerAccess.GetTransactionRecords(lCurrencyInfo.CurrencyItem.Id, lCurrencyInfo.LastTransactionRecordId);
                     List<TransactionRecord> lRemoteTransactionRecords = JsonConvert.DeserializeObject<List<TransactionRecord>>(s, FConverter);
+                    // if we have tranacations we are looking for changes based on the max confirmations 
+                    // lets see if we need to stop look for them.
                     if (lCurrencyInfo.LocalTransactionRecords.Any())
                     {
                         if (Terminated) return;
@@ -514,9 +501,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         }
                     }
                     if (Terminated) return;
+                    // if there is any remote TX that are new we will add them to our look up list
                     if (lRemoteTransactionRecords.Any())
                     {
-                        lCurrencyInfo.LastTransactionRecordId = lRemoteTransactionRecords.First().TransactionRecordId - 1;
+                        // Note if there is no TXes that are in our list we need to mark the last TX if not keep the current last TXid
+                        if (!lCurrencyInfo.LocalTransactionRecords.Any()) // not we are minus one form the id because we want to get this tx and greater.
+                            lCurrencyInfo.LastTransactionRecordId = lRemoteTransactionRecords.First().TransactionRecordId - 1;
                         for (int i = 0; i < lRemoteTransactionRecords.Count; i++)
                         {
                             var lTx = lRemoteTransactionRecords[i];// this is done for RevDebug for testing
@@ -525,6 +515,44 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         }
                     }
                 }
+        }
+
+        private void DoSendTransactionCompleted(SendTxPackage aDataPackage, string aErrorMsg, string aTxId)
+        {
+            try
+            {
+                this.SynchronizingObject?.BeginInvoke(aDataPackage.CompletedEvent, new object[] { this, aErrorMsg, aTxId });
+                if (aTxId != null)
+                    this.SynchronizingObject?.Invoke(OnSentTransaction, new object[] { this, aDataPackage.TransactionData, aTxId, aDataPackage.CurrencyId, aDataPackage.StartTime, DateTime.Now });
+            }
+            catch (Exception e)
+            {
+                DoErrorHandler(e);
+            }
+        }
+
+        private void DoOnCurrencyStatusChange(CurrencyStatusItem aCurrencyStatusItem)
+        {
+            try
+            {
+                this.SynchronizingObject?.Invoke(OnCurrencyStatusChange, new object[] { this, aCurrencyStatusItem });
+            }
+            catch (Exception e)
+            {
+                DoErrorHandler(e);
+            }
+        }
+
+        private void DoOnNewCurrency(CurrencyItem aCurrencyItem)
+        {
+            try
+            {
+                this.SynchronizingObject.Invoke(OnNewCurrency, new object[] { this, aCurrencyItem });
+            }
+            catch (Exception e)
+            {
+                DoErrorHandler(e);
+            }
         }
 
         private void DoOnUpdatedCurrency(CurrencyItem aCurrencyItem)
@@ -581,7 +609,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             base.InternalFinalize();
             Log.Write(LogLevel.Info, "Pandora Object Notifier shutting down.");
-            FServerAccess.Dispose();
+            FServerAccess?.Dispose();
+            FFindServerItemsTimer?.Dispose();
             FServerAccess = null;
         }
 

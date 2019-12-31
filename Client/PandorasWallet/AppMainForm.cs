@@ -246,6 +246,7 @@ namespace Pandora.Client.PandorasWallet
 
         private void UpdateCurrencyView()
         {
+            SetCurrencyTooltip(SelectedCurrency.Name, SelectedCurrency.BlockHeight, SelectedCurrency.MinConfirmations);
             this.TotalCoins = FormatedAmount(SelectedCurrency.Balance, SelectedCurrency.Precision);
             this.UnconfirmedBalance = FormatedAmount(SelectedCurrency.UnconfirmedBalance, SelectedCurrency.Precision);
             //this.Confirmed = FormatedAmount(SelectedCurrency.ConfirmedBalance, SelectedCurrency.Precision);
@@ -292,6 +293,12 @@ namespace Pandora.Client.PandorasWallet
                 this.UpdateCurrency(aTransaction.ParrentCurrency);
             }
             return lListViewItem != null;
+        }
+
+        private void SetCurrencyTooltip(string aName, long aBlockHeight, long aTxMinConfirmations)
+        {
+            string lMessage = $"{aName} blockchain height: {aBlockHeight} {Environment.NewLine}Minimum transaction confirmations: {aTxMinConfirmations}";
+            coinTooltip.SetToolTip(picCoinImage, lMessage);
         }
 
         public bool UpdateCurrency(Currency aCurrency)

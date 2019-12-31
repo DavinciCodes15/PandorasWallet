@@ -129,6 +129,7 @@ namespace Pandora.Client.PandorasWallet
             this.ctxMenuOrderMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.menuItemCancel = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.coinTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.QuickSendButton = new Pandora.Client.PandorasWallet.MenuButton();
             this.lstViewCurrencies = new Pandora.Client.PandorasWallet.CurrencyView();
             this.statsctrlExchage = new Pandora.Client.PandorasWallet.StatusControl();
@@ -1284,6 +1285,7 @@ namespace Pandora.Client.PandorasWallet
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.PictureBox pictureBoxBalanceInfo;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ToolTip coinTooltip;
     }
 }
 

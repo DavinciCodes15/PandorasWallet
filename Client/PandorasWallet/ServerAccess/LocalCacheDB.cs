@@ -543,7 +543,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public virtual List<TransactionRecord> ReadTransactionRecords(long aCurrencyId, long aMaxBlockHeight)
         {
-            var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {aCurrencyId} and (block > {aMaxBlockHeight} or block = 0) order by internalid desc";
+            var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {aCurrencyId} and Valid = true and (block > {aMaxBlockHeight} or block = 0) order by internalid desc";
             return ReadTransactionRecords(lQuery);
         }
 

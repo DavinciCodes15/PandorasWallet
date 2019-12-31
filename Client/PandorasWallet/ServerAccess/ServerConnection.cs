@@ -283,7 +283,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             if (FLocalCacheDB == null) return; // Note: if the thread sent out this message before the object was terminated
             Log.Write(LogLevel.Debug, "Updated Transaction TxId {0}\r\n        ID: {1}, bock: {2}, Valid: {3}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid);
             FLocalCacheDB.Write(aTransactionRecord);
-            OnUpdatedTransaction(this, aTransactionRecord);
+            OnUpdatedTransaction?.Invoke(this, aTransactionRecord);
         }
 
         private void PandoraObjectNotifier_OnUpdatedCurrency(object aSender, CurrencyItem aCurrencyItem)
@@ -301,7 +301,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private void PandoraObjectNotifier_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord)
         {
             if (FLocalCacheDB == null) return; // Note: if the thread sent out this message before the object was terminated
-            Log.Write(LogLevel.Debug, "*Writing NEW TXid {0}\r\n        ID: {1}, Block: {2}, Valid: {3}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid);
+            Log.Write(LogLevel.Debug, "*Writing NEW TXid {0}\r\n        ID: {1}, Block: {2}, Valid: {3}, CurrencyId:{4}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid, aTransactionRecord.CurrencyId);
             FLocalCacheDB.Write(aTransactionRecord);
             OnNewTransaction?.Invoke(this, aTransactionRecord);
         }

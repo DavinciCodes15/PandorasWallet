@@ -34,6 +34,8 @@ namespace Pandora.Client.ServerAccess
                 base(binding, remoteAddress)
         {
         }
+
+        public bool Disconnected { get; set; }
     }
 
     public delegate void OnDiconnectEventHandler();
@@ -171,9 +173,9 @@ namespace Pandora.Client.ServerAccess
                 ((BasicHttpBinding)lBinding).MaxBufferSize = Int32.MaxValue;
             }
 
-            lBinding.OpenTimeout = new TimeSpan(0, 2, 30);
+            lBinding.OpenTimeout = new TimeSpan(0, 0, 31);
             lBinding.ReceiveTimeout = lBinding.OpenTimeout;
-
+            lBinding.SendTimeout = lBinding.OpenTimeout;
             EndpointAddress lAddress = new EndpointAddress(GetConnectionURL(RemoteServer));
             lResult = new PandoraWalletWebService(lBinding, lAddress);
             lResult.GetServerId();
@@ -241,47 +243,74 @@ namespace Pandora.Client.ServerAccess
         protected override bool InvokeMethodMessage(DelegateMessage aMethodMessage)
         {
             aMethodMessage.OnAfterEvent += MethodMessage_OnAfterEvent;
+            if (FServer != null && FServer.Disconnected)
+            {
+                int lCounter = 0;
+                PandoraWalletWebService lServer = null;
+                do
+                {
+                    Log.Write(LogLevel.Debug, "InvokeMethodMessage: try reconnect to server {0}", lCounter);
+                    try
+                    {
+                        lServer = CreatePandoraWalletServer();
+                        FServer = lServer;
+                    }
+                    catch
+                    {
+                        lCounter++;
+                    }
+                } while (lServer == null && lCounter < 2);
 
+            }
             return base.InvokeMethodMessage(aMethodMessage);
         }
 
         private void MethodMessage_OnAfterEvent(object sender, EventArgs e)
         {
-            DelegateMessage lMethodMessage = sender as DelegateMessage;
-
-            if (lMethodMessage.ExceptionObject != null) // do not try reconnect if the logon method is called
+            try
             {
-                /// if we cant connet to the server because its down
-                if (lMethodMessage.ExceptionObject is System.ServiceModel.EndpointNotFoundException)
-                {
-                    Log.Write(LogLevel.Error, lMethodMessage.ExceptionObject.Message);
-                    lMethodMessage.ExceptionObject = new PandoraServiceError("Internet connection error occured while connecting to the remote server.");
-                }
-                var lName = lMethodMessage.ToString();
+                DelegateMessage lMethodMessage = sender as DelegateMessage;
 
-                // an exception occured
-                // Now test if the error is because of a communication issue or
-                // if the error is because the server sent the error to be thrown
-                if (!(lMethodMessage.ExceptionObject is PandoraServerException) && lName != "ThreadLogon")
-                {      // if there is a comunication faild we need to reconnect
-                    int lCounter = 0;
-                    double lsecondsToWait = 0;
-                    PandoraWalletWebService lServer = null;
-                    do
+                if (lMethodMessage.ExceptionObject != null) // do not try reconnect if the logon method is called
+                {
+                    /// if we cant connet to the server because its down
+                    if (lMethodMessage.ExceptionObject is System.ServiceModel.EndpointNotFoundException)
                     {
-                        try
+                        Log.Write(LogLevel.Error, lMethodMessage.ExceptionObject.Message);
+                        lMethodMessage.ExceptionObject = new PandoraServiceError("Internet connection error occured while connecting to the remote server.");
+                        if (FServer != null)
+                            FServer.Disconnected = true;
+                    }
+                    var lName = lMethodMessage.ToString();
+
+                    // an exception occured
+                    // Now test if the error is because of a communication issue or
+                    // if the error is because the server sent the error to be thrown
+                    if (!(lMethodMessage.ExceptionObject is PandoraServerException) && lName != "ThreadLogon")
+                    {      // if there is a comunication faild we need to reconnect
+                        int lCounter = 0;
+                        PandoraWalletWebService lServer = null;
+                        do
                         {
-                            lServer = CreatePandoraWalletServer();
-                            FServer = lServer;
-                        }
-                        catch
-                        {
-                            lsecondsToWait = Math.Pow(2, lCounter);
-                            System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(lsecondsToWait)).Wait();
-                            lCounter++;
-                        }
-                    } while (lServer == null && lsecondsToWait < 4);
+                            Log.Write(LogLevel.Debug, "MethodMessage_OnAfterEvent: try reconnect to server {0}", lCounter);
+                            try
+                            {
+                                lServer = CreatePandoraWalletServer();
+                                FServer = lServer;
+                            }
+                            catch
+                            {
+                                System.Threading.Thread.Sleep(1000);
+                                lCounter++;
+                            }
+                        } while (lServer == null && lCounter < 2);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Write(LogLevel.Error, "Connection to Pandora Server failed with: " + ex.Message);
+                throw;
             }
         }
 
@@ -509,7 +538,7 @@ namespace Pandora.Client.ServerAccess
         /// Returns a Json Array of longs
         /// </summary>
         /// <param name="aStartId"></param>
-        /// <returns></returns>
+        /// <returns>returns a JSON array of currency ids</returns>
         public string GetCurrencyList(long aStartId)
         {
             CheckConnected();

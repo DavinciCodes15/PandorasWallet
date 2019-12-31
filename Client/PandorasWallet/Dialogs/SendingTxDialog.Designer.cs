@@ -33,23 +33,24 @@
             this.TxIdLabel = new System.Windows.Forms.Label();
             this.StatusPictureBox = new System.Windows.Forms.PictureBox();
             this.StatusLabel = new System.Windows.Forms.TextBox();
+            this.lblTimePassed = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.StatusPictureBox)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
             this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnCancel.Location = new System.Drawing.Point(167, 226);
+            this.btnCancel.Location = new System.Drawing.Point(166, 242);
             this.btnCancel.Visible = false;
             // 
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnOK.Location = new System.Drawing.Point(167, 226);
+            this.btnOK.Location = new System.Drawing.Point(166, 242);
             // 
             // TxId
             // 
-            this.TxId.Location = new System.Drawing.Point(11, 170);
+            this.TxId.Location = new System.Drawing.Point(12, 195);
             this.TxId.Name = "TxId";
             this.TxId.ReadOnly = true;
             this.TxId.Size = new System.Drawing.Size(387, 20);
@@ -60,7 +61,7 @@
             // TxIdLabel
             // 
             this.TxIdLabel.AutoSize = true;
-            this.TxIdLabel.Location = new System.Drawing.Point(166, 154);
+            this.TxIdLabel.Location = new System.Drawing.Point(167, 179);
             this.TxIdLabel.Name = "TxIdLabel";
             this.TxIdLabel.Size = new System.Drawing.Size(77, 13);
             this.TxIdLabel.TabIndex = 10;
@@ -80,18 +81,30 @@
             // 
             this.StatusLabel.BackColor = System.Drawing.SystemColors.Control;
             this.StatusLabel.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.StatusLabel.Location = new System.Drawing.Point(10, 152);
+            this.StatusLabel.Cursor = System.Windows.Forms.Cursors.Default;
+            this.StatusLabel.Location = new System.Drawing.Point(10, 179);
             this.StatusLabel.Multiline = true;
             this.StatusLabel.Name = "StatusLabel";
             this.StatusLabel.ReadOnly = true;
-            this.StatusLabel.Size = new System.Drawing.Size(389, 75);
+            this.StatusLabel.Size = new System.Drawing.Size(389, 48);
             this.StatusLabel.TabIndex = 11;
             this.StatusLabel.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // lblTimePassed
+            // 
+            this.lblTimePassed.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTimePassed.Location = new System.Drawing.Point(175, 151);
+            this.lblTimePassed.Name = "lblTimePassed";
+            this.lblTimePassed.Size = new System.Drawing.Size(59, 20);
+            this.lblTimePassed.TabIndex = 12;
+            this.lblTimePassed.Text = "00:00.0";
+            this.lblTimePassed.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // SendingTxDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.ClientSize = new System.Drawing.Size(411, 261);
+            this.ClientSize = new System.Drawing.Size(411, 277);
+            this.Controls.Add(this.lblTimePassed);
             this.Controls.Add(this.TxIdLabel);
             this.Controls.Add(this.StatusPictureBox);
             this.Controls.Add(this.TxId);
@@ -101,10 +114,11 @@
             this.Shown += new System.EventHandler(this.SendingTxDialog_Shown);
             this.Controls.SetChildIndex(this.StatusLabel, 0);
             this.Controls.SetChildIndex(this.TxId, 0);
-            this.Controls.SetChildIndex(this.btnOK, 0);
-            this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.StatusPictureBox, 0);
             this.Controls.SetChildIndex(this.TxIdLabel, 0);
+            this.Controls.SetChildIndex(this.lblTimePassed, 0);
+            this.Controls.SetChildIndex(this.btnOK, 0);
+            this.Controls.SetChildIndex(this.btnCancel, 0);
             ((System.ComponentModel.ISupportInitialize)(this.StatusPictureBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -116,5 +130,6 @@
         private System.Windows.Forms.PictureBox StatusPictureBox;
         private System.Windows.Forms.Label TxIdLabel;
         private System.Windows.Forms.TextBox StatusLabel;
+        private System.Windows.Forms.Label lblTimePassed;
     }
 }
