@@ -427,6 +427,12 @@ namespace Pandora.Client.PandorasWallet
                         lFormCurrency.AddTransaction(lTx);
                     lFormCurrency.UpdateBalance();
                     AppMainForm.BeginInvoke((Action<long>)AppMainForm.RefreshTransactions, aCurrencyItem.Id);
+                    var lAppMainFormAccounts = new List<AppMainForm.Accounts>();
+                    int lIndex = 0;
+                    foreach (var lAddress in lAddresses)
+                        lAppMainFormAccounts.Add(new AppMainForm.Accounts() { Address = lAddress, Name = $"{lIndex++}" });                    
+                    lFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
+                    AppMainForm.BeginInvoke((Action)(() => AppMainForm.UpdateCurrency(lFormCurrency)));
                 }
             }
             catch (Exception ex)
@@ -535,9 +541,9 @@ namespace Pandora.Client.PandorasWallet
                 var lAdvacacy = FKeyManager.GetCurrencyAdvocacy(lDefaultCurrency.Id, lDefaultCurrency.ChainParamaters);
                 // Currency to be displayed.
                 FServerConnection.AddMonitoredAccount(lAdvacacy.GetAddress(0), lDefaultCurrency.Id);
-                FServerConnection.AddMonitoredAccount(lAdvacacy.GetAddress(1), lDefaultCurrency.Id);
-                FServerConnection.SetDisplayedCurrency(lDefaultCurrency.Id, true);
+                FServerConnection.AddMonitoredAccount(lAdvacacy.GetAddress(1), lDefaultCurrency.Id);                
             }
+            FServerConnection.SetDisplayedCurrency(lDefaultCurrency.Id, true);
 
             // Now display the default currency first and
             // send a message to do the rest of the currencies.

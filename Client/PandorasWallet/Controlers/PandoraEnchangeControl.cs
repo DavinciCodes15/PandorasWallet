@@ -137,9 +137,9 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 ActiveCurrencyID = FPandorasWalletConnection.GetDefaultCurrency().Id;
                 StartTaks();
                 List<string> lCurrencies = new List<string>
-            {
-                "Bittrex"
-            };
+                {
+                    "Bittrex"
+                };
 
                 MainForm.AddExchanges(lCurrencies);
                 var lUserCoins = UserCoins;

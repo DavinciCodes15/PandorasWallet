@@ -253,6 +253,9 @@ namespace Pandora.Client.PandorasWallet
             this.CoinName = SelectedCurrency.Name;
             this.CoinStatus = SelectedCurrency.CurrentStatus.ToString();
             this.ReceiveAddress = SelectedCurrency.LastAddress;
+#if !DEBUG
+            SetTxSendAreaUsability(SelectedCurrency.CurrentStatus == CurrencyStatus.Active);
+#endif
         }
 
         public void AddTransaction(Transaction aTransaction)
