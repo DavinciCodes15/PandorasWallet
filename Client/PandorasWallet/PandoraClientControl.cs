@@ -485,6 +485,8 @@ namespace Pandora.Client.PandorasWallet
             if (lDisplayedCurrency != null && lDisplayedCurrency.CurrentStatus != aCurrencyStatusItem.Status)
             {
                 lDisplayedCurrency.CurrentStatus = aCurrencyStatusItem.Status;
+                lDisplayedCurrency.StatusDetails.StatusMessage = aCurrencyStatusItem.ExtendedInfo;
+                lDisplayedCurrency.StatusDetails.StatusTime = aCurrencyStatusItem.StatusTime;
                 var lAsyncHandle = AppMainForm.BeginInvoke((Func<AppMainForm.Currency, bool>)AppMainForm.UpdateCurrency, lDisplayedCurrency);
                 if (!((bool)AppMainForm.EndInvoke(lAsyncHandle)))
                     Log.Write(LogLevel.Error, $"Unable to update currency status. CurrencyID: {aCurrencyStatusItem.CurrencyId}. New status: {aCurrencyStatusItem.Status.ToString()}");
@@ -1236,6 +1238,7 @@ namespace Pandora.Client.PandorasWallet
             var lTransactionRecordList = lServer.GetTransactionRecords(aCurrency.Id);
             var lBlockHeight = lServer.GetBlockHeight(aCurrency.Id);
             var lAccounts = lServer.GetMonitoredAccounts(aCurrency.Id);
+            var lCurrencyStatus = lServer.GetCurrencyStatus(aCurrency.Id);
             Log.Write(LogLevel.Debug, "Displaying currency {0}", aCurrency.Name);
             var lAddresses = new List<string>();
             var lAppMainFormAccounts = new List<AppMainForm.Accounts>();
@@ -1250,6 +1253,8 @@ namespace Pandora.Client.PandorasWallet
             lAppMainFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
             foreach (TransactionRecord lTransactionRecord in lTransactionRecordList)
                 lAppMainFormCurrency.AddTransaction(CreateFromTransaction(aCurrency, lAddresses, lTransactionRecord));
+            lAppMainFormCurrency.StatusDetails.StatusMessage = lCurrencyStatus.ExtendedInfo;
+            lAppMainFormCurrency.StatusDetails.StatusTime = lCurrencyStatus.StatusTime;
             AppMainForm.AddCurrency(lAppMainFormCurrency);
         }
 

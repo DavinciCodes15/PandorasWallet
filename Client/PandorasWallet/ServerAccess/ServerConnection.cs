@@ -502,7 +502,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public long GetTransactionFee(CurrencyTransaction aCurrencyTransaction)
         {
             CurrencyItem lCurrency = GetCurrency(aCurrencyTransaction.CurrencyId);
-
+#if DEBUG
+            lCurrency = this.DirectGetCurrency(aCurrencyTransaction.CurrencyId);
+            FLocalCacheDB.Write(lCurrency);
+#endif
             string aTxWithNoFee = DirectCreateTransaction(aCurrencyTransaction);
 
             int lFeePerKb = lCurrency.FeePerKb;

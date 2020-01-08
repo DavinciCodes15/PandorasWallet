@@ -245,8 +245,8 @@ namespace Pandora.Client.PandorasWallet
         }
 
         private void UpdateCurrencyView()
-        {
-            SetCurrencyTooltip(SelectedCurrency.Name, SelectedCurrency.BlockHeight, SelectedCurrency.MinConfirmations);
+        {            
+            SetCurrencyTooltip(SelectedCurrency);
             this.TotalCoins = FormatedAmount(SelectedCurrency.Balance, SelectedCurrency.Precision);
             this.UnconfirmedBalance = FormatedAmount(SelectedCurrency.UnconfirmedBalance, SelectedCurrency.Precision);
             //this.Confirmed = FormatedAmount(SelectedCurrency.ConfirmedBalance, SelectedCurrency.Precision);
@@ -298,10 +298,16 @@ namespace Pandora.Client.PandorasWallet
             return lListViewItem != null;
         }
 
-        private void SetCurrencyTooltip(string aName, long aBlockHeight, long aTxMinConfirmations)
+        private void SetCurrencyTooltip(Currency aSelectedCurrency)
         {
-            string lMessage = $"{aName} blockchain height: {aBlockHeight} {Environment.NewLine}Minimum transaction confirmations: {aTxMinConfirmations}";
-            coinTooltip.SetToolTip(picCoinImage, lMessage);
+            var lStringBuilder = new System.Text.StringBuilder();
+            lStringBuilder.AppendLine($"Selected currency: {aSelectedCurrency.Name}.");
+            lStringBuilder.AppendLine($"Blockchain Height: {aSelectedCurrency.BlockHeight}.");
+            lStringBuilder.AppendLine($"Minimum transaction confirmations: {aSelectedCurrency.MinConfirmations}.");
+            lStringBuilder.AppendLine($"As of {aSelectedCurrency.StatusDetails.StatusTime} the status is {aSelectedCurrency.CurrentStatus}.");
+            lStringBuilder.AppendLine(aSelectedCurrency.StatusDetails.StatusMessage);
+                       
+            coinTooltip.SetToolTip(picCoinImage, lStringBuilder.ToString());
         }
 
         public bool UpdateCurrency(Currency aCurrency)
@@ -528,7 +534,7 @@ namespace Pandora.Client.PandorasWallet
                 col = column;
                 this.order = order;
             }
-
+             
             public int Compare(object x, object y)
             {
                 int returnVal;
@@ -1204,8 +1210,9 @@ namespace Pandora.Client.PandorasWallet
             public decimal Fee { get; internal set; }
             public TransactionType TxType { get; set; }
             public Currency ParrentCurrency { get; set; }
-            public long Confimations { get => ParrentCurrency == null ? 0 : BlockNumber == 0 ? 0 : ParrentCurrency.BlockHeight - BlockNumber; }
-            public bool Confirmed { get => ParrentCurrency == null ? false : Confimations > ParrentCurrency.MinConfirmations; }
+            // fixed off by one bug.
+            public long Confimations { get => ParrentCurrency == null ? 0 : BlockNumber == 0 ? 0 : ParrentCurrency.BlockHeight + 1 - BlockNumber; }
+            public bool Confirmed { get => ParrentCurrency == null ? false : Confimations >= ParrentCurrency.MinConfirmations; }
 
             public Transaction CopyFrom(Transaction aSource)
             {
@@ -1227,6 +1234,7 @@ namespace Pandora.Client.PandorasWallet
         {
             public Currency(CurrencyItem aCurrencyItem)
             {
+                StatusDetails = new StatusDetailsObject();
                 aCurrencyItem.CopyTo(this);
             }
 
@@ -1253,6 +1261,19 @@ namespace Pandora.Client.PandorasWallet
             public Accounts[] Addresses { get; set; }
             public string LastAddress { get { return Addresses[Addresses.Length - 1].Address; } }
             public Transaction[] Transactions { get => (new List<Transaction>(FTransactions.Values)).ToArray(); }
+            public IStatusDetails StatusDetails { get; private set; }
+
+            public interface IStatusDetails
+            {
+                string StatusMessage { get; set; }
+                DateTime StatusTime { get; set; }
+            }
+
+            private class StatusDetailsObject : IStatusDetails
+            {
+                public string StatusMessage { get; set; }
+                public DateTime StatusTime { get; set; }
+            }
 
             public void AddTransaction(Transaction aTransaction)
             {

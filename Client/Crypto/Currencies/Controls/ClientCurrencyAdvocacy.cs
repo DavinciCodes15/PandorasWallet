@@ -179,7 +179,10 @@ namespace Pandora.Client.Crypto.Currencies.Controls
 
         public virtual string BinaryAddress(string aAddress)
         {
-            return CoinScriptAddress.AddressToBinString(aAddress, Network);
+            string lResult = CoinScriptAddress.AddressToBinString(aAddress, Network);
+            if (string.IsNullOrEmpty(lResult))
+                throw new ArgumentException($"The address '{aAddress}' for the {Network.NetworkName} network is invalid.");
+            return lResult;
         }
     }
 }

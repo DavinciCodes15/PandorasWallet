@@ -24,8 +24,9 @@ namespace Pandora.Client.Crypto.Currencies
             FTxFunc.Add(10048, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Peercoin
             FTxFunc.Add(10054, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Solarcoin
             FTxFunc.Add(10080, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Emercoin
-            FTxFunc.Add(10100, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //NavCoin
+            FTxFunc.Add(10100, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new NavCoinTransaction() : new NavCoinTransaction(aHex, aNetwork))); //NavCoin
             FTxFunc.Add(10108, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Sequence
+            FTxFunc.Add(10130, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Energycoin
             FTxFunc.Add(10098, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //IOCoin
             FTxFunc.Add(10032, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //CloakCoin
             FTxFunc.Add(10028, new TransactionGenerator((aHex, aNetwork) => (aHex == null || aNetwork == null) ? new AltExtraTimeParamTypeTransaction() : new AltExtraTimeParamTypeTransaction(aHex, aNetwork))); //Evergreencoin
@@ -119,6 +120,36 @@ namespace Pandora.Client.Crypto.Currencies
             }
 
             private uint nTime = (uint)System.DateTime.UtcNow.ToUnixTimestamp();
+
+            public override void ReadWrite(CoinStream stream)
+            {
+                stream.ReadWrite(ref nVersion);
+                stream.ReadWrite(ref nTime);
+                stream.ReadWrite<TxInList, TxIn>(ref vin);
+                stream.ReadWrite<TxOutList, TxOut>(ref vout);
+                vout.Transaction = this;
+                stream.ReadWrite(ref nLockTime);
+            }
+
+            public override Transaction Clone(bool cloneCache)
+            {
+                return new AltExtraTimeParamTypeTransaction(ToHex(), Network);
+            }
+        }
+
+        private class NavCoinTransaction : Transaction
+        {
+            protected new int nVersion = 1;
+            public NavCoinTransaction()
+            {
+            }
+
+            public NavCoinTransaction(string aHex, Network aNetwork) : base(aHex, aNetwork)
+            {
+            }
+
+
+            private uint nTime = (uint) System.DateTime.UtcNow.ToUnixTimestamp();
 
             public override void ReadWrite(CoinStream stream)
             {

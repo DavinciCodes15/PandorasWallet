@@ -40,25 +40,63 @@ namespace Pandora.Client.Crypto.Currencies
             throw new FormatException("Invalid CoinScriptAddress " + expectedNetwork.NetworkName);
         }
 
-        public static bool IsValid(string aBase58Address, Network aNetwork)
+        public static bool IsValid(string aAddress, Network aNetwork)
         {
-            const int SCRIPT_ADDRESS = 1;
-            const int PUBKEY_ADDRESS = 0;
-            if (aBase58Address == null) return false;
-            var data = (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).IsValidData(aBase58Address) ?
-                (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).DecodeData(aBase58Address) : new byte[0];
-            var lScriptVer = aNetwork.GetVersionBytes(SCRIPT_ADDRESS, true);
-            var lPubVer = aNetwork.GetVersionBytes(PUBKEY_ADDRESS, true);
-            return ((lScriptVer != null && data.StartWith(lScriptVer)) && (data.Length == lScriptVer.Length + 20)) ||
-                ((lPubVer != null && data.StartWith(lPubVer)) && (data.Length == lPubVer.Length + 20));
+            return AddressToBin(aAddress, aNetwork) != null;
         }
 
-        public static string AddressToBinString(string aBase58Address, Network aNetwork)
+        public static byte[] AddressToBin(string aAddress, Network aNetwork)
         {
-            if (aBase58Address == null) return null;
-            var data = (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).IsValidData(aBase58Address) ?
-                (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).DecodeData(aBase58Address) : new byte[0];
-            return BitConverter.ToString(data).Replace("-", ""); 
+            byte[] lData = null;
+            const int SCRIPT_ADDRESS = 1;
+            const int PUBKEY_ADDRESS = 0;
+            if (!string.IsNullOrEmpty(aAddress))
+            {
+                lData = (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).IsValidData(aAddress) ?
+                    (aNetwork.NetworkStringParser.GetBase58CheckEncoder()).DecodeData(aAddress) : null;
+                if (lData != null)
+                {
+                    var lScriptVer = aNetwork.GetVersionBytes(SCRIPT_ADDRESS, true);
+                    var lPubVer = aNetwork.GetVersionBytes(PUBKEY_ADDRESS, true);
+
+                    if (!(((lScriptVer != null && lData.StartWith(lScriptVer)) && (lData.Length == lScriptVer.Length + 20)) ||
+                        ((lPubVer != null && lData.StartWith(lPubVer)) && (lData.Length == lPubVer.Length + 20))))
+                        lData = null;
+                }
+                else if (aNetwork.ChainParams.Capabilities.HasFlag(CapablityFlags.SupportSegWit))
+                {
+                    int i = Network.BEACH32_WITNESS_PUBKEY_ADDRESS;
+
+                    while (lData == null && i < Network.BEACH32_WITNESS_SCRIPT_ADDRESS)
+                    {
+                        var encoder = aNetwork.GetBech32Encoder(i, true);
+                        if (encoder == null)
+                            continue;
+                        Int32 type = i;
+                        try
+                        {
+                            byte witVersion;
+                            var bytes = encoder.Decode(aAddress, out witVersion);
+
+                            if (witVersion == 0 && bytes.Length == 20 && type == Network.BEACH32_WITNESS_PUBKEY_ADDRESS)
+                                lData = bytes;
+                            else if (witVersion == 0 && bytes.Length == 32 && type == Network.BEACH32_WITNESS_SCRIPT_ADDRESS)
+                                lData = bytes;
+                        }
+                        catch (Bech32FormatException) { throw; }
+                        catch (FormatException) { continue; }
+                        i++;
+                    }
+                }
+            }
+            return lData;
+        }
+
+        public static string AddressToBinString(string aAddress, Network aNetwork)
+        {
+            var lData = AddressToBin(aAddress, aNetwork);
+            if (lData == null) return null;
+            return BitConverter.ToString(lData).Replace("-", "");
         }
 
         public CoinScriptAddress(ScriptId scriptId, Network network)

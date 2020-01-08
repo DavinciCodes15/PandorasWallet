@@ -200,6 +200,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         protected override void InternalInitialize()
         {
+            LastNotifiedCurrencyId = 0; //TODO: we need to load all currencies in all over again because of fuckups by Migel who can choose an number higher than thte last.
+            Log.Write(LogLevel.Debug, " Setting last currency id to 0 for startup.");
             base.InternalInitialize();
             // Create the timer that will be called to do all polling of the sever
             FFindServerItemsTimer = new Timer((ex) => Timer_FindServerItems(), null, Timeout.Infinite, Timeout.Infinite);
@@ -399,6 +401,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         }
                     }
                 }
+                else
+                {
+                    LastNotifiedCurrencyId = aCurrencyIdArray[aStartIndex];
+                    BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), aCurrencyIdArray, ++aStartIndex);
+                }
             Log.Write(LogLevel.Debug, "ThreadDoNewCurrency: End");
         }
 
@@ -475,7 +482,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         {
                             if (Terminated) return;
                             var lLocalTransactionRecord = lCurrencyInfo.LocalTransactionRecords[lIndex];
-                            var lLocalTxConfirmation = lCurrencyInfo.BlockHeight - lLocalTransactionRecord.Block;
+                            var lLocalTxConfirmation = lLocalTransactionRecord.Block == 0 ? 0 : lCurrencyInfo.BlockHeight + 1 - lLocalTransactionRecord.Block;
 
                             var lRemoteTransactionRecord = FindTransactionId(lRemoteTransactionRecords, lLocalTransactionRecord.TransactionRecordId);
                             if (lRemoteTransactionRecord == null)
@@ -493,7 +500,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             else if ((lLocalTransactionRecord.Block != 0 && lLocalTxConfirmation > lCurrencyInfo.CurrencyItem.MinConfirmations) || !lLocalTransactionRecord.Valid)
                             {
                                 lCurrencyInfo.LocalTransactionRecords.Remove(lLocalTransactionRecord);
-                                lCurrencyInfo.LastTransactionRecordId = lLocalTransactionRecord.TransactionRecordId;
+                                lCurrencyInfo.LastTransactionRecordId = lLocalTransactionRecord.TransactionRecordId;      // if no more records this value will be the last to start the looking for
                                 lIndex--;
                             }
                             lRemoteTransactionRecords.Remove(lRemoteTransactionRecord);
@@ -504,9 +511,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     // if there is any remote TX that are new we will add them to our look up list
                     if (lRemoteTransactionRecords.Any())
                     {
-                        // Note if there is no TXes that are in our list we need to mark the last TX if not keep the current last TXid
-                        if (!lCurrencyInfo.LocalTransactionRecords.Any()) // not we are minus one form the id because we want to get this tx and greater.
-                            lCurrencyInfo.LastTransactionRecordId = lRemoteTransactionRecords.First().TransactionRecordId - 1;
                         for (int i = 0; i < lRemoteTransactionRecords.Count; i++)
                         {
                             var lTx = lRemoteTransactionRecords[i];// this is done for RevDebug for testing
@@ -514,7 +518,16 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             lCurrencyInfo.LocalTransactionRecords.Add(lTx);
                         }
                     }
+                    // sort records and set the last TX id to be looking for
+                    lCurrencyInfo.LocalTransactionRecords.Sort(ComparerTX);
+                    if (lCurrencyInfo.LocalTransactionRecords.Any())
+                        lCurrencyInfo.LastTransactionRecordId = lCurrencyInfo.LocalTransactionRecords.First().TransactionRecordId - 1;
                 }
+        }
+
+        private int ComparerTX(TransactionRecord x, TransactionRecord y)
+        {
+            return Convert.ToInt32(x.TransactionRecordId - y.TransactionRecordId);
         }
 
         private void DoSendTransactionCompleted(SendTxPackage aDataPackage, string aErrorMsg, string aTxId)
