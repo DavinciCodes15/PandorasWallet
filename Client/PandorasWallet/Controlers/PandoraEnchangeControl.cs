@@ -197,6 +197,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             MainForm.OnExchangeSelectedCurrencyChanged += MainForm_OnExhangeMarketSelectionChanged;
             MainForm.OnLabelEstimatePriceClick += MainForm_OnLabelEstimatePriceClick;
             MainForm.OnExchangeSelectionChanged += MainForm_OnExchangeSelectionChanged;
+            MainForm.OnChangeExchangeKeysBtnClick += MainForm_OnChangeExchangeKeysBtnClick;
 
             MainForm.OnTxtQuantityLeave += MainForm_OnExchangeQuantityTxtChanged;
             MainForm.OnExchangeBtnClick += MainForm_OnExchangeBtnClick;
@@ -205,6 +206,15 @@ namespace Pandora.Client.PandorasWallet.Controlers
 
             MainForm.OnTxtTotalLeave += MainForm_OnTotalReceivedChanged;
             MainForm.OnCheckAllOrderHistory += MainForm_OnCheckAllOrderHistory;
+        }
+
+        private void MainForm_OnChangeExchangeKeysBtnClick(object sender, EventArgs e)
+        {
+            if (GetKeyManagerMethod.Invoke(out KeyManager lKeyManager))
+            {
+                var lKeyValueObject = FKeyValueHelper.LoadKeyValues(0); //WHERE PROFILE 0 IS THE DEFAULT AND INITIAL ONE
+                ChangeUserExchangeCredentials(lKeyValueObject, lKeyManager);
+            }
         }
 
         private void MainForm_OnCancelBtnClick(int aInternalOrderId)
@@ -237,7 +247,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
         {
             foreach (var lOrder in aOrders)
             {
-                if (FCancelledOrderList.TryGetValue(lOrder.InternalID, out bool lMustWithdraw) && lOrder.Status != OrderStatus.Withdrawed)
+                if (FCancelledOrderList.TryGetValue(lOrder.InternalID, out bool lMustWithdraw) && lOrder.Status != OrderStatus.Withdrawn)
                 {
                     var lOriginalStatus = lOrder.Status;
                     bool lCanWithdraw = lOriginalStatus == OrderStatus.Placed || lOriginalStatus == OrderStatus.Waiting;
@@ -314,7 +324,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             catch (Exception ex)
             {
                 Universal.Log.Write(Universal.LogLevel.Error, string.Format("Order: {0}. Exception: {1}", aOrderToWithdraw.InternalID, ex.ToString()));
-                WriteTransactionLogEntry(aOrderToWithdraw, OrderMessage.OrderMessageLevel.Error, $"Error on refund withdraw process in order: {ex.Message}. Please try to manually withdraw your coins from exchange");
+                WriteTransactionLogEntry(aOrderToWithdraw, OrderMessage.OrderMessageLevel.Error, $"Error on refund process in order: {ex.Message}. Please try to manually withdraw your coins from exchange");
             }
         }
 
@@ -472,6 +482,18 @@ namespace Pandora.Client.PandorasWallet.Controlers
             MainForm.ExchangeTargetPrice = Convert.ToDecimal(MainForm.LabelEstimatePrice);
         }
 
+        private void ChangeUserExchangeCredentials(ExchangeKeyValueObject aKeyValueObject ,KeyManager aKeyManager)
+        {
+            if (FExchangeLogin.Execute())
+            {
+                SetExchangeCredentials(FExchangeLogin.ExchageKey, FExchangeLogin.ExchangeSecret);
+                if (!aKeyManager.IsPasswordSet)
+                    SetKeyManagerPassword.Invoke();
+                aKeyValueObject.PublicKey = aKeyManager.EncryptText(FExchangeLogin.ExchageKey);
+                aKeyValueObject.PrivateKey = aKeyManager.EncryptText(FExchangeLogin.ExchangeSecret);
+                FKeyValueHelper.SaveChanges(aKeyValueObject);
+            }
+        }
         private void MainForm_OnExchangeSelectionChanged(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(MainForm.SelectedExchange))
@@ -508,15 +530,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                                 MainForm.StandardWarningMsgBox("Credentials saved no longer valid. Please add new key pair on next window.");
                             }
 
-                        if (FExchangeLogin.Execute())
-                        {
-                            SetExchangeCredentials(FExchangeLogin.ExchageKey, FExchangeLogin.ExchangeSecret);
-                            if (!lKeyManager.IsPasswordSet)
-                                SetKeyManagerPassword.Invoke();
-                            lKeyValueObject.PublicKey = lKeyManager.EncryptText(FExchangeLogin.ExchageKey);
-                            lKeyValueObject.PrivateKey = lKeyManager.EncryptText(FExchangeLogin.ExchangeSecret);
-                            FKeyValueHelper.SaveChanges(lKeyValueObject);
-                        }
+                        ChangeUserExchangeCredentials(lKeyValueObject, lKeyManager);
                     }
                 }
             }
@@ -777,7 +791,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 try
                 {
                     if (FExchanger.WithdrawOrder(lMarket, aOrder, FPandorasWalletConnection.GetCoinAddress(lCurrencyID), FExchanger.GetTransactionsFee(aOrder.BaseTicker)))
-                        UpdateOrderStatus(aOrder, OrderStatus.Withdrawed, lCurrencyID);
+                        UpdateOrderStatus(aOrder, OrderStatus.Withdrawn, lCurrencyID);
                     WriteTransactionLogEntry(aOrder);
                     aOrder.ErrorCounter = 0;
                 }
@@ -817,6 +831,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             MainForm.CheckAllOrderHistoryEnabled = false;
             MainForm.ExchangeButtonEnabled = false;
             MainForm.ExchangeStoptPriceEnabled = false;
+            MainForm.ExchangeChangeKeysEnabled = false;
         }
 
         private void EnableExchangeInterface()
@@ -828,6 +843,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             MainForm.ExchangeTransactionNameEnabled = true;
             MainForm.CheckAllOrderHistoryEnabled = true;
             MainForm.ExchangeButtonEnabled = true;
+            MainForm.ExchangeChangeKeysEnabled = true;
         }
 
         private void SetExchangeCredentials(string aKey, string aSecret)
@@ -1139,10 +1155,10 @@ namespace Pandora.Client.PandorasWallet.Controlers
                         break;
 
                     case OrderStatus.Completed:
-                        FDBExchanger.WriteOrderLog(aOrder.InternalID, "Transaction completed. Waiting for withdraw.", OrderMessage.OrderMessageLevel.StageChange);
+                        FDBExchanger.WriteOrderLog(aOrder.InternalID, "Transaction completed. Waiting for withdrawal.", OrderMessage.OrderMessageLevel.StageChange);
                         break;
 
-                    case OrderStatus.Withdrawed:
+                    case OrderStatus.Withdrawn:
                         FDBExchanger.WriteOrderLog(aOrder.InternalID, "Cryptocurrencies succesfully withdrawn to Pandora's Wallet.", OrderMessage.OrderMessageLevel.Finisher);
                         break;
                 }

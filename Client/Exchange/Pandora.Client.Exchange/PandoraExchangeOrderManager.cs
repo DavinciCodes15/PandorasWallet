@@ -205,7 +205,7 @@ namespace Pandora.Client.Exchange
                     FSaveManager.WriteOrderLog(lLocalOrder.InternalID, "Transaction completed. Waiting for withdraw.", OrderMessage.OrderMessageLevel.StageChange);
                     break;
 
-                case OrderStatus.Withdrawed:
+                case OrderStatus.Withdrawn:
                     FSaveManager.WriteOrderLog(lLocalOrder.InternalID, "Cryptocurrencies succesfully withdrawn to Pandora's Wallet.", OrderMessage.OrderMessageLevel.Finisher);
                     break;
             }

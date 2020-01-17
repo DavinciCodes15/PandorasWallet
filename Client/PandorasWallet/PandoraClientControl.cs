@@ -432,7 +432,7 @@ namespace Pandora.Client.PandorasWallet
                     foreach (var lAddress in lAddresses)
                         lAppMainFormAccounts.Add(new AppMainForm.Accounts() { Address = lAddress, Name = $"{lIndex++}" });                    
                     lFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
-                    AppMainForm.BeginInvoke((Action)(() => AppMainForm.UpdateCurrency(lFormCurrency)));
+                    AppMainForm.BeginInvoke((Action)(() => AppMainForm.UpdateCurrency(lFormCurrency.Id)));
                 }
             }
             catch (Exception ex)
@@ -472,24 +472,20 @@ namespace Pandora.Client.PandorasWallet
             var lDisplayedCurrency = AppMainForm.GetCurrency(aCurrencyItem.Id);
             if (lDisplayedCurrency != null)
             {
-                var lNewCurrencyToShow = aCurrencyItem.CopyTo(lDisplayedCurrency);
-                var lAsyncHandle = AppMainForm.BeginInvoke((Func<AppMainForm.Currency, bool>)AppMainForm.UpdateCurrency, lNewCurrencyToShow);
-                if (!(bool)AppMainForm.EndInvoke(lAsyncHandle))
-                    Log.Write(LogLevel.Error, $"Unable to update currency info. CurrencyID: {aCurrencyItem.Id}.");
-            }
+                aCurrencyItem.CopyTo(lDisplayedCurrency);
+                AppMainForm.BeginInvoke((Func<long, bool>)AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
+             }
         }
 
         private void ServerConnection_OnCurrencyStatusChange(object aSender, CurrencyStatusItem aCurrencyStatusItem)
         {
             var lDisplayedCurrency = AppMainForm.GetCurrency(aCurrencyStatusItem.CurrencyId);
-            if (lDisplayedCurrency != null && lDisplayedCurrency.CurrentStatus != aCurrencyStatusItem.Status)
+            if (lDisplayedCurrency != null)
             {
                 lDisplayedCurrency.CurrentStatus = aCurrencyStatusItem.Status;
                 lDisplayedCurrency.StatusDetails.StatusMessage = aCurrencyStatusItem.ExtendedInfo;
                 lDisplayedCurrency.StatusDetails.StatusTime = aCurrencyStatusItem.StatusTime;
-                var lAsyncHandle = AppMainForm.BeginInvoke((Func<AppMainForm.Currency, bool>)AppMainForm.UpdateCurrency, lDisplayedCurrency);
-                if (!((bool)AppMainForm.EndInvoke(lAsyncHandle)))
-                    Log.Write(LogLevel.Error, $"Unable to update currency status. CurrencyID: {aCurrencyStatusItem.CurrencyId}. New status: {aCurrencyStatusItem.Status.ToString()}");
+                AppMainForm.BeginInvoke((Func<long, bool>)AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
             }
         }
 
@@ -616,41 +612,26 @@ namespace Pandora.Client.PandorasWallet
             var lFormCurrency = AppMainForm.GetCurrency(aCurrencyId);
             if (lFormCurrency != null)
             {
-                var lUnconfirmedBalance = lFormCurrency.UnconfirmedBalance;
                 lFormCurrency.BlockHeight = aBlockHeight;
-                if (AppMainForm.SelectedCurrency.Id == lFormCurrency.Id)
-                {
-                    foreach (var lTrans in AppMainForm.SelectedCurrency.Transactions)
-                        if (!lTrans.Confirmed)
-                            AppMainForm.UpdateTransaction(lTrans);
-                }
-                lFormCurrency.UpdateBalance();
-                if (lUnconfirmedBalance != lFormCurrency.UnconfirmedBalance)
-                    AppMainForm.UpdateCurrency(lFormCurrency);
+                AppMainForm.UpdateCurrency(lFormCurrency.Id);
             }
         }
 
         private void ServerConnection_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord)
         {
-            if (AppMainForm.SelectedCurrency.Id == aTransactionRecord.CurrencyId)
+            var lItem = CreateFromTransaction(
+            FServerConnection.GetCurrency(aTransactionRecord.CurrencyId),
+            FServerConnection.GetMonitoredAddresses(aTransactionRecord.CurrencyId),
+            aTransactionRecord);
+            var lFormCurrency = AppMainForm.GetCurrency(aTransactionRecord.CurrencyId);
+            lFormCurrency.UpdateTransaction(lItem);
+            if (!aTransactionRecord.Valid)
             {
-                var lFormTransaction = AppMainForm.SelectedCurrency.FindTransaction(aTransactionRecord.TransactionRecordId);
-                if (lFormTransaction != null)
-                {
-                    if (!aTransactionRecord.Valid)
-                        AppMainForm.RemoveTransaction(lFormTransaction);  // note this is wrong.
-                    else
-                    {
-                        var lItem = CreateFromTransaction(
-                        FServerConnection.GetCurrency(aTransactionRecord.CurrencyId),
-                        FServerConnection.GetMonitoredAddresses(aTransactionRecord.CurrencyId),
-                        aTransactionRecord);
-                        lItem.ParrentCurrency = lFormTransaction.ParrentCurrency;
-                        lFormTransaction.CopyFrom(lItem);
-                        AppMainForm.UpdateTransaction(lFormTransaction);
-                    }
-                }
+                lFormCurrency.RemoveTransaction(lItem);
+                AppMainForm.RemoveTransaction(lItem);
             }
+            AppMainForm.UpdateCurrency(lFormCurrency.Id);
+            //  }
         }
 
         private void ServerConnection_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord)
@@ -667,7 +648,7 @@ namespace Pandora.Client.PandorasWallet
                 {
                     AppMainForm.SelectedCurrency.AddTransaction(lFormTransaction);
                     AppMainForm.AddTransaction(lFormTransaction);
-                    AppMainForm.UpdateCurrency(AppMainForm.SelectedCurrency);
+                    AppMainForm.UpdateCurrency(AppMainForm.SelectedCurrencyId);
                 }
                 else
                     Log.Write(LogLevel.Error, "transaction {0} - {1} found as new but already exits.", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId);
@@ -678,7 +659,7 @@ namespace Pandora.Client.PandorasWallet
                 if (lFormCurrency != null)
                 {
                     lFormCurrency.AddTransaction(lFormTransaction);
-                    AppMainForm.UpdateCurrency(lFormCurrency);
+                    AppMainForm.UpdateCurrency(lFormCurrency.Id);
                 }
             }
         }

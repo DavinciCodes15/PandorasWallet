@@ -458,7 +458,7 @@ namespace Pandora.Client.Exchange
                 throw new Exception("No Credentials were set");
             }
 
-            if (aOrder.Status == OrderStatus.Withdrawed)
+            if (aOrder.Status == OrderStatus.Withdrawn)
             {
                 return false;
             }
@@ -493,7 +493,7 @@ namespace Pandora.Client.Exchange
             if (!FCredentialsSet)
                 throw new Exception("No Credentials were set");
 
-            if (aOrder.Status == OrderStatus.Withdrawed)
+            if (aOrder.Status == OrderStatus.Withdrawn)
                 return false;
 
             BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()

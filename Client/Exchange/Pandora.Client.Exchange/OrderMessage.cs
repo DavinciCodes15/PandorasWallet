@@ -8,7 +8,7 @@ namespace Pandora.Client.Exchange
 {
     public enum OrderStatus
     {
-        Waiting, Placed, Interrupted, Completed, Withdrawed, Initial
+        Waiting, Placed, Interrupted, Completed, Withdrawn, Initial
     }
 
     public class OrderMessage : System.Collections.IComparer
