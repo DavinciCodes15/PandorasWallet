@@ -27,7 +27,9 @@ using Pandora.Client.Universal;
 using Pandora.Client.Universal.Threading;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 
 namespace Pandora.Client.PandorasWallet.ServerAccess
@@ -41,6 +43,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     public delegate void DelegateOnTransaction(object aSender, TransactionRecord aTransactionRecord);
 
     public delegate void DelegateOnSendTransactionCompleted(object aSender, string aErrorMsg, string aTxId);
+
+    public delegate void DelegateOnUpgradeFileReady(object aSender, string aFileName);
 
     public delegate void DelegateOnSentTransaction(object aSender, string aTxData, string aTxId, long aCurrencyId, DateTime aStartTime, DateTime aEndTime);
 
@@ -60,6 +64,17 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private DateTime FTimeToCheckForNewCurrencies = DateTime.Now;
         private PandoraJsonConverter FConverter = new PandoraJsonConverter();
         private bool FExecuted;
+        DateTime FLastCheckedForUpgrade = DateTime.MinValue;
+        string FUpgradePath;
+        private MyWebClient FWebClientDownloader;
+        private class MyWebClient : WebClient
+        {
+            public string FileName { get; private set; }
+            public MyWebClient(string aFileName) : base()
+            {
+                FileName = aFileName;
+            }
+        }
 
         /// <summary>
         /// Creates a Notifier instance to send notificaitons of changes
@@ -70,8 +85,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         /// <param name="aPort">port of the ser</param>
         /// <param name="aEncryptedConnection">HTTPS connection or not</param>
         /// <param name="ConnectionId">ID of an existing connection</param>
-        public PandoraObjectNotifier(string aRemoteserver, int aPort, bool aEncryptedConnection, string aConnectionId)
+        public PandoraObjectNotifier(string aRemoteserver, int aPort, bool aEncryptedConnection, string aConnectionId, string aDataPath)
         {
+            FUpgradePath = aDataPath;
             OnErrorEvent += PandoraObjectNotifier_OnErrorEvent;
             LastNotifiedCurrencyId = 0;
             MinutesBetweenCheckForNewCurrencies = 60;
@@ -122,6 +138,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         /// the cache
         /// </summary>
         public event DelegateOnTransaction OnUpdatedTransaction;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public event DelegateOnUpgradeFileReady OnUpgradeFileReady;
 
         public override void Run()
         {
@@ -189,6 +210,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return false;
         }
 
+        public string UpgradeFileName { get; private set; }
+
+        public bool AutoUpdate { get; set; }
+
         public int MinutesBetweenCheckForNewCurrencies { get; set; }
 
         public long LastNotifiedCurrencyId { get; private set; }
@@ -208,6 +233,85 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             // Call the the event that will actually do the work and set the timer.
             BeginInvoke(new Action(ThreadEventFindServerItems));
             FExecuted = true;
+        }
+
+        // once a day 
+        // go check https://api.github.com/repos/DavinciCodes15/PandorasWallet/releases/latest
+        // for latest version and download.
+        private void LookForUpgrade()
+        {
+            if (!AutoUpdate || FLastCheckedForUpgrade.AddDays(1) > DateTime.Now) return;
+            FLastCheckedForUpgrade = DateTime.Now;
+            try
+            {
+                string s;
+                var webRequest = WebRequest.Create("https://api.github.com/repos/DavinciCodes15/PandorasWallet/releases/latest") as HttpWebRequest;
+                if (webRequest != null)
+                {
+                    webRequest.ContentType = "application/json";
+                    webRequest.UserAgent = "Nothing";
+
+                    using (var lStream = webRequest.GetResponse().GetResponseStream())
+                    using (var sr = new StreamReader(lStream))
+                        s = sr.ReadToEnd();
+                    dynamic lGitHub = JsonConvert.DeserializeObject(s);
+                    //string lNewVersion = lGitHub.tag_name;
+                    string lRemoteVersion = lGitHub.tag_name;
+                    Version lCurrentVer = new Version(SystemUtils.GetAssemblyVersion());
+                    s = lRemoteVersion.Substring(1);
+                    Version lNewVersion = new Version(s);
+                    s = lGitHub.assets[0].browser_download_url;
+                    string lFileName = Path.Combine(FUpgradePath, $"Pandara's Wallet {lRemoteVersion}.msi");
+                    if (lNewVersion > lCurrentVer)
+                    {
+                        Log.Write(LogLevel.Info, "New verison {0} found.", lNewVersion);
+                        if (!File.Exists(lFileName) && FWebClientDownloader == null)
+                        {
+                            if (Terminated) return;
+                            FWebClientDownloader?.Dispose(); // clean up old object
+                            FWebClientDownloader = new MyWebClient(lFileName);
+                            FWebClientDownloader.DownloadFileCompleted += FWebClientDownloader_DownloadFileCompleted;
+                            FWebClientDownloader.DownloadFileAsync(
+                                    // Param1 = Link of file
+                                    new System.Uri(s),
+                                    // Param2 = Path to save
+                                    lFileName
+                                );
+                        }
+                        else
+                        {
+                            if (FWebClientDownloader != null) // this is odd the downloader should have completed by now
+                                throw new Exception("FWebClientDownloader is not null meaning the download from yesterday did not complete.");
+                            else if (UpgradeFileName != lFileName)
+                                DoUpgradeFileReady(lFileName);
+                        }
+                    }
+                    else if (lNewVersion == lCurrentVer) // remove install file if no longer needed.
+                        if (File.Exists(lFileName)) File.Delete(lFileName);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Write(LogLevel.Critical, "Error downloading upgrade file. {0}", e);
+            }
+        }
+
+        private void FWebClientDownloader_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        {
+            try
+            {
+                MyWebClient lSender = sender as MyWebClient;
+                if (!e.Cancelled && e.Error == null)
+                    DoUpgradeFileReady(lSender.FileName);
+                else
+                    if (File.Exists(lSender.FileName)) File.Delete(lSender.FileName);
+                FWebClientDownloader = null;
+                lSender.Dispose();
+            }
+            catch(Exception ex)
+            {
+                this.DoErrorHandler(ex);
+            }
         }
 
         private class SendTxPackage
@@ -340,6 +444,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 GetLatestStatus();
                 Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetTransactions");
                 GetTransactions();
+                LookForUpgrade();
             }
             catch (Exception ex)
             {
@@ -544,6 +649,19 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
+        private void DoUpgradeFileReady(string aFileName)
+        {
+            try
+            {
+                UpgradeFileName = aFileName;
+                this.SynchronizingObject?.BeginInvoke(OnUpgradeFileReady, new object[] { this, aFileName });
+            }
+            catch (Exception e)
+            {
+                DoErrorHandler(e);
+            }
+        }
+
         private void DoOnCurrencyStatusChange(CurrencyStatusItem aCurrencyStatusItem)
         {
             try
@@ -624,6 +742,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             Log.Write(LogLevel.Info, "Pandora Object Notifier shutting down.");
             FServerAccess?.Dispose();
             FFindServerItemsTimer?.Dispose();
+            FWebClientDownloader?.CancelAsync();
             FServerAccess = null;
         }
 

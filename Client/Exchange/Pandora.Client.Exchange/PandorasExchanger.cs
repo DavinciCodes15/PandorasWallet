@@ -316,7 +316,7 @@ namespace Pandora.Client.Exchange
             }
         }
 
-        public ExchangeMarket[] GetMarketCoins(string aTicker)
+        public ExchangeMarket[] GetMarketCoins(string aTicker, Func<string,long?> aGetWalletIDFunction = null)
         {
             if (FLastRetrieval == DateTime.MinValue || FLastRetrieval < DateTime.UtcNow.AddHours(-1))
             {
@@ -335,14 +335,23 @@ namespace Pandora.Client.Exchange
             }
 
             ExchangeMarket[] lCoinMarkets = FMarkets.Where(x => x.IsActive == true && (x.MarketCurrency == aTicker || x.BaseCurrency == aTicker))
-                   .Select(x => new ExchangeMarket
+                   .Select(lMarket => new ExchangeMarket
                    {
-                       BaseTicker = aTicker,
-                       CoinName = x.BaseCurrency != aTicker ? x.BaseCurrencyLong : x.MarketCurrencyLong,
-                       CoinTicker = x.BaseCurrency != aTicker ? x.BaseCurrency : x.MarketCurrency,
-                       MarketName = x.MarketName,
-                       IsSell = x.BaseCurrency != aTicker,
-                       MinimumTrade = x.MinTradeSize
+                       BaseCurrencyInfo = new ExchangeMarket.CurrencyInfo 
+                       { 
+                           Ticker = aTicker, 
+                           Name = lMarket.BaseCurrency == aTicker ? lMarket.BaseCurrencyLong : lMarket.MarketCurrencyLong, 
+                           WalletID = aGetWalletIDFunction?.Invoke(aTicker) 
+                       },
+                       DestinationCurrencyInfo = new ExchangeMarket.CurrencyInfo
+                       { 
+                           Ticker = lMarket.BaseCurrency == aTicker ? lMarket.MarketCurrency :  lMarket.BaseCurrency, 
+                           Name = lMarket.BaseCurrency == aTicker ? lMarket.MarketCurrencyLong : lMarket.BaseCurrencyLong, 
+                           WalletID = aGetWalletIDFunction?.Invoke(lMarket.BaseCurrency == aTicker ? lMarket.MarketCurrency : lMarket.BaseCurrency) 
+                       },
+                       MarketName = lMarket.MarketName,
+                       IsSell = lMarket.BaseCurrency != aTicker,
+                       MinimumTrade = lMarket.MinTradeSize
                    }).ToArray();
 
             return lCoinMarkets;
@@ -357,7 +366,7 @@ namespace Pandora.Client.Exchange
 
             using (BittrexClient lClient = new BittrexClient())
             {
-                CallResult<BittrexDepositAddress> lResponse = lClient.GetDepositAddress(aMarket.BaseTicker);
+                CallResult<BittrexDepositAddress> lResponse = lClient.GetDepositAddress(aMarket.BaseCurrencyInfo.Ticker);
 
                 if (!lResponse.Success)
                 {
@@ -438,7 +447,8 @@ namespace Pandora.Client.Exchange
                     ID = lResponse.Data.OrderUuid.ToString(),
                     Completed = lResponse.Data.QuantityRemaining == 0,
                     Cancelled = lResponse.Data.CancelInitiated,
-                    Market = lResponse.Data.Exchange
+                    Market = lResponse.Data.Exchange,
+                    Rate = lResponse.Data.PricePerUnit?? -1
                 };
             }
         }
@@ -470,7 +480,7 @@ namespace Pandora.Client.Exchange
             };
             using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
             {
-                CallResult<BittrexGuid> lResponse = lClient.Withdraw(aMarket.BaseTicker, aOrder.SentQuantity, aAddress);
+                CallResult<BittrexGuid> lResponse = lClient.Withdraw(aMarket.BaseCurrencyInfo.Ticker, aOrder.SentQuantity, aAddress);
                 if (!lResponse.Success)
                 {
                     throw new Exception("Failed to withdraw. Error message:" + lResponse.Error.Message);
@@ -511,10 +521,10 @@ namespace Pandora.Client.Exchange
                 if (lRemoteOrder.Price <= 0 || !lRemoteOrder.PricePerUnit.HasValue)
                     throw new Exception("Order is not fulfilled or data from server is missing");
                 if (lRemoteOrder.Type == OrderSideExtended.LimitBuy)
-                    lQuantityToWithdraw = (lRemoteOrder.Price - lRemoteOrder.CommissionPaid) / lRemoteOrder.PricePerUnit.Value;
+                    lQuantityToWithdraw = lRemoteOrder.Quantity;
                 else if (lRemoteOrder.Type == OrderSideExtended.LimitSell)
-                    lQuantityToWithdraw = (lRemoteOrder.Price - lRemoteOrder.CommissionPaid);
-                CallResult<BittrexGuid> lWithdrawResponse = lClient.Withdraw(aMarket.CoinTicker, lQuantityToWithdraw, aAddress);
+                    lQuantityToWithdraw = (lRemoteOrder.Quantity * lRemoteOrder.PricePerUnit.Value) - lRemoteOrder.CommissionPaid;
+                CallResult<BittrexGuid> lWithdrawResponse = lClient.Withdraw(aMarket.DestinationCurrencyInfo.Ticker, lQuantityToWithdraw, aAddress);
                 if (!lWithdrawResponse.Success)
                     throw new Exception("Failed to withdraw. Error message:" + lWithdrawResponse.Error.Message);
             }
@@ -559,12 +569,18 @@ namespace Pandora.Client.Exchange
                 }
             }
 
-            public string BaseTicker { get; set; }
-            public string CoinName { get; set; }
-            public string CoinTicker { get; set; }
+            public CurrencyInfo BaseCurrencyInfo { get; set; }
+            public CurrencyInfo DestinationCurrencyInfo { get; set; }
             public string MarketName { get; set; }
             public decimal MinimumTrade { get; set; }
             public bool IsSell { get; set; }
+
+            public class CurrencyInfo
+            {
+                public string Ticker { get; set; }
+                public string Name { get; set; }
+                public long? WalletID { get; set; }
+            }
         }
     }
 }

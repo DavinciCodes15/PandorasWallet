@@ -447,7 +447,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             var lResult = new List<CurrencyItem>();
 
-            string lQuery = "SELECT c1.id, name, ticker, precision, MinConfirmations, livedate, Icon, IconSize, FeePerKb, ChainParams, CASE WHEN cs.status IS NULL THEN c1.status ELSE cs.status END as 'Status' FROM Currencies c1 inner join CurrencyVisible c2 on c1.id = c2.CurrencyId left join CurrenciesStatus cs on c2.CurrencyId = cs.currencyid";
+            string lQuery = "SELECT c1.id, name, ticker, precision, MinConfirmations, livedate, Icon, IconSize, FeePerKb, ChainParams, CASE WHEN cs.status IS NULL THEN c1.status ELSE cs.status END as 'Status' " +
+                "FROM Currencies c1 inner join CurrencyVisible c2 on c1.id = c2.CurrencyId left join CurrenciesStatus cs on c2.CurrencyId = cs.currencyid " +
+                "WHERE c2.Visible = true";
 
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, FSQLiteConnection))
             using (SQLiteDataReader lSQLiteDataReader = lSQLiteCommand.ExecuteReader())
@@ -590,6 +592,21 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         lTransactionRecord.AddOutput(lSQLiteDataReader.GetInt64(3), lSQLiteDataReader.GetString(2), lSQLiteDataReader.GetInt32(4), lSQLiteDataReader.GetInt64(1), lTransactionRecord.TxId);
             }
             return aTxList;
+        }
+
+        public string CreateDBFileCopy()
+        {
+            string lQuery = "BEGIN IMMEDIATE;"; //THIS QUERY FORCES ALL WRITING OPERATIONS TO BE PAUSED
+            using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, FSQLiteConnection))
+                lSQLiteCommand.ExecuteNonQuery();
+            string lCopyFileName = string.Concat(this.FileName, "_copy");
+            if (File.Exists(lCopyFileName))
+                File.Delete(lCopyFileName);
+            File.Copy(this.FileName, lCopyFileName);
+            lQuery = "ROLLBACK;"; //THIS RELEASES THE BEGIN IMMEDIATE LOCK OF WRITING
+            using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, FSQLiteConnection))
+                lSQLiteCommand.ExecuteNonQuery();
+            return lCopyFileName;
         }
 
         #region IDisposable Support

@@ -36,6 +36,7 @@
             this.btnChangeDefaultCoin = new System.Windows.Forms.Button();
             this.BrowseButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.cbAutoUpdate = new System.Windows.Forms.CheckBox();
             this.lblSelectedCoin = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.imgCurrentCoin = new System.Windows.Forms.PictureBox();
@@ -124,6 +125,7 @@
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.cbAutoUpdate);
             this.groupBox2.Controls.Add(this.lblSelectedCoin);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.imgCurrentCoin);
@@ -143,10 +145,21 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Wallet";
             // 
+            // cbAutoUpdate
+            // 
+            this.cbAutoUpdate.AutoSize = true;
+            this.cbAutoUpdate.Location = new System.Drawing.Point(19, 120);
+            this.cbAutoUpdate.Name = "cbAutoUpdate";
+            this.cbAutoUpdate.Size = new System.Drawing.Size(86, 17);
+            this.cbAutoUpdate.TabIndex = 27;
+            this.cbAutoUpdate.Text = "Auto Update";
+            this.cbAutoUpdate.UseVisualStyleBackColor = true;
+            this.cbAutoUpdate.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // lblSelectedCoin
             // 
             this.lblSelectedCoin.AutoSize = true;
-            this.lblSelectedCoin.Location = new System.Drawing.Point(70, 177);
+            this.lblSelectedCoin.Location = new System.Drawing.Point(68, 184);
             this.lblSelectedCoin.Name = "lblSelectedCoin";
             this.lblSelectedCoin.Size = new System.Drawing.Size(49, 13);
             this.lblSelectedCoin.TabIndex = 26;
@@ -156,7 +169,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(19, 140);
+            this.label2.Location = new System.Drawing.Point(19, 149);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(110, 13);
             this.label2.TabIndex = 25;
@@ -166,7 +179,7 @@
             // 
             this.imgCurrentCoin.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.imgCurrentCoin.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.imgCurrentCoin.Location = new System.Drawing.Point(23, 164);
+            this.imgCurrentCoin.Location = new System.Drawing.Point(22, 174);
             this.imgCurrentCoin.Name = "imgCurrentCoin";
             this.imgCurrentCoin.Size = new System.Drawing.Size(40, 40);
             this.imgCurrentCoin.TabIndex = 24;
@@ -184,7 +197,7 @@
             // btnPrivKey
             // 
             this.btnPrivKey.AutoSize = true;
-            this.btnPrivKey.Location = new System.Drawing.Point(187, 174);
+            this.btnPrivKey.Location = new System.Drawing.Point(186, 179);
             this.btnPrivKey.MaximumSize = new System.Drawing.Size(210, 0);
             this.btnPrivKey.Name = "btnPrivKey";
             this.btnPrivKey.Size = new System.Drawing.Size(186, 23);
@@ -198,7 +211,7 @@
             this.checkEncryptWallet.AutoSize = true;
             this.checkEncryptWallet.Checked = true;
             this.checkEncryptWallet.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkEncryptWallet.Location = new System.Drawing.Point(175, 122);
+            this.checkEncryptWallet.Location = new System.Drawing.Point(175, 120);
             this.checkEncryptWallet.Name = "checkEncryptWallet";
             this.checkEncryptWallet.Size = new System.Drawing.Size(215, 17);
             this.checkEncryptWallet.TabIndex = 21;
@@ -246,5 +259,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.PictureBox imgCurrentCoin;
         private System.Windows.Forms.Label lblSelectedCoin;
+        private System.Windows.Forms.CheckBox cbAutoUpdate;
     }
 }

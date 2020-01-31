@@ -10,6 +10,7 @@ namespace Pandora.Client.PandorasWallet
         public string UserName { get; set; }
         public string Email { get; set; }
         public bool RequestWalletPassword { get; set; }
+        public bool AutoUpdate { get; set; }
         public string ServerName { get; set; }
         public int Port { get; set; }
         public bool EncryptedConnection { get; set; }
@@ -40,8 +41,8 @@ namespace Pandora.Client.PandorasWallet
                 LogMaxSize = (ushort)lConfigFile.ReadIntValue("LogMaxSize", 100),
                 LogLevelFlags = (LogLevelFlags)Enum.Parse(typeof(LogLevelFlags), lConfigFile.ReadStringValue("LogLevelFlags", "All")),
                 LogLineLength = (ushort)lConfigFile.ReadIntValue("LogLineLength", 120),
-                LogRollOver = lConfigFile.ReadBoolValue("LogRollOver", true)
-
+                LogRollOver = lConfigFile.ReadBoolValue("LogRollOver", true),
+                AutoUpdate = lConfigFile.ReadBoolValue("AutoUpdate",true)
             };
             return lResult;
         }
@@ -63,6 +64,7 @@ namespace Pandora.Client.PandorasWallet
             lConfigFile.WriteStringValue("LogLevelFlags", aSettings.LogLevelFlags.ToString());
             lConfigFile.WriteIntValue("LogLineLength", aSettings.LogLineLength);
             lConfigFile.WriteBoolValue("LogRollOver", aSettings.LogRollOver);
+            lConfigFile.WriteBoolValue("AutoUpdate", aSettings.AutoUpdate);
             lConfigFile.SaveToFile(aFileName);
         }
 

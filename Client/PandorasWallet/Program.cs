@@ -42,9 +42,11 @@ namespace Pandora.Client.PandorasWallet
 
     internal static class Program
     {
+        public static string UpgradeFileName = null;
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
+        /// 
         [STAThread]
         private static void Main()
         {
@@ -67,7 +69,19 @@ namespace Pandora.Client.PandorasWallet
             }
             finally
             {
-               lControler?.Dispose();
+                lControler?.Dispose();
+            }
+            if (UpgradeFileName != null && System.IO.File.Exists(UpgradeFileName))
+            {
+                try
+                {
+                    string lVbs = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "upgrade.vbs");
+                    Process.Start("wscript", $"\"{lVbs}\" \"{UpgradeFileName}\"");
+                }
+                catch
+                {
+                    
+                }
             }
         }
 

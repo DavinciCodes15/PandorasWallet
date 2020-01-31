@@ -74,6 +74,7 @@ namespace Pandora.Client.Exchange.SaveManagers
             {
                 FConnectionString = $"Data Source={lDataPath};PRAGMA journal_mode=WAL;";
             }
+            DBFilePath = lDataPath;
         }
 
         private void CreateVersionTableIfNeeded()
@@ -681,6 +682,25 @@ namespace Pandora.Client.Exchange.SaveManagers
                 {
                     lConnection.Close();
                 }
+            }
+        }
+        public string CreateDBFileCopy()
+        {
+            using (SQLiteConnection lConnection = new SQLiteConnection(FConnectionString))
+            {
+                lConnection.Open();
+                string lQuery = "BEGIN IMMEDIATE;"; //THIS QUERY FORCES ALL WRITING OPERATIONS TO BE PAUSED
+                using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, lConnection))
+                    lSQLiteCommand.ExecuteNonQuery();
+                string lCopyFileName = string.Concat(this.DBFilePath, "_copy");
+                if (File.Exists(lCopyFileName))
+                    File.Delete(lCopyFileName);
+                File.Copy(this.DBFilePath, lCopyFileName);
+                lQuery = "ROLLBACK;"; //THIS RELEASES THE BEGIN IMMEDIATE LOCK OF WRITING
+                using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, lConnection))
+                    lSQLiteCommand.ExecuteNonQuery();
+                lConnection.Close();
+                return lCopyFileName;
             }
         }
 

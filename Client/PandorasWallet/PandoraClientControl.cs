@@ -89,20 +89,22 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.OnSendAllMenuClick += AppMainForm_OnSendAllMenuClick;
             AppMainForm.OnSelectedCurrencyChanged += AppMainForm_OnSelectedCurrencyChanged;
             AppMainForm.OnAddCurrencyBtnClick += AppMainForm_OnAddCurrencyBtnClick;
-            //AppMainForm.OnExhangeCurrencySelectionChanged += MainForm_OnCurrencySelectionChanged;
-            //AppMainForm.OnFormLoad += MainForm_OnFormLoad;
-            //AppMainForm.OnTransactionViewSelectionChanged += MainForm_OnTransactionViewSelectionChanged;
-            //AppMainForm.OnCurrencySearch += AppMainForm_OnSearchBoxTextChanged;
             AppMainForm.OnBackupClick += MainForm_OnBackupClick;
             AppMainForm.OnSettingsMenuClick += MainForm_OnSettingsMenuClick;
             AppMainForm.OnChangePassword += AppMainForm_OnChangePassword;
-            AppMainForm.LabelCoinQuantity = "";
-            AppMainForm.LabelTotalCoinReceived = "";
+            AppMainForm.OnRemoveCurrencyRequested += AppMainForm_OnRemoveCurrencyRequested;
+            AppMainForm.TickerQuantity = string.Empty;
+            AppMainForm.TickerTotalReceived = string.Empty;
         }
 
         private Dictionary<long, string> FLastAddresses = new Dictionary<long, string>();
         private Dictionary<long, decimal> FLastSentValue = new Dictionary<long, decimal>();
         private long FPrevSelectedCurrencyID = -1;
+
+        private void AppMainForm_OnRemoveCurrencyRequested(long aCurrencyID)
+        {
+            RemoveCurrency(aCurrencyID);
+        }
 
         private void AppMainForm_OnSelectedCurrencyChanged(object sender, EventArgs e)
         {
@@ -301,6 +303,7 @@ namespace Pandora.Client.PandorasWallet
             {
                 ConnectDialog lDlg = o as ConnectDialog;
                 var lConnection = new ServerConnection(Settings.DataPath, AppMainForm);
+                lConnection.AutoUpdate = Settings.AutoUpdate;
                 Log.Write(LogLevel.Debug, "Connecting to server {0} with port {1} and encryption {2}, user '{3} - {4}'", Settings.ServerName, Settings.Port, Settings.EncryptedConnection, lDlg.Username, lDlg.Email);
                 //NOTE:  Do not change below to lowercase ever because it used for
                 //       older user that had the wrong case.
@@ -387,6 +390,7 @@ namespace Pandora.Client.PandorasWallet
                 FServerConnection.OnCurrencyStatusChange += ServerConnection_OnCurrencyStatusChange;
                 FServerConnection.OnUpdatedCurrency += ServerConnection_OnUpdatedCurrency;
                 FServerConnection.OnUpdatedCurrencyParams += ServerConnection_OnUpdatedCurrencyParams;
+                FServerConnection.OnUpgradeFileReady += ServerConnection_OnUpgradeFileReady;
             }
             else
                 Log.Write(LogLevel.Debug, "Not connected.. last User: {0} - {1} ", lConnectDialog.Username, lConnectDialog.Email);
@@ -394,6 +398,11 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.Connected = FServerConnection != null && FServerConnection.Connected;
             if (!AppMainForm.Connected)
                 AppMainForm.Close();
+        }
+
+        private void ServerConnection_OnUpgradeFileReady(object aSender, string aFileName)
+        {
+            Program.UpgradeFileName = aFileName;
         }
 
         private void ServerConnection_OnUpdatedCurrencyParams(CurrencyItem aCurrencyItem, Crypto.Currencies.IChainParams aOldChainParams)
@@ -444,7 +453,7 @@ namespace Pandora.Client.PandorasWallet
         private IEnumerable<CurrencyAccount> GetAddressesFromChainParams(IEnumerable<CurrencyAccount> aServerMonitoresAccounts, long aCurrencyID, IChainParams aCurrencyChainParams)
         {
             List<CurrencyAccount> lResult = new List<CurrencyAccount>();
-            if (FromUserDecryptWallet(false))
+            if (FromUserDecryptWallet(Settings.RequestWalletPassword))
             {
                 var lAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrencyID, (ChainParams)aCurrencyChainParams);
                 var lAddress1 = lAdvocacy.GetAddress(0);
@@ -516,7 +525,7 @@ namespace Pandora.Client.PandorasWallet
             if (FServerConnection.DefaultBitcoinAddress == null || FServerConnection.DefaultBitcoinAddress.Length < 2)
             {
                 Log.Write(LogLevel.Warning, "Something went wrong we need to set the default currency from the Encrypted root seed.");
-                if (!FromUserDecryptWallet(false)) throw new Exception("You must decrypt the wallet to continue.");
+                if (!FromUserDecryptWallet(Settings.RequestWalletPassword)) throw new Exception("You must decrypt the wallet to continue.");
                 var lAdvacacy = FKeyManager.GetCurrencyAdvocacy(1, FServerConnection.GetCurrency(1).ChainParamaters);
                 // we add this to the server side to indicate the user is created
                 // and this is the locked in address key and it must be the same
@@ -535,7 +544,7 @@ namespace Pandora.Client.PandorasWallet
             }
             if (FServerConnection.GetMonitoredAccounts(lDefaultCurrency.Id).Count < 2)
             {
-                if (!FromUserDecryptWallet(false)) throw new Exception("You must decrypt the wallet to continue.");
+                if (!FromUserDecryptWallet(Settings.RequestWalletPassword)) throw new Exception("You must decrypt the wallet to continue.");
                 var lAdvacacy = FKeyManager.GetCurrencyAdvocacy(lDefaultCurrency.Id, lDefaultCurrency.ChainParamaters);
                 // Currency to be displayed.
                 FServerConnection.AddMonitoredAccount(lAdvacacy.GetAddress(0), lDefaultCurrency.Id);
@@ -726,7 +735,7 @@ namespace Pandora.Client.PandorasWallet
 
             string lRetunedTxID = null;
 
-            if (lSendTransactionDlg.Execute() && FromUserDecryptWallet(Settings.RequestWalletPassword))
+            if (lSendTransactionDlg.Execute() && FromUserDecryptWallet(true))
             {
                 FSendingTxDialog = new SendingTxDialog();
                 FSendingTxDialog.ParentWindow = AppMainForm;
@@ -814,17 +823,6 @@ namespace Pandora.Client.PandorasWallet
                         FAddressTypes.Add(lTxUnit.Address, new List<TransactionUnit>());
                     FAddressTypes[lTxUnit.Address].Add(lTxUnit);
                 }
-                //if (FAddressTypes.Count > 1)
-                //{
-                //    throw new Exception("Send transaction from 2 diffrent address types not supported.");
-                //    var lAccounts = FServerConnection.GetMonitoredAccounts(aCurrency.Id);
-                //    StringBuilder lResultData = new StringBuilder();
-                //    lResultData.AppendLine("Version=1");
-                //    lResultData.AppendLine($"Count={FAddressTypes.Count}");
-                //    int lIndex = 0;
-                //    foreach (var lUnspentList in FAddressTypes.Values)
-                //        lResultData.AppendLine($"" + PrepareNewTransaction(aToAddress, aAmount, aTxFee, aCurrency, lUnspents, out CurrencyTransaction lCurrencyTransaction))
-                //}
             }
             lData = PrepareNewTransaction(aToAddress, aAmount, aTxFee, aCurrency, lUnspents, out CurrencyTransaction lCurrencyTransaction);
             return SignTransactionData(lData, aCurrency, lCurrencyTransaction);
@@ -891,18 +889,18 @@ namespace Pandora.Client.PandorasWallet
             BasePandoraBackupObject lObjectToBackup = null;
             try
             {
-                FExchangeControl.BeginBackupRestore();
-                FServerConnection.BeginBackupRestore();
+                FExchangeControl.BeginBackupRestore(out string lExchangeDBCopyFileName);
+                FServerConnection.BeginBackupRestore(out string lDBCopyFileName);
                 lObjectToBackup = new BasePandoraBackupObject
                 {
-                    ExchangeData = new BackupSerializableObject(File.ReadAllBytes(FExchangeControl.SqLiteDbFileName)),
-                    WalletData = new BackupSerializableObject(File.ReadAllBytes(FServerConnection.SqLiteDbFileName)),
+                    ExchangeData = new BackupSerializableObject(File.ReadAllBytes(lExchangeDBCopyFileName)),
+                    WalletData = new BackupSerializableObject(File.ReadAllBytes(lDBCopyFileName)),
                     BackupDate = DateTime.UtcNow,
                     OwnerData = new[] { Settings.UserName, Settings.Email },
                     PasswordHash = string.Empty //This is only used by restore by old file method, but could be a good idea to have code to check it
-                };
-                FServerConnection.EndBackupRestore();
-                FExchangeControl.EndBackupRestore();
+                };                
+                FServerConnection.EndBackupRestore(lDBCopyFileName);
+                FExchangeControl.EndBackupRestore(lExchangeDBCopyFileName);
             }
             catch (Exception ex)
             {
@@ -932,6 +930,8 @@ namespace Pandora.Client.PandorasWallet
             SettingsDlg.OnChangeDefaultCoinClick += SettingsDialog_OnChangeDefaultCoinClick;
             SettingsDlg.OnGetPrivateKey += SettingsDialog_OnGetPrivateKey;
             SettingsDlg.DataPath = Settings.DataPath;
+            SettingsDlg.RequestWalletPassword = Settings.RequestWalletPassword;
+            SettingsDlg.AutoUpdate = Settings.AutoUpdate;
             SettingsDlg.SetDefaultCurrency(FServerConnection.DefualtCurrencyItem.Id, FServerConnection.DefualtCurrencyItem.Name, SystemUtils.BytesToIcon(FServerConnection.DefualtCurrencyItem.Icon).ToBitmap());
             SettingsDlg.SetActiveCurrency(AppMainForm.SelectedCurrencyId, AppMainForm.SelectedCurrency.Name, SystemUtils.BytesToIcon(AppMainForm.SelectedCurrency.Icon).ToBitmap());
             if (SettingsDlg.Execute())
@@ -963,14 +963,20 @@ namespace Pandora.Client.PandorasWallet
                         return;
                     }
                 }
-                Settings.RequestWalletPassword = Settings.RequestWalletPassword;
+                Settings.RequestWalletPassword = SettingsDlg.RequestWalletPassword;
+                Settings.AutoUpdate = SettingsDlg.AutoUpdate;
+                if (!Settings.AutoUpdate)
+                    Program.UpgradeFileName = null;
+                else
+                    Program.UpgradeFileName = FServerConnection.UpgradeFileName;
+                FServerConnection.AutoUpdate = Settings.AutoUpdate;
                 CoreSettings.SaveSettings(Settings, FSettingsFile);
                 if (FServerConnection.DefualtCurrencyItem.Id != SettingsDlg.DefaultCurrencyId)
                 {
                     // Do you have the currency? if not add it. and then select it.
                     if (!FServerConnection.GetDisplayedCurrencies().Any(lCurrency => lCurrency.Id == SettingsDlg.DefaultCurrencyId))
                     {
-                        FromUserDecryptWallet(false);
+                        FromUserDecryptWallet(Settings.RequestWalletPassword);
                         AddNewCurrencyForDisplay(SettingsDlg.DefaultCurrencyId, FCancellationTokenSource.Token);
                         Event_DisplayCurrency(FServerConnection.GetCurrency(SettingsDlg.DefaultCurrencyId), null, FCancellationTokenSource.Token);
                     }
@@ -979,12 +985,21 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        public void RemoveCurrency(long aCurrencyID)
+        {
+            var lDefaultCurrency = FServerConnection.GetDefaultCurrency().Id;
+            if (aCurrencyID == lDefaultCurrency) 
+                throw new InvalidOperationException("You can not remove your default coin");
+            FServerConnection.SetDisplayedCurrency(aCurrencyID, false);
+            AppMainForm.RemoveCurrency(aCurrencyID, lDefaultCurrency);
+        }
+
         private void CopyDataFileToNewFolder(string aServerConnectionFile, string aExchangeFile)
         {
             try
             {
-                FExchangeControl.BeginBackupRestore();
-                FServerConnection.BeginBackupRestore();
+                FExchangeControl.BeginBackupRestore(out string lExchangeDBCopyFileName);
+                FServerConnection.BeginBackupRestore(out string lDBCopyFileName);
 
                 Log.Write(LogLevel.Debug, "copying '{0}' for Exchange file", aServerConnectionFile);
                 CreateBackFileIfExists(aExchangeFile);
@@ -994,8 +1009,8 @@ namespace Pandora.Client.PandorasWallet
                 File.Copy(FServerConnection.SqLiteDbFileName, aServerConnectionFile);
 
                 FServerConnection.SetDataPath(Settings.DataPath);
-                FServerConnection.EndBackupRestore();
-                FExchangeControl.EndBackupRestore();
+                FServerConnection.EndBackupRestore(lDBCopyFileName);
+                FExchangeControl.EndBackupRestore(lExchangeDBCopyFileName);
             }
             catch (Exception ex)
             {
@@ -1021,7 +1036,7 @@ namespace Pandora.Client.PandorasWallet
         private IDictionary<string, string> SettingsDialog_OnGetPrivateKey(long aCurrencyID)
         {
             var lResult = new Dictionary<string, string>();
-            if (FromUserDecryptWallet(Settings.RequestWalletPassword))
+            if (FromUserDecryptWallet(true))
             {
                 var lAdvocacy = FKeyManager.GetCurrencyAdvocacy(AppMainForm.SelectedCurrencyId, AppMainForm.SelectedCurrency.ChainParamaters);
                 var lCurrencyAccounts = FServerConnection.GetMonitoredAccounts(aCurrencyID);
@@ -1093,7 +1108,7 @@ namespace Pandora.Client.PandorasWallet
             Application.DoEvents();
             FTask?.Wait();
             Application.UseWaitCursor = false;
-            if (AddCoinSelectorDialog.Execute() && FromUserDecryptWallet(false))
+            if (AddCoinSelectorDialog.Execute() && FromUserDecryptWallet(Settings.RequestWalletPassword))
             {
                 var lIds = AddCoinSelectorDialog.SelectedCurrencyIds;
                 CancellationToken lToken = FCancellationTokenSource.Token;
@@ -1339,7 +1354,7 @@ namespace Pandora.Client.PandorasWallet
             lExchangeControl.GetKeyManagerMethod = (out KeyManager lKeyManager) =>
             {
                 lKeyManager = null;
-                if (FromUserDecryptWallet(false))
+                if (FromUserDecryptWallet(Settings.RequestWalletPassword))
                     lKeyManager = FKeyManager;
                 return lKeyManager != null;
             };
@@ -1413,8 +1428,10 @@ namespace Pandora.Client.PandorasWallet
             if (!string.IsNullOrEmpty(aExchangeTempFilePath) && File.Exists(aExchangeTempFilePath))
                 FExchangeControl?.ValidLocalDBFile(aExchangeTempFilePath);
             Log.Write(LogLevel.Debug, "Restoring '{0}' for ServerConnection file", aWalletTempFilePath);
-            FServerConnection?.BeginBackupRestore();
-            FExchangeControl?.BeginBackupRestore();
+            string lDBCopyFileName = string.Empty;
+            string lExchangeDBCopyFileName = string.Empty;
+            FServerConnection?.BeginBackupRestore(out lDBCopyFileName);
+            FExchangeControl?.BeginBackupRestore(out lExchangeDBCopyFileName);
             try
             {
                 Log.Write(LogLevel.Debug, "Restoring '{0}' for Exchange file", aWalletTempFilePath);
@@ -1429,8 +1446,8 @@ namespace Pandora.Client.PandorasWallet
             }
             finally
             {
-                FServerConnection?.EndBackupRestore();
-                FExchangeControl?.EndBackupRestore();
+                FServerConnection?.EndBackupRestore(lDBCopyFileName);
+                FExchangeControl?.EndBackupRestore(lExchangeDBCopyFileName);
             }
         }
 
@@ -1457,7 +1474,7 @@ namespace Pandora.Client.PandorasWallet
                     var lEncryptedKey = FKeyManager.EncryptText(aBackupObj.ExchangeKeys["Bittrex"][0]);
                     var lEncryptedSecret = FKeyManager.EncryptText(aBackupObj.ExchangeKeys["Bittrex"][1]);
                     File.WriteAllBytes(lExchangeTempFilePath, lExchangeRestoredData.Data);
-                    FExchangeControl.BeginBackupRestore();
+                    FExchangeControl.BeginBackupRestore(out string lExchangeDBCopyFileName);
                     try
                     {
                         Log.Write(LogLevel.Debug, "Restoring '{0}' for Exchange file", lExchangeTempFilePath);
@@ -1466,7 +1483,7 @@ namespace Pandora.Client.PandorasWallet
                     }
                     finally
                     {
-                        FExchangeControl.EndBackupRestore();
+                        FExchangeControl.EndBackupRestore(lExchangeDBCopyFileName);
                     }
                     FExchangeControl.SaveRestoredKeyAndSecret(lEncryptedKey, lEncryptedSecret);
                 }

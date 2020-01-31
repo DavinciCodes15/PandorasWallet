@@ -37,7 +37,9 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public string DataPath { get => txtDataPath.Text; set => txtDataPath.Text = value; }
 
-        public bool EncryptWallet { get => checkEncryptWallet.Checked; set => checkEncryptWallet.Checked = value; }
+        public bool RequestWalletPassword { get => checkEncryptWallet.Checked; set => checkEncryptWallet.Checked = value; }
+
+        public bool AutoUpdate { get => cbAutoUpdate.Checked; set => cbAutoUpdate.Checked = value; }
 
         public string PrivateKeyBtnText { get => btnPrivKey.Text; set => btnPrivKey.Text = $"View {FCurrencyName = value} private key..."; }
 
@@ -136,6 +138,11 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             {
                 this.StandardExceptionMsgBox(ex);
             }
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
 
         //private void BtnDefault_Click(object sender, EventArgs e)

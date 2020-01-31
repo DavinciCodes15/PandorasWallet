@@ -192,6 +192,28 @@ namespace Pandora.Client.PandorasWallet
             return lListViewItem != null;
         }
 
+        public void RemoveCurrency(long aCurrencyID)
+        {
+           lock(FListLock)
+            {
+                FCurrencyItems.Remove(aCurrencyID);
+                FListViewCache.Remove(aCurrencyID);
+                var lListViewItem = FListView.Items.Find(aCurrencyID.ToString(), false).FirstOrDefault();
+                if (lListViewItem != null)
+                {
+                    if (SelectedCurrencyId == aCurrencyID)
+                    {
+                        int lLastItemIdex = FListView.Items.IndexOf(lListViewItem);
+                        if (lLastItemIdex == 0)
+                            FListView.Items[lLastItemIdex + 1].Selected = true;
+                        else
+                            FListView.Items[lLastItemIdex - 1].Selected = true;
+                    }
+                    FListView.Items.Remove(lListViewItem);
+                }
+            }
+        }
+
         public void AddCurrency(long aCurrencyID, string aCurrencyName, string aCurrencySymbol, Icon aCurrencyIcon, string[] aCustomColumnValues = null)
         {
             CurrencyItem lCurrencyItem = new CurrencyItem(aCurrencyID, aCurrencyName, aCurrencySymbol, aCustomColumnValues);

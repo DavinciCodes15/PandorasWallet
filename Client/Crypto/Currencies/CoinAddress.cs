@@ -73,6 +73,7 @@ namespace Pandora.Client.Crypto.Currencies
                         if (encoder == null)
                             continue;
                         Int32 type = i;
+                        i++;
                         try
                         {
                             byte witVersion;
@@ -85,7 +86,6 @@ namespace Pandora.Client.Crypto.Currencies
                         }
                         catch (Bech32FormatException) { throw; }
                         catch (FormatException) { continue; }
-                        i++;
                     }
                 }
             }

@@ -103,6 +103,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         /// </summary>
         public event DelegateOnUpdatedCurrencyParams OnUpdatedCurrencyParams;
 
+        public event DelegateOnUpgradeFileReady OnUpgradeFileReady;
+
         public CacheServerAccessHelper CacheHelper { get; private set; }
 
         public bool Connected { get => FPandoraWalletServiceAccess != null; }
@@ -124,6 +126,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public string[] DefaultBitcoinAddress { get; private set; }
 
         public CurrencyItem DefualtCurrencyItem { get; private set; }
+
+        public string UpgradeFileName { get => FPandoraObjectNotifier == null ? null : FPandoraObjectNotifier.UpgradeFileName; }
+
+        public bool AutoUpdate { get; set; }
 
         public System.ComponentModel.ISynchronizeInvoke SynchronizingObject { get; private set; }
 
@@ -214,9 +220,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         private void CreatePandoraObjectNotifier(PandoraWalletServiceAccess aServerAccess)
         {
-            FPandoraObjectNotifier = new PandoraObjectNotifier(aServerAccess.RemoteServer, aServerAccess.Port, aServerAccess.EncryptedConnection, aServerAccess.ConnectionId);
+            FPandoraObjectNotifier = new PandoraObjectNotifier(aServerAccess.RemoteServer, aServerAccess.Port, aServerAccess.EncryptedConnection, aServerAccess.ConnectionId, DataPath);
             try
             {
+                FPandoraObjectNotifier.AutoUpdate = AutoUpdate;
                 FPandoraObjectNotifier.SynchronizingObject = SynchronizingObject;
                 FPandoraObjectNotifier.OnBlockHeightChange += PandoraObjectNotifier_OnBlockHeightChange;
                 FPandoraObjectNotifier.OnCurrencyStatusChange += PandoraObjectNotifier_OnCurrencyStatusChange;
@@ -226,6 +233,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 FPandoraObjectNotifier.OnUpdatedCurrency += PandoraObjectNotifier_OnUpdatedCurrency;
                 FPandoraObjectNotifier.OnUpdatedTransaction += PandoraObjectNotifier_OnUpdatedTransaction;
                 FPandoraObjectNotifier.OnSentTransaction += PandoraObjectNotifier_OnSentTransaction;
+                FPandoraObjectNotifier.OnUpgradeFileReady += PandoraObjectNotifier_OnUpgradeFileReady;
                 if (!NewAccount)
                 {
                     FLocalCacheDB.ReadCurrencies(out List<CurrencyItem> lCurrencies);
@@ -269,6 +277,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 throw;
             }
             FPandoraObjectNotifier.Run();
+        }
+
+        private void PandoraObjectNotifier_OnUpgradeFileReady(object aSender, string aFileName)
+        {
+            Log.Write(LogLevel.Debug, "Upgrade file ready {0}", aFileName);
+            if (AutoUpdate)
+                OnUpgradeFileReady?.Invoke(this, aFileName);
         }
 
         private void PandoraObjectNotifier_OnSentTransaction(object aSender, string aTxData, string aTxId, long aCurrencyId, DateTime aStartTime, DateTime aEndTime)
@@ -635,13 +650,15 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             DataPath = aDataPath;
         }
 
-        internal void BeginBackupRestore()
+        internal void BeginBackupRestore(out string lDBCopyFileName)
         {
+            lDBCopyFileName = null;
             if (FTempServiceAccess != null) return;
             CheckConnected();
             StopDataUpdating();
             FTempServiceAccess = FPandoraWalletServiceAccess;
             FPandoraWalletServiceAccess = null;
+            lDBCopyFileName = FLocalCacheDB.CreateDBFileCopy();
             FLocalCacheDB.Dispose();
             FLocalCacheDB = null;
         }
@@ -661,13 +678,15 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 CreatePandoraObjectNotifier(FPandoraWalletServiceAccess);
         }
 
-        internal void EndBackupRestore()
+        internal void EndBackupRestore(string lDBCopyFileName)
         {
             if (FTempServiceAccess == null) throw new InvalidOperationException("BackupRestoreStart Process not called first.");
             PandoraWalletServiceAccess lServerAccess = FTempServiceAccess;
             ConnectToDatabase(lServerAccess);
             FPandoraWalletServiceAccess = FTempServiceAccess;
             FTempServiceAccess = null;
+            if (!string.IsNullOrEmpty(lDBCopyFileName) && File.Exists(lDBCopyFileName))
+                File.Delete(lDBCopyFileName);
         }
 
         internal void ValidLocalDBFile(string aWalletTempFilePath)

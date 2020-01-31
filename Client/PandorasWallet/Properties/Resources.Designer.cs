@@ -143,6 +143,16 @@ namespace Pandora.Client.PandorasWallet.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap icons8_expand_arrow_24 {
+            get {
+                object obj = ResourceManager.GetObject("icons8-expand-arrow-24", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap icons8_key_30 {
             get {
                 object obj = ResourceManager.GetObject("icons8-key-30", resourceCulture);

@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Pandora.Client.PandorasWallet
@@ -73,17 +74,19 @@ namespace Pandora.Client.PandorasWallet
 
         public event EventHandler OnLabelEstimatePriceClick;
 
-        public event EventHandler OnPriceChanged;
+        public event Action OnPriceChanged;
 
         public event EventHandler OnCheckAllOrderHistory;
 
         public event EventHandler OnSettingsMenuClick;
 
-        public event EventHandler OnTxtQuantityLeave;
+        public event Action OnExchangeQuantityChanged;
 
-        public event EventHandler OnTxtTotalLeave;
+        public event Action OnExchangeReceivedChanged;
 
         public event EventHandler OnSelectedCurrencyChanged;
+
+        public event Action<long> OnRemoveCurrencyRequested;
 
         public AppMainForm()
         {
@@ -247,7 +250,7 @@ namespace Pandora.Client.PandorasWallet
         }
 
         private void UpdateCurrencyView()
-        {            
+        {
             SetCurrencyTooltip(SelectedCurrency);
             this.TotalCoins = FormatedAmount(SelectedCurrency.Balance, SelectedCurrency.Precision);
             this.UnconfirmedBalance = FormatedAmount(SelectedCurrency.UnconfirmedBalance, SelectedCurrency.Precision);
@@ -262,6 +265,7 @@ namespace Pandora.Client.PandorasWallet
 
         public void AddTransaction(Transaction aTransaction)
         {
+            if (aTransaction.TxType == TransactionType.Unknown) return;
             var lListViewItem = new ListViewItem();
             lListViewItem.Text = aTransaction.TxDate.ToString();
             lListViewItem.SubItems.Add(aTransaction.From);
@@ -306,7 +310,7 @@ namespace Pandora.Client.PandorasWallet
             lStringBuilder.AppendLine($"Minimum transaction confirmations: {aSelectedCurrency.MinConfirmations}.");
             lStringBuilder.AppendLine($"As of {aSelectedCurrency.StatusDetails.StatusTime} the status is {aSelectedCurrency.CurrentStatus}.");
             lStringBuilder.AppendLine(aSelectedCurrency.StatusDetails.StatusMessage);
-                       
+
             coinTooltip.SetToolTip(picCoinImage, lStringBuilder.ToString());
         }
 
@@ -392,10 +396,6 @@ namespace Pandora.Client.PandorasWallet
             {
                 MessageBox.Show(ex.Message, "An error occured during logoff");
             }
-        }
-
-        private void DisconnectToolStripMenuItem_Click(object sender, EventArgs e)
-        {
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -539,7 +539,7 @@ namespace Pandora.Client.PandorasWallet
                 col = column;
                 this.order = order;
             }
-             
+
             public int Compare(object x, object y)
             {
                 int returnVal;
@@ -606,12 +606,12 @@ namespace Pandora.Client.PandorasWallet
             {
                 System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"[^a-zA-Z0-9\s]");
                 e.Handled = regex.IsMatch(e.KeyChar.ToString());
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Backspace);
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Copy);
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Cut);
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Undo);
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Redo);
-                e.Handled |= (e.KeyChar == (int) CommandKeyCodes.Space);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Backspace);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Copy);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Cut);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Undo);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Redo);
+                e.Handled |= (e.KeyChar == (int)CommandKeyCodes.Space);
             }
             catch (Exception ex)
             {
@@ -667,28 +667,28 @@ namespace Pandora.Client.PandorasWallet
 
         public string LabelCoinExchange { set => lblExchange.Text = string.Format("Exchange {0} On", value); }
 
-        public string LabelCoinQuantity { get => lblQuantity.Text; set => lblQuantity.Text = value; }
+        public string TickerQuantity { get => txtQuantity.CurrencyTicker; set => txtQuantity.CurrencyTicker = value; }
 
-        public string LabelTotalCoinReceived { get => lblTotalReceived.Text; set => lblTotalReceived.Text = value; }
+        public string TickerTotalReceived { get => txtTotalReceived.CurrencyTicker; set => txtTotalReceived.CurrencyTicker = value; }
 
         public string LabelPriceInCoin { set => lblEstimatePriceCoin.Text = string.Format("Estimated Current price in ({0}):", value); }
 
-        public string LabelEstimatePrice { get => lblEstimatePrice.Text; set => lblEstimatePrice.Text = value; }
+        public decimal EstimatePrice { get => Convert.ToDecimal(lblEstimatePrice.Text); set => lblEstimatePrice.Text = value.ToString(); }
 
-        public decimal ExchangeTargetPrice { get => string.IsNullOrWhiteSpace(txtPrice.Text) ? 0 : Convert.ToDecimal(txtPrice.Text); set => txtPrice.Text = value.ToString(); }
-        public decimal ExchangeStopPrice { get => string.IsNullOrWhiteSpace(txtStopPrice.Text) ? 0 : Convert.ToDecimal(txtStopPrice.Text); set => txtStopPrice.Text = value.ToString(); }
-        public decimal ExchangeQuantity { get => string.IsNullOrWhiteSpace(txtQuantity.Text) ? 0 : Convert.ToDecimal(txtQuantity.Text); set => txtQuantity.Text = value.ToString(); }
-        public decimal ExchangeTotalReceived { get => string.IsNullOrWhiteSpace(txtTotal.Text) ? 0 : Convert.ToDecimal(txtTotal.Text); set => txtTotal.Text = value.ToString(); }
+        public decimal ExchangeTargetPrice { get => txtExchangeTargetPrice.Amount; set => txtExchangeTargetPrice.Amount = value; }
+        public decimal ExchangeStopPrice { get => txtStopPrice.Amount; set => txtStopPrice.Amount = value; }
+        public decimal ExchangeQuantity { get => txtQuantity.Amount; set => txtQuantity.Amount = value; }
+        public decimal ExchangeTotalReceived { get => txtTotalReceived.Amount; set => txtTotalReceived.Amount = value; }
         public string ExchangeTransactionName { get => txtTransactionName.Text; set => txtTransactionName.Text = value; }
 
-        public bool ExchangeTargetPriceEnabled { get => txtPrice.Enabled; set => txtPrice.Enabled = value; }
+        public bool ExchangeTargetPriceEnabled { get => txtExchangeTargetPrice.Enabled; set => txtExchangeTargetPrice.Enabled = value; }
         public bool ExchangeStoptPriceEnabled { get => txtStopPrice.Enabled; set => txtStopPrice.Enabled = value; }
         public bool ExchangeQuantityEnabled { get => txtQuantity.Enabled; set => txtQuantity.Enabled = value; }
-        public bool ExchangeTotalReceivedEnabled { get => txtTotal.Enabled; set => txtTotal.Enabled = value; }
+        public bool ExchangeTotalReceivedEnabled { get => txtTotalReceived.Enabled; set => txtTotalReceived.Enabled = value; }
         public bool ExchangeTransactionNameEnabled { get => txtTransactionName.Enabled; set => txtTransactionName.Enabled = value; }
         public bool ExchangeButtonEnabled { get => btnExchange.Enabled; set => btnExchange.Enabled = value; }
 
-        public event EventHandler OnStopPriceTextChanged;
+        public event Action OnStopPriceTextChanged;
 
         public void ClearExchangeList()
         {
@@ -932,6 +932,8 @@ namespace Pandora.Client.PandorasWallet
 
         public event Action<int> OnCancelBtnClick;
 
+        public event Action<int> OnSellHalfOnDoubleClick;
+
         public ListViewItem SelectedOrderHistory
         {
             get
@@ -992,14 +994,7 @@ namespace Pandora.Client.PandorasWallet
 
         private void cbExchanges_OnSelectedIndexChanged(object sender, EventArgs e)
         {
-            try
-            {
-                OnExchangeSelectedCurrencyChanged?.Invoke(sender, e);
-            }
-            catch (Exception ex)
-            {
-                this.StandardExceptionMsgBox(ex);
-            }
+
         }
 
         public event EventHandler OnExchangeSelectionChanged;
@@ -1075,18 +1070,6 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void txtPrice_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                OnPriceChanged?.Invoke(sender, e);
-            }
-            catch (Exception ex)
-            {
-                this.StandardExceptionMsgBox(ex);
-            }
-        }
-
         private void chckOrderHistory_CheckedChanged(object sender, EventArgs e)
         {
             try
@@ -1099,23 +1082,12 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void txtQuantity_Leave(object sender, EventArgs e)
-        {
-            try
-            {
-                OnTxtQuantityLeave?.Invoke(sender, e);
-            }
-            catch (Exception ex)
-            {
-                this.StandardExceptionMsgBox(ex);
-            }
-        }
 
-        private void txtTotal_Leave(object sender, EventArgs e)
+        private void txtReceived_OnAmountChanged()
         {
             try
             {
-                OnTxtTotalLeave?.Invoke(sender, e);
+                OnExchangeReceivedChanged?.Invoke();
             }
             catch (Exception ex)
             {
@@ -1130,18 +1102,6 @@ namespace Pandora.Client.PandorasWallet
             try
             {
                 OnChangePassword?.Invoke(sender, e);
-            }
-            catch (Exception ex)
-            {
-                this.StandardExceptionMsgBox(ex);
-            }
-        }
-
-        private void txtStopPrice_TextChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                OnStopPriceTextChanged?.Invoke(sender, e);
             }
             catch (Exception ex)
             {
@@ -1185,10 +1145,11 @@ namespace Pandora.Client.PandorasWallet
             if (e.Button == MouseButtons.Right)
             {
                 if (lstOrderHistory.FocusedItem.Bounds.Contains(e.Location))
-                    ctxMenuOrderMenu.Show(Cursor.Position);
+                    contextMenuOrderMenu.Show(Cursor.Position);
                 var lOrderID = Convert.ToInt32(SelectedOrderHistory.Name);
                 var lStatus = FExchangeOrders[lOrderID].Status;
-                ctxMenuOrderMenu.Items[0].Enabled = (lStatus != "Interrupted" && lStatus != "Withdrawed");
+                contextMenuOrderMenu.Items[0].Enabled = (lStatus != Exchange.OrderStatus.Interrupted.ToString() && lStatus != Exchange.OrderStatus.Withdrawn.ToString());
+                contextMenuOrderMenu.Items[1].Enabled = lStatus == Exchange.OrderStatus.Withdrawn.ToString();
             }
         }
 
@@ -1283,6 +1244,7 @@ namespace Pandora.Client.PandorasWallet
 
             public void AddTransaction(Transaction aTransaction)
             {
+                if (aTransaction.TxType == TransactionType.Unknown) return;
                 FTransactions.Add(aTransaction.RecordId, aTransaction);
                 aTransaction.ParrentCurrency = this;
                 if (!aTransaction.Confirmed)
@@ -1375,6 +1337,8 @@ namespace Pandora.Client.PandorasWallet
                 Exchange = aOrder.Market;
                 Time = aOrder.OpenTime.ToLocalTime().ToString();
                 Status = aOrder.Status.ToString();
+                BaseCurrencyID = aContextData.Market.BaseCurrencyInfo.WalletID.Value;
+                DestinationCurrencyID = aContextData.Market.DestinationCurrencyInfo.WalletID.Value;
             }
 
             public void CopyFrom(ExchangeOrderViewModel aOrderViewModel)
@@ -1401,6 +1365,8 @@ namespace Pandora.Client.PandorasWallet
             public string Exchange { get; set; }
             public string Time { get; set; }
             public string Status { get; set; }
+            public long BaseCurrencyID { get; private set; }
+            public long DestinationCurrencyID { get; private set; }
             public int ID { get; private set; }
             private Dictionary<int, ExchangeOrderLogViewModel> FOrderLogs;
 
@@ -1428,6 +1394,19 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        public void RemoveCurrency(long aCurrencyIDToRemove, long aDefaultCurrencyID)
+        {
+            if (!FCurrencyLookup.ContainsKey(aDefaultCurrencyID))
+                throw new Exception("Default currency id provided not found");
+            if (FCurrencyLookup.ContainsKey(aCurrencyIDToRemove))
+            {
+                if (SelectedCurrencyId != aCurrencyIDToRemove)
+                    OnSelectedCurrencyChanged?.Invoke(null,null); //This is only to trigger exchange tab to refresh
+                CurrencyViewControl.RemoveCurrency(aCurrencyIDToRemove);
+                FCurrencyLookup.Remove(aCurrencyIDToRemove);                
+            }
+        }
+
         public class ExchangeOrderLogViewModel
         {
             public int ID { get; set; }
@@ -1446,11 +1425,11 @@ namespace Pandora.Client.PandorasWallet
             {
                 OnChangeExchangeKeysBtnClick.Invoke(sender, e);
             }
-            catch(Exchange.PandoraExchangeExceptions.InvalidExchangeCredentials ex)
+            catch (Exchange.PandoraExchangeExceptions.InvalidExchangeCredentials ex)
             {
                 this.StandardInfoMsgBox("Unable to change exchange credentials", ex.Message);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.StandardExceptionMsgBox(ex);
             }
@@ -1463,6 +1442,159 @@ namespace Pandora.Client.PandorasWallet
                 Process.Start("Pandora'sWalletGuide 16-01-2020.pdf");
             }
             catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void lblTotal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DoTotalBalanceClick();
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void labelTotal_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                DoTotalBalanceClick();
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void DoTotalBalanceClick()
+        {
+            decimal lCurrentBalance = SelectedCurrency.Balance;
+            ToSendAmount = lCurrentBalance;
+            if (tabControl.SelectedTab.Name == "tabExchange" && ExchangeQuantityEnabled)
+                ExchangeQuantity = lCurrentBalance;
+
+        }
+
+        private void txtQuantity_OnAmountChanged()
+        {
+            try
+            {
+                OnExchangeQuantityChanged?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void txtStopPrice_OnAmountChanged()
+        {
+            try
+            {
+                OnStopPriceTextChanged?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void txtTargetPrice_OnAmountChanged()
+        {
+            try
+            {
+                OnPriceChanged?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void menuItemSellHalf_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var lSelectedOrder = SelectedOrderHistory;
+                if (lSelectedOrder == null) return;
+                var lInternalOrderID = Convert.ToInt32(lSelectedOrder.Name);
+                DoGUISellHalfOperation(lInternalOrderID);
+                OnSellHalfOnDoubleClick?.Invoke(lInternalOrderID);
+            }
+            catch
+            (Exception ex)
+            {
+                this.StandardErrorMsgBox(ex.Message);
+            }
+        }
+
+        private void DoGUISellHalfOperation(int aOrderID)
+        {
+            try
+            {
+                this.SetWaitCursor();
+                var lOrder = GetOrderViewModel(aOrderID);
+                if (lOrder == null) throw new Exception("Exchange Order not found");
+                tabControl.SelectTab("tabExchange");
+                DoExchangeChangeOfMarketOperation(lOrder.DestinationCurrencyID, lOrder.BaseCurrencyID);
+                var lTargetPrice = Convert.ToDecimal(lOrder.Price) * 2;
+                var lQuantityToSpend = Convert.ToDecimal(lOrder.Received) / 2;
+                ExchangeTargetPrice = lTargetPrice;
+                ExchangeStopPrice = lTargetPrice;
+                ExchangeQuantity = lQuantityToSpend;
+                Application.DoEvents();
+            }
+            finally
+            {
+                this.SetArrowCursor();
+            }
+
+        }
+
+        private void DoExchangeChangeOfMarketOperation(long aWalletCurrencyID, long aMarketCurrencyID)
+        {
+            lstViewCurrencies.SelectedCurrencyId = aWalletCurrencyID;
+            Application.DoEvents();
+            var lExchangeMarketItem = lstExchangeMarket.Items.Find(aMarketCurrencyID.ToString(), false).FirstOrDefault();
+            if (lExchangeMarketItem == null)
+                throw new Exception("Unable to find exchange market");
+            lExchangeMarketItem.Selected = true;
+            Application.DoEvents();
+        }
+
+        private void lstExchangeMarket_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                this.SetWaitCursor();
+                if (SelectedExchangeMarket == null) return;
+                var lCurrencyIDFrom = SelectedCurrencyId;
+                var lCurrencyIDTo = Convert.ToInt32(SelectedExchangeMarket.Name);
+                DoExchangeChangeOfMarketOperation(lCurrencyIDTo, lCurrencyIDFrom);
+            }
+            finally
+            {
+                this.SetArrowCursor();
+            }
+        }
+
+        private void toolStripMenuRemove_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if(this.StandardAskMsgBox("Do you want to remove this coin?", "By removing it you will not loose any of your funds. You can add it back in throught \"Add Currency\""))
+                    OnRemoveCurrencyRequested?.Invoke(SelectedCurrencyId);
+            }
+            catch(InvalidOperationException ex)
+            {
+                this.StandardInfoMsgBox("Unable to remove currency", ex.Message);
+            }
+            catch(Exception ex)
             {
                 this.StandardExceptionMsgBox(ex);
             }
