@@ -574,7 +574,14 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.SetUserStatus(AppMainForm.UserStatuses.Connected, Settings.Email, Settings.UserName);
             AppMainForm.SelectedCurrencyId = lDefaultCurrency.Id;
             AppMainForm.BeginInvoke(new EventHandler(Display_NextCurrency), this, lArgs);
-            FExchangeControl.StartProcess();
+            try
+            {
+                FExchangeControl.StartProcess();
+            }
+            catch(Exception ex)
+            {
+                Log.Write(LogLevel.Error, $"Error at pre initialization of exchange process. Exception: {ex}");
+            }
         }
 
         private void BuildNewAccount()

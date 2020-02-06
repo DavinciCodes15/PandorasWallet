@@ -1,13 +1,14 @@
 ﻿using Pandora.Client.Exchange.JKrof.Converters;
 using Newtonsoft.Json;
 using System;
+using Pandora.Client.Exchange.JKrof.Bittrex.Net.Interfaces;
 
 namespace Bittrex.Net.Objects
 {
     /// <summary>
     /// 24 hour summary of a market
     /// </summary>
-    public class BittrexStreamMarketSummary
+    public class BittrexStreamMarketSummary : IBittrexMarketSummary
     {
         /// <summary>
         /// The name of the market
@@ -48,12 +49,12 @@ namespace Bittrex.Net.Objects
         /// The highest bid
         /// </summary>
         [JsonProperty("B")]
-        public decimal Bid { get; set; }
+        public decimal? Bid { get; set; }
         /// <summary>
         /// The lowest ask
         /// </summary>
         [JsonProperty("A")]
-        public decimal Ask { get; set; }
+        public decimal? Ask { get; set; }
         /// <summary>
         /// Current open buy orders
         /// </summary>

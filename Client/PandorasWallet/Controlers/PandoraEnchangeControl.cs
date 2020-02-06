@@ -127,9 +127,10 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 {
                     FExchanger.StartMarketPriceUpdating();
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Log.Write("Error starting market price updating. Details: {0}", ex);
+                    Log.Write(LogLevel.Error,"Error starting market price updating");
+                    throw;
                 }
             });
             try
@@ -153,12 +154,17 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 }, FExchangeTaskCancellationSource.Token);
                 lPriceUpdatingStarter.Wait(2000);
                 if (lPriceUpdatingStarter.Exception != null)
-                    throw lPriceUpdatingStarter.Exception.Flatten();
+                    throw lPriceUpdatingStarter.Exception.InnerException;
                 Started = true;
+            }
+            catch (AggregateException ex)
+            {
+                var lInnerException = ex.InnerException;
+                StopProcess();
+                throw lInnerException;
             }
             catch (Exception ex)
             {
-                Log.Write(LogLevel.Error, $"Failed to start exchange process. Exception {ex}");
                 StopProcess();
                 throw;
             }
@@ -543,6 +549,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             }
             try
             {
+                StartProcess();
                 if (!FExchanger.IsCredentialsSet)
                 {
                     if (GetKeyManagerMethod.Invoke(out KeyManager lKeyManager))
@@ -571,7 +578,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             finally
             {
                 if (!FExchanger.IsCredentialsSet)
-                    MainForm.SelectedExchange = "0";
+                    MainForm.SelectedExchange = "-1";
                 else
                 {                    
                     ExchangePandoraCurrencyChanged(ActiveCurrencyID);

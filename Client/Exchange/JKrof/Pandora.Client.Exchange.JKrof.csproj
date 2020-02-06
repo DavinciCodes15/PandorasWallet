@@ -74,6 +74,7 @@
     <Compile Include="Bittrex.Net\Converters\TickIntervalConverter.cs" />
     <Compile Include="Bittrex.Net\Converters\TimeInEffectConverter.cs" />
     <Compile Include="Bittrex.Net\Interfaces\IBittrexClient.cs" />
+    <Compile Include="Bittrex.Net\Interfaces\IBittrexMarketSummary.cs" />
     <Compile Include="Bittrex.Net\Interfaces\IBittrexSocketClient.cs" />
     <Compile Include="Bittrex.Net\Interfaces\ISignalRSocket.cs" />
     <Compile Include="Bittrex.Net\Objects\BittrexAccountOrder.cs" />

@@ -1,13 +1,14 @@
 ﻿using System;
 using Pandora.Client.Exchange.JKrof.Converters;
 using Newtonsoft.Json;
+using Pandora.Client.Exchange.JKrof.Bittrex.Net.Interfaces;
 
 namespace Bittrex.Net.Objects
 {
     /// <summary>
     /// 24 hour summary of a market
     /// </summary>
-    public class BittrexMarketSummary
+    public class BittrexMarketSummary : IBittrexMarketSummary
     {
         /// <summary>
         /// The name of the market
