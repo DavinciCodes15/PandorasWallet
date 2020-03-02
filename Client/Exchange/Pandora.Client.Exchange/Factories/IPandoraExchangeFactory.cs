@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.Exchange.Factories
 {
-    public interface IPandoraExchangeFactory
+    public interface IPandoraExchangeFactory    
     {
-        IPandoraExchange GetNewPandoraExchange(params string[] aParams);
+        IPandoraExchanger GetPandoraExchange(AvailableExchangesList aExchangeElement);
+        IEnumerable<IPandoraExchanger> GetPandoraExchanges();
     }
 }

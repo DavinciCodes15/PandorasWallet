@@ -1,46 +1,37 @@
-﻿using System;
+﻿using Pandora.Client.Exchange.Objects;
+using Pandora.Client.Exchange.SaveManagers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Pandora.Client.Exchange.PandoraExchanger;
 
 namespace Pandora.Client.Exchange.Exchanges
 {
-    public interface IPandoraExchange : IDisposable
+    public delegate long? GetWalletIDDelegate(string aCurrencyName, string aTicker);
+    public interface IPandoraExchanger
     {
         string Name { get; }
 
-        uint ID { get; }
+        int ID { get; }
+        string UID { get; }
+        bool IsCredentialsSet { get; }
+        event Action<IEnumerable<string>, int> OnMarketPricesChanging;
+        void SetCredentials(string aApiKey, string aApiSecret);
+        void Clear();
+        decimal GetTransactionsFee(string aCurrencyName, string aTicker);
+        int GetConfirmations(string aCurrencyName, string aTicker);
+        decimal GetBalance(ExchangeMarket aMarket);
+        bool PlaceOrder(UserTradeOrder aOrder, ExchangeMarket aMarket, bool aUseProxy = true);
+        void CancelOrder(UserTradeOrder aOrder, bool aUseProxy = true);
+        ExchangeMarket[] GetMarketCoins(string aCurrencyName, string aTicker, GetWalletIDDelegate aGetWalletIDFunction = null);
+        string GetDepositAddress(ExchangeMarket aMarket);
+        void StartMarketPriceUpdating();
+        TradeOrderStatusInfo GetOrderStatus(string lUuid);
+        bool RefundOrder(ExchangeMarket aMarket, UserTradeOrder aOrder, string aAddress, bool aUseProxy = true);
+        bool WithdrawOrder(ExchangeMarket aMarket, UserTradeOrder aOrder, string aAddress, decimal aTxFee, bool aUseProxy = true);
+        MarketPriceInfo GetMarketPrice(string aMarketName);
+        void StopMarketUpdating();
 
-        bool IsCredentialSet { get; }
-
-        event Action OnMarketPricesChanging;
-
-        MarketOrder GetOrderStatus(string lOrderUid);
-
-        void Withdraw(string aAddress, string aCoinTicker, decimal aQuantity, decimal aFee);
-
-        MarketOrder PlaceOrder(bool isSell, string aMarketName, decimal aQuantity, decimal aRate);
-
-        ExchangeMarket2[] GetCoinExchangeMarkets(string aCoinIdentifier);
-
-        string GetDepositAddress(string aCoinIdentifier);
-
-        decimal GetMarketPrice(string aMarket);
-
-        void SetCredentials(params string[] aKeys);
-
-        decimal GetExchangeCoinTxFee(string aCoinIdentifier);
-
-        bool TestCredentials();
-
-        decimal GetExchangeTxMinConfirmations(string aCoinIdentifier);
-
-        decimal GetUserAvailableBalance(string aCoinIdentifier);
-
-        decimal CalculateExchangeTradingFee(decimal aValue);
-
-        bool CancelOrder(string aUid);
     }
 }

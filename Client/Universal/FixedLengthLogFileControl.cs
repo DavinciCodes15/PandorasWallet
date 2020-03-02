@@ -120,6 +120,7 @@ namespace Pandora.Client.Universal
                     lLogFile.ActiveThread.Join(10000);
                     lock (this)
                     {
+                        lLogFile.Dispose();
                         FLogFile = null;
                     }
                 }

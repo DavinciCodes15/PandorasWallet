@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Pandora.Client.Exchange.JKrof.Authentication;
@@ -19,34 +20,59 @@ using Newtonsoft.Json.Linq;
 
 namespace Pandora.Client.Exchange.JKrof
 {
-    public abstract class RestClient: BaseClient
+    /// <summary>
+    /// Base rest client
+    /// </summary>
+    public abstract class RestClient: BaseClient, IRestClient
     {
         /// <summary>
         /// The factory for creating requests. Used for unit testing
         /// </summary>
         public IRequestFactory RequestFactory { get; set; } = new RequestFactory();
         
-
+        /// <summary>
+        /// Where to place post parameters
+        /// </summary>
         protected PostParameters postParametersPosition = PostParameters.InBody;
+        /// <summary>
+        /// Request body content type
+        /// </summary>
         protected RequestBodyFormat requestBodyFormat = RequestBodyFormat.Json;
 
-        protected TimeSpan RequestTimeout { get; private set; }
-        public RateLimitingBehaviour RateLimitBehaviour { get; private set; }
-        public IEnumerable<IRateLimiter> RateLimiters { get; private set; }
-        public int TotalRequestsMade { get; private set; }
-
-        protected RestClient(ClientOptions exchangeOptions, AuthenticationProvider authenticationProvider): base(exchangeOptions, authenticationProvider)
-        {
-            Configure(exchangeOptions);
-        }
+        /// <summary>
+        /// How to serialize array parameters
+        /// </summary>
+        protected ArrayParametersSerialization arraySerialization = ArrayParametersSerialization.Array;
 
         /// <summary>
-        /// Configure the client using the provided options
+        /// Timeout for requests
         /// </summary>
-        /// <param name="exchangeOptions">Options</param>
-        protected void Configure(ClientOptions exchangeOptions)
+        public TimeSpan RequestTimeout { get; }
+        /// <summary>
+        /// Rate limiting behaviour
+        /// </summary>
+        public RateLimitingBehaviour RateLimitBehaviour { get; }
+        /// <summary>
+        /// List of rate limiters
+        /// </summary>
+        public IEnumerable<IRateLimiter> RateLimiters { get; private set; }
+        /// <summary>
+        /// Total requests made
+        /// </summary>
+        public int TotalRequestsMade { get; protected set; }
+
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="exchangeOptions"></param>
+        /// <param name="authenticationProvider"></param>
+        protected RestClient(RestClientOptions exchangeOptions, AuthenticationProvider authenticationProvider): base(exchangeOptions, authenticationProvider)
         {
+            if (exchangeOptions == null)
+                throw new ArgumentNullException(nameof(exchangeOptions));
+
             RequestTimeout = exchangeOptions.RequestTimeout;
+            RequestFactory.Configure(exchangeOptions.RequestTimeout, exchangeOptions.Proxy);
             RateLimitBehaviour = exchangeOptions.RateLimitingBehaviour;
             var rateLimiters = new List<IRateLimiter>();
             foreach (var rateLimiter in exchangeOptions.RateLimiters)
@@ -60,6 +86,9 @@ namespace Pandora.Client.Exchange.JKrof
         /// <param name="limiter">The limiter to add</param>
         public void AddRateLimiter(IRateLimiter limiter)
         {
+            if (limiter == null)
+                throw new ArgumentNullException(nameof(limiter));
+
             var rateLimiters = RateLimiters.ToList();
             rateLimiters.Add(limiter);
             RateLimiters = rateLimiters;
@@ -77,17 +106,19 @@ namespace Pandora.Client.Exchange.JKrof
         /// Ping to see if the server is reachable
         /// </summary>
         /// <returns>The roundtrip time of the ping request</returns>
-        public virtual CallResult<long> Ping() => PingAsync().Result;
+        public virtual CallResult<long> Ping(CancellationToken ct = default) => PingAsync(ct).Result;
 
         /// <summary>
         /// Ping to see if the server is reachable
         /// </summary>
         /// <returns>The roundtrip time of the ping request</returns>
-        public virtual async Task<CallResult<long>> PingAsync()
+        public virtual async Task<CallResult<long>> PingAsync(CancellationToken ct = default)
         {
             var ping = new Ping();
             var uri = new Uri(BaseAddress);
             PingReply reply;
+
+            var ctRegistration = ct.Register(() => ping.SendAsyncCancel());
             try
             {
                 reply = await ping.SendPingAsync(uri.Host).ConfigureAwait(false);
@@ -95,14 +126,22 @@ namespace Pandora.Client.Exchange.JKrof
             catch(PingException e)
             {
                 if (e.InnerException == null)
-                    return new CallResult<long>(0, new CantConnectError() {Message = "Ping failed: " + e.Message});
+                    return new CallResult<long>(0, new CantConnectError {Message = "Ping failed: " + e.Message});
 
                 if (e.InnerException is SocketException exception)
-                    return new CallResult<long>(0, new CantConnectError() { Message = "Ping failed: " + exception.SocketErrorCode });
-                return new CallResult<long>(0, new CantConnectError() { Message = "Ping failed: " + e.InnerException.Message });
+                    return new CallResult<long>(0, new CantConnectError { Message = "Ping failed: " + exception.SocketErrorCode });
+                return new CallResult<long>(0, new CantConnectError { Message = "Ping failed: " + e.InnerException.Message });
+            }
+            finally
+            {
+                ctRegistration.Dispose();
+                ping.Dispose();
             }
 
-            return reply.Status == IPStatus.Success ? new CallResult<long>(reply.RoundtripTime, null) : new CallResult<long>(0, new CantConnectError() { Message = "Ping failed: " + reply.Status });
+            if(ct.IsCancellationRequested)
+                return new CallResult<long>(0, new CancellationRequestedError());
+
+            return reply.Status == IPStatus.Success ? new CallResult<long>(reply.RoundtripTime, null) : new CallResult<long>(0, new CantConnectError { Message = "Ping failed: " + reply.Status });
         }
 
         /// <summary>
@@ -111,34 +150,30 @@ namespace Pandora.Client.Exchange.JKrof
         /// <typeparam name="T">The expected result type</typeparam>
         /// <param name="uri">The uri to send the request to</param>
         /// <param name="method">The method of the request</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <param name="parameters">The parameters of the request</param>
         /// <param name="signed">Whether or not the request should be authenticated</param>
         /// <param name="checkResult">Whether or not the resulting object should be checked for missing properties in the mapping (only outputs if log verbosity is Debug)</param>
         /// <returns></returns>
-        protected virtual async Task<WebCallResult<T>> ExecuteRequest<T>(Uri uri, string method = Constants.GetMethod, Dictionary<string, object> parameters = null, bool signed = false, bool checkResult = true) where T : class
+        [return: NotNull]
+        protected virtual async Task<WebCallResult<T>> SendRequest<T>(Uri uri, HttpMethod method, CancellationToken cancellationToken,
+            Dictionary<string, object> parameters = null, bool signed = false, bool checkResult = true) where T : class
         {
             log.Write(LogVerbosity.Debug, "Creating request for " + uri);
             if (signed && authProvider == null)
             { 
                 log.Write(LogVerbosity.Warning, $"Request {uri.AbsolutePath} failed because no ApiCredentials were provided");
-                return new WebCallResult<T>(null, null, new NoApiCredentialsError());
+                return new WebCallResult<T>(null, null, null, new NoApiCredentialsError());
             }
 
             var request = ConstructRequest(uri, method, parameters, signed);
-
-            if (apiProxy != null)
-            {
-                log.Write(LogVerbosity.Debug, "Setting proxy");
-                request.SetProxy(apiProxy.Host, apiProxy.Port, apiProxy.Login, apiProxy.Password);
-            }
-
             foreach (var limiter in RateLimiters)
             {
-                var limitResult = limiter.LimitRequest(uri.AbsolutePath, RateLimitBehaviour);
+                var limitResult = limiter.LimitRequest(this, uri.AbsolutePath, RateLimitBehaviour);
                 if (!limitResult.Success)
                 {
                     log.Write(LogVerbosity.Debug, $"Request {uri.AbsolutePath} failed because of rate limit");
-                    return new WebCallResult<T>(null, null, limitResult.Error);
+                    return new WebCallResult<T>(null, null, null, limitResult.Error);
                 }
 
                 if (limitResult.Data > 0)
@@ -146,36 +181,68 @@ namespace Pandora.Client.Exchange.JKrof
             }
 
             string paramString = null;            
-            if (parameters != null && method == Constants.PostMethod)            
-                paramString = "with request body " + request.Content;            
+            if (method == HttpMethod.Post)            
+                paramString = " with request body " + request.Content;
 
-            log.Write(LogVerbosity.Debug, $"Sending {method}{(signed ? " signed" : "")} request to {request.Uri} {paramString ?? ""}");
-            var result = await ExecuteRequest(request).ConfigureAwait(false);
-            if(!result.Success)
-                return new WebCallResult<T>(result.ResponseStatusCode, null, result.Error);
-
-            var jsonResult = ValidateJson(result.Data);
-            if(!jsonResult.Success)
-                return new WebCallResult<T>(result.ResponseStatusCode, null, jsonResult.Error);
-
-            if (IsErrorResponse(jsonResult.Data))
-                return new WebCallResult<T>(result.ResponseStatusCode, null, ParseErrorResponse(jsonResult.Data));
-
-            var desResult = Deserialize<T>(jsonResult.Data, checkResult);
-            if (!desResult.Success)
-                return new WebCallResult<T>(result.ResponseStatusCode, null, desResult.Error);
-
-            return new WebCallResult<T>(result.ResponseStatusCode, desResult.Data, null);
+            log.Write(LogVerbosity.Debug, $"Sending {method}{(signed ? " signed" : "")} request to {request.Uri}{paramString ?? " "}{(apiProxy == null? "": $" via proxy {apiProxy.Host}")}");
+            return await GetResponse<T>(request, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// Can be overridden to indicate if a response is an error response
+        /// Executes the request and returns the string result
         /// </summary>
-        /// <param name="data">The received data</param>
-        /// <returns>True if error response</returns>
-        protected virtual bool IsErrorResponse(JToken data)
+        /// <param name="request">The request object to execute</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns></returns>
+        protected virtual async Task<WebCallResult<T>> GetResponse<T>(IRequest request, CancellationToken cancellationToken)
         {
-            return false;
+            try
+            {
+                TotalRequestsMade++;
+                var response = await request.GetResponse(cancellationToken).ConfigureAwait(false);
+                var statusCode = response.StatusCode;
+                var headers = response.ResponseHeaders;
+                var responseStream = await response.GetResponseStream().ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    var desResult = await Deserialize<T>(responseStream).ConfigureAwait(false);
+                    responseStream.Close();
+                    response.Close();
+
+                    return new WebCallResult<T>(statusCode, headers, desResult.Data, desResult.Error);
+                }
+                else
+                {
+                    using (var reader = new StreamReader(responseStream))
+                    {
+                        var data = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        responseStream.Close();
+                        response.Close();
+                        var parseResult = ValidateJson(data);
+                        return new WebCallResult<T>(statusCode, headers, default, parseResult.Success ? ParseErrorResponse(parseResult.Data) : new ServerError(data));
+                    }
+                }
+            }
+            catch (HttpRequestException requestException)
+            {
+                log.Write(LogVerbosity.Warning, "Request exception: " + requestException.Message);
+                return new WebCallResult<T>(null, null, default, new ServerError(requestException.Message));
+            }
+            catch (TaskCanceledException canceledException)
+            {
+                if(canceledException.CancellationToken == cancellationToken)
+                {
+                    // Cancellation token cancelled
+                    log.Write(LogVerbosity.Warning, "Request cancel requested");
+                    return new WebCallResult<T>(null, null, default, new CancellationRequestedError());
+                }
+                else
+                {
+                    // Request timed out
+                    log.Write(LogVerbosity.Warning, "Request timed out");
+                    return new WebCallResult<T>(null, null, default, new WebError("Request timed out"));
+                }
+            }
         }
 
         /// <summary>
@@ -186,7 +253,7 @@ namespace Pandora.Client.Exchange.JKrof
         /// <param name="parameters">The parameters of the request</param>
         /// <param name="signed">Whether or not the request should be authenticated</param>
         /// <returns></returns>
-        protected virtual IRequest ConstructRequest(Uri uri, string method, Dictionary<string, object> parameters, bool signed)
+        protected virtual IRequest ConstructRequest(Uri uri, HttpMethod method, Dictionary<string, object> parameters, bool signed)
         {
             if (parameters == null)
                 parameters = new Dictionary<string, object>();
@@ -195,44 +262,29 @@ namespace Pandora.Client.Exchange.JKrof
             if(authProvider != null)
                 parameters = authProvider.AddAuthenticationToParameters(uriString, method, parameters, signed);
 
-            if((method == Constants.GetMethod || method == Constants.DeleteMethod || postParametersPosition == PostParameters.InUri) && parameters?.Any() == true)            
-                uriString += "?" + parameters.CreateParamString(true);
-            
-            var request = RequestFactory.Create(uriString);
-            request.ContentType = requestBodyFormat == RequestBodyFormat.Json ? Constants.JsonContentHeader : Constants.FormContentHeader;
+            if((method == HttpMethod.Get || method == HttpMethod.Delete || postParametersPosition == PostParameters.InUri) && parameters?.Any() == true)            
+                uriString += "?" + parameters.CreateParamString(true, arraySerialization);
+
+            var contentType = requestBodyFormat == RequestBodyFormat.Json ? Constants.JsonContentHeader : Constants.FormContentHeader;
+            var request = RequestFactory.Create(method, uriString);
             request.Accept = Constants.JsonContentHeader;
-            request.Method = method;
 
             var headers = new Dictionary<string, string>();
             if (authProvider != null)
                 headers = authProvider.AddAuthenticationToHeaders(uriString, method, parameters, signed);
 
             foreach (var header in headers)
-                request.Headers.Add(header.Key, header.Value);
+                request.AddHeader(header.Key, header.Value);
 
-            if ((method == Constants.PostMethod || method == Constants.PutMethod) && postParametersPosition != PostParameters.InUri)
+            if ((method == HttpMethod.Post || method == HttpMethod.Put) && postParametersPosition != PostParameters.InUri)
             {
                 if(parameters?.Any() == true)
-                    WriteParamBody(request, parameters);
-                else                
-                    WriteParamBody(request, "{}");
+                    WriteParamBody(request, parameters, contentType);
+                else
+                    request.SetContent("{}", contentType);
             }
 
             return request;
-        }
-
-        /// <summary>
-        /// Writes the string data of the parameters to the request body stream
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="stringData"></param>
-        protected virtual void WriteParamBody(IRequest request, string stringData)
-        {
-            var data = Encoding.UTF8.GetBytes(stringData);
-            request.ContentLength = data.Length;
-            request.Content = stringData;
-            using (var stream = request.GetRequestStream().Result)
-                stream.Write(data, 0, data.Length);
         }
 
         /// <summary>
@@ -240,87 +292,23 @@ namespace Pandora.Client.Exchange.JKrof
         /// </summary>
         /// <param name="request"></param>
         /// <param name="parameters"></param>
-        protected virtual void WriteParamBody(IRequest request, Dictionary<string, object> parameters)
+        /// <param name="contentType"></param>
+        protected virtual void WriteParamBody(IRequest request, Dictionary<string, object> parameters, string contentType)
         {
             if (requestBodyFormat == RequestBodyFormat.Json)
             {
                 var stringData = JsonConvert.SerializeObject(parameters.OrderBy(p => p.Key).ToDictionary(p => p.Key, p => p.Value));
-                WriteParamBody(request, stringData);
+                request.SetContent(stringData, contentType);
             }
             else if(requestBodyFormat == RequestBodyFormat.FormData)
             {
-                var formData = HttpUtility.ParseQueryString(String.Empty);
+                var formData = HttpUtility.ParseQueryString(string.Empty);
                 foreach (var kvp in parameters.OrderBy(p => p.Key))
                     formData.Add(kvp.Key, kvp.Value.ToString());
                 var stringData = formData.ToString();
-                WriteParamBody(request, stringData);
+                request.SetContent(stringData, contentType);
             }
-        }
-
-        /// <summary>
-        /// Executes the request and returns the string result
-        /// </summary>
-        /// <param name="request">The request object to execute</param>
-        /// <returns></returns>
-        private async Task<WebCallResult<string>> ExecuteRequest(IRequest request)
-        {
-            var returnedData = "";
-            try
-            {
-                request.Timeout = RequestTimeout;
-                TotalRequestsMade++;
-                var response = await request.GetResponse().ConfigureAwait(false);
-                using (var reader = new StreamReader(response.GetResponseStream()))
-                {
-                    returnedData = await reader.ReadToEndAsync().ConfigureAwait(false);
-                    log.Write(LogVerbosity.Debug, "Data returned: " + returnedData);
-                }
-
-                var statusCode = response.StatusCode;
-                response.Close();
-                return new WebCallResult<string>(statusCode, returnedData, null);                
-            }
-            catch (WebException we)
-            {
-                var response = (HttpWebResponse)we.Response;
-                var statusCode = response?.StatusCode;
-
-                try
-                {
-                    using (var reader = new StreamReader(response.GetResponseStream()))
-                    {
-                        returnedData = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        log.Write(LogVerbosity.Warning, "Server returned an error: " + returnedData);
-                    }
-
-                    response.Close();
-
-                    var jsonResult = ValidateJson(returnedData);
-                    return !jsonResult.Success ? new WebCallResult<string>(statusCode, null, jsonResult.Error) : new WebCallResult<string>(statusCode, null, ParseErrorResponse(jsonResult.Data));
-                }
-                catch (Exception)
-                {
-                }
-
-                var infoMessage = "No response from server";
-                if (response == null)
-                {
-                    infoMessage += $" | {we.Status} - {we.Message}";
-                    log.Write(LogVerbosity.Warning, infoMessage);
-                    return new WebCallResult<string>(0, null, new WebError(infoMessage));
-                }
-
-                infoMessage = $"Status: {response.StatusCode}-{response.StatusDescription}, Message: {we.Message}";
-                log.Write(LogVerbosity.Warning, infoMessage);
-                response.Close();
-                return new WebCallResult<string>(statusCode, null, new ServerError(infoMessage));
-            }
-            catch (Exception e)
-            {
-                log.Write(LogVerbosity.Error, $"Unknown error occured: {e.GetType()}, {e.Message}, {e.StackTrace}");
-                return new WebCallResult<string>(null, null, new UnknownError(e.Message + ", data: " + returnedData));
-            }
-        }
+        }        
 
         /// <summary>
         /// Parse an error response from the server. Only used when server returns a status other than Success(200)

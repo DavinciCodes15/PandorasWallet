@@ -4,7 +4,7 @@ using Pandora.Client.Exchange.JKrof.Converters;
 
 namespace Bittrex.Net.Converters
 {
-    public class TickIntervalConverter: BaseConverter<TickInterval>
+    internal class TickIntervalConverter: BaseConverter<TickInterval>
     {
         public TickIntervalConverter(): this(true) { }
         public TickIntervalConverter(bool quotes) : base(quotes){ }

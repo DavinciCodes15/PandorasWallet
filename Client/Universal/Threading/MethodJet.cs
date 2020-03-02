@@ -54,7 +54,14 @@ namespace Pandora.Client.Universal.Threading
             {
                 InternalInitialize();
                 while (GetMethodMessage(out methodMessage))
-                    InvokeMethodMessage(methodMessage);
+                    try
+                    {
+                        InvokeMethodMessage(methodMessage);
+                    }
+                    finally
+                    {
+                        methodMessage.Dispose();
+                    }
             }
             finally
             {
@@ -376,7 +383,7 @@ namespace Pandora.Client.Universal.Threading
 
         }
 
-        public sealed class DelegateMessage : IAsyncResult
+        public sealed class DelegateMessage : IAsyncResult, IDisposable
         {
             private Delegate FEventMethod;
             private object[] FArguments;
@@ -461,6 +468,11 @@ namespace Pandora.Client.Universal.Threading
             {
                 return FEventMethod.Method.Name;
             }
+
+            public void Dispose()
+            {
+                AsyncWaitHandle.Dispose();
+            }
         }
         #endregion
 
@@ -468,6 +480,7 @@ namespace Pandora.Client.Universal.Threading
         public virtual void Dispose()
         {
             Terminate();
+            FQueueSignal.Dispose();
         }
     }
 }

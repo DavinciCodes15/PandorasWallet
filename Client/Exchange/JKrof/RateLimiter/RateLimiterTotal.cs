@@ -30,7 +30,8 @@ namespace Pandora.Client.Exchange.JKrof.RateLimiter
             this.perTimePeriod = perTimePeriod;
         }
 
-        public CallResult<double> LimitRequest(string url, RateLimitingBehaviour limitBehaviour)
+        /// <inheritdoc />
+        public CallResult<double> LimitRequest(RestClient client, string url, RateLimitingBehaviour limitBehaviour)
         {
             var sw = Stopwatch.StartNew();
             lock (requestLock)

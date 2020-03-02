@@ -1,180 +1,141 @@
 ﻿using Bittrex.Net;
 using Bittrex.Net.Objects;
 using Pandora.Client.Exchange.JKrof.Objects;
-using Pandora.Client.Exchange.JKrof.Sockets;
+using Pandora.Client.Exchange.Objects;
+using Pandora.Client.Exchange.SaveManagers;
+using Pandora.Client.Universal;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Pandora.Client.Exchange.Exchanges
 {
-    public class BittrexExchange : BasePandoraExchange
+    internal class BittrexExchange : AbstractExchange, IPandoraExchanger
     {
-        private static new string ExchangeName => "Bittrex";
-#pragma warning disable IDE0051 // Remove unused private members
-        private static new uint ExchangeID => 10;
-#pragma warning restore IDE0051 // Remove unused private members
+        public new const AvailableExchangesList Identifier = AvailableExchangesList.Bittrex;        
 
-        private static ConcurrentDictionary<string, decimal> FMarketPrices;
+        private BittrexSocketClient FBittrexSocket;
+        private static ConcurrentDictionary<string, MarketPriceInfo> FMarketPrices;
+        private static Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription FMarketPriceSubscription;
+
+        /// <summary>
+        /// Tuple with user credentials. First element is Key, second is Secret
+        /// </summary>
+        private Tuple<string, string> FUserCredentials;
+        public bool IsCredentialsSet { get; private set; }
+
+        public override string Name => Identifier.ToString();
+
+        public override int ID => (int) Identifier;
+
+        public event Action<IEnumerable<string>,int> OnMarketPricesChanging;
+
         private ConcurrentDictionary<string, decimal> FCurrencyFees;
         private ConcurrentDictionary<string, int> FCurrencyConfirmations;
-        private BittrexMarket[] FMarkets;
-        private static UpdateSubscription FMarketPriceSocketSubs;
-        private DateTime FLastRetrieval;
+        private ConcurrentDictionary<string, ExchangeMarket[]> FLocalCacheOfMarkets;
+        private BittrexSymbol[] FMarkets;
+        private DateTime FLastMarketCoinsRetrieval;
+        private DateTime FLastSocketPriceUpdate;
+        private static event Action<IEnumerable<string>, int> OnMarketPricesChangingInternal;
+        private static Timer FPriceUpdaterWatcherTimer;
 
-        private static event Action OnMarketPricesChangingStatic;
+        private object FPriceMarketLock = new object();
 
-        public override event Action OnMarketPricesChanging;
-
-        static BittrexExchange()
+        ~BittrexExchange()
         {
-            FMarketPrices = new ConcurrentDictionary<string, decimal>();
-            try
-            {
-                RefreshMarketPrices();
-                SubscribeToMarketPriceUpdating();
-            }
-            catch (Exception ex)
-            {
-                Universal.Log.Write(Universal.LogLevel.Error, $"Failed to subscribe to Market Price Update. Exception: {ex}");
-            }
+            StopMarketUpdating();
+            FCurrencyConfirmations.Clear();
+            FCurrencyConfirmations = null;
+            FCurrencyFees.Clear();
+            FCurrencyFees = null;
+            FLocalCacheOfMarkets?.Clear();
+            FLocalCacheOfMarkets = null;
         }
 
-        public BittrexExchange(string aKey, string aSecret)
+        internal BittrexExchange()
         {
+            FBittrexSocket = new BittrexSocketClient();
+            FMarketPrices = new ConcurrentDictionary<string, MarketPriceInfo>();
+
             FCurrencyFees = new ConcurrentDictionary<string, decimal>();
             FCurrencyConfirmations = new ConcurrentDictionary<string, int>();
-            OnMarketPricesChangingStatic += OnMarketPricesChanging;
-            SetCredentials(aKey, aSecret);
+            FLocalCacheOfMarkets = new ConcurrentDictionary<string, ExchangeMarket[]>();
+            OnMarketPricesChangingInternal += BittrexExchange_OnMarketPricesChangingInternal;
+            DoUpdateMarketCoins();
         }
 
-        private BittrexClientOptions GetBittrexOptions(bool aWithProxy = false)
+        private void BittrexExchange_OnMarketPricesChangingInternal(IEnumerable<string> arg1, int arg2)
         {
-            BittrexClientOptions lBittrexClientOptions;
-            if (IsCredentialSet)
-                lBittrexClientOptions = new BittrexClientOptions()
-                {
-                    ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials[0], FUserCredentials[1])
-                };
-            else
-                lBittrexClientOptions = new BittrexClientOptions();
-
-            if (aWithProxy)
-                lBittrexClientOptions.Proxy = PandoraProxy.GetApiProxy();
-            return lBittrexClientOptions;
+            OnMarketPricesChanging?.Invoke(arg1, arg2);
         }
 
-        //private BittrexSocketClientOptions GetBittrexSocketOptions()
-        //{
-        //    BittrexSocketClientOptions lBittrexClientOptions;
-        //    if (IsCredentailsSet)
-        //        lBittrexClientOptions = new BittrexSocketClientOptions()
-        //        {
-        //            ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials[0], FUserCredentials[1])
-        //        };
-        //    else
-        //        lBittrexClientOptions = new BittrexSocketClientOptions();
-        //    return lBittrexClientOptions;
-        //}
-
-        private static void SubscribeToMarketPriceUpdating()
+        public void SetCredentials(string aApiKey, string aApiSecret)
         {
-            if (FMarketPriceSocketSubs != null)
-                return;
+            JKrof.Authentication.ApiCredentials lCredentials = new JKrof.Authentication.ApiCredentials(aApiKey, aApiSecret);
 
-            CallResult<Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription> lResult;
-            using (var lSocketClient = new BittrexSocketClient())
-                lResult = lSocketClient.SubscribeToMarketSummariesLiteUpdate((data) =>
-                {
-                    foreach (BittrexStreamMarketSummaryLite it in data)
-                    {
-                        if (it.Last.HasValue)
-                            FMarketPrices.AddOrUpdate(it.MarketName, it.Last.Value, (key, oldValue) => it.Last.Value);
-                    }
-                    OnMarketPricesChangingStatic?.Invoke();
-                });
+            BittrexClientOptions lClientOptions = new Bittrex.Net.Objects.BittrexClientOptions { ApiCredentials = lCredentials };
+            BittrexSocketClientOptions lSocketOptions = new Bittrex.Net.Objects.BittrexSocketClientOptions { ApiCredentials = lCredentials };
 
-            if (!lResult.Success)
-                throw new Exception("Failed to Subscribe to market socket updates");
-            FMarketPriceSocketSubs = lResult.Data;
+            BittrexClient.SetDefaultOptions(lClientOptions);
+            BittrexSocketClient.SetDefaultOptions(lSocketOptions);
+
+            using (BittrexClient lClient = new BittrexClient())
+            {
+                CallResult<BittrexBalance> lResponse = lClient.GetBalance("BTC");
+                if (!lResponse.Success)
+                    throw new PandoraExchangeExceptions.InvalidExchangeCredentials("Incorrect Key Pair for selected exchange");
+            }
+            //Note: I generate a new instance of ApiCredentials because internally the library dispose it
+            FUserCredentials = new Tuple<string, string>(aApiKey, aApiSecret);
+            IsCredentialsSet = true;
         }
 
-        private void UnSubscribeToMarketPriceUpdating()
+        public void Clear()
         {
-            using (var lSocketClient = new BittrexSocketClient())
-                lSocketClient.Unsubscribe(FMarketPriceSocketSubs).Wait();
-            FMarketPriceSocketSubs = null;
+            BittrexClientOptions lClientOptions = new Bittrex.Net.Objects.BittrexClientOptions { ApiCredentials = null };
+            BittrexSocketClientOptions lSocketOptions = new Bittrex.Net.Objects.BittrexSocketClientOptions { ApiCredentials = null };
+            BittrexClient.SetDefaultOptions(lClientOptions);
+            BittrexSocketClient.SetDefaultOptions(lSocketOptions);
+            IsCredentialsSet = false;
         }
 
-        private static void RefreshMarketPrices()
+        public decimal GetTransactionsFee(string aCurrencyName, string aTicker)
+        {
+            if (!FCurrencyFees.ContainsKey(aTicker))
+            {
+                GetCurrencyRelatedData();
+            }
+            return FCurrencyFees[aTicker];
+        }
+
+        public int GetConfirmations(string aCurrencyName,  string aTicker)
+        {
+            if (!FCurrencyConfirmations.ContainsKey(aTicker))
+            {
+                GetCurrencyRelatedData();
+            }
+
+            if (!FCurrencyConfirmations.ContainsKey(aTicker))
+            {
+                return -1;
+            }
+
+            return FCurrencyConfirmations[aTicker];
+        }
+
+        private void GetCurrencyRelatedData()
         {
             using (BittrexClient lClient = new BittrexClient())
             {
-                CallResult<BittrexMarketSummary[]> lResponse = lClient.GetMarketSummaries();
-                if (lResponse.Success)
-                    foreach (BittrexMarketSummary it in lResponse.Data)
-                        try
-                        {
-                            FMarketPrices.AddOrUpdate(it.MarketName, it.Last.Value, (key, oldValue) => it.Last.Value);
-                        }
-                        catch
-                        {
-                            FMarketPrices.AddOrUpdate(it.MarketName, 0, (key, oldValue) => 0);
-                        }
-            }
-        }
+                CallResult<IEnumerable<BittrexCurrency>> lResponse = lClient.GetCurrencies();
 
-        public override string GetDepositAddress(string aCoinIdentifier)
-        {
-            if (!IsCredentialSet)
-                throw new Exception("No Credentials were set");
-
-            using (BittrexClient lClient = new BittrexClient(GetBittrexOptions()))
-            {
-                CallResult<BittrexDepositAddress> lResponse = lClient.GetDepositAddress(aCoinIdentifier);
                 if (!lResponse.Success)
-                    throw new Exception("Failed to retrieve Bittrex Address. " + lResponse.Error.Message);
-                BittrexDepositAddress lAddress = lResponse.Data;
-                return lAddress.Address;
-            }
-        }
+                    throw new Exception("Failed to retrieve balance");                
 
-        /// <summary>
-        /// Get the minimum amount of confirmations needed to be able to use balance in trading
-        /// </summary>
-        /// <param name="aCoinIdentifier">Ticker of the coin you want data from</param>
-        /// <returns></returns>
-        public override decimal GetExchangeTxMinConfirmations(string aCoinIdentifier)
-        {
-            if (!FCurrencyConfirmations.ContainsKey(aCoinIdentifier))
-                GetCurrencyExchangeData();
-            if (!FCurrencyConfirmations.TryGetValue(aCoinIdentifier, out int lConfirmations))
-                lConfirmations = -1;
-            return lConfirmations;
-        }
-
-        /// <summary>
-        /// Get the transaction fee used by bittrex
-        /// </summary>
-        /// <param name="aCoinIdentifier">Ticker of the coin you want data from</param>
-        /// <returns></returns>
-        public override decimal GetExchangeCoinTxFee(string aCoinIdentifier)
-        {
-            if (!FCurrencyFees.ContainsKey(aCoinIdentifier))
-                GetCurrencyExchangeData();
-            return FCurrencyFees[aCoinIdentifier];
-        }
-
-        private void GetCurrencyExchangeData()
-        {
-            using (BittrexClient lClient = new BittrexClient())
-            {
-                CallResult<BittrexCurrency[]> lResponse = lClient.GetCurrencies();
-                if (!lResponse.Success)
-                    throw new Exception("Failed to retrieve balance");
                 foreach (BittrexCurrency it in lResponse.Data)
                 {
                     FCurrencyFees[it.Currency] = it.TransactionFee;
@@ -183,165 +144,380 @@ namespace Pandora.Client.Exchange.Exchanges
             }
         }
 
-        public override ExchangeMarket2[] GetCoinExchangeMarkets(string aCoinIdentifier)
+        public decimal GetBalance(ExchangeMarket aMarket)
         {
-            RefreshMarketsCache();
-            ExchangeMarket2[] lCoinMarkets = FMarkets.Where(x => x.IsActive == true && (x.MarketCurrency == aCoinIdentifier || x.BaseCurrency == aCoinIdentifier))
-                       .Select(x => new ExchangeMarket2(this)
-                       {
-                           BaseTicker = aCoinIdentifier,
-                           CoinName = x.BaseCurrency != aCoinIdentifier ? x.BaseCurrencyLong : x.MarketCurrencyLong,
-                           CoinTicker = x.BaseCurrency != aCoinIdentifier ? x.BaseCurrency : x.MarketCurrency,
-                           MarketName = x.MarketName,
-                           IsSell = x.BaseCurrency != aCoinIdentifier,
-                           MinimumTrade = x.MinTradeSize
-                       }).ToArray();
-            return lCoinMarkets;
-        }
-
-        private void RefreshMarketsCache()
-        {
-            if (FLastRetrieval == DateTime.MinValue || FLastRetrieval < DateTime.UtcNow.AddHours(-1))
+            if (!IsCredentialsSet)
             {
-                using (BittrexClient lClient = new BittrexClient())
+                throw new Exception("No Credentials were set");
+            }
+
+            using (BittrexClient lClient = new BittrexClient())
+            {
+                CallResult<BittrexBalance> lResponse = lClient.GetBalance(aMarket.MarketName);
+
+                if (!lResponse.Success)
                 {
-                    CallResult<BittrexMarket[]> lResponse = lClient.GetMarkets();
-                    if (!lResponse.Success)
-                        throw new Exception("Failed to retrieve Markets");
-                    FMarkets = lResponse.Data;
-                    FLastRetrieval = DateTime.UtcNow;
+                    throw new Exception("Failed to retrieve balance");
                 }
+
+                return lResponse.Data.Available.Value;
             }
         }
 
-        public override decimal GetMarketPrice(string aMarketIdentifier)
+        public bool PlaceOrder(UserTradeOrder aOrder, ExchangeMarket aMarket, bool aUseProxy = true)
         {
-            if (!FMarketPrices.TryGetValue(aMarketIdentifier, out decimal lValue))
-                lValue = 0;
-            return lValue;
+            if (!IsCredentialsSet)
+            {
+                throw new Exception("No Credentials were set");
+            }
+
+            if (aOrder == null || aMarket == null)
+            {
+                throw new ArgumentNullException(aOrder == null ? nameof(aOrder) : nameof(aMarket), "Invalid argument: " + aOrder == null ? nameof(aOrder) : nameof(aMarket));
+            }
+
+            if (aOrder.Status != OrderStatus.Waiting)
+                return false;
+
+            BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
+            {
+                Proxy = PandoraProxy.GetApiProxy(),
+                ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials.Item1, FUserCredentials.Item2)
+            };
+            using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
+            {
+                CallResult<Bittrex.Net.Objects.BittrexGuid> lResponse;
+
+                if (aMarket.IsSell)
+                {
+                    lResponse = lClient.PlaceOrder(Bittrex.Net.Objects.OrderSide.Sell, aOrder.ExchangeMarketName, aOrder.SentQuantity, aOrder.Rate);
+                }
+                else
+                {
+                    lResponse = lClient.PlaceOrder(Bittrex.Net.Objects.OrderSide.Buy, aOrder.ExchangeMarketName, aOrder.SentQuantity / aOrder.Rate, aOrder.Rate);
+                }
+
+                if (!lResponse.Success)
+                {
+                    throw new Exception("Bittrex Error. Message: " + lResponse.Error.Message);
+                }
+
+                string lUuid = lResponse.Data.Uuid.ToString();
+
+                CallResult<BittrexAccountOrder> lResponse2 = lClient.GetOrder(new Guid(lUuid));
+
+                if (!lResponse.Success)
+                {
+                    throw new Exception("Failed to verify order with server");
+                }
+
+                BittrexAccountOrder lReceivedOrder = lResponse2.Data;
+
+                aOrder.ID = lUuid;
+
+                aOrder.OpenTime = lReceivedOrder.Opened;
+                aOrder.Cancelled = lReceivedOrder.CancelInitiated;
+                aOrder.Completed = lReceivedOrder.QuantityRemaining == 0;
+
+                return true;
+            }
         }
 
-        public override MarketOrder GetOrderStatus(string aOrderUid)
+        public void CancelOrder(UserTradeOrder aOrder, bool aUseProxy = true)
         {
-            Guid lOrderGuid = new Guid(aOrderUid);
-            using (BittrexClient lClient = new BittrexClient(GetBittrexOptions(true)))
+            if (!IsCredentialsSet)
+                throw new Exception("No Credentials were set");
+
+            if (aOrder == null)
+                throw new ArgumentNullException(nameof(aOrder), "Invalid argument: " + nameof(aOrder));
+
+            BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
             {
-                CallResult<BittrexAccountOrder> lResponse = lClient.GetOrder(lOrderGuid);
+                Proxy = PandoraProxy.GetApiProxy(),
+                ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials.Item1, FUserCredentials.Item2)
+            };
+            using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
+            {
+                var lResponse = lClient.CancelOrder(new Guid(aOrder.ID));
+                if (!lResponse.Success)
+                    throw new Exception("Failed to cancel order in exchange. Message: " + lResponse.Error.Message);
+            }
+        }
+
+        private async Task DoUpdateMarketCoins()
+        {
+            if (FLastMarketCoinsRetrieval == DateTime.MinValue || FLastMarketCoinsRetrieval < DateTime.UtcNow.AddHours(-12))
+            {
+                using (BittrexClient lClient = new BittrexClient())
+                {
+                    var lResponse = await lClient.GetSymbolsAsync();
+
+                    if (!lResponse.Success)
+                        throw new Exception("Failed to retrieve Markets");
+
+                    FMarkets = lResponse.Data.ToArray();
+                    FLastMarketCoinsRetrieval = DateTime.UtcNow;
+                }
+                FLocalCacheOfMarkets.Clear();
+            }
+
+        }
+
+        public ExchangeMarket[] GetMarketCoins(string aCurrencyName, string aTicker, GetWalletIDDelegate aGetWalletIDFunction = null)
+        {
+            DoUpdateMarketCoins().Wait();
+            if (!FLocalCacheOfMarkets.TryGetValue(aTicker, out ExchangeMarket[] lCoinMarkets))
+            {
+                lCoinMarkets = FMarkets.Where(x => x.IsActive == true && (x.QuoteCurrency == aTicker || x.BaseCurrency == aTicker))
+                       .Select(lMarket => new ExchangeMarket(this)
+                       {
+                           BaseCurrencyInfo = new ExchangeMarket.CurrencyInfo
+                           {
+                               Ticker = aTicker,
+                               Name = lMarket.BaseCurrency == aTicker ? lMarket.BaseCurrencyLong : lMarket.QuoteCurrencyLong,
+                               WalletID = aGetWalletIDFunction?.Invoke(aCurrencyName, aTicker)
+                           },
+                           DestinationCurrencyInfo = new ExchangeMarket.CurrencyInfo
+                           {
+                               Ticker = lMarket.BaseCurrency == aTicker ? lMarket.QuoteCurrency : lMarket.BaseCurrency,
+                               Name = lMarket.BaseCurrency == aTicker ? lMarket.QuoteCurrencyLong : lMarket.BaseCurrencyLong,
+                               WalletID = aGetWalletIDFunction?.Invoke(lMarket.BaseCurrency == aTicker ? lMarket.QuoteCurrencyLong : lMarket.BaseCurrencyLong, lMarket.BaseCurrency == aTicker ? lMarket.QuoteCurrency : lMarket.BaseCurrency)
+                           },
+                           MarketName = lMarket.Symbol,
+                           IsSell = lMarket.BaseCurrency != aTicker,
+                           MinimumTrade = lMarket.MinTradeSize
+                       }).ToArray();
+
+                if (aGetWalletIDFunction != null)
+                    FLocalCacheOfMarkets.TryAdd(aTicker, lCoinMarkets);
+            }
+
+            return lCoinMarkets;
+        }
+
+        public string GetDepositAddress(ExchangeMarket aMarket)
+        {
+            if (!IsCredentialsSet)
+            {
+                throw new Exception("No Credentials were set");
+            }
+
+            using (BittrexClient lClient = new BittrexClient())
+            {
+                CallResult<BittrexDepositAddress> lResponse = lClient.GetDepositAddress(aMarket.BaseCurrencyInfo.Ticker);
+
+                if (!lResponse.Success)
+                {
+                    throw new Exception("Failed to retrieve Bittrex Address. " + lResponse.Error.Message);
+                }
+
+                BittrexDepositAddress lAddress = lResponse.Data;
+
+                return lAddress.Address;
+            }
+        }
+
+        public void StartMarketPriceUpdating()
+        {
+            if (FMarketPriceSubscription != null)
+                return;
+
+            FPriceUpdaterWatcherTimer = new Timer((lState) =>
+            {
+                try
+                {
+                    DateTime lLastPriceTime;
+                    lock (FPriceMarketLock)
+                        lLastPriceTime = FLastSocketPriceUpdate;
+                    if (lLastPriceTime < DateTime.UtcNow.AddMinutes(-5))
+                    {
+                        if (lLastPriceTime != DateTime.MinValue)
+                            Log.Write(LogLevel.Warning, "No updates received from socket in 5 minutes. Attempting manual request");
+                        using (BittrexClient lClient = new BittrexClient())
+                        {
+                            CallResult<IEnumerable<BittrexSymbolSummary>> lResponse = lClient.GetSymbolSummaries();
+                            if (lResponse.Success)
+                                ProcessMarketSummaries(lResponse.Data);
+                            else
+                                throw new Exception(lResponse.Error.Message);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Write(LogLevel.Critical, $"Failed to get market summaries from bittrex server. Exception thrown: {ex}");
+                }
+            }, null, 0, Timeout.Infinite);
+
+            CallResult<Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription> lResult = FBittrexSocket.SubscribeToSymbolSummariesUpdate((lBittrexSummaries) =>
+            {
+                try
+                {
+                    lock (FPriceMarketLock)
+                        FLastSocketPriceUpdate = DateTime.UtcNow;
+                    ProcessMarketSummaries(lBittrexSummaries);
+                }
+                catch (Exception ex)
+                {
+                    Log.Write(LogLevel.Error, $"Exception thrown when updating market price. Details: {ex}");
+                }
+            });
+            if (!lResult.Success)
+                throw new Exception($"Failed to subscribe to market price updates. Details: {lResult.Error?.Message ?? "No info"}");
+
+            FMarketPriceSubscription = lResult.Data;
+            FPriceUpdaterWatcherTimer.Change(60000, 60000); //Every Minute
+        }
+
+        private static void ProcessMarketSummaries(IEnumerable<JKrof.Bittrex.Net.Interfaces.IBittrexSymbolSummary> aMarketPrices)
+        {
+            List<string> lChanged = new List<string>();
+            foreach (var lMarketPrice in aMarketPrices)
+                if (lMarketPrice.Last.HasValue)
+                {
+                    MarketPriceInfo lRemoteMarketPrice = new MarketPriceInfo
+                    {
+                        Last = lMarketPrice.Last.Value,
+                        Bid = lMarketPrice.Bid.Value,
+                        Ask = lMarketPrice.Ask.Value
+                    };
+
+                    if (FMarketPrices.TryGetValue(lMarketPrice.Symbol, out MarketPriceInfo lPrice))
+                    {
+                        if (lPrice != lRemoteMarketPrice)
+                        {
+                            FMarketPrices.AddOrUpdate(lMarketPrice.Symbol, lRemoteMarketPrice, (key, oldValue) => lRemoteMarketPrice);
+                            lChanged.Add(lMarketPrice.Symbol);
+                        }
+                    }
+                    else
+                    {
+                        FMarketPrices.TryAdd(lMarketPrice.Symbol, lRemoteMarketPrice);
+                        lChanged.Add(lMarketPrice.Symbol);
+                    }
+                }
+            if (lChanged.Any())
+                OnMarketPricesChangingInternal?.Invoke(lChanged, (int)Identifier);
+        }
+
+        public TradeOrderStatusInfo GetOrderStatus(string lUuid)
+        {
+            using (BittrexClient lClient = new BittrexClient())
+            {
+                CallResult<BittrexAccountOrder> lResponse = lClient.GetOrder(Guid.Parse(lUuid));
                 if (!lResponse.Success)
                 {
                     throw new Exception("Failed to retrieve order specified");
                 }
 
-                return new MarketOrder
+                return new TradeOrderStatusInfo
                 {
                     ID = lResponse.Data.OrderUuid.ToString(),
                     Completed = lResponse.Data.QuantityRemaining == 0,
                     Cancelled = lResponse.Data.CancelInitiated,
-                    Market = lResponse.Data.Exchange
+                    ExchangeMarketName = lResponse.Data.Exchange,
+                    Rate = lResponse.Data.PricePerUnit ?? -1
                 };
-            }
-        }
-
-        public override decimal GetUserAvailableBalance(string aCoinIdentifier)
-        {
-            if (!IsCredentialSet)
-                throw new Exception("No Credentials were set");
-            using (BittrexClient lClient = new BittrexClient(GetBittrexOptions()))
-            {
-                CallResult<BittrexBalance> lResponse = lClient.GetBalance(aCoinIdentifier);
-                if (!lResponse.Success)
-                    throw new Exception("Failed to retrieve balance");
-                return lResponse.Data.Available.Value;
-            }
-        }
-
-        public override MarketOrder PlaceOrder(bool aisSell, string aMarketName, decimal aQuantity, decimal aRate)
-        {
-            if (!IsCredentialSet)
-                throw new Exception("No Credentials were set");
-
-            using (BittrexClient lClient = new BittrexClient(GetBittrexOptions(true)))
-            {
-                CallResult<Bittrex.Net.Objects.BittrexGuid> lResponse;
-                if (aisSell)
-                    lResponse = lClient.PlaceOrder(Bittrex.Net.Objects.OrderSide.Sell, aMarketName, aQuantity, aRate);
-                else
-                    lResponse = lClient.PlaceOrder(Bittrex.Net.Objects.OrderSide.Buy, aMarketName, aQuantity / aRate, aRate);
-
-                if (!lResponse.Success)
-                    throw new Exception("Bittrex Error. Message: " + lResponse.Error.Message);
-
-                Guid lUuid = lResponse.Data.Uuid;
-                CallResult<BittrexAccountOrder> lResponse2 = lClient.GetOrder(lUuid);
-                if (!lResponse.Success)
-                    throw new Exception("Failed to verify order with server");
-
-                BittrexAccountOrder lReceivedOrder = lResponse2.Data;
-                MarketOrder lResult = new MarketOrder()
-                {
-                    ID = lUuid.ToString(),
-                    OpenTime = lReceivedOrder.Opened,
-                    Cancelled = lReceivedOrder.CancelInitiated,
-                    Completed = lReceivedOrder.QuantityRemaining == 0
-                };
-                return lResult;
             }
         }
 
         /// <summary>
-        /// Bittrex removes the txfee from the amount sent
+        /// Tries to withdraw the total amount returned by an order from the exchange
         /// </summary>
-        /// <param name="aAddress"></param>
-        /// <param name="aCoinTicker"></param>
-        /// <param name="aQuantity"></param>
-        /// <param name="aTxFee"></param>
-        public override void Withdraw(string aAddress, string aCoinTicker, decimal aQuantity, decimal aTxFee)
+        /// <param name="aMarket">Market of the order</param>
+        /// <param name="aOrder">Completed order to withdraw</param>
+        /// <param name="aAddress">Coin address to deposit funds</param>
+        /// <param name="aTxFee">Fee to discount from balance withdrawed</param>
+        /// <param name="aUseProxy">Use pandora proxy or not</param>
+        public bool RefundOrder(ExchangeMarket aMarket, UserTradeOrder aOrder, string aAddress, bool aUseProxy = true)
         {
-            if (!IsCredentialSet)
+            if (!IsCredentialsSet)
+            {
                 throw new Exception("No Credentials were set");
-            using (BittrexClient lClient = new BittrexClient(GetBittrexOptions(true)))
+            }
+
+            if (aOrder.Status == OrderStatus.Withdrawn)
             {
-                CallResult<BittrexGuid> lResponse = lClient.Withdraw(aCoinTicker, aQuantity, aAddress);
+                return false;
+            }
+
+            BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
+            {
+                Proxy = PandoraProxy.GetApiProxy(),
+                ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials.Item1, FUserCredentials.Item2)
+            };
+            using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
+            {
+                CallResult<BittrexGuid> lResponse = lClient.Withdraw(aMarket.BaseCurrencyInfo.Ticker, aOrder.SentQuantity, aAddress);
                 if (!lResponse.Success)
+                {
                     throw new Exception("Failed to withdraw. Error message:" + lResponse.Error.Message);
-            }
-        }
-
-        public override bool CancelOrder(string aUid)
-        {
-            using (BittrexClient lClient = new BittrexClient(GetBittrexOptions(true)))
-            {
-                var lResponse = lClient.CancelOrder(new Guid(aUid));
-                return lResponse.Success;
-            }
-        }
-
-        public override bool TestCredentials()
-        {
-            if (IsCredentialSet)
-            {
-                var lBittrexOptions = new BittrexClientOptions()
-                {
-                    ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials[0], FUserCredentials[1])
-                };
-                using (BittrexClient lClient = new BittrexClient(lBittrexOptions))
-                {
-                    CallResult<BittrexBalance> lResponse = lClient.GetBalance("BTC");
-                    return lResponse.Success;
                 }
             }
-            return false;
+
+            return true;
         }
 
-        protected override void Dispose(bool disposing)
+        public MarketPriceInfo GetMarketPrice(string aMarketName)
         {
-            OnMarketPricesChangingStatic -= OnMarketPricesChanging;
-            base.Dispose(disposing);
+            MarketPriceInfo lResult = new MarketPriceInfo();
+            if (FMarketPrices.TryGetValue(aMarketName, out MarketPriceInfo lValue))
+                lResult = lValue;
+            return lResult;
         }
 
-        public override decimal CalculateExchangeTradingFee(decimal aValue)
+        /// <summary>
+        /// Tries to withdraw the total amount returned by an order from the exchange
+        /// </summary>
+        /// <param name="aMarket">Market of the order</param>
+        /// <param name="aOrder">Completed order to withdraw</param>
+        /// <param name="aAddress">Coin address to deposit funds</param>
+        /// <param name="aTxFee">Fee to discount from balance withdrawed</param>
+        /// <param name="aUseProxy">Use pandora proxy or not</param>
+        public bool WithdrawOrder(ExchangeMarket aMarket, UserTradeOrder aOrder, string aAddress, decimal aTxFee, bool aUseProxy = true)
         {
-            return (aValue * (decimal)0.0025);
+            if (!IsCredentialsSet)
+                throw new Exception("No Credentials were set");
+
+            if (aOrder.Status == OrderStatus.Withdrawn)
+                return false;
+
+            BittrexClientOptions lBittrexClientOptions = new BittrexClientOptions()
+            {
+                Proxy = PandoraProxy.GetApiProxy(),
+                ApiCredentials = new JKrof.Authentication.ApiCredentials(FUserCredentials.Item1, FUserCredentials.Item2)
+            };
+            using (BittrexClient lClient = aUseProxy ? new BittrexClient(lBittrexClientOptions) : new BittrexClient())
+            {
+                decimal lQuantityToWithdraw = 0;
+                CallResult<BittrexAccountOrder> lGetOrderResponse = lClient.GetOrder(new Guid(aOrder.ID));
+                if (!lGetOrderResponse.Success)
+                    throw new Exception("Failed to get order to withdraw. Error message:" + lGetOrderResponse.Error.Message);
+                var lRemoteOrder = lGetOrderResponse.Data;
+                if (lRemoteOrder.Price <= 0 || !lRemoteOrder.PricePerUnit.HasValue)
+                    throw new Exception("Order is not fulfilled or data from server is missing");
+                if (lRemoteOrder.Type == OrderSideExtended.LimitBuy)
+                    lQuantityToWithdraw = lRemoteOrder.Quantity;
+                else if (lRemoteOrder.Type == OrderSideExtended.LimitSell)
+                    lQuantityToWithdraw = (lRemoteOrder.Quantity * lRemoteOrder.PricePerUnit.Value) - lRemoteOrder.CommissionPaid;
+                CallResult<BittrexGuid> lWithdrawResponse = lClient.Withdraw(aMarket.DestinationCurrencyInfo.Ticker, lQuantityToWithdraw, aAddress);
+                if (!lWithdrawResponse.Success)
+                    throw new Exception("Failed to withdraw. Error message:" + lWithdrawResponse.Error.Message);
+            }
+            return true;
+        }
+
+        public void StopMarketUpdating()
+        {
+            OnMarketPricesChangingInternal -= BittrexExchange_OnMarketPricesChangingInternal;
+            if (FMarketPriceSubscription == null || OnMarketPricesChangingInternal != null)
+                return;
+            FPriceUpdaterWatcherTimer?.Change(Timeout.Infinite, Timeout.Infinite);
+            FPriceUpdaterWatcherTimer?.Dispose();
+            FPriceUpdaterWatcherTimer = null;
+            _ = FMarketPriceSubscription.Close();
+            FMarketPriceSubscription = null;
+            
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Bittrex.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Pandora.Client.Exchange.JKrof.Objects;
 using System;
+using System.Linq;
 
 namespace Pandora.Client.Exchange.Test
 {
@@ -8,6 +10,17 @@ namespace Pandora.Client.Exchange.Test
     public class BittrexApiTests
     {
         private BittrexClient FClient;
+
+        [TestMethod]
+        public void TestSocket ()
+        {
+            var lSocketClient = new BittrexSocketClient();
+            CallResult<Pandora.Client.Exchange.JKrof.Sockets.UpdateSubscription> lResult = lSocketClient.SubscribeToSymbolSummariesUpdate((lBittrexSummaries) =>
+            {
+
+            });
+            while (true) System.Threading.Thread.Sleep(1000);
+        }
 
         [TestInitialize()]
         public void Init()
@@ -33,8 +46,8 @@ namespace Pandora.Client.Exchange.Test
         [TestMethod]
         public void GetBalanceTest()
         {
-            JKrof.Objects.WebCallResult<Bittrex.Net.Objects.BittrexMarket[]> lResult = FClient.GetMarkets();
-            Assert.IsTrue(lResult.Data.Length > 0);
+            var lResult = FClient.GetSymbols();
+            Assert.IsTrue(lResult.Data.Count() > 0);
         }
 
         [TestMethod]
@@ -52,8 +65,8 @@ namespace Pandora.Client.Exchange.Test
         [TestMethod]
         public void GetMarkets()
         {
-            JKrof.Objects.WebCallResult<Bittrex.Net.Objects.BittrexMarket[]> lResult = FClient.GetMarkets();
-            Assert.IsTrue(lResult.Data.Length > 0);
+            var lResult = FClient.GetSymbols();
+            Assert.IsTrue(lResult.Data.Count() > 0);
         }
     }
 }

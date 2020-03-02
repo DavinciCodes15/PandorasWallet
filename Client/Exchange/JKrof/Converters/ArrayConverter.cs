@@ -3,20 +3,29 @@ using System.Collections;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Pandora.Client.Exchange.JKrof.Attributes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Pandora.Client.Exchange.JKrof.Converters
 {
+    /// <summary>
+    /// Converter for arrays to properties
+    /// </summary>
     public class ArrayConverter : JsonConverter
     {
+        /// <inheritdoc />
         public override bool CanConvert(Type objectType)
         {
             return true;
         }
-
+        
+        /// <inheritdoc />
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
+            if (objectType == typeof(JToken))
+                return JToken.Load(reader);
+
             var result = Activator.CreateInstance(objectType);
             var arr = JArray.Load(reader);
             return ParseObject(arr, result, objectType);
@@ -66,7 +75,20 @@ namespace Pandora.Client.Exchange.JKrof.Converters
                 }
 
                 var converterAttribute = (JsonConverterAttribute)property.GetCustomAttribute(typeof(JsonConverterAttribute)) ?? (JsonConverterAttribute)property.PropertyType.GetCustomAttribute(typeof(JsonConverterAttribute));
-                var value = converterAttribute != null ? arr[attribute.Index].ToObject(property.PropertyType, new JsonSerializer { Converters = { (JsonConverter)Activator.CreateInstance(converterAttribute.ConverterType) } }) : arr[attribute.Index];
+                var conversionAttribute = (JsonConversionAttribute)property.GetCustomAttribute(typeof(JsonConversionAttribute)) ?? (JsonConversionAttribute)property.PropertyType.GetCustomAttribute(typeof(JsonConversionAttribute));
+                object value;
+                if (converterAttribute != null)
+                {
+                    value = arr[attribute.Index].ToObject(property.PropertyType, new JsonSerializer {Converters = {(JsonConverter) Activator.CreateInstance(converterAttribute.ConverterType)}});
+                }
+                else if (conversionAttribute != null)
+                {
+                    value = arr[attribute.Index].ToObject(property.PropertyType);
+                }
+                else
+                {
+                    value = arr[attribute.Index];
+                }
 
                 if (value != null && property.PropertyType.IsInstanceOfType(value))
                     property.SetValue(result, value);
@@ -92,6 +114,7 @@ namespace Pandora.Client.Exchange.JKrof.Converters
             return result;
         }
 
+        /// <inheritdoc />
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             writer.WriteStartArray();
@@ -140,10 +163,20 @@ namespace Pandora.Client.Exchange.JKrof.Converters
         }
     }
 
+    /// <summary>
+    /// Mark property as an index in the array
+    /// </summary>
     public class ArrayPropertyAttribute: Attribute
     {
+        /// <summary>
+        /// The index in the array
+        /// </summary>
         public int Index { get; }
 
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="index"></param>
         public ArrayPropertyAttribute(int index)
         {
             Index = index;

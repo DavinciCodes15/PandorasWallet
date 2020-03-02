@@ -15,10 +15,10 @@
     <ROW Property="DBUser" Value="cat"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{80495EB4-938D-48D1-9810-B1C76599A3BA} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{71FA46CF-6582-44CD-82A9-D490EB904770} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet v1.1"/>
-    <ROW Property="ProductVersion" Value="1.1.29.2147" Type="32" TargetFile="PandorasWallet.exe_1"/>
+    <ROW Property="ProductVersion" Value="1.1.30.2181" Type="32" TargetFile="PandorasWallet.exe_1"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{15B4F25B-B7AD-4B1B-9D26-98A1319C788C}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -69,10 +69,8 @@
     <ROW Component="SuperSocket.ClientEngine.dll" ComponentId="{588814F4-9243-4471-87F4-94C3D1A387EF}" Directory_="APPDIR" Attributes="0" KeyPath="SuperSocket.ClientEngine.dll"/>
     <ROW Component="System.Buffers.dll" ComponentId="{69082ADA-B53D-41C9-A174-06A9C067352D}" Directory_="APPDIR" Attributes="0" KeyPath="System.Buffers.dll"/>
     <ROW Component="System.Collections.Specialized.dll" ComponentId="{D7AB946B-C93D-4D0C-AD92-CA9FD1CBEC7B}" Directory_="APPDIR" Attributes="0" KeyPath="System.Collections.Specialized.dll"/>
-    <ROW Component="System.Data.SQLite.EF6.dll" ComponentId="{4A436E7D-F4F0-43AC-8E68-DF83278DF67B}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.EF6.dll"/>
-    <ROW Component="System.Data.SQLite.Linq.dll" ComponentId="{F526FE59-6CB2-42BC-BF3C-A89F5333863A}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.Linq.dll"/>
     <ROW Component="System.Data.SQLite.dll" ComponentId="{AC6A0D92-7401-4240-ADDB-95D14E99AB81}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.dll"/>
-    <ROW Component="System.Data.SQLite.dll.config" ComponentId="{EBD31742-19E5-4390-98EA-0C11D0CECEE6}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.dll.config" Type="0"/>
+    <ROW Component="System.Data.SQLite.dll.config" ComponentId="{EBD31742-19E5-4390-98EA-0C11D0CECEE6}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.dll.config" Type="0"/>
     <ROW Component="System.Net.NameResolution.dll" ComponentId="{1AB62839-E8B6-4081-983A-1CE80A00DF19}" Directory_="APPDIR" Attributes="0" KeyPath="System.Net.NameResolution.dll"/>
     <ROW Component="System.Net.Security.dll" ComponentId="{4F3A477A-944D-427F-8E63-E7D5EA41353D}" Directory_="APPDIR" Attributes="0" KeyPath="System.Net.Security.dll"/>
     <ROW Component="System.Net.Sockets.dll" ComponentId="{EB909E62-3AD9-4B57-9C0C-48654434B8DA}" Directory_="APPDIR" Attributes="0" KeyPath="System.Net.Sockets.dll"/>
@@ -89,7 +87,6 @@
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFilesComponent">
     <ROW File="SQLite.Interop.dll" Component_="SQLite.Interop.dll" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="0" SourcePath="..\..\bin\Release\x64\SQLite.Interop.dll" SelfReg="false"/>
     <ROW File="SQLite.Interop.dll_1" Component_="SQLite.Interop.dll_1" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="512" SourcePath="..\..\bin\Release\x86\SQLite.Interop.dll" SelfReg="false"/>
-    <ROW File="System.Data.SQLite.dll.config" Component_="System.Data.SQLite.dll.config" FileName="SYSTEM~1.CON|System.Data.SQLite.dll.config" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll.config" SelfReg="false"/>
     <ROW File="System.Security.Cryptography.Primitives.dll" Component_="System.Security.Cryptography.Primitives.dll" FileName="SYSTEM~1.DLL|System.Security.Cryptography.Primitives.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Primitives.dll" SelfReg="false"/>
     <ROW File="System.Security.Cryptography.X509Certificates.dll" Component_="System.Security.Cryptography.X509Certificates.dll" FileName="SYSTEM~2.DLL|System.Security.Cryptography.X509Certificates.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.X509Certificates.dll" SelfReg="false"/>
     <ROW File="WebSocket4Net.dll" Component_="WebSocket4Net.dll" FileName="WEBSOC~1.DLL|WebSocket4Net.dll" Attributes="0" SourcePath="..\..\bin\Release\WebSocket4Net.dll" SelfReg="false"/>
@@ -106,8 +103,6 @@
     <ROW File="System.Buffers.dll" Component_="System.Buffers.dll" FileName="SYSTEM~3.DLL|System.Buffers.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Buffers.dll" SelfReg="false"/>
     <ROW File="System.Collections.Specialized.dll" Component_="System.Collections.Specialized.dll" FileName="SYSTEM~4.DLL|System.Collections.Specialized.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Collections.Specialized.dll" SelfReg="false"/>
     <ROW File="System.Data.SQLite.dll" Component_="System.Data.SQLite.dll" FileName="SYSTEM~5.DLL|System.Data.SQLite.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll" SelfReg="false"/>
-    <ROW File="System.Data.SQLite.EF6.dll" Component_="System.Data.SQLite.EF6.dll" FileName="SYSTEM~6.DLL|System.Data.SQLite.EF6.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.EF6.dll" SelfReg="false"/>
-    <ROW File="System.Data.SQLite.Linq.dll" Component_="System.Data.SQLite.Linq.dll" FileName="SYSTEM~7.DLL|System.Data.SQLite.Linq.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.Linq.dll" SelfReg="false"/>
     <ROW File="System.Net.NameResolution.dll" Component_="System.Net.NameResolution.dll" FileName="SYSTEM~8.DLL|System.Net.NameResolution.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.NameResolution.dll" SelfReg="false"/>
     <ROW File="System.Net.Security.dll" Component_="System.Net.Security.dll" FileName="SYSTEM~9.DLL|System.Net.Security.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Security.dll" SelfReg="false"/>
     <ROW File="System.Net.Sockets.dll" Component_="System.Net.Sockets.dll" FileName="SYSTE~10.DLL|System.Net.Sockets.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Sockets.dll" SelfReg="false"/>
@@ -271,8 +266,6 @@
     <ROW Feature_="ClientsFeature" Component_="SuperSocket.ClientEngine.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Buffers.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Collections.Specialized.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.EF6.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.Linq.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.dll.config"/>
     <ROW Feature_="ClientsFeature" Component_="System.Net.NameResolution.dll"/>

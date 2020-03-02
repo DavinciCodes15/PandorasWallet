@@ -38,6 +38,14 @@ namespace Pandora.Client.PandorasWallet.ClientExceptions
         }
     }
 
+    public class CancelledUserOperation : Exception
+    {
+        public CancelledUserOperation(string message) : base (message)
+        {
+
+        }
+    }
+
     public class ExchangeException : Exception
     {
         public ExchangeException(string message) : base(message)

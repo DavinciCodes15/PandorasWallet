@@ -64,6 +64,29 @@
   <PropertyGroup>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug32|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>$(SolutionDir)bin\DEBUG\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)bin\obj\DEBUG\$(AssemblyName)\</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'RemoteDebug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>\\stage01\C%24\Code\Repos\DevOps\PandoraWallet\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="packages.config">
       <SubType>Designer</SubType>
@@ -82,15 +105,6 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data.SQLite, Version=1.0.109.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Data.SQLite.Core.1.0.109.2\lib\net46\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.EF6, Version=1.0.109.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Data.SQLite.EF6.1.0.109.0\lib\net46\System.Data.SQLite.EF6.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq, Version=1.0.109.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\System.Data.SQLite.Linq.1.0.109.0\lib\net46\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
     <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.111" />
     <Reference Include="System.IO.Compression.FileSystem" />
@@ -109,6 +123,7 @@
       <Link>Properties\VersionInfo.cs</Link>
       <Visible>true</Visible>
     </Compile>
+    <Compile Include="ExchangeStageOperator.cs" />
     <Compile Include="ServerAccess\CacheServerAccessHelper.cs" />
     <Compile Include="SystemBackup\BackupController.cs" />
     <Compile Include="SystemBackup\BackupObjects.cs" />
@@ -223,7 +238,6 @@
       <DependentUpon>AppMainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Controlers\PandoraEnchangeControl.cs" />
-    <Compile Include="NewPandoraExchangeController.cs" />
     <Compile Include="ServerAccess\LocalCacheDB.cs" />
     <Compile Include="ServerAccess\PandoraObjectNotifier.cs" />
     <Compile Include="ServerAccess\ServerConnection.cs" />

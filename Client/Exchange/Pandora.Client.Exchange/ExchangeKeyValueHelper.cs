@@ -1,4 +1,5 @@
-﻿using Pandora.Client.Exchange.SaveManagers;
+﻿using Newtonsoft.Json;
+using Pandora.Client.Exchange.SaveManagers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace Pandora.Client.Exchange
         void WriteKeyValues(Dictionary<string, string> aKeyValues, int aProfileID);
 
         string ReadKeyValue(string aKey, int aProfileID);
+        void RemoveKeyValue(string aKey, int aProfileID);
     }
 
     public interface IExchangeKeyValueObject
@@ -63,7 +65,11 @@ namespace Pandora.Client.Exchange
         {
             Dictionary<string, string> lDicToSave = new Dictionary<string, string>();
             foreach (var lTypeProperty in FKeyNameProperties)
-                lDicToSave.Add(lTypeProperty.Key.Name.ToLower(), Convert.ToString(lTypeProperty.Value.GetValue(aObjectToSave) ?? string.Empty));
+            {
+                object lUndefinedValue = lTypeProperty.Value.GetValue(aObjectToSave) ?? string.Empty;
+                string lValue = lTypeProperty.Value == typeof(string) ? Convert.ToString(lUndefinedValue) : JsonConvert.SerializeObject(lUndefinedValue);
+                lDicToSave.Add(lTypeProperty.Key.Name.ToLower(), lValue);
+            }
             FSaveManager.WriteKeyValues(lDicToSave, aObjectToSave.ProfileID);
         }
 
@@ -73,7 +79,14 @@ namespace Pandora.Client.Exchange
             foreach (var lTypeProperty in FKeyNameProperties)
             {
                 string lValue = FSaveManager.ReadKeyValue(lTypeProperty.Key.Name.ToLower(), aProfileID);
-                lTypeProperty.Value.SetValue(lResult, lValue);
+
+                if (lTypeProperty.Value.PropertyType == typeof(string))
+                    lTypeProperty.Value.SetValue(lResult, lValue);
+                else
+                    if (lValue != null)
+                {
+                    lTypeProperty.Value.SetValue(lResult, JsonConvert.DeserializeObject(lValue, lTypeProperty.Value.PropertyType));
+                }
             }
             lResult.ProfileID = aProfileID;
             return lResult;
@@ -84,6 +97,19 @@ namespace Pandora.Client.Exchange
             var lValidAttributes = FKeyNameProperties.Keys.Select(lKey => lKey.Name.ToLower());
             if (!lValidAttributes.Contains(aKey.ToLower())) throw new Exception("KeyValueHelper: Key not found inside declared object class");
             FSaveManager.WriteKeyValue(aKey.ToLower(), aValue, aProfileID);
+        }
+
+        public void RemoveKey(string aKey, int aProfileID)
+        {
+            var lValidAttributes = FKeyNameProperties.Keys.Select(lKey => lKey.Name.ToLower());
+            if (!lValidAttributes.Contains(aKey.ToLower())) throw new Exception("KeyValueHelper: Key not found inside declared object class");
+            FSaveManager.RemoveKeyValue(aKey, aProfileID);
+        }
+
+        public void ClearKeys(int aProfileID)
+        {
+            foreach (var lNameProperty in FKeyNameProperties)
+                RemoveKey(lNameProperty.Key.Name, aProfileID);
         }
     }
 
@@ -96,5 +122,17 @@ namespace Pandora.Client.Exchange
 
         [ExchangeKeyName("EXCHANGE_PRIVATE")]
         public string PrivateKey { get; set; }
+    }
+
+    public class MultiExchangeKeyValueObject : IExchangeKeyValueObject
+    {
+
+        public int ProfileID { get; set; }
+
+        [ExchangeKeyName("EXCHANGE_PUBLICKEYS")]
+        public Dictionary<int, string> PublicKeys { get; set; } = new Dictionary<int, string>();
+
+        [ExchangeKeyName("EXCHANGE_PRIVATEKEYS")]
+        public Dictionary<int, string> PrivateKeys { get; set; } = new Dictionary<int, string>();
     }
 }

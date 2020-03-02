@@ -1,13 +1,17 @@
 ﻿namespace Pandora.Client.Exchange.JKrof.Objects
 {
+    /// <summary>
+    /// Constants
+    /// </summary>
     public class Constants
     {
-        public const string GetMethod = "GET";
-        public const string PostMethod = "POST";
-        public const string DeleteMethod = "DELETE";
-        public const string PutMethod = "PUT";
-
+        /// <summary>
+        /// Json content type header
+        /// </summary>
         public const string JsonContentHeader = "application/json";
+        /// <summary>
+        /// Form content type header
+        /// </summary>
         public const string FormContentHeader = "application/x-www-form-urlencoded";
     }
 }

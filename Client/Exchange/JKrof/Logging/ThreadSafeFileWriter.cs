@@ -4,16 +4,24 @@ using System.Text;
 
 namespace Pandora.Client.Exchange.JKrof.Logging
 {
+    /// <summary>
+    /// File writer
+    /// </summary>
     public class ThreadSafeFileWriter: TextWriter
     {
         private static readonly object openedFilesLock = new object();
         private static readonly List<string> openedFiles = new List<string>();
 
-        private StreamWriter logWriter;
+        private readonly StreamWriter logWriter;
         private readonly object writeLock;
 
+        /// <inheritdoc />
         public override Encoding Encoding => Encoding.ASCII;
 
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="path"></param>
         public ThreadSafeFileWriter(string path)
         {
             logWriter = new StreamWriter(File.Open(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite)) {AutoFlush = true};
@@ -28,19 +36,21 @@ namespace Pandora.Client.Exchange.JKrof.Logging
             }
         }
 
+        /// <inheritdoc />
         public override void WriteLine(string logMessage)
         {
             lock(writeLock)
                 logWriter.WriteLine(logMessage);            
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            lock (writeLock)
-            {
-                logWriter.Close();
-                logWriter = null;
-            }
+            lock (writeLock)            
+                logWriter.Close();            
         }
     }
 }

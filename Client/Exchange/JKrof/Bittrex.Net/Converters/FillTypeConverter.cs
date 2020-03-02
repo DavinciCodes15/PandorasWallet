@@ -4,7 +4,7 @@ using Pandora.Client.Exchange.JKrof.Converters;
 
 namespace Bittrex.Net.Converters
 {
-    public class FillTypeConverter: BaseConverter<FillType>
+    internal class FillTypeConverter: BaseConverter<FillType>
     {
         public FillTypeConverter(): this(true) { }
         public FillTypeConverter(bool quotes) : base(quotes){ }

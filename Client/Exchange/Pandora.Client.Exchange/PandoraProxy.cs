@@ -14,7 +14,7 @@ namespace Pandora.Client.Exchange
     /// </summary>
     public static class PandoraProxy
     {
-        public const string Address = "proxy.davincicodes.net";
+        public const string Address = "http://proxy.davincicodes.net";
         public const int Port = 808;
         public const string Username = "ProxyUser";
         private const string Password = "gaQe36U2wnDu90dmH5mnwZZ+wQSrXaW80MkolglIcFHRnngF4Qi90h6XR597c0e2y02xeVmcQ6Tp1EBcUX7rCxgingAdEp3JlLJ4T3Ok6Ce4la+Jh/cSdOjNu6kBqC3jZ6TbHMN7R3sUjqoAoeG4zLgn06MDzcmpSyq+/KqCDEs=";

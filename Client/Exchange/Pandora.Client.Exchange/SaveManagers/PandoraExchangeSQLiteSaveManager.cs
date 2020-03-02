@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pandora.Client.Exchange.Objects;
+using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
@@ -7,9 +8,9 @@ namespace Pandora.Client.Exchange.SaveManagers
 {
     public partial class PandoraExchangeSQLiteSaveManager : IPandoraSaveManager
     {
-        private const int CURRENT_VERSION = 103;
+        private const int CURRENT_VERSION = 104;
         private const int VERSION_ID = 1; //This should not change unless you want to record more than one version inside the db
-        private const string VERSION_NOTE = "EXCHANGE PROFILES PARTIALY IMPLEMENTED";
+        private const string VERSION_NOTE = "ADDED ORDER EXCHANGE ID FOR MULTIPLE EXCHANGES";
         private string FConnectionString;
         private bool FReadOnly;
 
@@ -114,6 +115,7 @@ namespace Pandora.Client.Exchange.SaveManagers
                     Version101DoAlterExchangeTx(lConnection);
                     Version102DoAddExchangeProfileTable(lConnection);
                     Version103DoAddExchangeKeyValueTable(lConnection);
+                    Version104DoAddOrderExchangeIDRelationshipTable(lConnection);
                     WriteVersion(VERSION_ID, CURRENT_VERSION, VERSION_NOTE, aUsername, aEmail, lConnection);
                 }
                 else if (lCurrentFileVersion > CURRENT_VERSION)
@@ -138,6 +140,27 @@ namespace Pandora.Client.Exchange.SaveManagers
                 catch (Exception ex)
                 {
                     Universal.Log.Write(Universal.LogLevel.Error, $"Exchange SQLite exception when implementing version 102. Exception {ex}");
+                    lSqliteTransaction.Rollback();
+                    throw;
+                }
+        }
+
+        private void Version104DoAddOrderExchangeIDRelationshipTable(SQLiteConnection aOpenConnection)
+        {
+            using (var lSqliteTransaction = aOpenConnection.BeginTransaction())
+                try
+                {
+                    using (SQLiteCommand lCreateProfileTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS Relationship_ExchangeID_OrderID (InternalOrderID integer PRIMARY KEY, ExchangeID integer)", aOpenConnection))
+                        lCreateProfileTable.ExecuteNonQuery();
+
+                    using (SQLiteCommand lInsertOldOrdersData = new SQLiteCommand($"INSERT INTO Relationship_ExchangeID_OrderID SELECT internalid, {(int)Exchanges.AvailableExchangesList.Bittrex} FROM ExchangeTx", aOpenConnection))
+                        lInsertOldOrdersData.ExecuteNonQuery();
+
+                    lSqliteTransaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    Universal.Log.Write(Universal.LogLevel.Error, $"Exchange SQLite exception when implementing version 104. Exception {ex}");
                     lSqliteTransaction.Rollback();
                     throw;
                 }
@@ -273,6 +296,33 @@ namespace Pandora.Client.Exchange.SaveManagers
                         lVersion = rdr.GetInt32(0);
                 lConnection.Close();
                 return lVersion;
+            }
+        }
+
+        public void RemoveKeyValue(string aKey, int aProfileID)
+        {
+            if (aKey.Length > 32) throw new InvalidDataException("The Key argument is greater than 32");
+            if (!Initialized && !FReadOnly) throw new Exception("Save manager not initialized");
+            using (SQLiteConnection lConnection = new SQLiteConnection(FConnectionString))
+            {
+                lConnection.Open();
+                using (var lSqliteTransaction = lConnection.BeginTransaction())
+                    try
+                    {
+                        using (SQLiteCommand lSQLiteCommand = new SQLiteCommand($"DELETE FROM KeyValue WHERE keyname = '{aKey}' and profileid = {aProfileID}", lConnection))
+                            lSQLiteCommand.ExecuteNonQuery();                        
+                        lSqliteTransaction.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        Universal.Log.Write(Universal.LogLevel.Error, $"Exchange SQLite exception when deleting key value. Key: {aKey},  ProfileID: {aProfileID}. Exception {ex}");
+                        lSqliteTransaction.Rollback();
+                        throw;
+                    }
+                    finally
+                    {
+                        lConnection.Close();
+                    }
             }
         }
 
@@ -441,8 +491,7 @@ namespace Pandora.Client.Exchange.SaveManagers
                             {
                                 ProfileID = rdr.GetInt32(0),
                                 Name = rdr.GetString(1),
-                                ExchangeID = (uint)rdr.GetInt32(2),
-                                ExchangeEntity = null
+                                ExchangeID = (uint)rdr.GetInt32(2)
                             });
                 }
                 finally
@@ -472,36 +521,49 @@ namespace Pandora.Client.Exchange.SaveManagers
             }
         }
 
-        public bool WriteTransaction(MarketOrder aMarketTransaction)
+        public long? WriteOrder(UserTradeOrder aMarketTransaction)
         {
             if (!Initialized && !FReadOnly)
                 throw new Exception("Save manager not initialized");
             using (SQLiteConnection lConnection = new SQLiteConnection(FConnectionString))
             {
+                SQLiteTransaction lTransaction;
                 lConnection.Open();
-                SQLiteCommand lCommand = new SQLiteCommand("INSERT OR REPLACE INTO ExchangeTx (ID,Market, Quantity, OpenTime, Rate, Stop, Completed, Cancelled, Status, CoinTXID, BaseTicker, Name, ProfileID) VALUES (@Id, @Market, @Quantity, @Opentime, @Rate, @Stop, @Completed, @Cancelled, @Status, @CoinTxID, @BaseTicker, @Name, @ProfileID)", lConnection);
-                lCommand.Parameters.Add(new SQLiteParameter("@Id", aMarketTransaction.ID));
-                lCommand.Parameters.Add(new SQLiteParameter("@Market", aMarketTransaction.Market));
-                lCommand.Parameters.Add(new SQLiteParameter("@Quantity", aMarketTransaction.SentQuantity));
-                lCommand.Parameters.Add(new SQLiteParameter("@Opentime", aMarketTransaction.OpenTime));
-                lCommand.Parameters.Add(new SQLiteParameter("@Rate", aMarketTransaction.Rate));
-                lCommand.Parameters.Add(new SQLiteParameter("@Stop", aMarketTransaction.StopPrice));
-                lCommand.Parameters.Add(new SQLiteParameter("@Completed", aMarketTransaction.Completed));
-                lCommand.Parameters.Add(new SQLiteParameter("@Cancelled", aMarketTransaction.Cancelled));
-                lCommand.Parameters.Add(new SQLiteParameter("@Status", aMarketTransaction.Status));
-                lCommand.Parameters.Add(new SQLiteParameter("@CoinTxID", aMarketTransaction.CoinTxID));
-                lCommand.Parameters.Add(new SQLiteParameter("@BaseTicker", aMarketTransaction.BaseTicker));
-                lCommand.Parameters.Add(new SQLiteParameter("@Name", aMarketTransaction.Name));
-                lCommand.Parameters.Add(new SQLiteParameter("@ProfileID", aMarketTransaction.ProfileID));
+                lTransaction = lConnection.BeginTransaction();
                 try
-                {
-                    lCommand.ExecuteNonQuery();
-                    return true;
+                {                    
+                    SQLiteCommand lCommand1 = new SQLiteCommand("INSERT OR REPLACE INTO ExchangeTx (ID,Market, Quantity, OpenTime, Rate, Stop, Completed, Cancelled, Status, CoinTXID, BaseTicker, Name, ProfileID) VALUES (@Id, @Market, @Quantity, @Opentime, @Rate, @Stop, @Completed, @Cancelled, @Status, @CoinTxID, @BaseTicker, @Name, @ProfileID); " +
+                        "SELECT InternalID FROM ExchangeTx where CoinTXID = @CoinTxID;", lConnection);
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Id", aMarketTransaction.ID));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Market", aMarketTransaction.ExchangeMarketName));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Quantity", aMarketTransaction.SentQuantity));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Opentime", aMarketTransaction.OpenTime));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Rate", aMarketTransaction.Rate));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Stop", aMarketTransaction.StopPrice));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Completed", aMarketTransaction.Completed));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Cancelled", aMarketTransaction.Cancelled));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Status", aMarketTransaction.Status));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@CoinTxID", aMarketTransaction.CoinTxID));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@BaseTicker", aMarketTransaction.BaseCurrency.Ticker));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@Name", aMarketTransaction.Name));
+                    lCommand1.Parameters.Add(new SQLiteParameter("@ProfileID", aMarketTransaction.ProfileID));
+                    var lId = lCommand1.ExecuteScalar() as long?;
+                    if (lId == null)
+                        throw new Exception("Failed to retrieve order id. Operation failed when writing order");
+
+                    SQLiteCommand lCommand2 = new SQLiteCommand("INSERT OR REPLACE INTO Relationship_ExchangeID_OrderID (InternalOrderID, ExchangeID) Values (@InternalID, @ExchangeID)",lConnection);
+                    lCommand2.Parameters.Add(new SQLiteParameter("@InternalID", lId));
+                    lCommand2.Parameters.Add(new SQLiteParameter("@ExchangeID", aMarketTransaction.PandoraExchangeID));
+                    lCommand2.ExecuteNonQuery();
+
+                    lTransaction.Commit();
+                    return lId;
                 }
                 catch (Exception ex)
                 {
-                    Universal.Log.Write(Universal.LogLevel.Error, $"Error writing exchange order from db. Exception {ex}");
-                    return false;
+                    lTransaction.Rollback();
+                    Universal.Log.Write(Universal.LogLevel.Error, $"Error writing exchange order from db. Exception details: {ex}");
+                    return null;                    
                 }
                 finally
                 {
@@ -510,35 +572,44 @@ namespace Pandora.Client.Exchange.SaveManagers
             }
         }
 
-        public bool UpdateTransaction(MarketOrder aMarketTransaction, OrderStatus aStatus)
+        public bool UpdateOrder(UserTradeOrder aMarketTransaction, OrderStatus aStatus)
         {
             if (!Initialized && !FReadOnly)
                 throw new Exception("Save manager not initialized");
             using (SQLiteConnection lConnection = new SQLiteConnection(FConnectionString))
             {
                 lConnection.Open();
-                SQLiteCommand lCommand = new SQLiteCommand("Update ExchangeTx SET ID = @Id, Market = @Market, Quantity = @Quantity, OpenTime = @Opentime, Rate = @Rate, Stop = @Stop, Completed = @Completed, Cancelled = @Cancelled, Status = @Status, CoinTXID = @CoinTxID, BaseTicker = @BaseTicker, Name = @Name, ProfileID = @ProfileID WHERE InternalID = " + aMarketTransaction.InternalID, lConnection);
-                lCommand.Parameters.Add(new SQLiteParameter("@Id", aMarketTransaction.ID));
-                lCommand.Parameters.Add(new SQLiteParameter("@Market", aMarketTransaction.Market));
-                lCommand.Parameters.Add(new SQLiteParameter("@Quantity", aMarketTransaction.SentQuantity));
-                lCommand.Parameters.Add(new SQLiteParameter("@Opentime", aMarketTransaction.OpenTime));
-                lCommand.Parameters.Add(new SQLiteParameter("@Rate", aMarketTransaction.Rate));
-                lCommand.Parameters.Add(new SQLiteParameter("@Stop", aMarketTransaction.StopPrice));
-                lCommand.Parameters.Add(new SQLiteParameter("@Completed", aMarketTransaction.Completed));
-                lCommand.Parameters.Add(new SQLiteParameter("@Cancelled", aMarketTransaction.Cancelled));
-                lCommand.Parameters.Add(new SQLiteParameter("@Status", (int)aStatus));
-                lCommand.Parameters.Add(new SQLiteParameter("@CoinTxID", aMarketTransaction.CoinTxID));
-                lCommand.Parameters.Add(new SQLiteParameter("@BaseTicker", aMarketTransaction.BaseTicker));
-                lCommand.Parameters.Add(new SQLiteParameter("@Name", aMarketTransaction.Name));
-                lCommand.Parameters.Add(new SQLiteParameter("@ProfileID", aMarketTransaction.ProfileID));
+                var lTransaction = lConnection.BeginTransaction();
+                SQLiteCommand lCommand1 = new SQLiteCommand("Update ExchangeTx SET ID = @Id, Market = @Market, Quantity = @Quantity, OpenTime = @Opentime, Rate = @Rate, Stop = @Stop, Completed = @Completed, Cancelled = @Cancelled, Status = @Status, CoinTXID = @CoinTxID, BaseTicker = @BaseTicker, Name = @Name, ProfileID = @ProfileID WHERE InternalID = @InternalID", lConnection);
+                lCommand1.Parameters.Add(new SQLiteParameter("@InternalID", aMarketTransaction.InternalID));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Id", aMarketTransaction.ID));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Market", aMarketTransaction.ExchangeMarketName));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Quantity", aMarketTransaction.SentQuantity));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Opentime", aMarketTransaction.OpenTime));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Rate", aMarketTransaction.Rate));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Stop", aMarketTransaction.StopPrice));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Completed", aMarketTransaction.Completed));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Cancelled", aMarketTransaction.Cancelled));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Status", (int)aStatus));
+                lCommand1.Parameters.Add(new SQLiteParameter("@CoinTxID", aMarketTransaction.CoinTxID));
+                lCommand1.Parameters.Add(new SQLiteParameter("@BaseTicker", aMarketTransaction.BaseCurrency.Ticker));
+                lCommand1.Parameters.Add(new SQLiteParameter("@Name", aMarketTransaction.Name));
+                lCommand1.Parameters.Add(new SQLiteParameter("@ProfileID", aMarketTransaction.ProfileID));
+
+                SQLiteCommand lCommand2 = new SQLiteCommand("Update Relationship_ExchangeID_OrderID SET ExchangeID = @ExchangeID WHERE InternalOrderID = @InternalID", lConnection);
+                lCommand2.Parameters.Add(new SQLiteParameter("@InternalID", aMarketTransaction.InternalID));
+                lCommand2.Parameters.Add(new SQLiteParameter("@ExchangeID", aMarketTransaction.PandoraExchangeID));
 
                 try
                 {
-                    lCommand.ExecuteNonQuery();
+                    lCommand1.ExecuteNonQuery();
+                    lCommand2.ExecuteNonQuery();
+                    lTransaction.Commit();
                     return true;
                 }
                 catch (Exception ex)
                 {
+                    lTransaction.Rollback();
                     Universal.Log.Write(Universal.LogLevel.Error, $"Error updating exchange order from db. Exception {ex}");
                     return false;
                 }
@@ -622,18 +693,20 @@ namespace Pandora.Client.Exchange.SaveManagers
             }
         }
 
-        public bool ReadTransactions(out MarketOrder[] aMarketOrders, string aBaseTicker = null)
+        public bool ReadOrders(out UserTradeOrder[] aMarketOrders, string aBaseTicker = null, int aExchangeID = -1)
         {
             if (!Initialized)
                 throw new Exception("Save manager not initialized");
-            string lQry = "SELECT InternalID, ID, Market, Quantity, OpenTime, Rate, Completed, Cancelled, Status, CoinTxID, BaseTicker, Name, Stop, ProfileID FROM ExchangeTx ";
+            string lQry = "SELECT A.InternalID, A.ID, A.Market, A.Quantity, A.OpenTime, A.Rate, A.Completed, A.Cancelled, A.Status, A.CoinTxID, A.BaseTicker, A.Name, A.Stop, A.ProfileID, B.ExchangeID FROM ExchangeTx A " +
+                "inner join Relationship_ExchangeID_OrderID B ON A.InternalID = B.InternalOrderID WHERE 1";
             if (aBaseTicker != null)
-            {
-                lQry += "where BaseTicker = '" + aBaseTicker + "'";
-            }
+                lQry += $" AND A.BaseTicker = '{aBaseTicker}' ";
+            if(aExchangeID >0)
+                lQry += $" AND B.ExchangeID = {aExchangeID}";
+
 
             aMarketOrders = null;
-            List<MarketOrder> lListOrders = new List<MarketOrder>();
+            List<UserTradeOrder> lListOrders = new List<UserTradeOrder>();
 
             using (SQLiteConnection lConnection = new SQLiteConnection(FConnectionString))
             using (SQLiteCommand command = new SQLiteCommand(lQry, lConnection))
@@ -649,11 +722,11 @@ namespace Pandora.Client.Exchange.SaveManagers
                             decimal lRate = rdr.GetDecimal(5);
                             decimal lStop = rdr.GetDecimal(12);
 
-                            MarketOrder lOrder = new MarketOrder
+                            UserTradeOrder lOrder = new UserTradeOrder
                             {
                                 InternalID = rdr.GetInt32(0),
                                 ID = rdr[1] as string,
-                                Market = rdr.GetString(2),
+                                ExchangeMarketName = rdr.GetString(2),
                                 SentQuantity = rdr.GetDecimal(3),
                                 OpenTime = rdr.GetDateTime(4),
                                 Rate = lRate,
@@ -661,12 +734,12 @@ namespace Pandora.Client.Exchange.SaveManagers
                                 Cancelled = rdr.GetBoolean(7),
                                 Status = (OrderStatus)rdr.GetInt32(8),
                                 CoinTxID = rdr.GetString(9),
-                                BaseTicker = rdr.GetString(10),
                                 Name = rdr.GetString(11),
                                 StopPrice = lStop == 0 ? lRate : lStop,
-                                ProfileID = rdr.GetInt32(13)
+                                ProfileID = rdr.GetInt32(13),
+                                PandoraExchangeID = rdr.GetInt32(14)
                             };
-
+                            lOrder.BaseCurrency.Ticker = rdr.GetString(10);
                             lListOrders.Add(lOrder);
                         }
                     }

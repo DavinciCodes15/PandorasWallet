@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Pandora.Client.Exchange.Objects;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,13 +16,13 @@ namespace Pandora.Client.Exchange.SaveManagers
 
         bool ReadOrderLogs(int aOrderID, out List<OrderMessage> aMessages);
 
-        bool ReadTransactions(out MarketOrder[] aMarketOrders, string aBaseTicker = null);
+        bool ReadOrders(out UserTradeOrder[] aMarketOrders, string aBaseTicker = null, int aExchangeID = -1);
 
         bool WriteOrderLog(int aOrderID, string aMessage, OrderMessage.OrderMessageLevel aMessageLevel);
 
-        bool WriteTransaction(MarketOrder aMarketTransaction);
+        long? WriteOrder(UserTradeOrder aMarketTransaction);
 
-        bool UpdateTransaction(MarketOrder aMarketTransaction, OrderStatus aStatus);
+        bool UpdateOrder(UserTradeOrder aMarketTransaction, OrderStatus aStatus);
 
         PandoraExchangeProfile[] LoadProfiles();
 

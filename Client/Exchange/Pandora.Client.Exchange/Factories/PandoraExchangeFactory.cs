@@ -1,7 +1,9 @@
 ﻿using Pandora.Client.Exchange.Exchanges;
 using Pandora.Client.Universal;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -9,34 +11,42 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.Exchange.Factories
 {
-    public class PandoraExchangeFactory : IPandoraExchangeFactory
+    internal class PandoraExchangeFactory : IPandoraExchangeFactory
     {
-        protected static Dictionary<Type, PandoraExchangeFactory> FInstances = new Dictionary<Type, PandoraExchangeFactory>();
-        protected Type FType;
-
-        protected PandoraExchangeFactory(Type aType)
+        private ConcurrentDictionary<AvailableExchangesList, IPandoraExchanger> FExchangeInstances;
+        private IReadOnlyDictionary<AvailableExchangesList, Type> FInventoryTypes;
+        internal PandoraExchangeFactory(IReadOnlyDictionary<AvailableExchangesList,Type> aInventoryOfTypes)
         {
-            FType = aType;
+            FExchangeInstances = new ConcurrentDictionary<AvailableExchangesList, IPandoraExchanger>();
+            FInventoryTypes = aInventoryOfTypes;
         }
 
-        public static PandoraExchangeFactory GetInstance(Type aType)
+        public IPandoraExchanger GetPandoraExchange(AvailableExchangesList aExchangeElement)
         {
-            if (!FInstances.TryGetValue(aType, out PandoraExchangeFactory lFactory))
+            if (!FInventoryTypes.ContainsKey(aExchangeElement))
+                throw new Exception($"Exchange element with name {aExchangeElement.ToString()} is not present at type inventory.");
+            if (!FExchangeInstances.TryGetValue(aExchangeElement, out IPandoraExchanger lExchangeInstance))
             {
-                lFactory = new PandoraExchangeFactory(aType);
-                FInstances.Add(aType, lFactory);
-            }
-            return lFactory;
+                lExchangeInstance = CreateNewExchangeInstance(FInventoryTypes[aExchangeElement]);
+                FExchangeInstances.TryAdd(aExchangeElement, lExchangeInstance);
+            }            
+            return lExchangeInstance;
         }
 
-        public virtual IPandoraExchange GetNewPandoraExchange(params string[] aParams)
+        public IEnumerable<IPandoraExchanger> GetPandoraExchanges()
         {
-            if (!typeof(IPandoraExchange).IsAssignableFrom(FType))
-                throw new Exception($"Lib error. Class {FType.Name} does not implement IPandoraExchange interface");
-            var lActivatorFlags = BindingFlags.Public | BindingFlags.Instance;
-            var lParameters = new object[] { aParams[0], aParams[1] };
-            var lResult = (IPandoraExchange)Activator.CreateInstance(FType, lActivatorFlags, null, lParameters, null);
-            return lResult;
+            return FExchangeInstances.Values.ToArray();
         }
+
+
+        private IPandoraExchanger CreateNewExchangeInstance(Type aExchangeType)
+        {
+            Type lPandoraExchangeType = typeof(IPandoraExchanger);
+            if (!lPandoraExchangeType.IsAssignableFrom(aExchangeType))
+                throw new Exception($"Lib error. Class {aExchangeType.Name} does not implement {lPandoraExchangeType.Name} interface");
+            return (IPandoraExchanger) Activator.CreateInstance(aExchangeType,true);
+        }
+
+
     }
 }

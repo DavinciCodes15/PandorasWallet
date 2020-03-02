@@ -3,8 +3,17 @@ using System.Collections.Generic;
 
 namespace Pandora.Client.Exchange.JKrof.Objects
 {
+    /// <summary>
+    /// Comparer for byte order
+    /// </summary>
     public class ByteOrderComparer : IComparer<byte[]>
     {
+        /// <summary>
+        /// Compare function
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public int Compare(byte[] x, byte[] y)
         {
             // Shortcuts: If both are null, they are the same.
@@ -12,8 +21,8 @@ namespace Pandora.Client.Exchange.JKrof.Objects
 
             // If one is null and the other isn't, then the
             // one that is null is "lesser".
-            if (x == null && y != null) return -1;
-            if (x != null && y == null) return 1;
+            if (x == null) return -1;
+            if (y == null) return 1;
 
             // Both arrays are non-null.  Find the shorter
             // of the two lengths.

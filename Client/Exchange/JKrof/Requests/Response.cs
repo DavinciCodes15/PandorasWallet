@@ -1,28 +1,47 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Pandora.Client.Exchange.JKrof.Interfaces;
 
 namespace Pandora.Client.Exchange.JKrof.Requests
 {
-    public class Response : IResponse
+    /// <summary>
+    /// HttpWebResponse response object
+    /// </summary>
+    internal class Response : IResponse
     {
-        private readonly HttpWebResponse response;
+        private readonly HttpResponseMessage response;
 
+        /// <inheritdoc />
         public HttpStatusCode StatusCode => response.StatusCode;
 
-        public Response(HttpWebResponse response)
+        /// <inheritdoc />
+        public bool IsSuccessStatusCode => response.IsSuccessStatusCode;
+
+        /// <inheritdoc />
+        public IEnumerable<KeyValuePair<string, IEnumerable<string>>> ResponseHeaders => response.Headers;
+
+        /// <summary>
+        /// Create response for a http response message
+        /// </summary>
+        /// <param name="response">The actual response</param>
+        public Response(HttpResponseMessage response)
         {
             this.response = response;
         }
 
-        public Stream GetResponseStream()
+        /// <inheritdoc />
+        public async Task<Stream> GetResponseStream()
         {
-            return response.GetResponseStream();
+            return await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
         }
 
+        /// <inheritdoc />
         public void Close()
         {
-            response.Close();
+            response.Dispose();
         }
     }
 }

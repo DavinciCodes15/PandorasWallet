@@ -7,19 +7,43 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Pandora.Client.Exchange.JKrof
 {
+    /// <summary>
+    /// The base for all clients
+    /// </summary>
     public abstract class BaseClient : IDisposable
     {
-        public string BaseAddress { get; private set; }
-        protected Log log;
+        /// <summary>
+        /// The address of the client
+        /// </summary>
+        public string BaseAddress { get; }
+        /// <summary>
+        /// The log object
+        /// </summary>
+        protected internal Log log;
+        /// <summary>
+        /// The api proxy
+        /// </summary>
         protected ApiProxy apiProxy;
-        protected AuthenticationProvider authProvider;
+        /// <summary>
+        /// The auth provider
+        /// </summary>
+        protected internal AuthenticationProvider authProvider;
 
+        /// <summary>
+        /// The last used id
+        /// </summary>
         protected static int lastId;
+        /// <summary>
+        /// Lock for id generating
+        /// </summary>
         protected static object idLock = new object();
 
         private static readonly JsonSerializer defaultSerializer = JsonSerializer.Create(new JsonSerializerSettings
@@ -28,28 +52,27 @@ namespace Pandora.Client.Exchange.JKrof
             Culture = CultureInfo.InvariantCulture
         });
 
+        /// <summary>
+        /// Last is used
+        /// </summary>
         public static int LastId => lastId;
 
-        protected BaseClient(ExchangeOptions options, AuthenticationProvider authenticationProvider)
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="authenticationProvider"></param>
+        protected BaseClient(ClientOptions options, AuthenticationProvider authenticationProvider)
         {
             log = new Log();
             authProvider = authenticationProvider;
-            Configure(options);
-        }
+            log.UpdateWriters(options.LogWriters);
+            log.Level = options.LogVerbosity;
 
-        /// <summary>
-        /// Configure the client using the provided options
-        /// </summary>
-        /// <param name="exchangeOptions">Options</param>
-        protected void Configure(ExchangeOptions exchangeOptions)
-        {
-            log.UpdateWriters(exchangeOptions.LogWriters);
-            log.Level = exchangeOptions.LogVerbosity;
+            BaseAddress = options.BaseAddress;
+            apiProxy = options.Proxy;
 
-            BaseAddress = exchangeOptions.BaseAddress;
-            apiProxy = exchangeOptions.Proxy;
-            if (apiProxy != null)
-                log.Write(LogVerbosity.Debug, $"Setting api proxy to {exchangeOptions.Proxy.Host}:{exchangeOptions.Proxy.Port}");
+            log.Write(LogVerbosity.Debug, $"Client configuration: {options}");
         }
 
         /// <summary>
@@ -83,19 +106,16 @@ namespace Pandora.Client.Exchange.JKrof
             catch (JsonReaderException jre)
             {
                 var info = $"Deserialize JsonReaderException: {jre.Message}, Path: {jre.Path}, LineNumber: {jre.LineNumber}, LinePosition: {jre.LinePosition}. Data: {data}";
-                log.Write(LogVerbosity.Error, info);
                 return new CallResult<JToken>(null, new DeserializeError(info));
             }
             catch (JsonSerializationException jse)
             {
                 var info = $"Deserialize JsonSerializationException: {jse.Message}. Data: {data}";
-                log.Write(LogVerbosity.Error, info);
                 return new CallResult<JToken>(null, new DeserializeError(info));
             }
             catch (Exception ex)
             {
                 var info = $"Deserialize Unknown Exception: {ex.Message}. Data: {data}";
-                log.Write(LogVerbosity.Error, info);
                 return new CallResult<JToken>(null, new DeserializeError(info));
             }
         }
@@ -111,7 +131,13 @@ namespace Pandora.Client.Exchange.JKrof
         protected CallResult<T> Deserialize<T>(string data, bool checkObject = true, JsonSerializer serializer = null)
         {
             var tokenResult = ValidateJson(data);
-            return !tokenResult.Success ? new CallResult<T>(default(T), tokenResult.Error) : Deserialize<T>(tokenResult.Data, checkObject, serializer);
+            if (!tokenResult)
+            {
+                log.Write(LogVerbosity.Error, tokenResult.Error.Message);
+                return new CallResult<T>(default, tokenResult.Error);
+            }
+
+            return Deserialize<T>(tokenResult.Data, checkObject, serializer);
         }
 
         /// <summary>
@@ -155,20 +181,79 @@ namespace Pandora.Client.Exchange.JKrof
             {
                 var info = $"Deserialize JsonReaderException: {jre.Message}, Path: {jre.Path}, LineNumber: {jre.LineNumber}, LinePosition: {jre.LinePosition}. Received data: {obj}";
                 log.Write(LogVerbosity.Error, info);
-                return new CallResult<T>(default(T), new DeserializeError(info));
+                return new CallResult<T>(default, new DeserializeError(info));
             }
             catch (JsonSerializationException jse)
             {
                 var info = $"Deserialize JsonSerializationException: {jse.Message}. Received data: {obj}";
                 log.Write(LogVerbosity.Error, info);
-                return new CallResult<T>(default(T), new DeserializeError(info));
+                return new CallResult<T>(default, new DeserializeError(info));
             }
             catch (Exception ex)
             {
                 var info = $"Deserialize Unknown Exception: {ex.Message}. Received data: {obj}";
                 log.Write(LogVerbosity.Error, info);
-                return new CallResult<T>(default(T), new DeserializeError(info));
+                return new CallResult<T>(default, new DeserializeError(info));
             }
+        }
+
+        /// <summary>
+        /// Deserialize a stream into an object
+        /// </summary>
+        /// <typeparam name="T">The type to deserialize into</typeparam>
+        /// <param name="stream">The stream to deserialize</param>
+        /// <param name="serializer">A specific serializer to use</param>
+        /// <returns></returns>
+        protected async Task<CallResult<T>> Deserialize<T>(Stream stream, JsonSerializer serializer = null)
+        {
+            if (serializer == null)
+                serializer = defaultSerializer;
+
+            try
+            {
+                using (var reader = new StreamReader(stream, Encoding.UTF8, false, 512, true))
+                {
+                    if (log.Level == LogVerbosity.Debug)
+                    {
+                        var data = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        log.Write(LogVerbosity.Debug, $"Data received: {data}");
+                        return new CallResult<T>(JsonConvert.DeserializeObject<T>(data), null);
+                    }
+
+                    using(var jsonReader = new JsonTextReader(reader))
+                        return new CallResult<T>(serializer.Deserialize<T>(jsonReader), null);
+                }
+            }
+            catch (JsonReaderException jre)
+            {
+                if(stream.CanSeek)
+                    stream.Seek(0, SeekOrigin.Begin);
+                var data = await ReadStream(stream).ConfigureAwait(false);
+                log.Write(LogVerbosity.Error, $"Deserialize JsonReaderException: {jre.Message}, Path: {jre.Path}, LineNumber: {jre.LineNumber}, LinePosition: {jre.LinePosition}, data: {data}");
+                return new CallResult<T>(default, new DeserializeError(data));
+            }
+            catch (JsonSerializationException jse)
+            {
+                if (stream.CanSeek)
+                    stream.Seek(0, SeekOrigin.Begin);
+                var data = await ReadStream(stream).ConfigureAwait(false);
+                log.Write(LogVerbosity.Error, $"Deserialize JsonSerializationException: {jse.Message}, data: {data}");
+                return new CallResult<T>(default, new DeserializeError(data));
+            }
+            catch (Exception ex)
+            {
+                if (stream.CanSeek)
+                    stream.Seek(0, SeekOrigin.Begin);
+                var data = await ReadStream(stream).ConfigureAwait(false);
+                log.Write(LogVerbosity.Error, $"Deserialize Unknown Exception: {ex.Message}, data: {data}");
+                return new CallResult<T>(default, new DeserializeError(data));
+            }
+        }
+
+        private async Task<string> ReadStream(Stream stream)
+        {
+            using (var reader = new StreamReader(stream, Encoding.UTF8, false, 512, true))
+                return await reader.ReadToEndAsync().ConfigureAwait(false);
         }
 
         private void CheckObject(Type type, JObject obj)
@@ -204,13 +289,17 @@ namespace Pandora.Client.Exchange.JKrof
                 if (d == null)
                 {
                     d = properties.SingleOrDefault(p => string.Equals(p, token.Key, StringComparison.CurrentCultureIgnoreCase));
-                    if (d == null && !(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                    if (d == null)
                     {
-                        log.Write(LogVerbosity.Warning, $"Local object doesn't have property `{token.Key}` expected in type `{type.Name}`");
-                        isDif = true;
+                        if (!(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)))
+                        {
+                            log.Write(LogVerbosity.Warning, $"Local object doesn't have property `{token.Key}` expected in type `{type.Name}`");
+                            isDif = true;
+                        }
                         continue;
                     }
                 }
+
                 properties.Remove(d);
 
                 var propType = GetProperty(d, props)?.PropertyType;
@@ -248,7 +337,7 @@ namespace Pandora.Client.Exchange.JKrof
                 var attr = prop.GetCustomAttributes(typeof(JsonPropertyAttribute), false).FirstOrDefault();
                 if (attr == null)
                 {
-                    if (String.Equals(prop.Name, name, StringComparison.CurrentCultureIgnoreCase))
+                    if (string.Equals(prop.Name, name, StringComparison.CurrentCultureIgnoreCase))
                         return prop;
                 }
                 else
@@ -306,6 +395,9 @@ namespace Pandora.Client.Exchange.JKrof
             return path;
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
         public virtual void Dispose()
         {
             authProvider?.Credentials?.Dispose();

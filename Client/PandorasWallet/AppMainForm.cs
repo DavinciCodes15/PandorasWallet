@@ -216,7 +216,7 @@ namespace Pandora.Client.PandorasWallet
             this.ClearListExchangeTo();
             this.ClearOrderHistory();
             ToSendAddress = string.Empty;
-            ToSendAmount = 0;
+            ToSendAmount = 0;            
         }
 
         public static string FormatedAmount(decimal aAmount, ushort aPrecision)
@@ -233,19 +233,28 @@ namespace Pandora.Client.PandorasWallet
                 TransactionView.Items.Clear();
                 if (FCurrencyLookup.ContainsKey(lId))
                 {
+                    //The call of OnSelectedCurrencyChanged is async to accelerate a little the operation of counstruccion of the interface
+                    var lInvokeResults = new List<IAsyncResult>();
+                    foreach(var lDelegate in OnSelectedCurrencyChanged.GetInvocationList())
+                        lInvokeResults.Add(this.BeginInvoke(lDelegate));
                     SelectedCurrency = FCurrencyLookup[SelectedCurrencyId];
                     this.CoinImage = Globals.BytesToIcon(SelectedCurrency.Icon).ToBitmap();
                     UpdateCurrencyView();
                     this.NotesBox = "";
-
                     foreach (var lTransaction in SelectedCurrency.Transactions)
                         AddTransaction(lTransaction);
-                    OnSelectedCurrencyChanged?.Invoke(sender, e);
+                    foreach (var lResult in lInvokeResults)
+                        this.EndInvoke(lResult);
+
                 }
             }
             catch (Exception ex)
             {
                 this.StandardExceptionMsgBox(ex);
+            }
+            finally
+            {
+                this.SetArrowCursor();
             }
         }
 
@@ -661,7 +670,7 @@ namespace Pandora.Client.PandorasWallet
 
         //-------------------------------------------------------------------------Exchanges and Trade History-------------------------------------------------------------------------
 
-        public string SelectedExchange { get => cbExchange.GetItemText(cbExchange.SelectedItem) == "--Select--" ? string.Empty : cbExchange.GetItemText(cbExchange.SelectedItem); set => cbExchange.SelectedIndex = (Convert.ToInt32(value)); }
+        public ExchangeItem SelectedExchange { get => cbExchange.GetItemText(cbExchange.SelectedItem) == "--Select--" ? null : (ExchangeItem) cbExchange.SelectedItem;}
 
         public ListView.ListViewItemCollection ExchangeCoinItems => lstExchangeMarket.Items;
 
@@ -690,20 +699,36 @@ namespace Pandora.Client.PandorasWallet
 
         public event Action OnStopPriceTextChanged;
 
+        private int FLastStatusOrderID = -1;
+
         public void ClearExchangeList()
         {
             cbExchange.Items.Clear();
         }
 
-        public void AddExchanges(IEnumerable<string> aListOfExchanges)
+        public void AddExchange(ExchangeItem aExchangeItem)
         {
-            foreach (string it in aListOfExchanges)
-            {
-                if (!cbExchange.Items.Contains(it))
-                {
-                    cbExchange.Items.Add(it);
-                }
-            }
+            if (!cbExchange.Items.Contains(aExchangeItem))            
+                cbExchange.Items.Add(aExchangeItem);
+        }
+
+        public void AddExchange(IEnumerable<ExchangeItem> aExchangeItems)
+        {
+            foreach (var lExchangeItem in aExchangeItems)
+                AddExchange(lExchangeItem);
+        }
+
+        public void ChangeExchangeSelection(string aExchangeName)
+        {
+            if (string.IsNullOrEmpty(aExchangeName)) cbExchange.SelectedIndex = -1;
+            else
+                cbExchange.SelectedIndex = cbExchange.FindStringExact(aExchangeName);
+        }
+
+        public class ExchangeItem
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
         }
 
         /// <summary>
@@ -715,22 +740,29 @@ namespace Pandora.Client.PandorasWallet
         /// <param name="aPrice">Market price in BTC for currency item to update</param>
         public void AddCoinExchangeTo(long aCurrencyId, string aCurrencyName, string aCurrencySymbol, decimal aPrice)
         {
-            string lCurrencyIDString = aCurrencyId.ToString();
-            ListViewItem lNewItemToAdd = new ListViewItem();
-            lNewItemToAdd.Name = lCurrencyIDString;
-            lNewItemToAdd.Text = aCurrencyName;
-            lNewItemToAdd.SubItems.Add(aCurrencySymbol);
-            lNewItemToAdd.SubItems.Add(aPrice.ToString());
-            lNewItemToAdd.ImageKey = aCurrencyId.ToString();
-            lstExchangeMarket.BeginUpdate();
-            bool isSelected = SelectedExchangeMarket != null ? SelectedExchangeMarket.Name == lCurrencyIDString : false;
-            var lIndex = lstExchangeMarket.Items.IndexOfKey(lCurrencyIDString);
-            if (lIndex >= 0)
-                lstExchangeMarket.Items[lIndex] = lNewItemToAdd;
-            else
-                lstExchangeMarket.Items.Add(lNewItemToAdd);
-            lNewItemToAdd.Selected = lNewItemToAdd.Focused = isSelected;
-            lstExchangeMarket.EndUpdate();
+            try
+            {
+                string lCurrencyIDString = aCurrencyId.ToString();
+                ListViewItem lNewItemToAdd = new ListViewItem();
+                lNewItemToAdd.Name = lCurrencyIDString;
+                lNewItemToAdd.Text = aCurrencyName;
+                lNewItemToAdd.SubItems.Add(aCurrencySymbol);
+                lNewItemToAdd.SubItems.Add(aPrice.ToString());
+                lNewItemToAdd.ImageKey = aCurrencyId.ToString();
+                lstExchangeMarket.BeginUpdate();
+                bool isSelected = SelectedExchangeMarket != null ? SelectedExchangeMarket.Name == lCurrencyIDString : false;
+                var lIndex = lstExchangeMarket.Items.IndexOfKey(lCurrencyIDString);
+                if (lIndex >= 0)
+                    lstExchangeMarket.Items[lIndex] = lNewItemToAdd;
+                else
+                    lstExchangeMarket.Items.Add(lNewItemToAdd);
+                lNewItemToAdd.Selected = lNewItemToAdd.Focused = isSelected;
+                lstExchangeMarket.EndUpdate();
+            }
+            catch(Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
         }
 
         public void ClearListExchangeTo()
@@ -763,7 +795,7 @@ namespace Pandora.Client.PandorasWallet
             {
                 if (!object.ReferenceEquals(aOrder, lOrderViewModel))
                     lOrderViewModel.CopyFrom(aOrder);
-                AddTooOrderLstViewItemCache(aOrder, aCurrencyID);
+                AddToOrderLstViewItemCache(aOrder, aCurrencyID);
                 if (aUpdateListView)
                     UpdateOrderLstView(aOrder.ID, aCurrencyID);
             }
@@ -805,8 +837,6 @@ namespace Pandora.Client.PandorasWallet
             return lResult;
         }
 
-        private int FLastStatusOrderID = -1;
-
         public void SetExchangeLastOrder(int aOrderID)
         {
             if (FLastStatusOrderID >= 0)
@@ -816,16 +846,19 @@ namespace Pandora.Client.PandorasWallet
             {
                 foreach (var lOrderMessage in aOrder.GetLogs())
                     StatusControlExchange.AddStatus(lOrderMessage.ID, lOrderMessage.Time, lOrderMessage.Message);
+                FLastStatusOrderID = aOrderID;
                 aOrder.OnNewLogAdded += LastOrder_OnNewLogAdded;
+
             }
         }
 
-        private void LastOrder_OnNewLogAdded(ExchangeOrderLogViewModel aLog)
+        private void LastOrder_OnNewLogAdded(int aParentOrderID,ExchangeOrderLogViewModel aLog)
         {
-            StatusControlExchange.AddStatus(aLog.ID, aLog.Time, aLog.Message);
+            if (FLastStatusOrderID == aParentOrderID)
+                StatusControlExchange.AddStatus(aLog.ID, aLog.Time, aLog.Message);
         }
 
-        private void AddTooOrderLstViewItemCache(ExchangeOrderViewModel aOrder, long aCurrencyID)
+        private void AddToOrderLstViewItemCache(ExchangeOrderViewModel aOrder, long aCurrencyID)
         {
             var lNewItem = ConstructOrderHistoryLstViewItem(aOrder);
             FExchangeOrderLstViewItems[aOrder.ID] = lNewItem;
@@ -844,7 +877,10 @@ namespace Pandora.Client.PandorasWallet
             if (FExchangeOrdersByCurrency.TryGetValue(aCurrencyID, out List<int> lOrdersID))
             {
                 foreach (var lOrderID in lOrdersID)
-                    UpdateOrderLstViewWith(lOrderID, FExchangeOrderLstViewItems[lOrderID], false);
+                {
+                    if(FExchangeOrders[lOrderID].ExchangeID == SelectedExchange.ID)
+                        UpdateOrderLstViewWith(lOrderID, FExchangeOrderLstViewItems[lOrderID], false);
+                }
             }
             statscntrlTradeHistory.ClearStatusList();
         }
@@ -853,7 +889,10 @@ namespace Pandora.Client.PandorasWallet
         {
             ClearOrderHistory();
             foreach (var lOrder in FExchangeOrderLstViewItems)
-                UpdateOrderLstViewWith(lOrder.Key, lOrder.Value, false);
+            {
+                if (FExchangeOrders[lOrder.Key].ExchangeID == SelectedExchange.ID)
+                    UpdateOrderLstViewWith(lOrder.Key, lOrder.Value, false);
+            }
             statscntrlTradeHistory.ClearStatusList();
         }
 
@@ -987,9 +1026,12 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void ExchangeOrder_OnNewLogAdded(ExchangeOrderLogViewModel aLog)
+        private void ExchangeOrder_OnNewLogAdded(int aParentOrderID,ExchangeOrderLogViewModel aLog)
         {
-            statscntrlTradeHistory.AddStatus(aLog.ID, aLog.Time, aLog.Message);
+            var lCurrentSelected = SelectedOrderHistory?.Name;
+            int lID = lCurrentSelected != null? -1 : Convert.ToInt32(lCurrentSelected);
+            if (lID == aParentOrderID)
+                statscntrlTradeHistory.AddStatus(aLog.ID, aLog.Time, aLog.Message);
         }
 
         private void cbExchanges_OnSelectedIndexChanged(object sender, EventArgs e)
@@ -1008,6 +1050,10 @@ namespace Pandora.Client.PandorasWallet
             catch (Exception ex)
             {
                 this.StandardExceptionMsgBox(ex);
+            }
+            finally
+            {
+                this.SetArrowCursor();
             }
         }
 
@@ -1308,8 +1354,7 @@ namespace Pandora.Client.PandorasWallet
         {
             public class ExchangeOrderViewModelContextData
             {
-                public Exchange.PandoraExchanger.ExchangeMarket Market { get; set; }
-                public decimal ExchangeFee { get; set; }
+                public Exchange.Objects.ExchangeMarket Market { get; set; }
                 public decimal TradeComission { get; set; }
                 public ushort Precision { get; set; }
 
@@ -1324,7 +1369,7 @@ namespace Pandora.Client.PandorasWallet
                 }
             }
 
-            public ExchangeOrderViewModel(Exchange.MarketOrder aOrder, ExchangeOrderViewModelContextData aContextData)
+            public ExchangeOrderViewModel(Exchange.Objects.UserTradeOrder aOrder, ExchangeOrderViewModelContextData aContextData)
             {
                 ID = aOrder.InternalID;
                 FOrderLogs = new Dictionary<int, ExchangeOrderLogViewModel>();
@@ -1334,9 +1379,10 @@ namespace Pandora.Client.PandorasWallet
                 Received = aContextData.GetReceivingQuantity(aOrder.SentQuantity, aOrder.Rate).ToString();
                 Price = aOrder.Rate.ToString();
                 Stop = aOrder.StopPrice.ToString();
-                Exchange = aOrder.Market;
+                Exchange = aOrder.ExchangeMarketName;
                 Time = aOrder.OpenTime.ToLocalTime().ToString();
                 Status = aOrder.Status.ToString();
+                ExchangeID = aOrder.PandoraExchangeID;
                 BaseCurrencyID = aContextData.Market.BaseCurrencyInfo.WalletID.Value;
                 DestinationCurrencyID = aContextData.Market.DestinationCurrencyInfo.WalletID.Value;
             }
@@ -1365,12 +1411,13 @@ namespace Pandora.Client.PandorasWallet
             public string Exchange { get; set; }
             public string Time { get; set; }
             public string Status { get; set; }
+            public int ExchangeID { get; private set; }
             public long BaseCurrencyID { get; private set; }
             public long DestinationCurrencyID { get; private set; }
             public int ID { get; private set; }
             private Dictionary<int, ExchangeOrderLogViewModel> FOrderLogs;
 
-            public event Action<ExchangeOrderLogViewModel> OnNewLogAdded;
+            public event Action<int, ExchangeOrderLogViewModel> OnNewLogAdded;
 
             public IEnumerable<ExchangeOrderLogViewModel> GetLogs()
             {
@@ -1389,7 +1436,7 @@ namespace Pandora.Client.PandorasWallet
                 {
                     FOrderLogs.Add(aLog.ID, aLog);
                     if (OnNewLogAdded != null)
-                        ContextData.MainForm.BeginInvoke(OnNewLogAdded, aLog);
+                        ContextData.MainForm.BeginInvoke(OnNewLogAdded, ID, aLog);
                 }
             }
         }
@@ -1549,6 +1596,10 @@ namespace Pandora.Client.PandorasWallet
                 ExchangeQuantity = lQuantityToSpend;
                 Application.DoEvents();
             }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
             finally
             {
                 this.SetArrowCursor();
@@ -1559,12 +1610,18 @@ namespace Pandora.Client.PandorasWallet
         private void DoExchangeChangeOfMarketOperation(long aWalletCurrencyID, long aMarketCurrencyID)
         {
             lstViewCurrencies.SelectedCurrencyId = aWalletCurrencyID;
-            Application.DoEvents();
+            do
+            { 
+                Application.DoEvents();
+                System.Threading.Thread.Sleep(100);
+            } while (lstExchangeMarket.Items.Count == 0);
+
             var lExchangeMarketItem = lstExchangeMarket.Items.Find(aMarketCurrencyID.ToString(), false).FirstOrDefault();
             if (lExchangeMarketItem == null)
-                throw new Exception("Unable to find exchange market");
-            lExchangeMarketItem.Selected = true;
-            Application.DoEvents();
+                return;
+            lExchangeMarketItem.Selected = true;            
+
+
         }
 
         private void lstExchangeMarket_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -1576,6 +1633,10 @@ namespace Pandora.Client.PandorasWallet
                 var lCurrencyIDFrom = SelectedCurrencyId;
                 var lCurrencyIDTo = Convert.ToInt32(SelectedExchangeMarket.Name);
                 DoExchangeChangeOfMarketOperation(lCurrencyIDTo, lCurrencyIDFrom);
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
             }
             finally
             {
@@ -1597,6 +1658,10 @@ namespace Pandora.Client.PandorasWallet
             catch(Exception ex)
             {
                 this.StandardExceptionMsgBox(ex);
+            }
+            finally
+            {
+                this.SetArrowCursor();
             }
         }
     }

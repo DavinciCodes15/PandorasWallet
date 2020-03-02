@@ -3,8 +3,12 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.Exchange.JKrof.Sockets
 {
+    /// <summary>
+    /// Subscription
+    /// </summary>
     public class UpdateSubscription
     {
+        private readonly SocketConnection connection;
         private readonly SocketSubscription subscription;
 
         /// <summary>
@@ -12,8 +16,8 @@ namespace Pandora.Client.Exchange.JKrof.Sockets
         /// </summary>
         public event Action ConnectionLost
         {
-            add => subscription.ConnectionLost += value;
-            remove => subscription.ConnectionLost -= value;
+            add => connection.ConnectionLost += value;
+            remove => connection.ConnectionLost -= value;
         }
 
         /// <summary>
@@ -21,8 +25,26 @@ namespace Pandora.Client.Exchange.JKrof.Sockets
         /// </summary>
         public event Action<TimeSpan> ConnectionRestored
         {
-            add => subscription.ConnectionRestored += value;
-            remove => subscription.ConnectionRestored -= value;
+            add => connection.ConnectionRestored += value;
+            remove => connection.ConnectionRestored -= value;
+        }
+
+        /// <summary>
+        /// Event when the connection to the server is paused. No operations can be performed while paused
+        /// </summary>
+        public event Action ActivityPaused
+        {
+            add => connection.ActivityPaused += value;
+            remove => connection.ActivityPaused -= value;
+        }
+
+        /// <summary>
+        /// Event when the connection to the server is unpaused
+        /// </summary>
+        public event Action ActivityUnpaused
+        {
+            add => connection.ActivityUnpaused += value;
+            remove => connection.ActivityUnpaused -= value;
         }
 
         /// <summary>
@@ -37,20 +59,35 @@ namespace Pandora.Client.Exchange.JKrof.Sockets
         /// <summary>
         /// The id of the socket
         /// </summary>
-        public int Id => subscription.Socket.Id;
+        public int Id => connection.Socket.Id;
 
-        public UpdateSubscription(SocketSubscription sub)
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="subscription"></param>
+        public UpdateSubscription(SocketConnection connection, SocketSubscription subscription)
         {
-            subscription = sub;
+            this.connection = connection;
+            this.subscription = subscription;
         }
-
+        
         /// <summary>
         /// Close the subscription
         /// </summary>
         /// <returns></returns>
         public async Task Close()
         {
-            await subscription.Close().ConfigureAwait(false);
+            await connection.Close(subscription).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Close the socket to cause a reconnect
+        /// </summary>
+        /// <returns></returns>
+        internal Task Reconnect()
+        {
+            return connection.Socket.Close();
         }
     }
 }
