@@ -390,7 +390,12 @@ namespace Pandora.Client.PandorasWallet.Controlers
             if (MainForm.ExchangeTargetPrice <= 0 || MainForm.ExchangeStopPrice <= 0)
                 throw new ClientExceptions.InvalidOperationException("Invalid target or stop price amount.");
             bool lMinimumTradeDirection = FExchangeSelectedCoin.MinTradeIsBaseCurrency ^ FExchangeSelectedCoin.IsSell;
+            if (MainForm.ExchangeQuantity == 0 && MainForm.ExchangeTotalReceived > 0)
+                MainForm_OnExchangeReceivedChanged();
+            if (MainForm.ExchangeTotalReceived == 0 && MainForm.ExchangeQuantity > 0)
+                MainForm_OnExchangeQuantityChanged();
             decimal lAmounTradeSize = lMinimumTradeDirection? MainForm.ExchangeQuantity : MainForm.ExchangeTotalReceived;
+            if(lAmounTradeSize <= 0) 
             if (FExchangeSelectedCoin.MinimumTrade >= (lAmounTradeSize))
                 throw new ClientExceptions.InvalidOperationException(string.Format("Minimum order trade size is {0} {1}", FExchangeSelectedCoin.MinimumTrade, lMinimumTradeDirection?FExchangeSelectedCoin.BaseCurrencyInfo.Name: FExchangeSelectedCoin.DestinationCurrencyInfo.Name));
             if (lAmountTrade > FPandoraClientControl.GetBalance(ActiveCurrencyID))

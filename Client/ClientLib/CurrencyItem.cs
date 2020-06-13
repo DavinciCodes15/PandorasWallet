@@ -20,6 +20,7 @@
 // THE SOFTWARE
 
 using System;
+using System.Numerics;
 using Pandora.Client.Crypto.Currencies;
 
 namespace Pandora.Client.ClientLib
@@ -31,7 +32,7 @@ namespace Pandora.Client.ClientLib
         {
         }
 
-        public CurrencyItem(long aId, string aName, string aTicker, ushort aPrecision, DateTime aLiveDate, int aMinConfirmations, byte[] aIcon, int aFeePerKb, ChainParams aChainParams, CurrencyStatus aStatus)
+        public CurrencyItem(long aId, string aName, string aTicker, ushort aPrecision, DateTime aLiveDate, int aMinConfirmations, byte[] aIcon, long aFeePerKb, ChainParams aChainParams, CurrencyStatus aStatus)
         {
             Id = aId;
             Name = aName;
@@ -51,28 +52,33 @@ namespace Pandora.Client.ClientLib
 
         public string Ticker { get; private set; }
 
-        public ushort Precision { get;  private set; }
+        public ushort Precision { get; private set; }
 
-        public DateTime LiveDate { get;  private set; }
+        public DateTime LiveDate { get; private set; }
 
         public int MinConfirmations { get; private set; }
 
-        public byte[] Icon { get;  private set; }
+        public byte[] Icon { get; private set; }
 
-        public int FeePerKb { get; private set; }
+        public long FeePerKb { get; private set; }
 
         public ChainParams ChainParamaters { get; set; }
 
         public CurrencyStatus CurrentStatus { get; set; }
 
-        public decimal AmountToDecimal(long aAmount)
+        public decimal AmountToDecimal(BigInteger aAmount)
         {
-            return Convert.ToDecimal(aAmount) / Convert.ToDecimal(Math.Pow(10, Precision));
+            return (decimal) aAmount / Convert.ToDecimal(Math.Pow(10, Precision));
         }
 
         public long AmountToLong(decimal aAmount)
         {
             return Convert.ToInt64(aAmount * Convert.ToDecimal(Math.Pow(10, Precision)));
+        }
+
+        public BigInteger AmountToBigInteger(decimal aAmount)
+        {
+            return new BigInteger(aAmount * Convert.ToDecimal(Math.Pow(10, Precision)));
         }
 
         public CurrencyItem CopyTo(CurrencyItem aDestinationItem)

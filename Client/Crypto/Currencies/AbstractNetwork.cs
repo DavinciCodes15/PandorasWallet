@@ -70,6 +70,27 @@ namespace Pandora.Client.Crypto.Currencies
             return null;
         }
 
+        public T Parse<T>(string str) where T : ICryptoCurrencyString
+        {
+            return (T)Parse(str, null);
+        }
+
+        public ICryptoCurrencyString Parse(string str)
+        {
+            return Parse(str, null);
+        }
+
+
+        public static ICryptoCurrencyString Parse(string str, Network expectedNetwork, Type targetType = null)
+        {
+            if (expectedNetwork == null)
+                throw new ArgumentNullException(nameof(expectedNetwork));
+            if (str == null)
+                throw new ArgumentNullException(nameof(str));
+            return expectedNetwork.Parse(str);
+        }
+  
+
         public static Network GetNetworkFromBase58Data(string base58, Base58Type? expectedType = null)
         {
             //foreach (var network in GetNetworks())

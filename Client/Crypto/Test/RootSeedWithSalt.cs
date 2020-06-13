@@ -1,9 +1,4 @@
-﻿using System.Text;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Pandora.Client.Crypto.Currencies.Bitcoin;
-using Pandora.Client.ClientLib;
-using NBitcoin;
-using Pandora.Client.Crypto.Currencies.Controls;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using Pandora.Client.Crypto.Currencies;

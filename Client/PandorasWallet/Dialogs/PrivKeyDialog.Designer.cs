@@ -34,12 +34,12 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(365, 270);
+            this.btnCancel.Location = new System.Drawing.Point(437, 270);
             this.btnCancel.Visible = false;
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(187, 270);
+            this.btnOK.Location = new System.Drawing.Point(219, 270);
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // txtBoxPrivkey
@@ -51,7 +51,7 @@
             this.txtBoxPrivkey.Multiline = true;
             this.txtBoxPrivkey.Name = "txtBoxPrivkey";
             this.txtBoxPrivkey.ReadOnly = true;
-            this.txtBoxPrivkey.Size = new System.Drawing.Size(426, 224);
+            this.txtBoxPrivkey.Size = new System.Drawing.Size(498, 224);
             this.txtBoxPrivkey.TabIndex = 7;
             // 
             // lblTitle
@@ -67,7 +67,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(452, 305);
+            this.ClientSize = new System.Drawing.Size(524, 305);
             this.Controls.Add(this.lblTitle);
             this.Controls.Add(this.txtBoxPrivkey);
             this.Name = "PrivKeyDialog";

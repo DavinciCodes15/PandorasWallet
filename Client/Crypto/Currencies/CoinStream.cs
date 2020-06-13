@@ -1,5 +1,4 @@
-﻿using Pandora.Client.Crypto.Currencies.Controls;
-using Pandora.Client.Crypto.Protocol;
+﻿using Pandora.Client.Crypto.Protocol;
 using System;
 using System.Collections.Generic;
 using System.IO;

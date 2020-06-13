@@ -77,7 +77,7 @@ namespace Pandora.Client.Crypto.Currencies
             _PartialMerkleTree = new PartialMerkleTree(vHashes.ToArray(), vMatch.ToArray());
         }
 
-        #region IBitcoinSerializable Members
+        #region ICoinSerializable Members
 
         public void ReadWrite(CoinStream stream)
         {
@@ -85,6 +85,6 @@ namespace Pandora.Client.Crypto.Currencies
             stream.ReadWrite(ref _PartialMerkleTree);
         }
 
-        #endregion IBitcoinSerializable Members
+        #endregion ICoinSerializable Members
     }
 }

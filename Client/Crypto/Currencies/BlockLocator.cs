@@ -29,13 +29,13 @@ namespace Pandora.Client.Crypto.Currencies
             }
         }
 
-        #region IBitcoinSerializable Members
+        #region ICoinSerializable Members
 
         public void ReadWrite(CoinStream stream)
         {
             stream.ReadWrite(ref vHave);
         }
 
-        #endregion IBitcoinSerializable Members
+        #endregion ICoinSerializable Members
     }
 }

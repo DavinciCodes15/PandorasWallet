@@ -1,13 +1,8 @@
 ﻿using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Pandora.Client.Crypto.Currencies.Bitcoin;
-using Pandora.Client.ClientLib;
-using Pandora.Client.Crypto.Currencies.Controls;
 using Pandora.Client.Crypto.Currencies;
 using System;
-using QBitNinja.Client;
-using N = NBitcoin;
-using QBitNinja.Client.Models;
 using System.Linq;
 using System.Collections.Generic;
 using Pandora.Server.Data;
@@ -18,64 +13,6 @@ namespace Pandora.Client.Crypto.Test
     [TestClass]
     public class TestCryptoCurrencies
     {
-        [TestMethod]
-        public void SegWitTransactionNBitcoin()
-        {
-            var network = N.Network.TestNet;
-            string secret = "7A41F49D98D83DF2EEB89F8E895D2269";
-
-            string hexPrevTx = "010000000001025910b77b2ba449da28c1cbad1631e8ca13a2ea892411bfab9155b326071a8adb0000000017160014d8debabfbd1a3a764da6097c67412915f3d4be0fffffffff3a28dce2711262b00dd17dc708bf9d01c82969e3a250e0cd90bd7ea41f19fa2b0000000017160014d8debabfbd1a3a764da6097c67412915f3d4be0fffffffff018f3e25000000000017a914a1fa06c311c5e92955ba944493c6f2b3955979e7870247304402205348db9229ec5be66666083a26b86244383c297aba0025b1d3aa22a619e0366c02204ff5340d5d5ee70399cca1b81904269b307daca66a0293f37caf0de96b8243f9012103897783f92f998106ca24d80b27df0aa94f8ca22320caec77983fcefb5de93f170247304402205f026910093f6594e689067b5814af4acc9df1c21df17158c7c782f61aeba165022057074b5d30bc4faef5837387e07bbbb95d464e7a72287dc2976c9fae0c8d6f7a012103897783f92f998106ca24d80b27df0aa94f8ca22320caec77983fcefb5de93f1700000000";
-
-            var prevTx = N.Transaction.Parse(hexPrevTx, network);
-
-            var key = new N.Key(N.DataEncoders.Encoders.ASCII.DecodeData(GetIndexKey(1, secret)));
-            var addressLegacy = key.PubKey.GetAddress(N.ScriptPubKeyType.Legacy, network);
-            var segWitAddres = key.PubKey.GetSegwitAddress(network);
-            var addressp2sh = segWitAddres.GetScriptAddress();
-            //QBitNinjaClient qbClient = new QBitNinjaClient(network);
-
-            //var bs = new BalanceSelector(addressp2sh);
-            ////QBitNinja sometimes throw an exception, the error is server unavialbe, you must only try again in a few minutes
-            ////   var tx = qbClient.GetTransaction(N.uint256.Parse("d4831b7ccbf45bcea58aa85c409f56343f9c80b4b6e2cd76017ec0676b3b0a10")).Result;
-            //var balance = qbClient.GetBalance(bs, true).Result;
-
-            //var receivedCoins = tx.ReceivedCoins.Where(x => x.TxOut.ScriptPubKey == segWitAddres.ScriptPubKey.PaymentScript);
-
-            //  var receivedCoins = balance.Operations.SelectMany(x => x.ReceivedCoins);
-
-            N.TransactionBuilder txBuilder = network.CreateTransactionBuilder();
-
-            var newTx = txBuilder
-              .AddCoins(prevTx.Outputs.AsCoins())
-              .AddKeys(key)
-              //.Send(addressLegacy, new N.Money(0.14m, N.MoneyUnit.BTC))
-              .SendFees(new N.Money(0.0001m, N.MoneyUnit.BTC))
-              .SetChange(addressp2sh)
-              .BuildTransaction(true);
-
-            //var newTx = txBuilder
-            //    .AddCoins(receivedCoins)
-            //    .AddKeys(key)
-            //    .Send(addressLegacy, new Money(0.16760847m - 0.001m, MoneyUnit.BTC))
-            //    .SendFees(new Money(0.001m, MoneyUnit.BTC))
-            //    .BuildTransaction(true);
-
-            var valid = txBuilder.Verify(newTx);
-
-            Assert.IsTrue(valid);
-
-            //BroadcastResponse broadcastResponse = qbClient.Broadcast(newTx).Result;
-
-            //if (!broadcastResponse.Success)
-            //{
-            //    //Console.Error.WriteLine("ErrorCode: " + broadcastResponse.Error.ErrorCode);
-            //    //Console.Error.WriteLine("Error message: " + broadcastResponse.Error.Reason);
-            //}
-            //else
-            //{
-            //}
-        }
-
         private ServerCurrencyAdvocacy GetAdvocacy(long aId, string secret, out IChainParams aParams)
         {
             var FSqlSettings = DatabaseSettings.LoadDatabaseSettings();
@@ -171,7 +108,7 @@ namespace Pandora.Client.Crypto.Test
             Assert.IsTrue(valid);
         }
 
-        private static IEnumerable<Coin> ConvertFromNBitcoin(IEnumerable<N.Coin> coins)
+        private static IEnumerable<Coin> ConvertFromNBitcoin(IEnumerable<Coin> coins)
         {
             foreach (var item in coins)
             {

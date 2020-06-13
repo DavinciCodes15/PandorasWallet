@@ -21,7 +21,8 @@
 
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Pandora.Client.Crypto.Currencies.Controls;
+using Pandora.Client.Crypto.Currencies;
+using System.Numerics;
 
 namespace Pandora.Client.ClientLib
 {
@@ -69,7 +70,7 @@ namespace Pandora.Client.ClientLib
             Inputs = lList.ToArray();
         }
 
-        public virtual void AddInput(long aAmount, string aAddress, long aId = 0)
+        public virtual void AddInput(BigInteger aAmount, string aAddress, long aId = 0)
         {
             var lList = new List<TransactionUnit>();
             if (Inputs != null)
@@ -87,7 +88,7 @@ namespace Pandora.Client.ClientLib
             Outputs = lList.ToArray();
         }
 
-        public virtual void AddOutput(long aAmount, string aAddress, int aIndex = -1, long aId = 0, string aTxID = null)
+        public virtual void AddOutput(BigInteger aAmount, string aAddress, int aIndex = -1, long aId = 0, string aTxID = null)
         {
             var lList = new List<TransactionUnit>();
             if (Outputs != null)

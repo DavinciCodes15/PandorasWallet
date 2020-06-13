@@ -95,7 +95,7 @@ namespace Pandora.Client.Universal
                         {
                             // we ignore the error here
                         }
-                        if (lProcessName == aProcessName)
+                        if (lProcessName.Contains(aProcessName))
                         {
                             lList = new Process[1] { lProc };
                             break;

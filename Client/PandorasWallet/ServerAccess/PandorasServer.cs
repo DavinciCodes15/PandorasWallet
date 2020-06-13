@@ -451,7 +451,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             string aTxWithNoFee = CreateTransaction(aCurrencyId, aCurrencyTransaction);
 
-            int lFeePerKb = lCurrency.FeePerKb;
+            long lFeePerKb = lCurrency.FeePerKb;
             decimal lKBSize = ((decimal)aTxWithNoFee.Length / 2) / 1024;
 
             long lTxFee = Convert.ToInt64(lKBSize * lFeePerKb);

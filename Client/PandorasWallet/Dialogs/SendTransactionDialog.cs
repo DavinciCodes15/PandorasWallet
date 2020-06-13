@@ -48,9 +48,21 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public decimal TxFeeRate { get => FTxFeeRate; set { FTxFeeRate = value; lblTxFeeRate.Text = value.ToString() + Ticker; } }
 
-        public bool SubstractFee { get => checkSubsFee.Checked; set => checkSubsFee.Checked = value; }
+        public bool SubstractFee
+        {
+            get => chckBoxSubsFee.Checked;
+            set => chckBoxSubsFee.Checked = value;
+        }
 
         public string Ticker { get; set; }
+
+        public bool EthereumStyleEnabled { get; private set; }
+
+        public SendTransactionDialog(bool aUseEthereumLayout = false)
+        {
+            InitializeComponent();
+            EthereumStyleEnabled = aUseEthereumLayout;
+        }
 
         private decimal BalanceAfterSend
         {
@@ -104,8 +116,15 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public new bool Execute()
         {
+            if (EthereumStyleEnabled)
+                ChangeLayoutToEthereum();
             FCachedAmount = FAmount;
             return ShowDialog() == DialogResult.OK;
+        }
+
+        private void ChangeLayoutToEthereum()
+        {
+            lblFeeRateTitle.Text = "Gas Price:";
         }
 
         private void checkSubtFee_CheckedChanged(object sender, EventArgs e)

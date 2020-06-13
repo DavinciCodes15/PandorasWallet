@@ -20,7 +20,6 @@
 // THE SOFTWARE
 
 using Pandora.Client.Crypto.Currencies;
-using Pandora.Client.Crypto.Currencies.Controls;
 using Pandora.Client.Universal;
 using System;
 using System.Linq;
@@ -103,9 +102,9 @@ namespace Pandora.Client.PandorasWallet.Wallet
             return BitConverter.ToString(GetRootSeed()).Replace("-", string.Empty).ToLower();
         }
 
-        public IClientCurrencyAdvocacy GetCurrencyAdvocacy(long aCurrencyId, ChainParams aChainParams)
+        public ICryptoCurrencyAdvocacy GetCurrencyAdvocacy(long aCurrencyId, ChainParams aChainParams)
         {
-            IClientCurrencyAdvocacy lAdvocacy = CurrencyControl.GetClientCurrencyAdvocacy(aCurrencyId, aChainParams, GetSecretRootSeed);
+            ICryptoCurrencyAdvocacy lAdvocacy = CurrencyControl.GetClientCurrencyAdvocacy(aCurrencyId, aChainParams, GetSecretRootSeed);
             return lAdvocacy;
         }
 
@@ -173,7 +172,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
 
         public static byte[] HexStringToByteArray(string aHex)
         {
-            return ClientCurrencyAdvocacy.HexStringToByteArray(aHex);
+            return CryptoCurrencyAdvocacy.HexStringToByteArray(aHex);
         }
     }
 }

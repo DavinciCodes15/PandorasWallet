@@ -53,7 +53,7 @@ namespace Pandora.Client.ClientLib
                             aItem["Id"].Value<long>(),aItem["Name"].Value<string>(),
                             aItem["Ticker"].Value<string>(),aItem["Precision"].Value<ushort>(),
                             aItem["LiveDate"].Value<DateTime>(),aItem["MinConfirmations"].Value<int>(),
-                            GetIcon(aItem,aSerializer), aItem["FeePerKb"].Value<int>(),
+                            GetIcon(aItem,aSerializer), aItem["FeePerKb"].Value<long>(),
                             aItem["ChainParamaters"].ToObject<ChainParams>(aSerializer),
                             (CurrencyStatus)aItem["CurrentStatus"].Value<int>()
                             );

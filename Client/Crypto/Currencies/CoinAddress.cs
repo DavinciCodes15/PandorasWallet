@@ -63,7 +63,7 @@ namespace Pandora.Client.Crypto.Currencies
                         ((lPubVer != null && lData.StartWith(lPubVer)) && (lData.Length == lPubVer.Length + 20))))
                         lData = null;
                 }
-                else if (aNetwork.ChainParams.Capabilities.HasFlag(CapablityFlags.SupportSegWit))
+                else if (aNetwork.ChainParams.Capabilities.HasFlag(CapablityFlags.SegWitSupport))
                 {
                     int i = Network.BEACH32_WITNESS_PUBKEY_ADDRESS;
 

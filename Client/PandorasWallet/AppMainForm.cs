@@ -91,6 +91,7 @@ namespace Pandora.Client.PandorasWallet
         public AppMainForm()
         {
             InitializeComponent();
+            Crypto.Currencies.Ethereum.EthereumCurrencyAdvocacy.Register();
             cbExchange.Items.Add("--Select--");
             cbExchange.SelectedIndex = 0;
 

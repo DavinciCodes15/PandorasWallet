@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Pandora.Client.ClientLib
 {
@@ -49,7 +50,7 @@ namespace Pandora.Client.ClientLib
         {
             public int Compare(TransactionRecord x, TransactionRecord y)
             {
-                return Convert.ToInt32((long)x.TransactionRecordId - (long)y.TransactionRecordId);
+                return Convert.ToInt32((long) x.TransactionRecordId - (long) y.TransactionRecordId);
             }
         }
 
@@ -65,11 +66,11 @@ namespace Pandora.Client.ClientLib
 
         private const string DefaultAddress = "External Address";
 
-        public long GetValue(string[] aAddresses, out int aTxType, out string aLastToAddress, out string aLastFromAddress)
+        public BigInteger GetValue(string[] aAddresses, out int aTxType, out string aLastToAddress, out string aLastFromAddress)
         {
-            long lResult = 0;
-            long lAllOutputs = 0;
-            long lAllInputs = 0;
+            BigInteger lResult = 0;
+            BigInteger lAllOutputs = 0;
+            BigInteger lAllInputs = 0;
             int lOtherAddressCount = 0;
             aTxType = TYPE_Unknown;
             aLastFromAddress = DefaultAddress;
@@ -110,7 +111,7 @@ namespace Pandora.Client.ClientLib
                 }
             else
                 lOtherAddressCount++;  // no inputs because we don't store external address then 1 our more inputs are not yours.
-            this.TxFee = lAllInputs - lAllOutputs;
+            this.TxFee = (long) (lAllInputs - lAllOutputs);
             if (lResult < 0)
             {
                 aTxType = TYPE_Debit;

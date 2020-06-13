@@ -130,7 +130,7 @@ namespace Pandora.Client.Crypto.Currencies
             return vData.Length <= MAX_BLOOM_FILTER_SIZE && nHashFuncs <= MAX_HASH_FUNCS;
         }
 
-        #region IBitcoinSerializable Members
+        #region ICoinSerializable Members
 
         public void ReadWrite(CoinStream stream)
         {
@@ -140,7 +140,7 @@ namespace Pandora.Client.Crypto.Currencies
             stream.ReadWrite(ref nFlags);
         }
 
-        #endregion IBitcoinSerializable Members
+        #endregion ICoinSerializable Members
 
         public bool IsRelevantAndUpdate(Transaction tx)
         {

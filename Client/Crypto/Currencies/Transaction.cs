@@ -979,11 +979,11 @@ namespace Pandora.Client.Crypto.Currencies
 
             if (Network == null)
             {
-                lCapabilitySupportSegWit = stream.FProtocolData.Checkif(ProtocolFlags.SupportSegWit);
+                lCapabilitySupportSegWit = stream.FProtocolData.Checkif(ProtocolFlags.SegwitSupport);
             }
             else
             {
-                lCapabilitySupportSegWit = Network.ChainParams.Capabilities.HasFlag(CapablityFlags.SupportSegWit);
+                lCapabilitySupportSegWit = Network.ChainParams.Capabilities.HasFlag(CapablityFlags.SegWitSupport);
             }
             
             bool witSupported = ((((uint)stream.TransactionOptions & (uint)TransactionOptions.Witness) != 0)) && lCapabilitySupportSegWit;

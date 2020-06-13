@@ -17,7 +17,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Pandora.Client.Crypto.Protocol.Payloads;
-using Pandora.Client.Crypto.Currencies.Controls;
 
 namespace Pandora.Client.Crypto.Protocol
 {

@@ -351,7 +351,7 @@ namespace Pandora.Client.PandorasWallet.Utils
                 throw new ClientExceptions.InvalidOperationException("Wallet needs to be decrypt before asking for root seed");
             }
 
-            return Crypto.Currencies.Controls.CurrencyControl.GenerateRootSeed(aEmail, aUsername, PasscodeEntropy.ToByteArray());
+            return Crypto.Currencies.CurrencyControl.GenerateRootSeed(aEmail, aUsername, PasscodeEntropy.ToByteArray());
         }
 
         public Tuple<string, string> GetExchangeKeys(string aExchange)

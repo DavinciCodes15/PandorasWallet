@@ -1,5 +1,4 @@
 ﻿using Pandora.Client.Crypto.Currencies.BouncyCastle.Math;
-using Pandora.Client.Crypto.Currencies.Controls;
 using Pandora.Client.Crypto.Currencies.Crypto;
 using Pandora.Client.Crypto.Currencies.DataEncoders;
 using System;

@@ -22,13 +22,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Pandora.Client.ClientLib
 {
     public class TransactionRecordList : IEnumerable<TransactionRecord>
     {
         private List<TransactionRecord> FList = new List<TransactionRecord>();
-        private Dictionary<string, long> FAddressLookUpTotal = new Dictionary<string, long>();
+        private Dictionary<string, BigInteger> FAddressLookUpTotal = new Dictionary<string, BigInteger>();
 
         /// <summary>
         /// Create a list of transactions with a optional expected currency id
@@ -61,7 +62,7 @@ namespace Pandora.Client.ClientLib
 
         public int Count { get => FList.Count; }
 
-        private void AddRemoveLookup(TransactionRecord aTransactionRecord, Dictionary<string, long> aLookup, bool aAdd)
+        private void AddRemoveLookup(TransactionRecord aTransactionRecord, Dictionary<string, BigInteger> aLookup, bool aAdd)
         {
             long lAddMultiplyer = 1;
             if (!aAdd) lAddMultiplyer = -1;
@@ -92,7 +93,7 @@ namespace Pandora.Client.ClientLib
 
         public TransactionRecord this[int index] { get => FList[index]; }
 
-        public long GetAddressAmount(string aAddress)
+        public BigInteger GetAddressAmount(string aAddress)
         {
             if (!FAddressLookUpTotal.ContainsKey(aAddress))
                 return 0;

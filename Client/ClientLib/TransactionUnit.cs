@@ -19,7 +19,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 
-using Pandora.Client.Crypto.Currencies.Controls;
+using Pandora.Client.Crypto.Currencies;
+using System.Numerics;
 
 namespace Pandora.Client.ClientLib
 {
@@ -29,7 +30,7 @@ namespace Pandora.Client.ClientLib
         {
         }
 
-        public TransactionUnit(long aId, long aAmount, string aAddress, int aIndex = -1, string aParentTxID = null)
+        public TransactionUnit(long aId, BigInteger aAmount, string aAddress, int aIndex = -1, string aParentTxID = null)
         {
             Id = aId;
             Amount = aAmount;
@@ -40,7 +41,7 @@ namespace Pandora.Client.ClientLib
 
         public long Id { get; private set; }
 
-        public long Amount { get; private set; }
+        public BigInteger Amount { get; private set; }
 
         public string Address { get; private set; }
 

@@ -133,6 +133,12 @@ namespace Pandora.Client.Crypto.Currencies
             _Position += bitCount;
         }
 
+        public int[] ToIntegers()
+        {
+            var array = new BitArray(values.ToArray());
+            return BIP39.Wordlist.ToIntegers(array);
+        }
+
         public byte[] ToBytes()
         {
             var array = ToBitArray();

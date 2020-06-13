@@ -114,7 +114,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
-            private const int VERSION = 10002;
+            private const int VERSION = 10003;
 
             private void CreateTables()
             {
@@ -659,7 +659,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 {
                                     BinaryFormatter lBf = new BinaryFormatter();
                                     lBf.Binder = MyCacheChainParams.GetSerializationBinder();
-                                    lChainParamsObject = (MyCacheChainParams)lBf.Deserialize(ms);
+                                    lChainParamsObject = (MyCacheChainParams) lBf.Deserialize(ms);
                                 }
 
                                 rdr.GetBytes(6, 0, lIcon, 0, rdr.GetInt32(7));
@@ -671,13 +671,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                     Convert.ToInt32(rdr.GetInt32(0)),
                                     rdr.GetString(1),
                                     rdr.GetString(2),
-                                    (ushort)rdr.GetInt16(3),
+                                    (ushort) rdr.GetInt16(3),
                                     rdr.GetDateTime(5),
                                     Convert.ToInt16(rdr.GetInt16(4)),
                                     lIcon,
-                                    rdr.GetInt32(8),
+                                    rdr.GetInt64(8),
                                     lParams,
-                                    (CurrencyStatus)Enum.Parse(typeof(CurrencyStatus), rdr.GetString(10))
+                                    (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus), rdr.GetString(10))
                                     ));
                             }
                         }
@@ -690,8 +690,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
                 return true;
             }
-
-
 
             public bool Read(out List<CurrencyStatusItem> aCurrencyStatusList, long? aCurrencyId = null)
             {
@@ -708,7 +706,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         {
                             while (rdr.Read())
                             {
-                                aCurrencyStatusList.Add(new CurrencyStatusItem(Convert.ToInt64(rdr.GetInt64(0)), rdr.GetInt32(1), rdr.GetDateTime(2), (CurrencyStatus)Enum.Parse(typeof(CurrencyStatus), rdr.GetString(3)), rdr.GetString(4), rdr.GetInt64(5)));
+                                aCurrencyStatusList.Add(new CurrencyStatusItem(Convert.ToInt64(rdr.GetInt64(0)), rdr.GetInt32(1), rdr.GetDateTime(2), (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus), rdr.GetString(3)), rdr.GetString(4), rdr.GetInt64(5)));
                             }
                             return true;
                         }
@@ -963,6 +961,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             private class ChainParamsBinder : System.Runtime.Serialization.SerializationBinder
             {
                 private List<Type> FTypesHandled;
+
                 public ChainParamsBinder() : base()
                 {
                     FTypesHandled = new List<Type>();
@@ -970,6 +969,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     FTypesHandled.Add(typeof(ChainParams.NetworkType));
                     FTypesHandled.Add(typeof(CapablityFlags));
                 }
+
                 public override Type BindToType(string assemblyName, string aTypeName)
                 {
                     foreach (var lType in FTypesHandled)

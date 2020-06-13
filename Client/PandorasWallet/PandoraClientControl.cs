@@ -32,12 +32,12 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Pandora.Client.PandorasWallet.ServerAccess;
-using Pandora.Client.Crypto.Currencies.Controls;
 using Pandora.Client.PandorasWallet.Controlers;
 using System.Text;
 using Pandora.Client.PandorasWallet.SystemBackup;
 using Pandora.Client.SystemBackup;
 using Pandora.Client.Crypto.Currencies;
+using System.Numerics;
 
 namespace Pandora.Client.PandorasWallet
 {
@@ -435,13 +435,13 @@ namespace Pandora.Client.PandorasWallet
                     foreach (var lTx in lTxRecords)
                         lFormCurrency.AddTransaction(lTx);
                     lFormCurrency.UpdateBalance();
-                    AppMainForm.BeginInvoke((Action<long>)AppMainForm.RefreshTransactions, aCurrencyItem.Id);
+                    AppMainForm.BeginInvoke((Action<long>) AppMainForm.RefreshTransactions, aCurrencyItem.Id);
                     var lAppMainFormAccounts = new List<AppMainForm.Accounts>();
                     int lIndex = 0;
                     foreach (var lAddress in lAddresses)
-                        lAppMainFormAccounts.Add(new AppMainForm.Accounts() { Address = lAddress, Name = $"{lIndex++}" });                    
+                        lAppMainFormAccounts.Add(new AppMainForm.Accounts() { Address = lAddress, Name = $"{lIndex++}" });
                     lFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
-                    AppMainForm.BeginInvoke((Action)(() => AppMainForm.UpdateCurrency(lFormCurrency.Id)));
+                    AppMainForm.BeginInvoke((Action) (() => AppMainForm.UpdateCurrency(lFormCurrency.Id)));
                 }
             }
             catch (Exception ex)
@@ -455,7 +455,7 @@ namespace Pandora.Client.PandorasWallet
             List<CurrencyAccount> lResult = new List<CurrencyAccount>();
             if (FromUserDecryptWallet(Settings.RequestWalletPassword))
             {
-                var lAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrencyID, (ChainParams)aCurrencyChainParams);
+                var lAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrencyID, (ChainParams) aCurrencyChainParams);
                 var lAddress1 = lAdvocacy.GetAddress(0);
                 var lAddress2 = lAdvocacy.GetAddress(1);
                 var lServerAddress = aServerMonitoresAccounts.FirstOrDefault();
@@ -482,8 +482,8 @@ namespace Pandora.Client.PandorasWallet
             if (lDisplayedCurrency != null)
             {
                 aCurrencyItem.CopyTo(lDisplayedCurrency);
-                AppMainForm.BeginInvoke((Func<long, bool>)AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
-             }
+                AppMainForm.BeginInvoke((Func<long, bool>) AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
+            }
         }
 
         private void ServerConnection_OnCurrencyStatusChange(object aSender, CurrencyStatusItem aCurrencyStatusItem)
@@ -494,7 +494,7 @@ namespace Pandora.Client.PandorasWallet
                 lDisplayedCurrency.CurrentStatus = aCurrencyStatusItem.Status;
                 lDisplayedCurrency.StatusDetails.StatusMessage = aCurrencyStatusItem.ExtendedInfo;
                 lDisplayedCurrency.StatusDetails.StatusTime = aCurrencyStatusItem.StatusTime;
-                AppMainForm.BeginInvoke((Func<long, bool>)AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
+                AppMainForm.BeginInvoke((Func<long, bool>) AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
             }
         }
 
@@ -548,7 +548,7 @@ namespace Pandora.Client.PandorasWallet
                 var lAdvacacy = FKeyManager.GetCurrencyAdvocacy(lDefaultCurrency.Id, lDefaultCurrency.ChainParamaters);
                 // Currency to be displayed.
                 FServerConnection.AddMonitoredAccount(lAdvacacy.GetAddress(0), lDefaultCurrency.Id);
-                FServerConnection.AddMonitoredAccount(lAdvacacy.GetAddress(1), lDefaultCurrency.Id);                
+                FServerConnection.AddMonitoredAccount(lAdvacacy.GetAddress(1), lDefaultCurrency.Id);
             }
             FServerConnection.SetDisplayedCurrency(lDefaultCurrency.Id, true);
 
@@ -578,7 +578,7 @@ namespace Pandora.Client.PandorasWallet
             {
                 FExchangeControl.StartProcess();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Write(LogLevel.Error, $"Error at pre initialization of exchange process. Exception: {ex}");
             }
@@ -728,9 +728,10 @@ namespace Pandora.Client.PandorasWallet
         private string ExecuteSendTxDialog(decimal aAmount, CurrencyItem lSelectedCoin, decimal aTxFee, decimal aBalance, string aAddress, string aFromAddress, bool aSubtractFee)
         {
             string lTicker = lSelectedCoin.Ticker;
-            var lSendTransactionDlg = new SendTransactionDialog();
-            lSendTransactionDlg.ParentWindow = AppMainForm;
+            bool lIsEthereum = lSelectedCoin.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol);
+            var lSendTransactionDlg = new SendTransactionDialog(lIsEthereum);
 
+            lSendTransactionDlg.ParentWindow = AppMainForm;
             lSendTransactionDlg.SubstractFee = aSubtractFee;
             lSendTransactionDlg.Ticker = lTicker;
             lSendTransactionDlg.Amount = aAmount;
@@ -776,15 +777,15 @@ namespace Pandora.Client.PandorasWallet
             if (!FServerConnection.DirectCheckAddress(aCurrencyItem.Id, aToAddress))
                 throw new ClientExceptions.InvalidAddressException("Address provided not valid. Please verify");
             var lTxOutputs = new List<TransactionUnit>();
-            lTxOutputs.Add(new TransactionUnit(0, aCurrencyItem.AmountToLong(aAmount), aToAddress));
-            long lTotal = 0;
+            lTxOutputs.Add(new TransactionUnit(0, aCurrencyItem.AmountToBigInteger(aAmount), aToAddress));
+            BigInteger lTotal = 0;
             foreach (var lOutput in aUnspentOutputs)
                 lTotal += lOutput.Amount;
             var lSendTotal = aCurrencyItem.AmountToDecimal(lTotal);
             if (lSendTotal < (aAmount + aTxFee))
                 throw new InvalidOperationException($"The amount to send '{aAmount + aTxFee}' is greater than the balance of transactions '{aCurrencyItem.AmountToDecimal(lTotal)}'.");
             else if (lSendTotal > (aAmount + aTxFee))
-                lTxOutputs.Add(new TransactionUnit(0, lTotal - aCurrencyItem.AmountToLong(aAmount + aTxFee), FServerConnection.GetCoinAddress(aCurrencyItem.Id)));
+                lTxOutputs.Add(new TransactionUnit(0, lTotal - aCurrencyItem.AmountToBigInteger(aAmount + aTxFee), FServerConnection.GetCoinAddress(aCurrencyItem.Id)));
             aCurrencyTransaction = new CurrencyTransaction(aUnspentOutputs, lTxOutputs.ToArray(), aCurrencyItem.AmountToLong(aTxFee), aCurrencyItem.Id);
             return FServerConnection.DirectCreateTransaction(aCurrencyTransaction);
         }
@@ -792,7 +793,7 @@ namespace Pandora.Client.PandorasWallet
         internal string SignTransactionData(string aTxData, CurrencyItem aCurrencyItem, CurrencyTransaction aCurrencyTransaction)
         {
             string lSignedTx = null;
-            if (FromUserDecryptWallet(false))
+            //if (FromUserDecryptWallet(false))
             {
                 var lCurrencyAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrencyItem.Id, aCurrencyItem.ChainParamaters);
                 //TODO: this is done because the object needs the address create.
@@ -821,7 +822,7 @@ namespace Pandora.Client.PandorasWallet
         {
             var lUnspents = FServerConnection.GetUnspentOutputs(aCurrency.Id);
             string lData;
-            if (aCurrency.ChainParamaters.Capabilities.HasFlag(Crypto.Currencies.CapablityFlags.SupportSegWit))
+            if (aCurrency.ChainParamaters.Capabilities.HasFlag(Crypto.Currencies.CapablityFlags.SegWitSupport))
             {
                 Dictionary<string, List<TransactionUnit>> FAddressTypes = new Dictionary<string, List<TransactionUnit>>();
                 foreach (var lTxUnit in lUnspents)
@@ -837,15 +838,22 @@ namespace Pandora.Client.PandorasWallet
 
         internal decimal CalculateTxFee(string aToAddress, decimal aAmount, CurrencyItem aCurrency)
         {
-            var lData = PrepareNewTransaction(aToAddress, aAmount, 0, aCurrency, FServerConnection.GetUnspentOutputs(aCurrency.Id), out CurrencyTransaction lCurrencyTransaction);
+            decimal lResult;
+            if (aCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
+                lResult = aCurrency.AmountToDecimal(aCurrency.FeePerKb * 21000); //This is just a quick fix, but needs to be changed
+            else
+            {
+                var lData = PrepareNewTransaction(aToAddress, aAmount, 0, aCurrency, FServerConnection.GetUnspentOutputs(aCurrency.Id), out CurrencyTransaction lCurrencyTransaction);
 
-            //TODO: for segwit this is fine but I want to fix this
-            // of not segwit address and include the signature in the total size of the tx
-            // thus we need to sign the tx with a bogus key so we don't ask the user for a password here.
-            int lFeePerKb = aCurrency.FeePerKb;
-            decimal lKBSize = ((decimal)lData.Length / 2) / 1024;
-            long lTxFee = Convert.ToInt64(lKBSize * lFeePerKb);
-            return aCurrency.AmountToDecimal(lTxFee);
+                //TODO: for segwit this is fine but I want to fix this
+                // of not segwit address and include the signature in the total size of the tx
+                // thus we need to sign the tx with a bogus key so we don't ask the user for a password here.
+                long lFeePerKb = aCurrency.FeePerKb;
+                decimal lKBSize = ((decimal) lData.Length / 2) / 1024;
+                long lTxFee = Convert.ToInt64(lKBSize * lFeePerKb);
+                lResult = aCurrency.AmountToDecimal(lTxFee);
+            }
+            return lResult;
         }
 
         internal decimal CalculateTxFee(string aToAddress, decimal aAmount, long aCurrencyId)
@@ -856,7 +864,7 @@ namespace Pandora.Client.PandorasWallet
         public decimal GetBalance(long aCurrencyId)
         {
             var lOutputs = FServerConnection.GetUnspentOutputs(aCurrencyId);
-            long lTotal = 0;
+            BigInteger lTotal = 0;
             foreach (var lOutput in lOutputs)
                 lTotal += lOutput.Amount;
             return GetCurrency(aCurrencyId).AmountToDecimal(lTotal);
@@ -905,7 +913,7 @@ namespace Pandora.Client.PandorasWallet
                     BackupDate = DateTime.UtcNow,
                     OwnerData = new[] { Settings.UserName, Settings.Email },
                     PasswordHash = string.Empty //This is only used by restore by old file method, but could be a good idea to have code to check it
-                };                
+                };
                 FServerConnection.EndBackupRestore(lDBCopyFileName);
                 FExchangeControl.EndBackupRestore(lExchangeDBCopyFileName);
             }
@@ -995,7 +1003,7 @@ namespace Pandora.Client.PandorasWallet
         public void RemoveCurrency(long aCurrencyID)
         {
             var lDefaultCurrency = FServerConnection.GetDefaultCurrency().Id;
-            if (aCurrencyID == lDefaultCurrency) 
+            if (aCurrencyID == lDefaultCurrency)
                 throw new InvalidOperationException("You can not remove your default coin");
             FServerConnection.SetDisplayedCurrency(aCurrencyID, false);
             AppMainForm.RemoveCurrency(aCurrencyID, lDefaultCurrency);
@@ -1271,7 +1279,7 @@ namespace Pandora.Client.PandorasWallet
                 BlockNumber = aTransactionRecord.Block,
                 Amount = aCurrency.AmountToDecimal(aTransactionRecord.GetValue(aAddresses.ToArray(), out int lTxType, out string lToAddress, out string lFromAddress)),
                 Fee = aCurrency.AmountToDecimal(aTransactionRecord.TxFee),
-                TxType = (AppMainForm.TransactionType)lTxType,
+                TxType = (AppMainForm.TransactionType) lTxType,
                 From = lFromAddress,
                 ToAddress = lToAddress,
             };

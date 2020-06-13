@@ -53,7 +53,7 @@ namespace Pandora.Client.Crypto.Currencies
 
         // serialization implementation
 
-        #region IBitcoinSerializable Members
+        #region ICoinSerializable Members
 
         public void ReadWrite(CoinStream stream)
         {
@@ -82,7 +82,7 @@ namespace Pandora.Client.Crypto.Currencies
             return (byte)(v ? 1 : 0);
         }
 
-        #endregion IBitcoinSerializable Members
+        #endregion ICoinSerializable Members
 
         public PartialMerkleTree(uint256[] vTxid, bool[] vMatch)
         {
