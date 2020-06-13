@@ -74,33 +74,36 @@ namespace Pandora.Client.Universal
             try
             {
                 Process[] lList = Process.GetProcessesByName(aProcessName);
-                if (lList.Length == 0)
+                if (lList == null || lList.Length == 0)
                     lList = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(aProcessName));
-                if (lList.Length == 0)
+                if (lList == null || lList.Length == 0)
                 {
+                    lList = new Process[0];
                     aProcessName = "./" + aProcessName;
                     var lProcesses = Process.GetProcesses();
-                    foreach (var lProc in lProcesses)
-                    {
-                        //NOTE: in Mono some case this throws an error because this list is
-                        //      directly connected to the existing process and not a copy of the
-                        //      about the process.  So we need to take a copy of the name
-                        //      and catch any excptions cause because the process ended.
-                        string lProcessName = null;
-                        try
+                    if (lProcesses != null)
+                        foreach (var lProc in lProcesses)
                         {
-                            lProcessName = lProc.ProcessName;
+                            //NOTE: in Mono some case this throws an error because this list is
+                            //      directly connected to the existing process and not a copy of the
+                            //      about the process.  So we need to take a copy of the name
+                            //      and catch any excptions cause because the process ended.
+                            string lProcessName;
+                            try
+                            {
+                                lProcessName = lProc.ProcessName;
+                            }
+                            catch
+                            {
+                                // we ignore the error here
+                                lProcessName = "-";
+                            }
+                            if (lProcessName.Contains(aProcessName))
+                            {
+                                lList = new Process[1] { lProc };
+                                break;
+                            }
                         }
-                        catch
-                        {
-                            // we ignore the error here
-                        }
-                        if (lProcessName.Contains(aProcessName))
-                        {
-                            lList = new Process[1] { lProc };
-                            break;
-                        }
-                    }
                 }
                 if (lList.Length > 0)
                     lResult = lList[0];
