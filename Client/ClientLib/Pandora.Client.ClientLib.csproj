@@ -73,14 +73,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\ICurrencyItem.cs" />
+    <Compile Include="Contracts\ICurrencyToken.cs" />
     <Compile Include="CurrencyAccount.cs" />
     <Compile Include="CurrencyItem.cs" />
     <Compile Include="CurrencyStatusItem.cs" />
     <Compile Include="CurrencyTransaction.cs" />
     <Compile Include="IPandoraServer.cs" />
+    <Compile Include="ITokenContract.cs" />
     <Compile Include="PandoraJsonConverter.cs" />
     <Compile Include="PandoraServerException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CurrencyTokenItem.cs" />
     <Compile Include="TransactionRecord.cs" />
     <Compile Include="TransactionRecordList.cs" />
     <Compile Include="TransactionUnit.cs" />

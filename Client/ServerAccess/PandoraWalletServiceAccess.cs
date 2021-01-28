@@ -67,7 +67,7 @@ namespace Pandora.Client.ServerAccess
 
         private delegate bool RemoveMonitoredAcccountsDelegate(long aCurrencyAccountId);
 
-        private delegate string GetTransactionRecordsDelegate(long aCurrencyId, long aStartTxRecordId);
+        private delegate string GetTransactionRecordsDelegate(long aCurrencyId, long aStartTxRecordId, bool aIncludeScript);
 
         private delegate string CreateTransactionDelegate(CurrencyTransaction aCurrencyTransaction);
 
@@ -84,6 +84,8 @@ namespace Pandora.Client.ServerAccess
         private delegate bool CheckAddressDelegate(long aCurrencyId, string aAddress);
 
         private delegate string GetCurrencyDelegate(long aCurrencyId);
+
+        private delegate string GetCurrencyTokenDelegate(long aCurrencyId, string aTokenContract);
 
         private delegate bool MarkOldUserDelegate(string aEmail, string aUserName);
 
@@ -377,9 +379,9 @@ namespace Pandora.Client.ServerAccess
             return (bool) ReadServerResult(FServer.RemoveMonitoredAccount(ConnectionId, aCurrencyAccountId));
         }
 
-        private string ThreadGetTransactionRecords(long aCurrencyId, long aStartTxRecordId)
+        private string ThreadGetTransactionRecords(long aCurrencyId, long aStartTxRecordId, bool aIncludeScript)
         {
-            return (string) ReadServerResult(FServer.GetTransactionRecords(ConnectionId, aCurrencyId, aStartTxRecordId));
+            return (string) ReadServerResult(FServer.GetTransactionRecords(ConnectionId, aCurrencyId, aStartTxRecordId, aIncludeScript));
         }
 
         private string ThreadCreateTransaction(CurrencyTransaction aCurrencyTransaction)
@@ -422,6 +424,12 @@ namespace Pandora.Client.ServerAccess
         private string ThreadGetCurrency(long aCurrencyId)
         {
             var lResult = FServer.GetCurrency(ConnectionId, aCurrencyId);
+            return (string) ReadServerResult(lResult);
+        }
+
+        private string ThreadGetCurrencyToken(long aCurrencyID, string aTokenAddress)
+        {
+            var lResult = FServer.GetCurrencyToken(ConnectionId, aCurrencyID, aTokenAddress);
             return (string) ReadServerResult(lResult);
         }
 
@@ -581,10 +589,10 @@ namespace Pandora.Client.ServerAccess
             return (bool) this.Invoke(new RemoveMonitoredAcccountsDelegate(ThreadRemoveMonitoredAcccounts), aCurrencyAccountId);
         }
 
-        public string GetTransactionRecords(long aCurrencyId, long aStartTxRecordId)
+        public string GetTransactionRecords(long aCurrencyId, long aStartTxRecordId, bool aIncludeScript = false)
         {
             CheckConnected();
-            return (string) this.Invoke(new GetTransactionRecordsDelegate(ThreadGetTransactionRecords), aCurrencyId, aStartTxRecordId);
+            return (string) this.Invoke(new GetTransactionRecordsDelegate(ThreadGetTransactionRecords), aCurrencyId, aStartTxRecordId, aIncludeScript);
         }
 
         /// <summary>
@@ -656,6 +664,12 @@ namespace Pandora.Client.ServerAccess
         {
             CheckConnected();
             return (string) this.Invoke(new GetCurrencyDelegate(ThreadGetCurrency), aCurrencyId);
+        }
+
+        public string GetCurrencyToken(long aCurrencyId, string aTokenAddress)
+        {
+            CheckConnected();
+            return (string) this.Invoke(new GetCurrencyTokenDelegate(ThreadGetCurrencyToken), aCurrencyId, aTokenAddress);
         }
 
         /// <summary>

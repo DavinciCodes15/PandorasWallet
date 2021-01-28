@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<DOCUMENT Type="Advanced Installer" CreateVersion="15.1" version="17.1.1" Modules="enterprise" RootPath="." Language="en" Id="{011E0EA6-A7D2-4072-BB19-019DD7A57009}">
+<DOCUMENT Type="Advanced Installer" CreateVersion="15.1" version="17.3" Modules="enterprise" RootPath="." Language="en" Id="{011E0EA6-A7D2-4072-BB19-019DD7A57009}">
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
     <ROW Property="AI_UPGRADE" Value="YES"/>
@@ -12,10 +12,10 @@
     <ROW Property="DBUser" Value="cat"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{BEEA9AB0-FBA9-452E-80F2-F1061F71BF7B} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{8382D984-A086-46FB-93A6-F6B914778964} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet v1.1"/>
-    <ROW Property="ProductVersion" Value="1.1.40.2450" Type="32" TargetFile="PandorasWallet.exe_1"/>
+    <ROW Property="ProductVersion" Value="1.1.42.2495" Type="32" TargetFile="PandorasWallet.exe_1"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{15B4F25B-B7AD-4B1B-9D26-98A1319C788C}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>

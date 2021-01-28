@@ -21,46 +21,33 @@
 
 using System;
 using System.Numerics;
+using Pandora.Client.ClientLib.Contracts;
 using Pandora.Client.Crypto.Currencies;
 
 namespace Pandora.Client.ClientLib
 {
     [Serializable]
-    public class CurrencyItem : ICloneable
+    public class CurrencyItem : ICloneable, ICurrencyItem
     {
         public CurrencyItem()
         {
         }
 
-        public CurrencyItem(long aId, string aName, string aTicker, ushort aPrecision, DateTime aLiveDate, int aMinConfirmations, byte[] aIcon, long aFeePerKb, ChainParams aChainParams, CurrencyStatus aStatus)
-        {
-            Id = aId;
-            Name = aName;
-            Ticker = aTicker;
-            Precision = aPrecision;
-            MinConfirmations = aMinConfirmations;
-            LiveDate = aLiveDate;
-            Icon = aIcon;
-            FeePerKb = aFeePerKb;
-            ChainParamaters = aChainParams;
-            CurrentStatus = aStatus;
-        }
+        public long Id { get; set; }
 
-        public long Id { get; private set; }
+        public string Name { get; set; }
 
-        public string Name { get; private set; }
+        public string Ticker { get; set; }
 
-        public string Ticker { get; private set; }
+        public ushort Precision { get; set; }
 
-        public ushort Precision { get; private set; }
+        public DateTime LiveDate { get; set; }
 
-        public DateTime LiveDate { get; private set; }
+        public int MinConfirmations { get; set; }
 
-        public int MinConfirmations { get; private set; }
+        public byte[] Icon { get; set; }
 
-        public byte[] Icon { get; private set; }
-
-        public long FeePerKb { get; private set; }
+        public long FeePerKb { get; set; }
 
         public ChainParams ChainParamaters { get; set; }
 
@@ -81,24 +68,24 @@ namespace Pandora.Client.ClientLib
             return new BigInteger(aAmount * Convert.ToDecimal(Math.Pow(10, Precision)));
         }
 
-        public CurrencyItem CopyTo(CurrencyItem aDestinationItem)
+        public ICurrencyItem CopyFrom(ICurrencyItem aCurrencyItem)
         {
-            aDestinationItem.Id = Id;
-            aDestinationItem.Name = Name;
-            aDestinationItem.Ticker = Ticker;
-            aDestinationItem.Precision = Precision;
-            aDestinationItem.MinConfirmations = MinConfirmations;
-            aDestinationItem.LiveDate = LiveDate;
-            aDestinationItem.Icon = Icon;
-            aDestinationItem.FeePerKb = FeePerKb;
-            aDestinationItem.ChainParamaters = ChainParamaters;
-            aDestinationItem.CurrentStatus = CurrentStatus;
-            return aDestinationItem;
+            Id = aCurrencyItem.Id;
+            Name = aCurrencyItem.Name;
+            Ticker = aCurrencyItem.Ticker;
+            Precision = aCurrencyItem.Precision;
+            MinConfirmations = aCurrencyItem.MinConfirmations;
+            LiveDate = aCurrencyItem.LiveDate;
+            Icon = aCurrencyItem.Icon;
+            FeePerKb = aCurrencyItem.FeePerKb;
+            ChainParamaters = aCurrencyItem.ChainParamaters;
+            CurrentStatus = aCurrencyItem.CurrentStatus;
+            return this;
         }
 
         public object Clone()
         {
-            return CopyTo(new CurrencyItem());
+            return (new CurrencyItem().CopyFrom(this));
         }
     }
 }

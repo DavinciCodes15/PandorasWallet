@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 
 #if MONO
 #else
@@ -39,6 +40,24 @@ namespace Pandora.Client.Universal
             using (System.IO.MemoryStream ms = new System.IO.MemoryStream(bytes))
             {
                 return new Icon(ms);
+            }
+        }
+
+        public static byte[] IconToBytes(Icon icon)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                icon.Save(ms);
+                return ms.ToArray();
+            }
+        }
+
+        public static byte[] ImageToByte(Image img)
+        {
+            using (var stream = new MemoryStream())
+            {
+                img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+                return stream.ToArray();
             }
         }
 
@@ -79,7 +98,7 @@ namespace Pandora.Client.Universal
                 if (lList == null || lList.Length == 0)
                 {
                     lList = new Process[0];
-                    aProcessName = "./" + aProcessName;
+                    aProcessName = aProcessName.ToLowerInvariant();
                     var lProcesses = Process.GetProcesses();
                     if (lProcesses != null)
                         foreach (var lProc in lProcesses)
@@ -91,7 +110,7 @@ namespace Pandora.Client.Universal
                             string lProcessName;
                             try
                             {
-                                lProcessName = lProc.ProcessName;
+                                lProcessName = lProc.ProcessName.ToLowerInvariant();
                             }
                             catch
                             {

@@ -194,7 +194,7 @@ namespace Pandora.Client.PandorasWallet
 
         public void RemoveCurrency(long aCurrencyID)
         {
-           lock(FListLock)
+            lock (FListLock)
             {
                 FCurrencyItems.Remove(aCurrencyID);
                 FListViewCache.Remove(aCurrencyID);
@@ -348,15 +348,8 @@ namespace Pandora.Client.PandorasWallet
 
             set
             {
-                if (value == 0)
-                {
+                if (value == 0 || !FCurrencyItems.ContainsKey(value))
                     return;
-                }
-
-                if (!FCurrencyItems.ContainsKey(value))
-                {
-                    throw new ArgumentException(string.Format("CurrencyView ID {0} does not exist.", value));
-                }
 
                 ListViewItem lItem = FListView.Items.Cast<ListViewItem>().Where(x => x.ImageKey == value.ToString()).FirstOrDefault();
                 if (lItem != null)

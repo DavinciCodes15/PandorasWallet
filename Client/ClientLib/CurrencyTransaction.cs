@@ -88,12 +88,12 @@ namespace Pandora.Client.ClientLib
             Outputs = lList.ToArray();
         }
 
-        public virtual void AddOutput(BigInteger aAmount, string aAddress, int aIndex = -1, long aId = 0, string aTxID = null)
+        public virtual void AddOutput(BigInteger aAmount, string aAddress, int aIndex = -1, long aId = 0, string aTxID = null, string aScript = null)
         {
             var lList = new List<TransactionUnit>();
             if (Outputs != null)
                 lList.AddRange(Outputs);
-            lList.Add(new TransactionUnit(aId, aAmount, aAddress, aIndex, aTxID));
+            lList.Add(new TransactionUnit(aId, aAmount, aAddress, aIndex, aTxID, aScript));
             Outputs = lList.ToArray();
         }
 

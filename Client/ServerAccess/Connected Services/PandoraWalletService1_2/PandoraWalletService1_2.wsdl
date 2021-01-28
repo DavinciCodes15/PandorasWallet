@@ -231,6 +231,7 @@
             <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
             <s:element minOccurs="1" maxOccurs="1" name="aCurrencyId" type="s:long" />
             <s:element minOccurs="1" maxOccurs="1" name="aStartTxRecordId" type="s:long" />
+            <s:element minOccurs="1" maxOccurs="1" name="aIncludeScript" type="s:boolean" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -315,6 +316,22 @@
         <s:complexType>
           <s:sequence>
             <s:element minOccurs="0" maxOccurs="1" name="IsTransactionSentResult" type="tns:PandoraResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyToken">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="aConnectionId" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="aCurrencyID" type="s:long" />
+            <s:element minOccurs="0" maxOccurs="1" name="aContractAddress" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetCurrencyTokenResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetCurrencyTokenResult" type="tns:PandoraResult" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -458,6 +475,12 @@
   <wsdl:message name="IsTransactionSentSoapOut">
     <wsdl:part name="parameters" element="tns:IsTransactionSentResponse" />
   </wsdl:message>
+  <wsdl:message name="GetCurrencyTokenSoapIn">
+    <wsdl:part name="parameters" element="tns:GetCurrencyToken" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyTokenSoapOut">
+    <wsdl:part name="parameters" element="tns:GetCurrencyTokenResponse" />
+  </wsdl:message>
   <wsdl:message name="GetTransactionIdSoapIn">
     <wsdl:part name="parameters" element="tns:GetTransactionId" />
   </wsdl:message>
@@ -565,6 +588,7 @@
     <wsdl:part name="aConnectionId" type="s:string" />
     <wsdl:part name="aCurrencyId" type="s:string" />
     <wsdl:part name="aStartTxRecordId" type="s:string" />
+    <wsdl:part name="aIncludeScript" type="s:string" />
   </wsdl:message>
   <wsdl:message name="GetTransactionRecordsHttpGetOut">
     <wsdl:part name="Body" element="tns:PandoraResult" />
@@ -604,6 +628,14 @@
     <wsdl:part name="aSendTxHandle" type="s:string" />
   </wsdl:message>
   <wsdl:message name="IsTransactionSentHttpGetOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyTokenHttpGetIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyID" type="s:string" />
+    <wsdl:part name="aContractAddress" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyTokenHttpGetOut">
     <wsdl:part name="Body" element="tns:PandoraResult" />
   </wsdl:message>
   <wsdl:message name="GetTransactionIdHttpGetIn">
@@ -714,6 +746,7 @@
     <wsdl:part name="aConnectionId" type="s:string" />
     <wsdl:part name="aCurrencyId" type="s:string" />
     <wsdl:part name="aStartTxRecordId" type="s:string" />
+    <wsdl:part name="aIncludeScript" type="s:string" />
   </wsdl:message>
   <wsdl:message name="GetTransactionRecordsHttpPostOut">
     <wsdl:part name="Body" element="tns:PandoraResult" />
@@ -753,6 +786,14 @@
     <wsdl:part name="aSendTxHandle" type="s:string" />
   </wsdl:message>
   <wsdl:message name="IsTransactionSentHttpPostOut">
+    <wsdl:part name="Body" element="tns:PandoraResult" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyTokenHttpPostIn">
+    <wsdl:part name="aConnectionId" type="s:string" />
+    <wsdl:part name="aCurrencyID" type="s:string" />
+    <wsdl:part name="aContractAddress" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetCurrencyTokenHttpPostOut">
     <wsdl:part name="Body" element="tns:PandoraResult" />
   </wsdl:message>
   <wsdl:message name="GetTransactionIdHttpPostIn">
@@ -843,6 +884,10 @@
       <wsdl:input message="tns:IsTransactionSentSoapIn" />
       <wsdl:output message="tns:IsTransactionSentSoapOut" />
     </wsdl:operation>
+    <wsdl:operation name="GetCurrencyToken">
+      <wsdl:input message="tns:GetCurrencyTokenSoapIn" />
+      <wsdl:output message="tns:GetCurrencyTokenSoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="GetTransactionId">
       <wsdl:input message="tns:GetTransactionIdSoapIn" />
       <wsdl:output message="tns:GetTransactionIdSoapOut" />
@@ -929,6 +974,10 @@
       <wsdl:input message="tns:IsTransactionSentHttpGetIn" />
       <wsdl:output message="tns:IsTransactionSentHttpGetOut" />
     </wsdl:operation>
+    <wsdl:operation name="GetCurrencyToken">
+      <wsdl:input message="tns:GetCurrencyTokenHttpGetIn" />
+      <wsdl:output message="tns:GetCurrencyTokenHttpGetOut" />
+    </wsdl:operation>
     <wsdl:operation name="GetTransactionId">
       <wsdl:input message="tns:GetTransactionIdHttpGetIn" />
       <wsdl:output message="tns:GetTransactionIdHttpGetOut" />
@@ -1014,6 +1063,10 @@
     <wsdl:operation name="IsTransactionSent">
       <wsdl:input message="tns:IsTransactionSentHttpPostIn" />
       <wsdl:output message="tns:IsTransactionSentHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyToken">
+      <wsdl:input message="tns:GetCurrencyTokenHttpPostIn" />
+      <wsdl:output message="tns:GetCurrencyTokenHttpPostOut" />
     </wsdl:operation>
     <wsdl:operation name="GetTransactionId">
       <wsdl:input message="tns:GetTransactionIdHttpPostIn" />
@@ -1195,6 +1248,15 @@
     </wsdl:operation>
     <wsdl:operation name="IsTransactionSent">
       <soap:operation soapAction="http://tempuri.org/IsTransactionSent" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyToken">
+      <soap:operation soapAction="http://tempuri.org/GetCurrencyToken" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -1394,6 +1456,15 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="GetCurrencyToken">
+      <soap12:operation soapAction="http://tempuri.org/GetCurrencyToken" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="GetTransactionId">
       <soap12:operation soapAction="http://tempuri.org/GetTransactionId" style="document" />
       <wsdl:input>
@@ -1586,6 +1657,15 @@
         <mime:mimeXml part="Body" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="GetCurrencyToken">
+      <http:operation location="/GetCurrencyToken" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="GetTransactionId">
       <http:operation location="/GetTransactionId" />
       <wsdl:input>
@@ -1771,6 +1851,15 @@
     </wsdl:operation>
     <wsdl:operation name="IsTransactionSent">
       <http:operation location="/IsTransactionSent" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetCurrencyToken">
+      <http:operation location="/GetCurrencyToken" />
       <wsdl:input>
         <mime:content type="application/x-www-form-urlencoded" />
       </wsdl:input>

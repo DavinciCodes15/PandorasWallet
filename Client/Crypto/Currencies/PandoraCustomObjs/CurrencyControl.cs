@@ -9,10 +9,10 @@ namespace Pandora.Client.Crypto.Currencies
     public class CurrencyControl
     {
         private static CurrencyControl FControl;
-        List<DelegateGetClientCurrencyAdvocacy> FEvents = new List<DelegateGetClientCurrencyAdvocacy>();
+        private List<DelegateGetClientCurrencyAdvocacy> FEvents = new List<DelegateGetClientCurrencyAdvocacy>();
+
         protected CurrencyControl()
         {
-
         }
 
         public static CurrencyControl GetCurrencyControl()
@@ -21,13 +21,13 @@ namespace Pandora.Client.Crypto.Currencies
             {
                 FControl = new CurrencyControl();
             }
-
             return FControl;
         }
 
         public void AddCurrencyAdvocacy(DelegateGetClientCurrencyAdvocacy aGetAdvocacy)
         {
-            FEvents.Add(aGetAdvocacy);
+            if (!FEvents.Contains(aGetAdvocacy))
+                FEvents.Add(aGetAdvocacy);
         }
 
         [Obsolete("Use only for backward compatiblity")]
@@ -46,9 +46,9 @@ namespace Pandora.Client.Crypto.Currencies
         {
             if (aChainParams == null)
                 throw new ArgumentNullException(nameof(aChainParams), "Chain Parameters can not be null");
-
+            var lControl = GetCurrencyControl();
             ICryptoCurrencyAdvocacy lResult = null;
-            foreach (var lEvent in FControl.FEvents)
+            foreach (var lEvent in lControl.FEvents)
             {
                 lResult = lEvent(aCurrencyId, aChainParams, aGetRootSeed);
                 if (lResult != null)

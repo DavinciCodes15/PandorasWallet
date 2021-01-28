@@ -12,8 +12,8 @@ namespace Pandora.Client.Universal
         {
             Log.LogLevelFlag = aLogLevelFlag; //(LogLevelFlags)Enum.Parse(typeof(LogLevelFlags), aLogLevelFlag);
             aLog.FileName = aFileName;
-            aLog.LineLength = (ushort)aLineLength;
-            aLog.MaxSize = (ushort)aMaxSize;
+            aLog.LineLength = (ushort) aLineLength;
+            aLog.MaxSize = (ushort) aMaxSize;
             aLog.Active = true;
             Log.SystemLog = aLog;
         }

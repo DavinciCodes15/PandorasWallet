@@ -19,7 +19,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 using Pandora.Client.ClientLib;
+using Pandora.Client.ClientLib.Contracts;
+using Pandora.Client.Crypto.Currencies;
 using Pandora.Client.PandorasWallet.Dialogs;
+using Pandora.Client.PandorasWallet.Dialogs.Models;
+using Pandora.Client.PandorasWallet.Models;
 using Pandora.Client.PandorasWallet.Utils;
 using System;
 using System.Collections.Generic;
@@ -46,13 +50,15 @@ namespace Pandora.Client.PandorasWallet
         }
 
         private static bool FShown = false;
-        private Dictionary<long, Currency> FCurrencyLookup = new Dictionary<long, Currency>();
+        private Dictionary<long, IGUICurrency> FCurrencyLookup = new Dictionary<long, IGUICurrency>();
 
         public event EventHandler OnConnect;
 
         public event EventHandler OnChangeExchangeKeysBtnClick;
 
         public event EventHandler OnAddCurrencyBtnClick;
+
+        public event EventHandler OnAddTokenBtnClick;
 
         public event EventHandler OnDisconnect;
 
@@ -179,23 +185,23 @@ namespace Pandora.Client.PandorasWallet
 
         public Image CoinImage { get => picCoinImage.Image; set { picCoinImage.Image = value; picCoinImage.Visible = true; } }
 
-        public Transaction SelectedTransaction { get; private set; }
+        public GUITransaction SelectedTransaction { get; private set; }
 
-        public IEnumerable<Currency> Currencies { get => FCurrencyLookup.Values; }
+        public IEnumerable<IGUICurrency> Currencies { get => FCurrencyLookup.Values; }
         public string CoinStatus { get => lblStatus.Text; set { lblStatus.Text = value; } }
 
-        public Currency GetCurrency(long aCurrenyId)
+        public IGUICurrency GetCurrency(long aCurrenyId)
         {
-            if (!FCurrencyLookup.TryGetValue(aCurrenyId, out Currency lResult))
+            if (!FCurrencyLookup.TryGetValue(aCurrenyId, out IGUICurrency lResult))
                 Universal.Log.Write(Universal.LogLevel.Warning, "Unable to find currency id {0}", aCurrenyId);
             return lResult;
         }
 
-        public void AddCurrency(Currency aCurrency)
+        public void AddCurrency(IGUICurrency aCurrency)
         {
             if (!FCurrencyLookup.ContainsKey(aCurrency.Id))
             {
-                var lCustomValues = new string[] { FormatedAmount(aCurrency.Balance, aCurrency.Precision), aCurrency.CurrentStatus.ToString() };
+                var lCustomValues = new string[] { FormatedAmount(aCurrency.Balances.Total, aCurrency.Precision), aCurrency.CurrentStatus.ToString() };
                 CurrencyViewControl.AddCurrency(aCurrency.Id, aCurrency.Name, aCurrency.Ticker, Globals.BytesToIcon(aCurrency.Icon), lCustomValues);
                 FCurrencyLookup.Add(aCurrency.Id, aCurrency);
             }
@@ -217,13 +223,13 @@ namespace Pandora.Client.PandorasWallet
             this.ClearListExchangeTo();
             this.ClearOrderHistory();
             ToSendAddress = string.Empty;
-            ToSendAmount = 0;            
+            ToSendAmount = 0;
         }
 
         public static string FormatedAmount(decimal aAmount, ushort aPrecision)
         {
-            var lFormat = string.Format("{0}0:#,0.{1}{2}", '{', new string('0', aPrecision), '}');
-            return string.Format(lFormat, aAmount);
+            string lFormatPattern = $"{{0:0.000{new string('#', aPrecision - 3)}}}";
+            return string.Format(lFormatPattern, aAmount);
         }
 
         private void CurrencyListView_OnSelectedIndexChanged(object sender, EventArgs e)
@@ -236,17 +242,16 @@ namespace Pandora.Client.PandorasWallet
                 {
                     //The call of OnSelectedCurrencyChanged is async to accelerate a little the operation of counstruccion of the interface
                     var lInvokeResults = new List<IAsyncResult>();
-                    foreach(var lDelegate in OnSelectedCurrencyChanged.GetInvocationList())
+                    foreach (var lDelegate in OnSelectedCurrencyChanged.GetInvocationList())
                         lInvokeResults.Add(this.BeginInvoke(lDelegate));
                     SelectedCurrency = FCurrencyLookup[SelectedCurrencyId];
                     this.CoinImage = Globals.BytesToIcon(SelectedCurrency.Icon).ToBitmap();
                     UpdateCurrencyView();
                     this.NotesBox = "";
-                    foreach (var lTransaction in SelectedCurrency.Transactions)
+                    foreach (var lTransaction in SelectedCurrency.Transactions.TransationItems)
                         AddTransaction(lTransaction);
                     foreach (var lResult in lInvokeResults)
                         this.EndInvoke(lResult);
-
                 }
             }
             catch (Exception ex)
@@ -262,8 +267,8 @@ namespace Pandora.Client.PandorasWallet
         private void UpdateCurrencyView()
         {
             SetCurrencyTooltip(SelectedCurrency);
-            this.TotalCoins = FormatedAmount(SelectedCurrency.Balance, SelectedCurrency.Precision);
-            this.UnconfirmedBalance = FormatedAmount(SelectedCurrency.UnconfirmedBalance, SelectedCurrency.Precision);
+            this.TotalCoins = FormatedAmount(SelectedCurrency.Balances.Total, SelectedCurrency.Precision);
+            this.UnconfirmedBalance = FormatedAmount(SelectedCurrency.Balances.UnconfirmedBalance, SelectedCurrency.Precision);
             //this.Confirmed = FormatedAmount(SelectedCurrency.ConfirmedBalance, SelectedCurrency.Precision);
             this.CoinName = SelectedCurrency.Name;
             this.CoinStatus = SelectedCurrency.CurrentStatus.ToString();
@@ -273,9 +278,9 @@ namespace Pandora.Client.PandorasWallet
 #endif
         }
 
-        public void AddTransaction(Transaction aTransaction)
+        public void AddTransaction(GUITransaction aTransaction)
         {
-            if (aTransaction.TxType == TransactionType.Unknown) return;
+            if (aTransaction.TxType == TransactionDirection.Unknown) return;
             var lListViewItem = new ListViewItem();
             lListViewItem.Text = aTransaction.TxDate.ToString();
             lListViewItem.SubItems.Add(aTransaction.From);
@@ -284,13 +289,13 @@ namespace Pandora.Client.PandorasWallet
             lListViewItem.SubItems.Add(aTransaction.Amount > 0 ? FormatedAmount(aTransaction.Amount, SelectedCurrency.Precision) : "-");
             lListViewItem.SubItems.Add(aTransaction.Confirmed.ToString());
             lListViewItem.Tag = aTransaction;
-            lListViewItem.ImageIndex = (int)aTransaction.TxType;
+            lListViewItem.ImageIndex = (int) aTransaction.TxType;
             TransactionView.Items.Add(lListViewItem);
         }
 
-        public bool UpdateTransaction(Transaction aTransaction)
+        public bool UpdateTransaction(GUITransaction aTransaction)
         {
-            if (aTransaction.ParrentCurrency.Id != SelectedCurrencyId) return false;
+            if (aTransaction.ParentCurrency.Id != SelectedCurrencyId) return false;
             ListViewItem lListViewItem = null;
             foreach (var lObj in TransactionView.Items)
             {
@@ -312,7 +317,7 @@ namespace Pandora.Client.PandorasWallet
             return lListViewItem != null;
         }
 
-        private void SetCurrencyTooltip(Currency aSelectedCurrency)
+        private void SetCurrencyTooltip(IGUICurrency aSelectedCurrency)
         {
             var lStringBuilder = new System.Text.StringBuilder();
             lStringBuilder.AppendLine($"Selected currency: {aSelectedCurrency.Name}.");
@@ -326,26 +331,26 @@ namespace Pandora.Client.PandorasWallet
 
         public bool UpdateCurrency(long aCurrencyID)
         {
-            if (FCurrencyLookup.TryGetValue(aCurrencyID, out Currency lCurrency))
+            if (FCurrencyLookup.TryGetValue(aCurrencyID, out IGUICurrency lCurrency))
             {
-                lCurrency.UpdateBalance();
-                var lCustomValues = new string[] { FormatedAmount(lCurrency.Balance, lCurrency.Precision), lCurrency.CurrentStatus.ToString() };
+                lCurrency.Balances.UpdateBalance();
+                var lCustomValues = new string[] { FormatedAmount(lCurrency.Balances.Total, lCurrency.Precision), lCurrency.CurrentStatus.ToString() };
                 CurrencyViewControl.UpdateCurrency(lCurrency.Id, lCurrency.Name, lCurrency.Ticker, lCustomValues);
                 if (SelectedCurrency.Id == lCurrency.Id)
                     UpdateCurrencyView();
-                foreach (var lTx in lCurrency.Transactions)
+                foreach (var lTx in lCurrency.Transactions.TransationItems)
                     this.UpdateTransaction(lTx);
                 return true;
             }
             return false;
         }
 
-        public bool RemoveTransaction(Transaction aTransaction)
+        public bool RemoveTransaction(GUITransaction aTransaction)
         {
             ListViewItem lListViewItem = null;
             foreach (var lObj in TransactionView.Items)
             {
-                var lTx = (lObj as ListViewItem).Tag as Transaction;
+                var lTx = (lObj as ListViewItem).Tag as GUITransaction;
                 if (lTx != null && lTx.RecordId == aTransaction.RecordId)
                 {
                     lListViewItem = lObj as ListViewItem;
@@ -354,7 +359,7 @@ namespace Pandora.Client.PandorasWallet
             }
             if (lListViewItem != null)
             {
-                SelectedCurrency.RemoveTransaction(aTransaction);
+                SelectedCurrency.Transactions.RemoveTransaction(aTransaction);
                 TransactionView.Items.Remove(lListViewItem);
                 //UpdateCurrency(SelectedCurrency);
             }
@@ -366,7 +371,7 @@ namespace Pandora.Client.PandorasWallet
             if (SelectedCurrency.Id == aCurrencyID || aCurrencyID < 0)
             {
                 TransactionView.Items.Clear();
-                foreach (var lTransaction in SelectedCurrency.Transactions)
+                foreach (var lTransaction in SelectedCurrency.Transactions.TransationItems)
                     AddTransaction(lTransaction);
                 UpdateCurrency(SelectedCurrencyId);
             }
@@ -377,9 +382,9 @@ namespace Pandora.Client.PandorasWallet
             NotesBox = "";
             if (e.IsSelected)
             {
-                SelectedTransaction = (Transaction)e.Item.Tag;
+                SelectedTransaction = (GUITransaction) e.Item.Tag;
                 NotesBox = $"Transaction ID : {SelectedTransaction.TxId} - To Address: {SelectedTransaction.ToAddress}{Environment.NewLine}" +
-                           $"Tx Block Number: {SelectedTransaction.BlockNumber} - Confirmations: {SelectedTransaction.Confimations}{Environment.NewLine}" +
+                           $"Tx Block Number: {SelectedTransaction.BlockNumber} - Confirmations: {SelectedTransaction.Confirmations}{Environment.NewLine}" +
                            $"Transaction Fee: {FormatedAmount(SelectedTransaction.Fee, SelectedCurrency.Precision)}";
             }
             else
@@ -558,9 +563,9 @@ namespace Pandora.Client.PandorasWallet
                 {
                     // Parse the two objects passed as a parameter as a DateTime.
                     System.DateTime firstDate =
-                            DateTime.Parse(((ListViewItem)x).Text);
+                            DateTime.Parse(((ListViewItem) x).Text);
                     System.DateTime secondDate =
-                            DateTime.Parse(((ListViewItem)y).Text);
+                            DateTime.Parse(((ListViewItem) y).Text);
                     // Compare the two dates.
                     returnVal = DateTime.Compare(firstDate, secondDate);
                 }
@@ -569,8 +574,8 @@ namespace Pandora.Client.PandorasWallet
                 catch
                 {
                     // Compare the two items as a string.
-                    returnVal = string.Compare(((ListViewItem)x).Text,
-                                ((ListViewItem)y).Text);
+                    returnVal = string.Compare(((ListViewItem) x).Text,
+                                ((ListViewItem) y).Text);
                 }
                 // Determine whether the sort order is descending.
                 if (order == SortOrder.Descending)
@@ -616,12 +621,12 @@ namespace Pandora.Client.PandorasWallet
             {
                 System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"[^a-zA-Z0-9\s]");
                 e.Handled = regex.IsMatch(e.KeyChar.ToString());
-                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Backspace);
-                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Copy);
-                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Cut);
-                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Undo);
-                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Redo);
-                e.Handled |= (e.KeyChar == (int)CommandKeyCodes.Space);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Backspace);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Copy);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Cut);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Undo);
+                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Redo);
+                e.Handled |= (e.KeyChar == (int) CommandKeyCodes.Space);
             }
             catch (Exception ex)
             {
@@ -671,7 +676,7 @@ namespace Pandora.Client.PandorasWallet
 
         //-------------------------------------------------------------------------Exchanges and Trade History-------------------------------------------------------------------------
 
-        public ExchangeItem SelectedExchange { get => cbExchange.GetItemText(cbExchange.SelectedItem) == "--Select--" ? null : (ExchangeItem) cbExchange.SelectedItem;}
+        public ExchangeItem SelectedExchange { get => cbExchange.GetItemText(cbExchange.SelectedItem) == "--Select--" ? null : (ExchangeItem) cbExchange.SelectedItem; }
 
         public ListView.ListViewItemCollection ExchangeCoinItems => lstExchangeMarket.Items;
 
@@ -709,7 +714,7 @@ namespace Pandora.Client.PandorasWallet
 
         public void AddExchange(ExchangeItem aExchangeItem)
         {
-            if (!cbExchange.Items.Contains(aExchangeItem))            
+            if (!cbExchange.Items.Contains(aExchangeItem))
                 cbExchange.Items.Add(aExchangeItem);
         }
 
@@ -760,7 +765,7 @@ namespace Pandora.Client.PandorasWallet
                 lNewItemToAdd.Selected = lNewItemToAdd.Focused = isSelected;
                 lstExchangeMarket.EndUpdate();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.StandardExceptionMsgBox(ex);
             }
@@ -849,11 +854,10 @@ namespace Pandora.Client.PandorasWallet
                     StatusControlExchange.AddStatus(lOrderMessage.ID, lOrderMessage.Time, lOrderMessage.Message);
                 FLastStatusOrderID = aOrderID;
                 aOrder.OnNewLogAdded += LastOrder_OnNewLogAdded;
-
             }
         }
 
-        private void LastOrder_OnNewLogAdded(int aParentOrderID,ExchangeOrderLogViewModel aLog)
+        private void LastOrder_OnNewLogAdded(int aParentOrderID, ExchangeOrderLogViewModel aLog)
         {
             if (FLastStatusOrderID == aParentOrderID)
                 StatusControlExchange.AddStatus(aLog.ID, aLog.Time, aLog.Message);
@@ -879,7 +883,7 @@ namespace Pandora.Client.PandorasWallet
             {
                 foreach (var lOrderID in lOrdersID)
                 {
-                    if(FExchangeOrders[lOrderID].ExchangeID == SelectedExchange.ID)
+                    if (FExchangeOrders[lOrderID].ExchangeID == SelectedExchange.ID)
                         UpdateOrderLstViewWith(lOrderID, FExchangeOrderLstViewItems[lOrderID], false);
                 }
             }
@@ -927,7 +931,7 @@ namespace Pandora.Client.PandorasWallet
                 {
                     foreach (object lIt in lstExchangeMarket.Items)
                     {
-                        ListViewItem lListViewItem = (ListViewItem)lIt;
+                        ListViewItem lListViewItem = (ListViewItem) lIt;
                         if (aName.Contains(lListViewItem.Name))
                         {
                             lIndex = lListViewItem.Index;
@@ -990,7 +994,7 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        public Currency SelectedCurrency { get; private set; }
+        public IGUICurrency SelectedCurrency { get; private set; }
         public bool ExchangeChangeKeysEnabled { get => btnExchangeKeys.Enabled; internal set => btnExchangeKeys.Enabled = value; }
 
         private int FPreviousOrderSelected = -1;
@@ -1027,17 +1031,16 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void ExchangeOrder_OnNewLogAdded(int aParentOrderID,ExchangeOrderLogViewModel aLog)
+        private void ExchangeOrder_OnNewLogAdded(int aParentOrderID, ExchangeOrderLogViewModel aLog)
         {
             var lCurrentSelected = SelectedOrderHistory?.Name;
-            int lID = lCurrentSelected != null? -1 : Convert.ToInt32(lCurrentSelected);
+            int lID = lCurrentSelected != null ? -1 : Convert.ToInt32(lCurrentSelected);
             if (lID == aParentOrderID)
                 statscntrlTradeHistory.AddStatus(aLog.ID, aLog.Time, aLog.Message);
         }
 
         private void cbExchanges_OnSelectedIndexChanged(object sender, EventArgs e)
         {
-
         }
 
         public event EventHandler OnExchangeSelectionChanged;
@@ -1129,7 +1132,6 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-
         private void txtReceived_OnAmountChanged()
         {
             try
@@ -1197,157 +1199,6 @@ namespace Pandora.Client.PandorasWallet
                 var lStatus = FExchangeOrders[lOrderID].Status;
                 contextMenuOrderMenu.Items[0].Enabled = (lStatus != Exchange.OrderStatus.Interrupted.ToString() && lStatus != Exchange.OrderStatus.Withdrawn.ToString());
                 contextMenuOrderMenu.Items[1].Enabled = lStatus == Exchange.OrderStatus.Withdrawn.ToString();
-            }
-        }
-
-        public class Accounts
-        {
-            public string Address { get; set; }
-            public string Name { get; set; }
-        }
-
-        public enum TransactionType { Credit = 0, Debit = 1, Both = 2, Unknown = 3 }
-
-        public class Transaction
-        {
-            public Transaction()
-            {
-            }
-
-            public long RecordId { get; set; }
-            public DateTime TxDate { get; set; }
-            public string From { get; set; }
-            public string ToAddress { get; set; }
-            public decimal Amount { get; set; }
-            public long BlockNumber { get; set; }
-            public string TxId { get; set; }
-            public decimal Fee { get; internal set; }
-            public TransactionType TxType { get; set; }
-            public Currency ParrentCurrency { get; set; }
-            // fixed off by one bug.
-            public long Confimations { get => ParrentCurrency == null ? 0 : BlockNumber == 0 ? 0 : ParrentCurrency.BlockHeight + 1 - BlockNumber; }
-            public bool Confirmed { get => ParrentCurrency == null ? false : Confimations >= ParrentCurrency.MinConfirmations; }
-
-            public Transaction CopyFrom(Transaction aSource)
-            {
-                RecordId = aSource.RecordId;
-                TxDate = aSource.TxDate;
-                From = aSource.From;
-                ToAddress = aSource.ToAddress;
-                Amount = aSource.Amount;
-                BlockNumber = aSource.BlockNumber;
-                TxId = aSource.TxId;
-                Fee = aSource.Fee;
-                TxType = aSource.TxType;
-                ParrentCurrency = aSource.ParrentCurrency;
-                return this;
-            }
-        }
-
-        public class Currency : CurrencyItem
-        {
-            public Currency(CurrencyItem aCurrencyItem)
-            {
-                StatusDetails = new StatusDetailsObject();
-                aCurrencyItem.CopyTo(this);
-            }
-
-            private Dictionary<long, Transaction> FTransactions = new Dictionary<long, Transaction>();
-
-            //public Currency(CurrencyItem aCurrencyItem,long aBlockHeight, decimal aBalance, decimal aUnconfirmedBalance, decimal aDefaultCurrencyPricePerCoin, Accounts[] aAddresses, Transaction[] aTransactions)
-            //{
-            //    BlockHeight = aBlockHeight;
-            //    aCurrencyItem.CopyTo(this);
-            //    Addresses = aAddresses;
-            //    foreach (var lTx in aTransactions)
-            //        FTransactions.Add(lTx.RecordId, lTx);
-            //    Balance = aBalance;
-            //    UnconfirmedBalance = aUnconfirmedBalance;
-            //    foreach (var lTransaction in aTransactions)
-            //        lTransaction.ParrentCurrency = this;
-            //}
-
-            public decimal UnconfirmedBalance { get; set; }
-            public decimal ConfirmedBalance { get; set; }
-            public decimal Balance { get { return UnconfirmedBalance + ConfirmedBalance; } }
-            public decimal DefaultCurrencyPricePerCoin { get; set; }
-            public long BlockHeight { get; set; }
-            public Accounts[] Addresses { get; set; }
-            public string LastAddress { get { return Addresses[Addresses.Length - 1].Address; } }
-            public Transaction[] Transactions { get => (new List<Transaction>(FTransactions.Values)).ToArray(); }
-            public IStatusDetails StatusDetails { get; private set; }
-
-            public interface IStatusDetails
-            {
-                string StatusMessage { get; set; }
-                DateTime StatusTime { get; set; }
-            }
-
-            private class StatusDetailsObject : IStatusDetails
-            {
-                public string StatusMessage { get; set; }
-                public DateTime StatusTime { get; set; }
-            }
-
-            public void AddTransaction(Transaction aTransaction)
-            {
-                if (aTransaction.TxType == TransactionType.Unknown) return;
-                FTransactions.Add(aTransaction.RecordId, aTransaction);
-                aTransaction.ParrentCurrency = this;
-                if (!aTransaction.Confirmed)
-                    UnconfirmedBalance += aTransaction.Amount;
-                else
-                    ConfirmedBalance += aTransaction.Amount;
-            }
-
-            public void UpdateTransaction(Transaction aTransaction)
-            {
-                aTransaction.ParrentCurrency = this;
-                if (FTransactions.ContainsKey(aTransaction.RecordId))
-                    FTransactions[aTransaction.RecordId].CopyFrom(aTransaction);
-            }
-
-            public bool RemoveTransaction(Transaction aTransaction)
-            {
-                var lResult = FTransactions.Remove(aTransaction.RecordId);
-                if (lResult)
-                {
-                    if (!aTransaction.Confirmed)
-                        UnconfirmedBalance -= aTransaction.Amount;
-                    else
-                        ConfirmedBalance -= aTransaction.Amount;
-                    return lResult;
-                }
-                return lResult;
-            }
-
-            public void ClearTransactions()
-            {
-                FTransactions.Clear();
-            }
-
-            public void UpdateBalance()
-            {
-                UnconfirmedBalance = 0;
-                ConfirmedBalance = 0;
-                foreach (var lTx in Transactions)
-                {
-                    if (!lTx.Confirmed)
-                        UnconfirmedBalance += lTx.Amount;
-                    else
-                        ConfirmedBalance += lTx.Amount;
-                }
-            }
-
-            public Transaction FindTransaction(long aRecordId)
-            {
-                FTransactions.TryGetValue(aRecordId, out Transaction lResult);
-                return lResult;
-            }
-
-            public bool RemoveTransaction(long aRecordId)
-            {
-                return FTransactions.Remove(aRecordId);
             }
         }
 
@@ -1449,9 +1300,9 @@ namespace Pandora.Client.PandorasWallet
             if (FCurrencyLookup.ContainsKey(aCurrencyIDToRemove))
             {
                 if (SelectedCurrencyId != aCurrencyIDToRemove)
-                    OnSelectedCurrencyChanged?.Invoke(null,null); //This is only to trigger exchange tab to refresh
+                    OnSelectedCurrencyChanged?.Invoke(null, null); //This is only to trigger exchange tab to refresh
                 CurrencyViewControl.RemoveCurrency(aCurrencyIDToRemove);
-                FCurrencyLookup.Remove(aCurrencyIDToRemove);                
+                FCurrencyLookup.Remove(aCurrencyIDToRemove);
             }
         }
 
@@ -1521,11 +1372,10 @@ namespace Pandora.Client.PandorasWallet
 
         private void DoTotalBalanceClick()
         {
-            decimal lCurrentBalance = SelectedCurrency.Balance;
+            decimal lCurrentBalance = SelectedCurrency.Balances.Total;
             ToSendAmount = lCurrentBalance;
             if (tabControl.SelectedTab.Name == "tabExchange" && ExchangeQuantityEnabled)
                 ExchangeQuantity = lCurrentBalance;
-
         }
 
         private void txtQuantity_OnAmountChanged()
@@ -1605,14 +1455,13 @@ namespace Pandora.Client.PandorasWallet
             {
                 this.SetArrowCursor();
             }
-
         }
 
         private void DoExchangeChangeOfMarketOperation(long aWalletCurrencyID, long aMarketCurrencyID)
         {
             lstViewCurrencies.SelectedCurrencyId = aWalletCurrencyID;
             do
-            { 
+            {
                 Application.DoEvents();
                 System.Threading.Thread.Sleep(100);
             } while (lstExchangeMarket.Items.Count == 0);
@@ -1620,9 +1469,7 @@ namespace Pandora.Client.PandorasWallet
             var lExchangeMarketItem = lstExchangeMarket.Items.Find(aMarketCurrencyID.ToString(), false).FirstOrDefault();
             if (lExchangeMarketItem == null)
                 return;
-            lExchangeMarketItem.Selected = true;            
-
-
+            lExchangeMarketItem.Selected = true;
         }
 
         private void lstExchangeMarket_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -1649,20 +1496,32 @@ namespace Pandora.Client.PandorasWallet
         {
             try
             {
-                if(this.StandardAskMsgBox("Do you want to remove this coin?", "By removing it you will not loose any of your funds. You can add it back in throught \"Add Currency\""))
+                if (this.StandardAskMsgBox("Do you want to remove this coin?", "By removing it you will not loose any of your funds. You can add it back in throught \"Add Currency\""))
                     OnRemoveCurrencyRequested?.Invoke(SelectedCurrencyId);
             }
-            catch(InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 this.StandardInfoMsgBox("Unable to remove currency", ex.Message);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.StandardExceptionMsgBox(ex);
             }
             finally
             {
                 this.SetArrowCursor();
+            }
+        }
+
+        private void AddTokenBtn_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OnAddTokenBtnClick?.Invoke(sender, e);
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
             }
         }
     }

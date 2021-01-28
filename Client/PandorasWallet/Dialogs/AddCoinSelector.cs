@@ -39,7 +39,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public long[] SelectedCurrencyIds => lstViewAddCurrency.CheckedCurrencyIds;
 
-        private List<CurrencyViewItemModel> FCurrencyViewItems;
+        private List<GUICurrency> FCurrencyViewItems;
 
         public bool ShowMaintenanceWarning
         {
@@ -55,7 +55,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         {
             InitializeComponent();
             ConfigureCurrencyView();
-            FCurrencyViewItems = new List<CurrencyViewItemModel>();
+            FCurrencyViewItems = new List<GUICurrency>();
             Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
@@ -72,8 +72,8 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         {
             btnOK.Enabled = lstViewAddCurrency.CheckedCurrencyIds.Count() > 0;
             var lCheckedCurrencies = lstViewAddCurrency.CheckedCurrencyIds;
-            ShowMaintenanceWarning = FCurrencyViewItems.Any(lCurrencyView => lCheckedCurrencies.Contains(lCurrencyView.CurrencyID) &&
-                                                                             lCurrencyView.Status == "Maintenance");
+            ShowMaintenanceWarning = FCurrencyViewItems.Any(lCurrencyView => lCheckedCurrencies.Contains(lCurrencyView.Id) &&
+                                                                             lCurrencyView.CurrentStatus == ClientLib.CurrencyStatus.Maintenance);
             lstViewAddCurrency.Refresh();
         }
 
@@ -112,24 +112,19 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
         }
 
-        public void AddCurrencies(IEnumerable<CurrencyViewItemModel> aListOfCurrencyModel)
+        public void AddCurrencies(IEnumerable<GUICurrency> aListOfCurrencyModel)
         {
-            foreach (CurrencyViewItemModel lCurrencyModel in aListOfCurrencyModel)
+            foreach (GUICurrency lCurrencyModel in aListOfCurrencyModel)
             {
                 AddCurrency(lCurrencyModel);
             }
         }
 
-        public void AddCurrency(CurrencyViewItemModel lCurrencyModel)
+        public void AddCurrency(GUICurrency lCurrencyModel)
         {
-            lstViewAddCurrency.AddCurrency(lCurrencyModel.CurrencyID, lCurrencyModel.CurrencyName, lCurrencyModel.CurrencySymbol, lCurrencyModel.CurrencyIcon, new string[] { lCurrencyModel.Status.ToString() });
+            lstViewAddCurrency.AddCurrency(lCurrencyModel.Id, lCurrencyModel.Name, lCurrencyModel.Ticker, Universal.SystemUtils.BytesToIcon(lCurrencyModel.Icon), new string[] { lCurrencyModel.CurrentStatus.ToString() });
             if (!FCurrencyViewItems.Contains(lCurrencyModel))
                 FCurrencyViewItems.Add(lCurrencyModel);
-        }
-
-        public void AddCurrency(long aCurrencyID, string aCurrencyName, string aCurrencySymbol, Icon aCurrencyIcon, string aStatus)
-        {
-            AddCurrency(new CurrencyViewItemModel(aCurrencyID, aCurrencyName, aCurrencySymbol, aCurrencyIcon, aStatus));
         }
 
         private void AddCoinSelector_FormClosing(object sender, FormClosingEventArgs e)

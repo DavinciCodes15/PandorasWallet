@@ -103,7 +103,7 @@
       <Name>Pandora.Server.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Universal\Pandora.Client.Universal.csproj">
-      <Project>{e798fc0d-eafd-49a9-b5fb-5391ad59364f}</Project>
+      <Project>{35C5B2A3-428C-4664-A3E3-25678EB37BA3}</Project>
       <Name>Pandora.Client.Universal</Name>
     </ProjectReference>
     <ProjectReference Include="..\Currencies\Ethereum\Pandora.Client.Crypto.Currencies.Ethereum.csproj">

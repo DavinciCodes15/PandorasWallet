@@ -38,6 +38,10 @@ using Pandora.Client.PandorasWallet.SystemBackup;
 using Pandora.Client.SystemBackup;
 using Pandora.Client.Crypto.Currencies;
 using System.Numerics;
+using Pandora.Client.PandorasWallet.Dialogs.Models;
+using Pandora.Client.PandorasWallet.Models;
+using System.Text.RegularExpressions;
+using Pandora.Client.ClientLib.Contracts;
 
 namespace Pandora.Client.PandorasWallet
 {
@@ -47,7 +51,9 @@ namespace Pandora.Client.PandorasWallet
     {
         private delegate void DelegateSendTransaction(CurrencyItem lSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee);
 
-        private delegate void DelegateDisplayCurrency(CurrencyItem aCurrency, Exception ex, CancellationToken aToken);
+        private delegate void DelegateDisplayCurrency(CurrencyItem aCurrency, Exception ex, CancellationToken aCancelToken);
+
+        private delegate void DelegateDisplayCurrencyToken(ClientCurrencyTokenItem aCurrencyToken, Exception ex, CancellationToken aCancelToken);
 
         private static PandoraClientControl FPandoraClientControl;
         private PandoraEnchangeControl FExchangeControl;
@@ -89,12 +95,76 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.OnSendAllMenuClick += AppMainForm_OnSendAllMenuClick;
             AppMainForm.OnSelectedCurrencyChanged += AppMainForm_OnSelectedCurrencyChanged;
             AppMainForm.OnAddCurrencyBtnClick += AppMainForm_OnAddCurrencyBtnClick;
+            AppMainForm.OnAddTokenBtnClick += AppMainForm_OnAddTokenBtnClick;
             AppMainForm.OnBackupClick += MainForm_OnBackupClick;
             AppMainForm.OnSettingsMenuClick += MainForm_OnSettingsMenuClick;
             AppMainForm.OnChangePassword += AppMainForm_OnChangePassword;
             AppMainForm.OnRemoveCurrencyRequested += AppMainForm_OnRemoveCurrencyRequested;
             AppMainForm.TickerQuantity = string.Empty;
             AppMainForm.TickerTotalReceived = string.Empty;
+        }
+
+        private void AppMainForm_OnAddTokenBtnClick(object sender, EventArgs e)
+        {
+            var lUserTokens = FServerConnection.GetCurrencyTokens();
+            var lAddTokenDialog = new AddTokenDialog();
+            lAddTokenDialog.OnTokenAddressChanged += AddTokenDialog_OnTokenAddressChanged;
+            if (lUserTokens.Any())
+                foreach (var lToken in lUserTokens)
+                {
+                    var lCurrency = FServerConnection.GetCurrency(lToken.ParentCurrencyID);
+                    if (lCurrency != null)
+                    {
+                        var lParentGUICurrency = AppMainForm.GetCurrency(lToken.ParentCurrencyID) ?? GUIModelProducer.CreateFrom(lCurrency);
+                        lAddTokenDialog.AddTokenItem(GUIModelProducer.CreateFrom(lToken, lParentGUICurrency));
+                    }
+                }
+            else
+                lAddTokenDialog.AddParentCurrency(FServerConnection.GetCurrency(10196)); //Default parent currency: Ethereum
+
+            if (lAddTokenDialog.Execute() && FromUserDecryptWallet(Settings.RequestWalletPassword))
+            {
+                try
+                {
+                    var lDialogToken = lAddTokenDialog.SelectedToken;
+                    var lAddedTokenItem = lUserTokens.SingleOrDefault(lToken => lToken.ContractAddress == lDialogToken.ContractAddress);
+                    if (lAddedTokenItem == null)
+                    {
+                        lAddedTokenItem = new ClientCurrencyTokenItem()
+                        {
+                            ContractAddress = lDialogToken.ContractAddress,
+                            ParentCurrencyID = lDialogToken.ParentCurrency.Id,
+                            Name = lDialogToken.Name,
+                            Ticker = lDialogToken.Ticker,
+                            Precision = lDialogToken.Precision,
+                            Icon = Globals.IconToBytes(lDialogToken.Icon),
+                            ID = (lUserTokens.Any() ? lUserTokens.Min(lToken => lToken.ID) : 0) - 5 //Token Ids are negatives
+                        };
+                        FServerConnection.RegisterNewCurrencyToken(lAddedTokenItem);
+                    }
+                    FServerConnection.SetDisplayedCurrencyToken(lAddedTokenItem.ID, true);
+                    AppMainForm.BeginInvoke(new DelegateDisplayCurrencyToken(Event_DisplayCurrencyToken), new object[] { lAddedTokenItem, null, FCancellationTokenSource.Token });
+                }
+                catch (Exception ex)
+                {
+                    AppMainForm.BeginInvoke(new DelegateDisplayCurrencyToken(Event_DisplayCurrencyToken), new object[] { null, ex, FCancellationTokenSource.Token });
+                }
+            }
+        }
+
+        private ICurrencyToken AddTokenDialog_OnTokenAddressChanged(AddTokenDialog aDialog, long aCurrencyID, string aAddress)
+        {
+            ICurrencyToken lResult = null;
+            try
+            {
+                if (aCurrencyID >= 0)
+                    lResult = FServerConnection.DirectGetCurrencyToken(aCurrencyID, aAddress);
+            }
+            catch (Exception ex)
+            {
+                Log.Write(LogLevel.Error, $"Exception thrown when reaching for token information ({aAddress}). Details: {ex}");
+            }
+            return lResult;
         }
 
         private Dictionary<long, string> FLastAddresses = new Dictionary<long, string>();
@@ -218,7 +288,17 @@ namespace Pandora.Client.PandorasWallet
 
         private void FromUserSendAmount(decimal aAmountToSend, bool aSubtractFee)
         {
-            var lUnspent = FServerConnection.GetUnspentOutputs(AppMainForm.SelectedCurrencyId);
+            var lSelectedCurrency = AppMainForm.SelectedCurrency;
+            TransactionUnit[] lUnspent;
+            //If form id is less than 0, then it is a token
+            if (lSelectedCurrency.Id < 0)
+            {
+                lUnspent = FServerConnection.GetUnspentOutputs(((GUIToken) lSelectedCurrency).ParentCurrency.Id);
+            }
+            else
+            {
+                lUnspent = FServerConnection.GetUnspentOutputs(lSelectedCurrency.Id);
+            }
             if (!lUnspent.Any())
                 aAmountToSend = 0;
             if (string.IsNullOrWhiteSpace(AppMainForm.ToSendAddress))
@@ -231,7 +311,7 @@ namespace Pandora.Client.PandorasWallet
                 if (aAmountToSend <= lTxFee)
                     AppMainForm.StandardErrorMsgBox("Send Transaction Error", $"The {AppMainForm.SelectedCurrency.Name} amount must be higher than the transaction fees.\r\nCurrent Transaction Fee : {lTxFee}");
                 else
-                    ExecuteSendTxDialog(aAmountToSend, FServerConnection.GetCurrency(AppMainForm.SelectedCurrency.Id), lTxFee, AppMainForm.SelectedCurrency.Balance, AppMainForm.ToSendAddress, lUnspent[0].Address, aSubtractFee);
+                    ExecuteSendTxDialog(aAmountToSend, AppMainForm.SelectedCurrency, lTxFee, AppMainForm.SelectedCurrency.Balances.Total, AppMainForm.ToSendAddress, lUnspent[0].Address, aSubtractFee);
             }
         }
 
@@ -324,6 +404,7 @@ namespace Pandora.Client.PandorasWallet
                     FExchangeControl = new PandoraEnchangeControl(FServerConnection);
                     FExchangeControl.GetKeyManagerMethod += Exchange_GetKeyManager;
                     FExchangeControl.SetKeyManagerPassword += () => FromUserDecryptWallet(Settings.RequestWalletPassword);
+                    FTransactionMakerFactory = new TransactionMakerFactory(FServerConnection);
                     Log.Write(LogLevel.Debug, "user Connected and is New Account = {0}", FServerConnection.NewAccount);
                 }
                 else
@@ -430,16 +511,16 @@ namespace Pandora.Client.PandorasWallet
                 if (lFormCurrency != null)
                 {
                     var lAddresses = FServerConnection.GetMonitoredAddresses(aCurrencyItem.Id);
-                    lFormCurrency.ClearTransactions();
-                    var lTxRecords = FServerConnection.GetTransactionRecords(aCurrencyItem.Id).Select(lTx => CreateFromTransaction(aCurrencyItem, lAddresses, lTx));
+                    lFormCurrency.Transactions.ClearTransactions();
+                    var lTxRecords = FServerConnection.GetTransactionRecords(aCurrencyItem.Id).Select(lTx => GUIModelProducer.CreateFrom(lTx, aCurrencyItem, lAddresses));
                     foreach (var lTx in lTxRecords)
-                        lFormCurrency.AddTransaction(lTx);
-                    lFormCurrency.UpdateBalance();
+                        lFormCurrency.Transactions.AddTransaction(lTx);
+                    lFormCurrency.Balances.UpdateBalance();
                     AppMainForm.BeginInvoke((Action<long>) AppMainForm.RefreshTransactions, aCurrencyItem.Id);
-                    var lAppMainFormAccounts = new List<AppMainForm.Accounts>();
+                    var lAppMainFormAccounts = new List<GUIAccount>();
                     int lIndex = 0;
                     foreach (var lAddress in lAddresses)
-                        lAppMainFormAccounts.Add(new AppMainForm.Accounts() { Address = lAddress, Name = $"{lIndex++}" });
+                        lAppMainFormAccounts.Add(GUIModelProducer.CreateFrom(lAddress, $"{lIndex++}"));
                     lFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
                     AppMainForm.BeginInvoke((Action) (() => AppMainForm.UpdateCurrency(lFormCurrency.Id)));
                 }
@@ -481,7 +562,7 @@ namespace Pandora.Client.PandorasWallet
             var lDisplayedCurrency = AppMainForm.GetCurrency(aCurrencyItem.Id);
             if (lDisplayedCurrency != null)
             {
-                aCurrencyItem.CopyTo(lDisplayedCurrency);
+                lDisplayedCurrency.CopyFrom(aCurrencyItem);
                 AppMainForm.BeginInvoke((Func<long, bool>) AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
             }
         }
@@ -506,7 +587,7 @@ namespace Pandora.Client.PandorasWallet
 
             public long LastSelectedCurrencyId;
             public int Index;
-            public List<CurrencyItem> Currencies;
+            public object[] ItemsToDisplay;
         }
 
         private void LoadCurrentUser()
@@ -554,18 +635,16 @@ namespace Pandora.Client.PandorasWallet
 
             // Now display the default currency first and
             // send a message to do the rest of the currencies.
+
+            var lItemsToDisplay = new List<object>();
+            lItemsToDisplay.AddRange(FServerConnection.GetDisplayedCurrencies().Where(lCurrency => lCurrency.Id != lDefaultCurrency.Id));
+            lItemsToDisplay.AddRange(FServerConnection.GetDisplayedCurrencyTokens());
+
             var lArgs = new DisplayCurrenciesArgs
             {
-                Currencies = FServerConnection.GetDisplayedCurrencies(),
+                ItemsToDisplay = lItemsToDisplay.ToArray(),
                 LastSelectedCurrencyId = lDefaultCurrency.Id
             };
-            // remove the defualt from the list.
-            foreach (var lCurrency in lArgs.Currencies)
-                if (lCurrency.Id == lDefaultCurrency.Id)
-                {
-                    lArgs.Currencies.Remove(lCurrency);
-                    break;
-                }
             FServerConnection.SetDefaultCurrency(lDefaultCurrency.Id);
 
             DisplayCurrency(lDefaultCurrency);
@@ -620,7 +699,7 @@ namespace Pandora.Client.PandorasWallet
                 if (aCurrencyItem.CurrentStatus == CurrencyStatus.Disabled) return;
 #endif
             DefaultCoinSelectorDialog?.AddDialogCurrencyItem(new DefaultCurrencySelectorDialog.DialogCurrencyItem() { CurrencyID = aCurrencyItem.Id, CurrencyName = aCurrencyItem.Name, CurrencySymbol = aCurrencyItem.Ticker, CurrencyIcon = SystemUtils.BytesToIcon(aCurrencyItem.Icon) });
-            AddCoinSelectorDialog?.AddCurrency(aCurrencyItem.Id, aCurrencyItem.Name, aCurrencyItem.Ticker, Globals.BytesToIcon(aCurrencyItem.Icon), aCurrencyItem.CurrentStatus.ToString());
+            AddCoinSelectorDialog?.AddCurrency(GUIModelProducer.CreateFrom(aCurrencyItem));
         }
 
         private void ServerConnection_OnBlockHeightChange(object aSender, long aCurrencyId, long aBlockHeight)
@@ -633,51 +712,66 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void ServerConnection_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord)
+        private void ServerConnection_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction)
         {
-            var lItem = CreateFromTransaction(
+            var lItem = GUIModelProducer.CreateFrom(aTransactionRecord,
             FServerConnection.GetCurrency(aTransactionRecord.CurrencyId),
-            FServerConnection.GetMonitoredAddresses(aTransactionRecord.CurrencyId),
-            aTransactionRecord);
+            FServerConnection.GetMonitoredAddresses(aTransactionRecord.CurrencyId)
+            );
             var lFormCurrency = AppMainForm.GetCurrency(aTransactionRecord.CurrencyId);
-            lFormCurrency.UpdateTransaction(lItem);
+            lFormCurrency.Transactions.UpdateTransaction(lItem);
             if (!aTransactionRecord.Valid)
             {
-                lFormCurrency.RemoveTransaction(lItem);
+                lFormCurrency.Transactions.RemoveTransaction(lItem);
                 AppMainForm.RemoveTransaction(lItem);
             }
             AppMainForm.UpdateCurrency(lFormCurrency.Id);
-            //  }
         }
 
-        private void ServerConnection_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord)
+        private void ServerConnection_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction)
         {
             if (!aTransactionRecord.Valid) return;
             var lAddresses = FServerConnection.GetMonitoredAddresses(aTransactionRecord.CurrencyId);
             var lCurrency = FServerConnection.GetCurrency(aTransactionRecord.CurrencyId);
-            var lFormTransaction = CreateFromTransaction(lCurrency,
-                                                         lAddresses,
-                                                         aTransactionRecord);
-            if (AppMainForm.SelectedCurrency.Id == aTransactionRecord.CurrencyId)
+            var lFormTransaction = GUIModelProducer.CreateFrom(aTransactionRecord, lCurrency, lAddresses);
+            AddNewFormTransaction(lFormTransaction, aTransactionRecord.CurrencyId);
+            if (aTokenTransaction != null)
             {
-                if (AppMainForm.SelectedCurrency.FindTransaction(aTransactionRecord.TransactionRecordId) == null)
+                var lToken = FServerConnection.GetCurrencyToken(aTokenTransaction.TokenAddress);
+                if (lToken != null)
                 {
-                    AppMainForm.SelectedCurrency.AddTransaction(lFormTransaction);
-                    AppMainForm.AddTransaction(lFormTransaction);
+                    lFormTransaction = GUIModelProducer.CreateFrom(aTokenTransaction, lToken, aTransactionRecord, lAddresses);
+                    AddNewFormTransaction(lFormTransaction, lToken.ID);
+                }
+            }
+        }
+
+        private void AddNewFormTransaction(GUITransaction aFormTransaction, long aCurrencyID)
+        {
+            if (AppMainForm.SelectedCurrency.Id == aCurrencyID)
+            {
+                if (AppMainForm.SelectedCurrency.Transactions.FindTransaction(aFormTransaction.RecordId) == null)
+                {
+                    AppMainForm.SelectedCurrency.Transactions.AddTransaction(aFormTransaction);
+                    AppMainForm.AddTransaction(aFormTransaction);
                     AppMainForm.UpdateCurrency(AppMainForm.SelectedCurrencyId);
                 }
                 else
-                    Log.Write(LogLevel.Error, "transaction {0} - {1} found as new but already exits.", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId);
+                    Log.Write(LogLevel.Error, "transaction {0} - {1} found as new but already exits.", aFormTransaction.TxId, aFormTransaction.RecordId);
             }
             else
             {
-                var lFormCurrency = AppMainForm.GetCurrency(aTransactionRecord.CurrencyId);
+                var lFormCurrency = AppMainForm.GetCurrency(aCurrencyID);
                 if (lFormCurrency != null)
                 {
-                    lFormCurrency.AddTransaction(lFormTransaction);
+                    lFormCurrency.Transactions.AddTransaction(aFormTransaction);
                     AppMainForm.UpdateCurrency(lFormCurrency.Id);
                 }
             }
+        }
+
+        private void AddNewFormTransaction(GUITransaction aFormTransaction)
+        {
         }
 
         private void ServerConnection_SendTransactionCompleted(object aSender, string aErrorMsg, string aTxId)
@@ -725,10 +819,10 @@ namespace Pandora.Client.PandorasWallet
             FromUserSendAmount(AppMainForm.ToSendAmount, false);
         }
 
-        private string ExecuteSendTxDialog(decimal aAmount, CurrencyItem lSelectedCoin, decimal aTxFee, decimal aBalance, string aAddress, string aFromAddress, bool aSubtractFee)
+        private string ExecuteSendTxDialog(decimal aAmount, ICurrencyItem aSelectedCoin, decimal aTxFee, decimal aBalance, string aAddress, string aFromAddress, bool aSubtractFee)
         {
-            string lTicker = lSelectedCoin.Ticker;
-            bool lIsEthereum = lSelectedCoin.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol);
+            string lTicker = aSelectedCoin.Ticker;
+            bool lIsEthereum = aSelectedCoin.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol);
             var lSendTransactionDlg = new SendTransactionDialog(lIsEthereum);
 
             lSendTransactionDlg.ParentWindow = AppMainForm;
@@ -739,7 +833,7 @@ namespace Pandora.Client.PandorasWallet
             lSendTransactionDlg.Balance = aBalance;
             lSendTransactionDlg.TxFee = aTxFee;
             lSendTransactionDlg.FromAddress = aFromAddress;
-            lSendTransactionDlg.TxFeeRate = lSelectedCoin.AmountToDecimal(lSelectedCoin.FeePerKb);
+            lSendTransactionDlg.TxFeeRate = aSelectedCoin.AmountToDecimal(aSelectedCoin.FeePerKb);
 
             string lRetunedTxID = null;
 
@@ -749,19 +843,19 @@ namespace Pandora.Client.PandorasWallet
                 FSendingTxDialog.ParentWindow = AppMainForm;
                 Task.Run(() =>
                 {
-                    Event_SendTransaction(lSelectedCoin, aAddress, lSendTransactionDlg.Amount, lSendTransactionDlg.TxFee);
+                    Event_SendTransaction(aSelectedCoin, aAddress, lSendTransactionDlg.Amount, lSendTransactionDlg.TxFee);
                 });
                 FSendingTxDialog.Execute();
             }
             return lRetunedTxID;
         }
 
-        private void Event_SendTransaction(CurrencyItem lSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee)
+        private void Event_SendTransaction(ICurrencyItem aSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee)
         {
             try
             {
-                string lTx = CreateSignedTransaction(aToAddress, aAmount, aTxFee, lSelectedCoin);
-                FServerConnection.DirectSendNewTransaction(lTx, lSelectedCoin.Id, new DelegateOnSendTransactionCompleted(ServerConnection_SendTransactionCompleted));
+                var lTx = GetNewSignedTransaction(aSelectedCoin, aToAddress, aAmount, aTxFee);
+                SendNewTransaction(lTx, aSelectedCoin, new DelegateOnSendTransactionCompleted(ServerConnection_SendTransactionCompleted));
             }
             catch (Exception ex)
             {
@@ -771,86 +865,54 @@ namespace Pandora.Client.PandorasWallet
 
         private SendingTxDialog FSendingTxDialog;
         private Task FTask;
+        private TransactionMakerFactory FTransactionMakerFactory;
 
-        internal string PrepareNewTransaction(string aToAddress, decimal aAmount, decimal aTxFee, CurrencyItem aCurrencyItem, TransactionUnit[] aUnspentOutputs, out CurrencyTransaction aCurrencyTransaction)
+        internal string GetNewSignedTransaction(ICurrencyItem aSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee)
         {
-            if (!FServerConnection.DirectCheckAddress(aCurrencyItem.Id, aToAddress))
-                throw new ClientExceptions.InvalidAddressException("Address provided not valid. Please verify");
-            var lTxOutputs = new List<TransactionUnit>();
-            lTxOutputs.Add(new TransactionUnit(0, aCurrencyItem.AmountToBigInteger(aAmount), aToAddress));
-            BigInteger lTotal = 0;
-            foreach (var lOutput in aUnspentOutputs)
-                lTotal += lOutput.Amount;
-            var lSendTotal = aCurrencyItem.AmountToDecimal(lTotal);
-            if (lSendTotal < (aAmount + aTxFee))
-                throw new InvalidOperationException($"The amount to send '{aAmount + aTxFee}' is greater than the balance of transactions '{aCurrencyItem.AmountToDecimal(lTotal)}'.");
-            else if (lSendTotal > (aAmount + aTxFee))
-                lTxOutputs.Add(new TransactionUnit(0, lTotal - aCurrencyItem.AmountToBigInteger(aAmount + aTxFee), FServerConnection.GetCoinAddress(aCurrencyItem.Id)));
-            aCurrencyTransaction = new CurrencyTransaction(aUnspentOutputs, lTxOutputs.ToArray(), aCurrencyItem.AmountToLong(aTxFee), aCurrencyItem.Id);
-            return FServerConnection.DirectCreateTransaction(aCurrencyTransaction);
+            var lTransactionMaker = FTransactionMakerFactory.GetMaker(aSelectedCoin, FKeyManager);
+            return lTransactionMaker.CreateSignedTransaction(aToAddress, aAmount, aTxFee);
         }
 
-        internal string SignTransactionData(string aTxData, CurrencyItem aCurrencyItem, CurrencyTransaction aCurrencyTransaction)
+        internal void SendNewTransaction(string aRawTX, ICurrencyItem aCurrency, DelegateOnSendTransactionCompleted aTxSentEventDelegate)
         {
-            string lSignedTx = null;
-            //if (FromUserDecryptWallet(false))
-            {
-                var lCurrencyAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrencyItem.Id, aCurrencyItem.ChainParamaters);
-                //TODO: this is done because the object needs the address create.
-                //So we should fix this somehow so its a bit more logical.
-                lCurrencyAdvocacy.GetAddress(0);
-                lCurrencyAdvocacy.GetAddress(1);
-                lSignedTx = lCurrencyAdvocacy.SignTransaction(aTxData, aCurrencyTransaction);
-            }
-            return lSignedTx;
+            var lTransactionMaker = FTransactionMakerFactory.GetMaker(aCurrency, FKeyManager);
+            lTransactionMaker.SendRawTransaction(aRawTX, aTxSentEventDelegate);
         }
 
-        /// <summary>
-        /// Takes all available balance from existing transactions and sends them to the address spesified minus the fee ammount provoided.
-        /// </summary>
-        /// <param name="aToAddress"></param>
-        /// <param name="aAmount"></param>
-        /// <param name="aTxFee"></param>
-        /// <param name="aCurrencyId"></param>
-        /// <returns></returns>
-        internal string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee, long aCurrencyId)
-        {
-            return CreateSignedTransaction(aToAddress, aAmount, aTxFee, FServerConnection.GetCurrency(aCurrencyId));
-        }
-
-        internal string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee, CurrencyItem aCurrency)
-        {
-            var lUnspents = FServerConnection.GetUnspentOutputs(aCurrency.Id);
-            string lData;
-            if (aCurrency.ChainParamaters.Capabilities.HasFlag(Crypto.Currencies.CapablityFlags.SegWitSupport))
-            {
-                Dictionary<string, List<TransactionUnit>> FAddressTypes = new Dictionary<string, List<TransactionUnit>>();
-                foreach (var lTxUnit in lUnspents)
-                {
-                    if (!FAddressTypes.ContainsKey(lTxUnit.Address))
-                        FAddressTypes.Add(lTxUnit.Address, new List<TransactionUnit>());
-                    FAddressTypes[lTxUnit.Address].Add(lTxUnit);
-                }
-            }
-            lData = PrepareNewTransaction(aToAddress, aAmount, aTxFee, aCurrency, lUnspents, out CurrencyTransaction lCurrencyTransaction);
-            return SignTransactionData(lData, aCurrency, lCurrencyTransaction);
-        }
-
-        internal decimal CalculateTxFee(string aToAddress, decimal aAmount, CurrencyItem aCurrency)
+        internal decimal CalculateTxFee(string aToAddress, decimal aAmount, ICurrencyItem aCurrency)
         {
             decimal lResult;
             if (aCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
-                lResult = aCurrency.AmountToDecimal(aCurrency.FeePerKb * 21000); //This is just a quick fix, but needs to be changed
+            {
+                long lGasLimit;
+                ICurrencyAmountFormatter lAmountFormatter;
+                if (aCurrency.Id < 0)
+                {
+                    lGasLimit = 60000;
+                    lAmountFormatter = FServerConnection.GetCurrency((aCurrency as ICurrencyToken).ParentCurrencyID);
+                }
+                else
+                {
+                    lGasLimit = 21000;
+                    lAmountFormatter = aCurrency;
+                }
+                lResult = lAmountFormatter.AmountToDecimal(aCurrency.FeePerKb * lGasLimit);
+            }
             else
             {
-                var lData = PrepareNewTransaction(aToAddress, aAmount, 0, aCurrency, FServerConnection.GetUnspentOutputs(aCurrency.Id), out CurrencyTransaction lCurrencyTransaction);
+                int lInputCount = FServerConnection.GetUnspentOutputs(aCurrency.Id).Count();
+                var lCurrencyAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrency.Id, aCurrency.ChainParamaters);
+                var lUserAddresses = new string[2] { lCurrencyAdvocacy.GetAddress(0), lCurrencyAdvocacy.GetAddress(1) };
+                int lOutputCount = lUserAddresses.Contains(aToAddress) ? 1 : 2;
 
-                //TODO: for segwit this is fine but I want to fix this
-                // of not segwit address and include the signature in the total size of the tx
-                // thus we need to sign the tx with a bogus key so we don't ask the user for a password here.
-                long lFeePerKb = aCurrency.FeePerKb;
-                decimal lKBSize = ((decimal) lData.Length / 2) / 1024;
-                long lTxFee = Convert.ToInt64(lKBSize * lFeePerKb);
+                //Note: Estimation formulas taken from https://btc.network/estimate
+                double lEstimatedTxByteSize;
+                if (aCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.SegWitSupport))
+                    lEstimatedTxByteSize = (lInputCount * 101.25) + (lOutputCount * 31) + 10;
+                else
+                    lEstimatedTxByteSize = (lInputCount * 146) + (lOutputCount * 33) + 10;
+
+                long lTxFee = Convert.ToInt64(lEstimatedTxByteSize * aCurrency.FeePerKb);
                 lResult = aCurrency.AmountToDecimal(lTxFee);
             }
             return lResult;
@@ -877,7 +939,7 @@ namespace Pandora.Client.PandorasWallet
 
         private void AppMainForm_OnSendAllMenuClick(object sender, EventArgs e)
         {
-            FromUserSendAmount(AppMainForm.SelectedCurrency.Balance, true);
+            FromUserSendAmount(AppMainForm.SelectedCurrency.Balances.Total, true);
         }
 
         #endregion Send Coins Event Code
@@ -1005,7 +1067,10 @@ namespace Pandora.Client.PandorasWallet
             var lDefaultCurrency = FServerConnection.GetDefaultCurrency().Id;
             if (aCurrencyID == lDefaultCurrency)
                 throw new InvalidOperationException("You can not remove your default coin");
-            FServerConnection.SetDisplayedCurrency(aCurrencyID, false);
+            if (aCurrencyID > 0)
+                FServerConnection.SetDisplayedCurrency(aCurrencyID, false);
+            else
+                FServerConnection.SetDisplayedCurrencyToken(aCurrencyID, false);
             AppMainForm.RemoveCurrency(aCurrencyID, lDefaultCurrency);
         }
 
@@ -1117,7 +1182,7 @@ namespace Pandora.Client.PandorasWallet
                 if (lCurrency.CurrentStatus == CurrencyStatus.Disabled) continue;
 #endif
                 if (!lDisplayed.Any(lDisplayedCurrency => lDisplayedCurrency.Id == lCurrency.Id))
-                    AddCoinSelectorDialog.AddCurrency(lCurrency.Id, lCurrency.Name, lCurrency.Ticker, Globals.BytesToIcon(lCurrency.Icon), lCurrency.CurrentStatus.ToString());
+                    AddCoinSelectorDialog.AddCurrency(GUIModelProducer.CreateFrom(lCurrency));
             }
             Application.UseWaitCursor = true;
             Application.DoEvents();
@@ -1147,13 +1212,22 @@ namespace Pandora.Client.PandorasWallet
             AddCoinSelectorDialog = null;
         }
 
-        private void Event_DisplayCurrency(CurrencyItem aCurrnency, Exception ex, CancellationToken aToken)
+        private void Event_DisplayCurrency(CurrencyItem aCurrnency, Exception ex, CancellationToken aCancelToken)
         {
-            if (aToken.IsCancellationRequested) return;
+            if (aCancelToken.IsCancellationRequested) return;
             if (ex != null)
                 AppMainForm.StandardExceptionMsgBox(ex, "Error Adding Currency");
             else
                 DisplayCurrency(aCurrnency);
+        }
+
+        private void Event_DisplayCurrencyToken(ClientCurrencyTokenItem aToken, Exception ex, CancellationToken aCancelToken)
+        {
+            if (aCancelToken.IsCancellationRequested) return;
+            if (ex != null)
+                AppMainForm.StandardExceptionMsgBox(ex, "Error Adding Currency Token");
+            else
+                DisplayToken(aToken);
         }
 
         private void AddNewCurrencyForDisplay(long lCurrencyId, CancellationToken aToken)
@@ -1217,12 +1291,25 @@ namespace Pandora.Client.PandorasWallet
         private void Display_NextCurrency(object sender, EventArgs e)
         {
             var lArgs = e as DisplayCurrenciesArgs;
-            if (lArgs.Index < lArgs.Currencies.Count)
+            if (lArgs.Index < lArgs.ItemsToDisplay.Count())
                 try
                 {
-                    var lCurrency = lArgs.Currencies[lArgs.Index++];
-                    Log.Write(LogLevel.Debug, "Displaying currency {0} from startup call", lCurrency.Name);
-                    DisplayCurrency(lCurrency);
+                    var lItem = lArgs.ItemsToDisplay[lArgs.Index++];
+                    var lCurrency = lItem as CurrencyItem;
+                    if (lCurrency != null)
+                    {
+                        Log.Write(LogLevel.Debug, "Displaying currency {0} from startup call", lCurrency.Name);
+                        DisplayCurrency(lCurrency);
+                    }
+                    else
+                    {
+                        var lToken = lItem as ClientCurrencyTokenItem;
+                        if (lToken != null)
+                        {
+                            Log.Write(LogLevel.Debug, "Displaying token {0} from startup call", lToken.Name);
+                            DisplayToken(lToken);
+                        }
+                    }
                     AppMainForm.BeginInvoke(new EventHandler(Display_NextCurrency), this, lArgs);
                 }
                 catch (Exception ex)
@@ -1235,9 +1322,7 @@ namespace Pandora.Client.PandorasWallet
                         AppMainForm.BeginInvoke(new EventHandler(Display_NextCurrency), this, lArgs);
                 }
             else
-                foreach (var lCurrency in lArgs.Currencies)
-                    if (lArgs.LastSelectedCurrencyId == lCurrency.Id)
-                        AppMainForm.SelectedCurrencyId = lCurrency.Id;
+                AppMainForm.SelectedCurrencyId = lArgs.LastSelectedCurrencyId;
         }
 
         private void DisplayCurrency(CurrencyItem aCurrency)
@@ -1252,37 +1337,64 @@ namespace Pandora.Client.PandorasWallet
             var lCurrencyStatus = lServer.GetCurrencyStatus(aCurrency.Id);
             Log.Write(LogLevel.Debug, "Displaying currency {0}", aCurrency.Name);
             var lAddresses = new List<string>();
-            var lAppMainFormAccounts = new List<AppMainForm.Accounts>();
+            var lAppMainFormAccounts = new List<GUIAccount>();
             int lIndex = 0;
             foreach (var lAccount in lAccounts)
             {
                 lAddresses.Add(lAccount.Address);
-                lAppMainFormAccounts.Add(new AppMainForm.Accounts() { Address = lAccount.Address, Name = $"{lIndex++}" });
+                lAppMainFormAccounts.Add(GUIModelProducer.CreateFrom(lAccount.Address, $"{lIndex++}"));
             }
-            var lAppMainFormCurrency = new AppMainForm.Currency(aCurrency);
+            var lAppMainFormCurrency = GUIModelProducer.CreateFrom(aCurrency);
             lAppMainFormCurrency.BlockHeight = lBlockHeight;
             lAppMainFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
             foreach (TransactionRecord lTransactionRecord in lTransactionRecordList)
-                lAppMainFormCurrency.AddTransaction(CreateFromTransaction(aCurrency, lAddresses, lTransactionRecord));
+                lAppMainFormCurrency.Transactions.AddTransaction(GUIModelProducer.CreateFrom(lTransactionRecord, aCurrency, lAddresses));
             lAppMainFormCurrency.StatusDetails.StatusMessage = lCurrencyStatus.ExtendedInfo;
             lAppMainFormCurrency.StatusDetails.StatusTime = lCurrencyStatus.StatusTime;
             AppMainForm.AddCurrency(lAppMainFormCurrency);
         }
 
-        private static AppMainForm.Transaction CreateFromTransaction(CurrencyItem aCurrency, List<string> aAddresses, TransactionRecord aTransactionRecord)
+        private void DisplayToken(ClientCurrencyTokenItem aTokenItem)
         {
-            return new AppMainForm.Transaction
+            var lServer = FServerConnection;
+            if (FServerConnection == null) return;
+            // read existing transactions.
+            Log.Write(LogLevel.Debug, "Reading transactions, blockheight and accounts for {0}", aTokenItem.Name);
+            var lParentTransactionRecordList = lServer.GetTransactionRecords(aTokenItem.ParentCurrencyID);
+            var lTokenTransactionRecordList = lServer.GetTokenTransactionRecords(aTokenItem.ID, aTokenItem.ContractAddress);
+            var lBlockHeight = lServer.GetBlockHeight(aTokenItem.ParentCurrencyID);
+            var lAccounts = lServer.GetMonitoredAccounts(aTokenItem.ParentCurrencyID);
+            var lCurrencyStatus = lServer.GetCurrencyStatus(aTokenItem.ParentCurrencyID);
+            Log.Write(LogLevel.Debug, "Displaying currency {0}", aTokenItem.Name);
+            var lAddresses = new List<string>();
+            var lAppMainFormAccounts = new List<GUIAccount>();
+            int lIndex = 0;
+            foreach (var lAccount in lAccounts)
             {
-                RecordId = aTransactionRecord.TransactionRecordId,
-                TxDate = aTransactionRecord.TxDate,
-                TxId = aTransactionRecord.TxId,
-                BlockNumber = aTransactionRecord.Block,
-                Amount = aCurrency.AmountToDecimal(aTransactionRecord.GetValue(aAddresses.ToArray(), out int lTxType, out string lToAddress, out string lFromAddress)),
-                Fee = aCurrency.AmountToDecimal(aTransactionRecord.TxFee),
-                TxType = (AppMainForm.TransactionType) lTxType,
-                From = lFromAddress,
-                ToAddress = lToAddress,
-            };
+                lAddresses.Add(lAccount.Address);
+                lAppMainFormAccounts.Add(GUIModelProducer.CreateFrom(lAccount.Address, $"{lIndex++}"));
+            }
+            var lParentCurrency = AppMainForm.GetCurrency(aTokenItem.ParentCurrencyID);
+            if (lParentCurrency == null)
+            {
+                var lServerParentCurrency = FServerConnection.GetCurrency(aTokenItem.ParentCurrencyID);
+                DisplayCurrency(lServerParentCurrency);
+                lParentCurrency = AppMainForm.GetCurrency(aTokenItem.ParentCurrencyID);
+            }
+            var lAppMainFormCurrency = GUIModelProducer.CreateFrom(aTokenItem, lParentCurrency);
+            lAppMainFormCurrency.BlockHeight = lBlockHeight;
+            lAppMainFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
+            foreach (ClientTokenTransactionItem lTokenTxRecord in lTokenTransactionRecordList)
+            {
+                var lParentTx = lParentTransactionRecordList.SingleOrDefault((lTx) => string.Equals(lTx.TxId, lTokenTxRecord.ParentTransactionID, StringComparison.OrdinalIgnoreCase));
+                if (lParentTx != null)
+                    lAppMainFormCurrency.Transactions.AddTransaction(GUIModelProducer.CreateFrom(lTokenTxRecord, aTokenItem, lParentTx, lAddresses));
+                else
+                    Log.Write(LogLevel.Error, $"Missing parent transaction for token transaction with id {lTokenTxRecord.GetRecordID()}, Parent TXID: {lTokenTxRecord.ParentTransactionID}, Contract Address: {lTokenTxRecord.TokenAddress}");
+            }
+            lAppMainFormCurrency.StatusDetails.StatusMessage = lCurrencyStatus.ExtendedInfo;
+            lAppMainFormCurrency.StatusDetails.StatusTime = lCurrencyStatus.StatusTime;
+            AppMainForm.AddCurrency(lAppMainFormCurrency);
         }
 
         public void RestoreLocalCacheDB(string aRestoreFileName)

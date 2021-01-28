@@ -21,6 +21,7 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Pandora.Client.ClientLib.Contracts;
 using Pandora.Client.Crypto.Currencies;
 using System;
 using System.Collections.Generic;
@@ -35,106 +36,101 @@ namespace Pandora.Client.ClientLib
             return aItem["Icon"].ToObject<byte[]>(aSerializer);
         }
 
-        protected Dictionary<Type, Func<JObject, JsonSerializer, object>> FTypes;
-
         public PandoraJsonConverter()
         {
-            CreateConvertionEspecifications();
         }
 
-        public virtual void CreateConvertionEspecifications()
+        private object InternalConvert(JsonSerializer aSerializer, JObject aItem, Type aType)
         {
-            FTypes = new Dictionary<Type, Func<JObject, JsonSerializer, object>>
-            {
-                    {
-                    typeof(CurrencyItem), (JObject aItem, JsonSerializer aSerializer)=>
-                    {
-                        return new CurrencyItem(
-                            aItem["Id"].Value<long>(),aItem["Name"].Value<string>(),
-                            aItem["Ticker"].Value<string>(),aItem["Precision"].Value<ushort>(),
-                            aItem["LiveDate"].Value<DateTime>(),aItem["MinConfirmations"].Value<int>(),
-                            GetIcon(aItem,aSerializer), aItem["FeePerKb"].Value<long>(),
-                            aItem["ChainParamaters"].ToObject<ChainParams>(aSerializer),
-                            (CurrencyStatus)aItem["CurrentStatus"].Value<int>()
-                            );
-                    }
-                },
-                    {
-                        typeof(ChainParams), (JObject aItem, JsonSerializer aSerializer)=>
-                        {
-                            return new ChainParams()
-                            {
-                                NetworkName = aItem["NetworkName"].Value<string>(),
-                                Network = (ChainParams.NetworkType) aItem["Network"].Value<int>(),
-                                PublicKeyAddress =  aItem["PublicKeyAddress"].ToObject<byte[]>(aSerializer),
-                                ScriptAddress =  aItem["ScriptAddress"].ToObject<byte[]>(aSerializer),
-                                SecretKey =  aItem["SecretKey"].ToObject<byte[]>(aSerializer),
-                                ExtPublicKey =  aItem["ExtPublicKey"].ToObject<byte[]>(aSerializer),
-                                ExtSecretKey =  aItem["ExtSecretKey"].ToObject<byte[]>(aSerializer),
-                                ForkFromId =  aItem["ForkFromId"].Value<long>(),
-                                EncryptedSecretKeyNoEc = aItem["EncryptedSecretKeyNoEc"].ToObject<byte[]>(aSerializer),
-                                EncryptedSecretKeyEc =  aItem["EncryptedSecretKeyEc"].ToObject<byte[]>(aSerializer),
-                                PasspraseCode =  aItem["PasspraseCode"].ToObject<byte[]>(aSerializer),
-                                ConfirmationCode =  aItem["ConfirmationCode"].ToObject<byte[]>(aSerializer),
-                                StealthAddress =  aItem["StealthAddress"].ToObject<byte[]>(aSerializer),
-                                AssetId =  aItem["AssetId"].ToObject<byte[]>(aSerializer),
-                                Capabilities =  (CapablityFlags)aItem["Capabilities"].Value<int>(),
-                                ColoredAddress =  aItem["ColoredAddress"].ToObject<byte[]>(aSerializer),
-                                Encoder = aItem["Encoder"].Value<string>(),
-                                Version = aItem["Version"].Value<long>()
-                            };
-                        }
-                    },
-                    {
-                        typeof(CurrencyStatusItem), (JObject aItem, JsonSerializer aSerializer) =>
-                        {
-                            return new CurrencyStatusItem(aItem["StatusId"].Value<long>(),
+            object lResult;
+            if (aType.IsAssignableFrom(typeof(ICurrencyItem)))
+                lResult = new CurrencyItem
+                {
+                    Id = aItem["Id"].Value<long>(),
+                    Name = aItem["Name"].Value<string>(),
+                    Ticker = aItem["Ticker"].Value<string>(),
+                    Precision = aItem["Precision"].Value<ushort>(),
+                    LiveDate = aItem["LiveDate"].Value<DateTime>(),
+                    MinConfirmations = aItem["MinConfirmations"].Value<int>(),
+                    Icon = GetIcon(aItem, aSerializer),
+                    FeePerKb = aItem["FeePerKb"].Value<long>(),
+                    ChainParamaters = aItem["ChainParamaters"].ToObject<ChainParams>(aSerializer),
+                    CurrentStatus = (CurrencyStatus) aItem["CurrentStatus"].Value<int>()
+                };
+            else if (aType.Equals(typeof(ChainParams)))
+                lResult = new ChainParams()
+                {
+                    NetworkName = aItem["NetworkName"].Value<string>(),
+                    Network = (ChainParams.NetworkType) aItem["Network"].Value<int>(),
+                    PublicKeyAddress = aItem["PublicKeyAddress"].ToObject<byte[]>(aSerializer),
+                    ScriptAddress = aItem["ScriptAddress"].ToObject<byte[]>(aSerializer),
+                    SecretKey = aItem["SecretKey"].ToObject<byte[]>(aSerializer),
+                    ExtPublicKey = aItem["ExtPublicKey"].ToObject<byte[]>(aSerializer),
+                    ExtSecretKey = aItem["ExtSecretKey"].ToObject<byte[]>(aSerializer),
+                    ForkFromId = aItem["ForkFromId"].Value<long>(),
+                    EncryptedSecretKeyNoEc = aItem["EncryptedSecretKeyNoEc"].ToObject<byte[]>(aSerializer),
+                    EncryptedSecretKeyEc = aItem["EncryptedSecretKeyEc"].ToObject<byte[]>(aSerializer),
+                    PasspraseCode = aItem["PasspraseCode"].ToObject<byte[]>(aSerializer),
+                    ConfirmationCode = aItem["ConfirmationCode"].ToObject<byte[]>(aSerializer),
+                    StealthAddress = aItem["StealthAddress"].ToObject<byte[]>(aSerializer),
+                    AssetId = aItem["AssetId"].ToObject<byte[]>(aSerializer),
+                    Capabilities = (CapablityFlags) aItem["Capabilities"].Value<int>(),
+                    ColoredAddress = aItem["ColoredAddress"].ToObject<byte[]>(aSerializer),
+                    Encoder = aItem["Encoder"].Value<string>(),
+                    Version = aItem["Version"].Value<long>()
+                };
+            else if (aType.Equals(typeof(CurrencyStatusItem)))
+                lResult = new CurrencyStatusItem(aItem["StatusId"].Value<long>(),
                                                           aItem["CurrencyId"].Value<long>(),
                                                           aItem["StatusTime"].Value<DateTime>(),
                                                           (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus),
                                                           aItem["Status"].Value<string>()),
                                                           aItem["ExtendedInfo"].Value<string>(),
                                                           aItem["BlockHeight"].Value<long>());
-                        }
-                    },
-                    { typeof(CurrencyAccount),  (JObject aItem, JsonSerializer aSerializer) => { return new CurrencyAccount(aItem["Id"].Value<long>(),aItem["CurrencyId"].Value<long>(),aItem["Address"].Value<string>()); } },
-                    { typeof(TransactionUnit), (JObject aItem, JsonSerializer aSerializer) => { return new TransactionUnit(aItem["Id"].Value<long>(), aItem["Amount"].Value<long>(),aItem["Address"].Value<string>(), aItem.TryGetValue("Index", out JToken lIndexObject)? lIndexObject.Value<int>(): -1); } },
-                    { typeof(TransactionRecord),  (JObject aItem, JsonSerializer aSerializer) =>
-                        {
-                            TransactionRecord lTxRcd =  new TransactionRecord(
-                                aItem["TransactionRecordId"].Value<long>(),
-                                aItem["CurrencyId"].Value<long>(),
-                                aItem["TxId"].Value<string>(),
-                                aItem["TxDate"].Value<DateTime>(),
-                                aItem["Block"].Value<long>(),
-                                aItem["Valid"].Value<bool>()
-                                );
-                            lTxRcd.AddInput(aItem["Inputs"].ToObject<TransactionUnit[]>(aSerializer));
-                            lTxRcd.AddOutput(aItem["Outputs"].ToObject<TransactionUnit[]>(aSerializer));
-                            lTxRcd.TxFee = aItem["TxFee"].Value<long>();
-                            return lTxRcd;
-                        }
-                    },
-                    { typeof(CurrencyTransaction), (JObject aItem,JsonSerializer aSerializer) => { return new CurrencyTransaction(aItem["Inputs"].ToObject<TransactionUnit[]>(aSerializer), aItem["Outputs"].ToObject<TransactionUnit[]>(aSerializer),aItem["TxFee"].Value<long>(),aItem["CurrencyId"].Value<long>()); } },
-                    { typeof(UserStatus), (JObject aItem,JsonSerializer aSerializer) => { return new UserStatus(aItem["Active"].Value<bool>(),aItem["ExtendedInfo"].Value<string>(),aItem["StatusDate"].Value<DateTime>()); } }
-            };
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return FTypes.Keys.Any(t => t == objectType);
-        }
-
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-        {
-            JObject item = JObject.Load(reader);
-
-            if (!CanConvert(objectType))
+            else if (aType.Equals(typeof(CurrencyAccount)))
+                lResult = new CurrencyAccount(aItem["Id"].Value<long>(), aItem["CurrencyId"].Value<long>(), aItem["Address"].Value<string>());
+            else if (aType.Equals(typeof(TransactionUnit)))
+                lResult = new TransactionUnit(aItem["Id"].Value<long>(), aItem["Amount"].Value<long>(), aItem["Address"].Value<string>(), aItem.TryGetValue("Index", out JToken lIndexObject) ? lIndexObject.Value<int>() : -1, aScript: aItem["Script"].Value<string>());
+            else if (aType.Equals(typeof(TransactionRecord)))
             {
-                throw new JsonException("Cannot convert object type provided");
+                TransactionRecord lTxRcd = new TransactionRecord(
+                    aItem["TransactionRecordId"].Value<long>(),
+                    aItem["CurrencyId"].Value<long>(),
+                    aItem["TxId"].Value<string>(),
+                    aItem["TxDate"].Value<DateTime>(),
+                    aItem["Block"].Value<long>(),
+                    aItem["Valid"].Value<bool>()
+                    );
+                lTxRcd.AddInput(aItem["Inputs"].ToObject<TransactionUnit[]>(aSerializer));
+                lTxRcd.AddOutput(aItem["Outputs"].ToObject<TransactionUnit[]>(aSerializer));
+                lTxRcd.TxFee = aItem["TxFee"].Value<long>();
+                lResult = lTxRcd;
             }
+            else if (aType.Equals(typeof(CurrencyTransaction)))
+                lResult = new CurrencyTransaction(aItem["Inputs"].ToObject<TransactionUnit[]>(aSerializer), aItem["Outputs"].ToObject<TransactionUnit[]>(aSerializer), aItem["TxFee"].Value<long>(), aItem["CurrencyId"].Value<long>());
+            else if (aType.Equals(typeof(UserStatus)))
+                lResult = new UserStatus(aItem["Active"].Value<bool>(), aItem["ExtendedInfo"].Value<string>(), aItem["StatusDate"].Value<DateTime>());
+            else lResult = aItem.ToObject(aType, aSerializer);
+            return lResult;
+        }
 
-            return FTypes[objectType](item, serializer);
+        public override bool CanConvert(Type aObjectType)
+        {
+            return aObjectType.IsAssignableFrom(typeof(ICurrencyItem)) ||
+                aObjectType.IsAssignableFrom(typeof(ChainParams)) ||
+                aObjectType.IsAssignableFrom(typeof(CurrencyStatusItem)) ||
+               aObjectType.IsAssignableFrom(typeof(CurrencyAccount)) ||
+               aObjectType.IsAssignableFrom(typeof(TransactionUnit)) ||
+               aObjectType.IsAssignableFrom(typeof(TransactionRecord)) ||
+               aObjectType.IsAssignableFrom(typeof(CurrencyTransaction)) ||
+               aObjectType.IsAssignableFrom(typeof(UserStatus));
+        }
+
+        public override object ReadJson(JsonReader aReader, Type aObjectType, object aExistingValue, JsonSerializer aSerializer)
+        {
+            if (!CanConvert(aObjectType)) throw new InvalidOperationException($"Unable to convert JSON Object to type {aObjectType.Name}");
+            JObject lItem = JObject.Load(aReader);
+            return InternalConvert(aSerializer, lItem, aObjectType);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

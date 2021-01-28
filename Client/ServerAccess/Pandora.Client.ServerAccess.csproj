@@ -92,13 +92,13 @@
       <Project>{74bf1128-0e40-4d89-814b-9b7565c211b8}</Project>
       <Name>Pandora.Client.Crypto</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Universal\Pandora.Client.Universal.csproj">
-      <Project>{e798fc0d-eafd-49a9-b5fb-5391ad59364f}</Project>
-      <Name>Pandora.Client.Universal</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Client\ClientLib\Pandora.Client.ClientLib.csproj">
       <Project>{196973bd-a463-4897-ac95-e537cc85ef33}</Project>
       <Name>Pandora.Client.ClientLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Universal\Pandora.Client.Universal.csproj">
+      <Project>{35c5b2a3-428c-4664-a3e3-25678eb37ba3}</Project>
+      <Name>Pandora.Client.Universal</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

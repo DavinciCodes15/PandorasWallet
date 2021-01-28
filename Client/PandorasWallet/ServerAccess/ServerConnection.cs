@@ -22,6 +22,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Pandora.Client.ClientLib;
+using Pandora.Client.PandorasWallet.Models;
 using Pandora.Client.PandorasWallet.Wallet;
 using Pandora.Client.ServerAccess;
 using Pandora.Client.Universal;
@@ -87,7 +88,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public event DelegateOnCurrencyStatusChange OnCurrencyStatusChange;
 
         /// <summary>
-        /// Fired if a new transactoin occurs on monitored coins
+        /// Fired if a new transaction occurs on monitored coins
         /// </summary>
         public event DelegateOnTransaction OnNewTransaction;
 
@@ -293,7 +294,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             FLocalCacheDB.WriteTransactionSentData(aTxData, aTxId, aCurrencyId, aStartTime, aEndTime);
         }
 
-        private void PandoraObjectNotifier_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord)
+        private void PandoraObjectNotifier_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransactionItem)
         {
             if (FLocalCacheDB == null) return; // Note: if the thread sent out this message before the object was terminated
             Log.Write(LogLevel.Debug, "Updated Transaction TxId {0}\r\n        ID: {1}, bock: {2}, Valid: {3}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid);
@@ -313,12 +314,17 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             OnUpdatedCurrency?.Invoke(this, aCurrencyItem);
         }
 
-        private void PandoraObjectNotifier_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord)
+        private void PandoraObjectNotifier_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction)
         {
             if (FLocalCacheDB == null) return; // Note: if the thread sent out this message before the object was terminated
+            if (aTokenTransaction != null)
+            {
+                Log.Write(LogLevel.Debug, "*Writing NEW TokenTx for txid {0}\r\n        ID: {1}, Block: {2}, Valid: {3}, CurrencyId:{4}, TokenAddress: {5}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid, aTransactionRecord.CurrencyId, aTokenTransaction.TokenAddress);
+                FLocalCacheDB.Write(aTokenTransaction);
+            }
             Log.Write(LogLevel.Debug, "*Writing NEW TXid {0}\r\n        ID: {1}, Block: {2}, Valid: {3}, CurrencyId:{4}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid, aTransactionRecord.CurrencyId);
             FLocalCacheDB.Write(aTransactionRecord);
-            OnNewTransaction?.Invoke(this, aTransactionRecord);
+            OnNewTransaction?.Invoke(this, aTransactionRecord, aTokenTransaction);
         }
 
         private void PandoraObjectNotifier_OnNewCurrency(object aSender, CurrencyItem aCurrencyItem)
@@ -379,6 +385,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             CheckConnected();
             Log.Write(LogLevel.Warning, "A direct call to GetCurrency should not be made.");
             return JsonConvert.DeserializeObject<CurrencyItem>(FPandoraWalletServiceAccess.GetCurrency(aCurrencyId), FConverter);
+        }
+
+        public ClientCurrencyTokenItem DirectGetCurrencyToken(long aCurrencyID, string aAddress)
+        {
+            CheckConnected();
+            return JsonConvert.DeserializeObject<ClientCurrencyTokenItem>(FPandoraWalletServiceAccess.GetCurrencyToken(aCurrencyID, aAddress));
         }
 
         private byte[] DirectGetCurrencyIcon(long aCurrencyId)
@@ -444,6 +456,32 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return lReturningList;
         }
 
+        public IEnumerable<ClientCurrencyTokenItem> GetCurrencyTokens()
+        {
+            CheckConnected();
+            IEnumerable<IClientCurrencyToken> lTokens = FLocalCacheDB.ReadCurrencyTokens();
+            return lTokens.Select(lToken => new ClientCurrencyTokenItem(lToken));
+        }
+
+        public ClientCurrencyTokenItem GetCurrencyToken(string aTokenAddress)
+        {
+            CheckConnected();
+            return FLocalCacheDB.ReadCurrencyTokens(aTokenAddress).Select(lToken => new ClientCurrencyTokenItem(lToken)).FirstOrDefault();
+        }
+
+        public ClientCurrencyTokenItem GetCurrencyToken(long aTokenID)
+        {
+            CheckConnected();
+            return FLocalCacheDB.ReadCurrencyTokens(aTokenID: aTokenID).Select(lToken => new ClientCurrencyTokenItem(lToken)).FirstOrDefault();
+        }
+
+        public void RegisterNewCurrencyToken(ClientCurrencyTokenItem aCurrencyToken)
+        {
+            CheckConnected();
+            if (aCurrencyToken == null) throw new ArgumentNullException(nameof(aCurrencyToken), "Currency token can't be null");
+            FLocalCacheDB.Write(aCurrencyToken);
+        }
+
         public CurrencyItem GetCurrency(long aCurrencyId)
         {
             CheckConnected();
@@ -476,6 +514,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return FLocalCacheDB.ReadDisplayedCurrencies();
         }
 
+        public IEnumerable<ClientCurrencyTokenItem> GetDisplayedCurrencyTokens()
+        {
+            CheckConnected();
+            return FLocalCacheDB.ReadDisplayedTokens().Select(lToken => new ClientCurrencyTokenItem(lToken));
+        }
+
+        public void SetDisplayedCurrencyToken(long aTokenID, bool aDisplayed)
+        {
+            CheckConnected();
+            FLocalCacheDB.WriteDisplayedTokenId(aTokenID, aDisplayed);
+        }
+
         public void SetDisplayedCurrency(long aCurrencyId, bool aDisplayed)
         {
             CheckConnected();
@@ -504,6 +554,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return lResult;
         }
 
+        public IEnumerable<ClientTokenTransactionItem> GetTokenTransactionRecords(long aTokenID, string aTokenAddress)
+        {
+            CheckConnected();
+            return FLocalCacheDB.ReadTokenTransactions(aTokenAddress).Select(lTokenTx => new ClientTokenTransactionItem(lTokenTx));
+        }
+
         public byte[] GetCurrencyIcon(long aCurrencyId)
         {
             return GetCurrency(aCurrencyId).Icon;
@@ -524,7 +580,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             string aTxWithNoFee = DirectCreateTransaction(aCurrencyTransaction);
 
             long lFeePerKb = lCurrency.FeePerKb;
-            decimal lKBSize = ((decimal)aTxWithNoFee.Length / 2) / 1024;
+            decimal lKBSize = ((decimal) aTxWithNoFee.Length / 2) / 1024;
 
             long lTxFee = Convert.ToInt64(lKBSize * lFeePerKb);
 
@@ -567,7 +623,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             var lResult = FLocalCacheDB.ReadBlockHeight(aCurrencyID);
             if (lResult == 0)
             {
-                lResult = (long)FPandoraWalletServiceAccess.GetBlockHeight(aCurrencyID);
+                lResult = (long) FPandoraWalletServiceAccess.GetBlockHeight(aCurrencyID);
                 FLocalCacheDB.WriteBlockHeight(aCurrencyID, lResult);
             }
             return lResult;

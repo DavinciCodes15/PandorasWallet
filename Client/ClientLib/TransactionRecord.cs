@@ -25,6 +25,9 @@ using System.Numerics;
 
 namespace Pandora.Client.ClientLib
 {
+    public enum TransactionDirection
+    { Credit = 0, Debit = 1, Both = 2, Unknown = 3 }
+
     public class TransactionRecord : CurrencyTransaction
     {
         public TransactionRecord()
@@ -64,15 +67,15 @@ namespace Pandora.Client.ClientLib
 
         public bool Valid { get; private set; }
 
-        private const string DefaultAddress = "External Address";
+        public const string DefaultAddress = "External Address";
 
-        public BigInteger GetValue(string[] aAddresses, out int aTxType, out string aLastToAddress, out string aLastFromAddress)
+        public BigInteger GetValue(string[] aAddresses, out TransactionDirection aTxType, out string aLastToAddress, out string aLastFromAddress)
         {
             BigInteger lResult = 0;
             BigInteger lAllOutputs = 0;
             BigInteger lAllInputs = 0;
             int lOtherAddressCount = 0;
-            aTxType = TYPE_Unknown;
+            aTxType = TransactionDirection.Unknown;
             aLastFromAddress = DefaultAddress;
             aLastToAddress = aLastFromAddress;
             string lLastUserToAddress = null;
@@ -114,9 +117,9 @@ namespace Pandora.Client.ClientLib
             this.TxFee = (long) (lAllInputs - lAllOutputs);
             if (lResult < 0)
             {
-                aTxType = TYPE_Debit;
+                aTxType = TransactionDirection.Debit;
                 if (lOtherAddressCount == 0)
-                    aTxType = TYPE_Both;
+                    aTxType = TransactionDirection.Both;
                 if (aLastFromAddress == DefaultAddress && lLastUserFromAddress != null)
                     aLastFromAddress = lLastUserFromAddress;
                 if (aLastToAddress == DefaultAddress && lLastUserToAddress != null)

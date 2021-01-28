@@ -38,15 +38,25 @@ namespace Pandora.Client.PandorasWallet
                 return new System.Drawing.Icon(ms);
             }
         }
+
+        public static byte[] IconToBytes(System.Drawing.Icon icon)
+        {
+            using (System.IO.MemoryStream ms = new System.IO.MemoryStream())
+            {
+                icon.Save(ms);
+                return ms.ToArray();
+            }
+        }
     }
 
     internal static class Program
     {
         public static string UpgradeFileName = null;
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        /// 
+        ///
         [STAThread]
         private static void Main()
         {
@@ -80,17 +90,16 @@ namespace Pandora.Client.PandorasWallet
                 }
                 catch
                 {
-                    
                 }
             }
         }
-
 
         private static void LogInitialize()
         {
         }
 
 #if DEBUG
+
         private static void DebugCode()
         {
             try
@@ -162,6 +171,5 @@ namespace Pandora.Client.PandorasWallet
         }
 
 #endif
-
     }
 }

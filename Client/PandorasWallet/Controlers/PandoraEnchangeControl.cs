@@ -59,7 +59,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
         private IPandoraExchanger FCurrentExchanger;
         private AvailableExchangesList FSelectedExchange;
 
-        private ConcurrentDictionary<string,ExchangeStageOperator> FStageOperators;
+        private ConcurrentDictionary<string, ExchangeStageOperator> FStageOperators;
 
         private ServerAccess.ServerConnection FPandorasWalletConnection
         {
@@ -142,7 +142,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 lOperator.OnTransferCoinsNeeded += TryToTransferMoneyToExchange;
                 FStageOperators.TryAdd(aExchanger.UID, lOperator);
                 aExchanger.OnMarketPricesChanging += FExchanger_OnMarketPricesChanging;
-                
             }
         }
 
@@ -158,7 +157,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 FKeyValueHelper = new ExchangeKeyValueHelper<MultiExchangeKeyValueObject>(FDBExchanger);
                 var lFactory = GetCurrentExchangeFactory();
                 foreach (var lExchangeID in FExchangeFactoryProducer.Inventory.Keys)
-                    SetStageOperator(lFactory.GetPandoraExchange((AvailableExchangesList)lExchangeID));
+                    SetStageOperator(lFactory.GetPandoraExchange((AvailableExchangesList) lExchangeID));
                 StartStageOperators();
                 //Add exchanges to list
                 MainForm.BeginInvoke((Action) (() =>
@@ -173,7 +172,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
                     MainForm.ClearExchangeList();
                     MainForm.AddExchange(lExchangeItems);
                 }));
-
 
                 FDataLoadingTask = Task.Run(() =>
                 {
@@ -204,12 +202,12 @@ namespace Pandora.Client.PandorasWallet.Controlers
         {
             var lCurrencyOrders = FOrderManager.LoadOrders(aCurrencyItem.Ticker, aCurrencyItem.Id);
             var lExchangeFactory = GetCurrentExchangeFactory();
-            var lMarketCache = new Dictionary<int, IEnumerable<ExchangeMarket>>();            
+            var lMarketCache = new Dictionary<int, IEnumerable<ExchangeMarket>>();
             foreach (var lOrder in lCurrencyOrders)
             {
-                var lExchanger = lExchangeFactory.GetPandoraExchange((AvailableExchangesList)lOrder.PandoraExchangeID);
-                if(!lMarketCache.TryGetValue(lOrder.PandoraExchangeID, out IEnumerable<ExchangeMarket> lMarkets))
-                { 
+                var lExchanger = lExchangeFactory.GetPandoraExchange((AvailableExchangesList) lOrder.PandoraExchangeID);
+                if (!lMarketCache.TryGetValue(lOrder.PandoraExchangeID, out IEnumerable<ExchangeMarket> lMarkets))
+                {
                     lMarkets = lExchanger.GetMarketCoins(aCurrencyItem.Name, aCurrencyItem.Ticker, GetCurrencyIDFromIdentifier);
                     lMarketCache.Add(lOrder.PandoraExchangeID, lMarkets);
                 }
@@ -226,7 +224,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             return FExchangeFactoryProducer.GetExchangeFactory(FPandorasWalletConnection.UserName, FPandorasWalletConnection.Email, 0);
         }
 
-        private long? GetCurrencyIDFromIdentifier(string aCurrencyName ,string aTicker)
+        private long? GetCurrencyIDFromIdentifier(string aCurrencyName, string aTicker)
         {
             return GetCurrencyFromIdentifier(aCurrencyName, aTicker)?.Id;
         }
@@ -277,7 +275,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
 
         private void MainForm_OnCancelBtnClick(int aInternalOrderId)
         {
-            UserTradeOrder lOrder = FOrderManager.GetOrderByInternalID(aInternalOrderId);      
+            UserTradeOrder lOrder = FOrderManager.GetOrderByInternalID(aInternalOrderId);
             if (lOrder == null) throw new Exception("Order id not found");
             var lWarningString = lOrder.Status == OrderStatus.Completed ? "WARNING!: Cancelling completed orders will cause to prevent withdraw of traded coins." : string.Empty;
             if (!MainForm.AskUserDialog($"Cancel order {lOrder.Name}", $"Do you want to cancel selected order? {Environment.NewLine} {lWarningString}")) return;
@@ -288,7 +286,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
             ExchangeStageOperator.MarkOrderToCancel(lOrder.InternalID, lWithdraw);
         }
 
-
         private bool AskUserToWithdrawFunds(string aOrderName)
         {
             return MainForm.AskUserDialog("Coin withdraw", $"Do you want to withdraw the order '{aOrderName}' funds from exchange? {Environment.NewLine} Note: Please consider that a tx fee will apply for this operation.");
@@ -297,7 +294,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
         private void MainForm_ExchangeOnSelectedCurrencyChanged(object sender, EventArgs e)
         {
             ActiveCurrencyID = MainForm.SelectedCurrencyId;
-            Task.Run(()=>ExchangePandoraCurrencyChanged(ActiveCurrencyID),FExchangeTaskCancellationSource?.Token ?? default);
+            Task.Run(() => ExchangePandoraCurrencyChanged(ActiveCurrencyID), FExchangeTaskCancellationSource?.Token ?? default);
         }
 
         private void ExchangePandoraCurrencyChanged(long aCurrency)
@@ -307,10 +304,10 @@ namespace Pandora.Client.PandorasWallet.Controlers
             {
                 PandoraCurrencyChangedProcess(aCurrency);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Write(LogLevel.Error, $"Exception thrown at ExchangePandoraCurrencyChanged. Details: {ex}");
-                MainForm.BeginInvoke((Action)(() => MainForm.StandardExceptionMsgBox(ex, "Exception thrown at changing exchange currency market info")));
+                MainForm.BeginInvoke((Action) (() => MainForm.StandardExceptionMsgBox(ex, "Exception thrown at changing exchange currency market info")));
             }
             finally
             {
@@ -326,7 +323,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
         private Tuple<CurrencyItem, decimal>[] GetCoinsWithExchangePrice(CurrencyItem aCurrency)
         {
             var lUserPossibleMarkets = new List<ExchangeMarket>();
-            ExchangeMarket[] lFullMarkets = FCurrentExchanger.GetMarketCoins(aCurrency.Name, aCurrency.Ticker, GetCurrencyIDFromIdentifier);        
+            ExchangeMarket[] lFullMarkets = FCurrentExchanger.GetMarketCoins(aCurrency.Name, aCurrency.Ticker, GetCurrencyIDFromIdentifier);
             List<Tuple<CurrencyItem, decimal>> lCoinsWithMarket = new List<Tuple<CurrencyItem, decimal>>();
             List<CurrencyItem> lUserCoins = UserCoins;
             foreach (ExchangeMarket lMarket in lFullMarkets)
@@ -350,12 +347,13 @@ namespace Pandora.Client.PandorasWallet.Controlers
         /// <param name="aCurrency">Selected currency id</param>
         private void PandoraCurrencyChangedProcess(long aCurrency)
         {
-            MainForm.BeginInvoke(new Action(()=> {
+            MainForm.BeginInvoke(new Action(() =>
+            {
                 MainForm.ClearListExchangeTo();
                 MainForm.StatusControlExchange.ClearStatusList();
                 MainForm.StatusControlOrderHistory.ClearStatusList();
             }));
-            if ((bool)MainForm.Invoke((Func<bool>) (() => MainForm.SelectedExchange == null)) || !FCurrentExchanger.IsCredentialsSet)
+            if ((bool) MainForm.Invoke((Func<bool>) (() => MainForm.SelectedExchange == null)) || !FCurrentExchanger.IsCredentialsSet)
                 return;
             var lWalletCurrency = FPandorasWalletConnection.GetCurrency(aCurrency);
             Tuple<CurrencyItem, decimal>[] lCoinsWithMarket = GetCoinsWithExchangePrice(lWalletCurrency);
@@ -366,7 +364,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 MainForm.BeginInvoke(new Action(() => MainForm.AddCoinExchangeTo(lCurrencyItem.Id, lCurrencyItem.Name, lCurrencyItem.Ticker, lPrice)));
             }
             if (!FExchangeCoinMarkets.Any())
-                FExchangeSelectedCoin = null;            
+                FExchangeSelectedCoin = null;
             DisableExchangeInterface();
             LoadOrderAcordingToAllCheckbox(aCurrency);
             FLastExchangeSelectedCurrency = string.Empty;
@@ -394,10 +392,10 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 MainForm_OnExchangeReceivedChanged();
             if (MainForm.ExchangeTotalReceived == 0 && MainForm.ExchangeQuantity > 0)
                 MainForm_OnExchangeQuantityChanged();
-            decimal lAmounTradeSize = lMinimumTradeDirection? MainForm.ExchangeQuantity : MainForm.ExchangeTotalReceived;
-            if(lAmounTradeSize <= 0) 
-            if (FExchangeSelectedCoin.MinimumTrade >= (lAmounTradeSize))
-                throw new ClientExceptions.InvalidOperationException(string.Format("Minimum order trade size is {0} {1}", FExchangeSelectedCoin.MinimumTrade, lMinimumTradeDirection?FExchangeSelectedCoin.BaseCurrencyInfo.Name: FExchangeSelectedCoin.DestinationCurrencyInfo.Name));
+            decimal lAmounTradeSize = lMinimumTradeDirection ? MainForm.ExchangeQuantity : MainForm.ExchangeTotalReceived;
+            if (lAmounTradeSize <= 0)
+                if (FExchangeSelectedCoin.MinimumTrade >= (lAmounTradeSize))
+                    throw new ClientExceptions.InvalidOperationException(string.Format("Minimum order trade size is {0} {1}", FExchangeSelectedCoin.MinimumTrade, lMinimumTradeDirection ? FExchangeSelectedCoin.BaseCurrencyInfo.Name : FExchangeSelectedCoin.DestinationCurrencyInfo.Name));
             if (lAmountTrade > FPandoraClientControl.GetBalance(ActiveCurrencyID))
                 throw new ClientExceptions.InvalidOperationException(string.Format("Not enough balance for this trade size"));
             TryToCreateNewExchangeTransaction(MainForm.ExchangeTargetPrice, MainForm.ExchangeStopPrice, MainForm.ExchangeQuantity, FExchangeSelectedCoin);
@@ -425,7 +423,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             if (MainForm.ExchangeTargetPrice > 0 && MainForm.ExchangeQuantity > 0)
                 UpdateGUIExchangeAproxReceived();
             MainForm.OnExchangeReceivedChanged += MainForm_OnExchangeReceivedChanged;
-        }        
+        }
 
         private void UpdateGUIExchangeAproxReceived()
         {
@@ -451,11 +449,12 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 UpdateGUIExchangeAproxReceived();
             MainForm.OnExchangeReceivedChanged += MainForm_OnExchangeReceivedChanged;
         }
+
         private void MainForm_OnExchangeReceivedChanged()
         {
             MainForm.OnExchangeQuantityChanged -= MainForm_OnExchangeQuantityChanged;
             if (MainForm.ExchangeTotalReceived > 0 && MainForm.ExchangeTargetPrice > 0)
-                UpdateGUIExchangeSpend();            
+                UpdateGUIExchangeSpend();
             MainForm.OnExchangeQuantityChanged += MainForm_OnExchangeQuantityChanged;
         }
 
@@ -472,7 +471,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
         private void AskUserForExchangeCredentials(MultiExchangeKeyValueObject aKeyValueObject, KeyManager aKeyManager, AvailableExchangesList aSelectedExchange)
         {
             if (FExchangeLogin.Execute())
-                ChangeUserExchangeCredentials(aKeyValueObject, aKeyManager, aSelectedExchange, FExchangeLogin.ExchageKey, FExchangeLogin.ExchangeSecret);   
+                ChangeUserExchangeCredentials(aKeyValueObject, aKeyManager, aSelectedExchange, FExchangeLogin.ExchageKey, FExchangeLogin.ExchangeSecret);
         }
 
         private void ChangeUserExchangeCredentials(MultiExchangeKeyValueObject aKeyValueObject, KeyManager aKeyManager, AvailableExchangesList aSelectedExchange, string aExchangeKey, string aExchangeSecret)
@@ -486,17 +485,16 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 aKeyValueObject.PublicKeys.Add(lSelectedExchangeInt, aKeyManager.EncryptText(aExchangeKey));
             else
                 aKeyValueObject.PublicKeys[lSelectedExchangeInt] = aKeyManager.EncryptText(aExchangeKey);
-                
+
             if (!aKeyValueObject.PrivateKeys.ContainsKey(lSelectedExchangeInt))
                 aKeyValueObject.PrivateKeys.Add(lSelectedExchangeInt, aKeyManager.EncryptText(aExchangeSecret));
             else
                 aKeyValueObject.PrivateKeys[lSelectedExchangeInt] = aKeyManager.EncryptText(aExchangeSecret);
 
             FKeyValueHelper.SaveChanges(aKeyValueObject);
-            
         }
 
-        private Tuple<string,string> TryDecryptAndSetExchangeCredentials(KeyManager aKeyManager, string aEncryptedPublicKey, string aEncryptedPrivateKey, AvailableExchangesList aSelectedExchange)
+        private Tuple<string, string> TryDecryptAndSetExchangeCredentials(KeyManager aKeyManager, string aEncryptedPublicKey, string aEncryptedPrivateKey, AvailableExchangesList aSelectedExchange)
         {
             string lExchangePublicKey = null;
             string lExchangeSecret = null;
@@ -531,7 +529,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             FSelectedExchange = (AvailableExchangesList) MainForm.SelectedExchange.ID;
             var lExchangeFactory = GetCurrentExchangeFactory();
             var lExchanger = lExchangeFactory.GetPandoraExchange(FSelectedExchange);
-            
+
             try
             {
                 //In case that when the user loaded their info, we should try again every time that it clicks in the combo box
@@ -541,7 +539,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                     MainForm.ChangeExchangeSelection(null);
                     return;
                 }
-                
+
                 if (!lExchanger.IsCredentialsSet)
                 {
                     if (GetKeyManagerMethod.Invoke(out KeyManager lKeyManager))
@@ -568,7 +566,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                                 }
                             }
                         }
-                        catch(ClientExceptions.CancelledUserOperation)
+                        catch (ClientExceptions.CancelledUserOperation)
                         {
                             return;
                         }
@@ -584,7 +582,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
             }
             finally
             {
-                
                 if (!lExchanger.IsCredentialsSet)
                     MainForm.ChangeExchangeSelection(null);
                 else
@@ -620,16 +617,12 @@ namespace Pandora.Client.PandorasWallet.Controlers
                             ExchangePandoraCurrencyChanged(ActiveCurrencyID);
                             MainForm.Invoke((Action) (() => MainForm.SetArrowCursor()));
                         }
-                        catch(Exception ex)
+                        catch (Exception ex)
                         {
                             Log.Write(LogLevel.Error, $"Exception thrown at task ExchangePandoraCurrencyChanged. Details: {ex}");
                         }
-
                     }, FExchangeTaskCancellationSource.Token);
-                    
-                                
                 }
-               
             }
         }
 
@@ -639,7 +632,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             {
                 //Even if the reference does not change anywhere else, this maybe will be used by others threads so I want this to be an atomic operation
                 Interlocked.Exchange(ref FExchangeSelectedCoin, FExchangeCoinMarkets.ToList().Find(x => MainForm.SelectedExchangeMarket.Name == x.DestinationCurrencyInfo.WalletID.ToString()));
-                MainForm.EstimatePrice = FExchangeSelectedCoin.IsSell? FExchangeSelectedCoin.Prices.Bid : FExchangeSelectedCoin.Prices.Ask;
+                MainForm.EstimatePrice = FExchangeSelectedCoin.IsSell ? FExchangeSelectedCoin.Prices.Bid : FExchangeSelectedCoin.Prices.Ask;
                 MainForm.LabelPriceInCoin = "BTC";
                 MainForm.TickerTotalReceived = MainForm.SelectedExchangeMarket.SubItems[1].Text;
                 if (!string.IsNullOrEmpty(FLastExchangeSelectedCurrency) && FLastExchangeSelectedCurrency == MainForm.SelectedExchangeMarket.SubItems[1].Text)
@@ -649,12 +642,10 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 MainForm.ExchangeTransactionName = string.Format("{0} -> {1} - {2}", FExchangeSelectedCoin.BaseCurrencyInfo.Ticker, MainForm.SelectedExchangeMarket.SubItems[1].Text, DateTime.Now.ToString());
                 FLastExchangeSelectedCurrency = MainForm.SelectedExchangeMarket.SubItems[1].Text;
                 EnableExchangeInterface();
-                MainForm_OnExchangeQuantityChanged(); 
+                MainForm_OnExchangeQuantityChanged();
                 ChangeLastOrderAcordingToMarket(FExchangeSelectedCoin);
             }
         }
-
-
 
         private void ChangeLastOrderAcordingToMarket(ExchangeMarket aMarket)
         {
@@ -691,7 +682,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 Market = aMarket,
                 Precision = FPandorasWalletConnection.GetDefaultCurrency().Precision,
                 TradeComission = 0.0025M
-
             });
             FDBExchanger.ReadOrderLogs(aMarketOrder.InternalID, out List<OrderMessage> lMessages);
             lOrderView.AddLog(lMessages.Select(lMessage => new AppMainForm.ExchangeOrderLogViewModel
@@ -700,17 +690,16 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 Message = lMessage.Message,
                 Time = lMessage.Time.ToLocalTime().ToString()
             }));
-            var lAsyncResult = MainForm.BeginInvoke(new Action(() => 
+            var lAsyncResult = MainForm.BeginInvoke(new Action(() =>
             {
                 try
                 {
                     MainForm.AddOrUpdateOrder(lOrderView, aCurrencyID, aUpdateGUI);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Log.Write(LogLevel.Critical, $"Exception thrown adding exchange order to interface. Details: {ex}");
                 }
-
             }
             ));
         }
@@ -725,7 +714,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                     CurrencyItem lCurrency = UserCoins.Find(lItem => (lMarket.DestinationCurrencyInfo.WalletID.HasValue && lItem.Id == lMarket.DestinationCurrencyInfo.WalletID)
                                                                                     || string.Equals(lItem.Ticker, lMarket.DestinationCurrencyInfo.Ticker, StringComparison.OrdinalIgnoreCase)
                                                                                     || string.Equals(lItem.Name, lMarket.DestinationCurrencyInfo.Name, StringComparison.OrdinalIgnoreCase));
-                    if(lCurrency != null)
+                    if (lCurrency != null)
                         MainForm?.BeginInvoke(new MethodInvoker(delegate ()
                             {
                                 if (!(MainForm.Disposing || MainForm.IsDisposed) && aExchangeID == (int) FSelectedExchange)
@@ -733,10 +722,8 @@ namespace Pandora.Client.PandorasWallet.Controlers
                                     MainForm.AddCoinExchangeTo(lCurrency.Id, lCurrency.Name, lCurrency.Ticker, lMarket.IsSell ? lMarket.Prices.Bid : lMarket.Prices.Ask);
                                     if (FExchangeSelectedCoin?.MarketName == lMarket.MarketName)
                                         MainForm.EstimatePrice = FExchangeSelectedCoin.IsSell ? FExchangeSelectedCoin.Prices.Bid : FExchangeSelectedCoin.Prices.Ask; ;
-
                                 }
-
-                         }));
+                            }));
                 }
             }
         }
@@ -745,7 +732,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
         {
             PandoraExchangeSQLiteSaveManager lOldDBExchanger = null;
             if (FDBExchanger != null)
-                lOldDBExchanger = FDBExchanger;            
+                lOldDBExchanger = FDBExchanger;
             FDBExchanger = new PandoraExchangeSQLiteSaveManager(SqLiteDbFileName, FPandorasWalletConnection.UserName, FPandorasWalletConnection.Email);
             FOrderManager = new ExchangeOrderManager(FDBExchanger);
             FOrderManager.OnOrderStatusChanged += OrderManager_OnOrderStatusChanged;
@@ -757,8 +744,8 @@ namespace Pandora.Client.PandorasWallet.Controlers
         {
             var lViewModel = MainForm.GetOrderViewModel(aOrderID);
             var lViewOrderMessages = aOrderMessages.Select(lMsg => new AppMainForm.ExchangeOrderLogViewModel { ID = lMsg.ID, Message = lMsg.Message, Time = lMsg.Time.ToLocalTime().ToString() });
-            if (lViewOrderMessages.Any() && lViewModel != null)                         
-                lViewModel.AddLog(lViewOrderMessages);            
+            if (lViewOrderMessages.Any() && lViewModel != null)
+                lViewModel.AddLog(lViewOrderMessages);
         }
 
         private void OrderManager_OnOrderStatusChanged(int aInternalID, OrderStatus aNewStatus, long aCurrencyID)
@@ -827,7 +814,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 MainForm.ExchangeChangeKeysEnabled = false;
                 MainForm.StatusControlExchange.StatusName = string.Empty;
             }));
-
         }
 
         private void EnableExchangeInterface()
@@ -845,9 +831,9 @@ namespace Pandora.Client.PandorasWallet.Controlers
             }));
         }
 
-        ConcurrentBag<IPandoraExchanger> FExchanges;
+        private ConcurrentBag<IPandoraExchanger> FExchanges;
 
-        private void SetExchangeCredentials(AvailableExchangesList aExchangeID,string aKey, string aSecret)
+        private void SetExchangeCredentials(AvailableExchangesList aExchangeID, string aKey, string aSecret)
         {
             var lFactory = GetCurrentExchangeFactory();
             var lExchange = lFactory.GetPandoraExchange(aExchangeID);
@@ -856,32 +842,32 @@ namespace Pandora.Client.PandorasWallet.Controlers
 
         private string TryToTransferMoneyToExchange(decimal aAmount, string aAddress, long aCurrencyID)
         {
-                decimal lTxFee = 0;
-                int lCounter = 0;
-                string lExceptionMessage = string.Empty;
-                do
+            decimal lTxFee = 0;
+            int lCounter = 0;
+            string lExceptionMessage = string.Empty;
+            do
+            {
+                lCounter++;
+                try
                 {
-                    lCounter++;
-                    try
-                    {
-                        lTxFee = PandoraClientControl.GetInstance().CalculateTxFee(aAddress, aAmount, aCurrencyID);
-                        break;
-                    }
-                    catch (SubscriptionOverException)
-                    {
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        lExceptionMessage = ex.Message;
-                        continue;
-                    }
-                } while (lCounter < 6);
-                if (lTxFee == 0) throw new Exception($"Failed to get transaction txfee. Details: {lExceptionMessage}");
-                decimal lBalance = PandoraClientControl.GetInstance().GetBalance(aCurrencyID);
-                decimal lDecimalTxFee = (lTxFee / (decimal)Math.Pow(10, FPandorasWalletConnection.GetDefaultCurrency().Precision));
-                if (lBalance == 0 || (aAmount + lDecimalTxFee) > lBalance) throw new Exception("Not enough balance to transfer to the exchange");
-                return ExecuteSendTx(aAmount, aCurrencyID, lTxFee, aAddress);            
+                    lTxFee = PandoraClientControl.GetInstance().CalculateTxFee(aAddress, aAmount, aCurrencyID);
+                    break;
+                }
+                catch (SubscriptionOverException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    lExceptionMessage = ex.Message;
+                    continue;
+                }
+            } while (lCounter < 6);
+            if (lTxFee == 0) throw new Exception($"Failed to get transaction txfee. Details: {lExceptionMessage}");
+            decimal lBalance = PandoraClientControl.GetInstance().GetBalance(aCurrencyID);
+            decimal lDecimalTxFee = (lTxFee / (decimal) Math.Pow(10, FPandorasWalletConnection.GetDefaultCurrency().Precision));
+            if (lBalance == 0 || (aAmount + lDecimalTxFee) > lBalance) throw new Exception("Not enough balance to transfer to the exchange");
+            return ExecuteSendTx(aAmount, aCurrencyID, lTxFee, aAddress);
         }
 
         /// <summary>
@@ -895,7 +881,8 @@ namespace Pandora.Client.PandorasWallet.Controlers
         private string ExecuteSendTx(decimal aAmount, long aActiveCurrencyID, decimal aTxFee, string aExchangeAddress)
         {
             //FPandoraClientControl.InitializeRootSeed();
-            string lTx = PandoraClientControl.GetInstance().CreateSignedTransaction(aExchangeAddress, aAmount, aTxFee, aActiveCurrencyID);
+            var lClientControl = PandoraClientControl.GetInstance();
+            string lTx = lClientControl.GetNewSignedTransaction(lClientControl.GetCurrency(aActiveCurrencyID), aExchangeAddress, aAmount, aTxFee);
             long lTxHandle = FPandorasWalletConnection.DirectSendTransaction(aActiveCurrencyID, lTx);
             string lReturnedTxID = null;
 
@@ -949,6 +936,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 FCacheLastOrders[lCacheLastOrdersKey] = lOrderWithID;
             }
         }
+
         public void Dispose()
         {
             MainForm.OnSelectedCurrencyChanged -= MainForm_ExchangeOnSelectedCurrencyChanged; ;

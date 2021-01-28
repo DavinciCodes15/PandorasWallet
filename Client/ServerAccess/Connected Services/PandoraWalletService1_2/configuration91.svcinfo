@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="TBACIekHN60nH07TvkcA3ST9MU0=">
+<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="AgGwD6T+1GL3o0U5H675o3FlG71+gTNV5kQnfNaGpeM=">
   <bindingConfigurations>
     <bindingConfiguration bindingType="basicHttpBinding" name="PandoraWalletService1_2Soap">
       <properties>

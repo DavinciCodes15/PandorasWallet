@@ -106,7 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Universal\Pandora.Client.Universal.csproj">
-      <Project>{e798fc0d-eafd-49a9-b5fb-5391ad59364f}</Project>
+      <Project>{35c5b2a3-428c-4664-a3e3-25678eb37ba3}</Project>
       <Name>Pandora.Client.Universal</Name>
     </ProjectReference>
     <ProjectReference Include="..\JKrof\Pandora.Client.Exchange.JKrof.csproj">

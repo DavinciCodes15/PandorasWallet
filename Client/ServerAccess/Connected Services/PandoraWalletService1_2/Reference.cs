@@ -115,10 +115,10 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetTransactionRecords", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
-        Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetTransactionRecords(string aConnectionId, long aCurrencyId, long aStartTxRecordId);
+        Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetTransactionRecords(string aConnectionId, long aCurrencyId, long aStartTxRecordId, bool aIncludeScript);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetTransactionRecords", ReplyAction="*")]
-        System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetTransactionRecordsAsync(string aConnectionId, long aCurrencyId, long aStartTxRecordId);
+        System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetTransactionRecordsAsync(string aConnectionId, long aCurrencyId, long aStartTxRecordId, bool aIncludeScript);
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/CheckAddressValidity", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
@@ -155,6 +155,13 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IsTransactionSent", ReplyAction="*")]
         System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> IsTransactionSentAsync(string aConnectionId, long aSendTxHandle);
         
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetCurrencyToken", ReplyAction="*")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetCurrencyToken(string aConnectionId, long aCurrencyID, string aContractAddress);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetCurrencyToken", ReplyAction="*")]
+        System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetCurrencyTokenAsync(string aConnectionId, long aCurrencyID, string aContractAddress);
+        
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetTransactionId", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetTransactionId(string aConnectionId, long aSendTxHandle);
@@ -164,7 +171,7 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
     }
     
     /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.3062.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.8.3761.0")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -188,7 +195,7 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
     
     /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(PandoraLogonResult))]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.7.3062.0")]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Xml", "4.8.3761.0")]
     [System.SerializableAttribute()]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
@@ -386,12 +393,12 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
             return base.Channel.RemoveMonitoredAccountAsync(aConnectionId, aCurrencyAccountId);
         }
         
-        public Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetTransactionRecords(string aConnectionId, long aCurrencyId, long aStartTxRecordId) {
-            return base.Channel.GetTransactionRecords(aConnectionId, aCurrencyId, aStartTxRecordId);
+        public Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetTransactionRecords(string aConnectionId, long aCurrencyId, long aStartTxRecordId, bool aIncludeScript) {
+            return base.Channel.GetTransactionRecords(aConnectionId, aCurrencyId, aStartTxRecordId, aIncludeScript);
         }
         
-        public System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetTransactionRecordsAsync(string aConnectionId, long aCurrencyId, long aStartTxRecordId) {
-            return base.Channel.GetTransactionRecordsAsync(aConnectionId, aCurrencyId, aStartTxRecordId);
+        public System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetTransactionRecordsAsync(string aConnectionId, long aCurrencyId, long aStartTxRecordId, bool aIncludeScript) {
+            return base.Channel.GetTransactionRecordsAsync(aConnectionId, aCurrencyId, aStartTxRecordId, aIncludeScript);
         }
         
         public Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult CheckAddressValidity(string aConnectionId, long aCurrencyId, string aBase58CheckAddress) {
@@ -432,6 +439,14 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
         
         public System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> IsTransactionSentAsync(string aConnectionId, long aSendTxHandle) {
             return base.Channel.IsTransactionSentAsync(aConnectionId, aSendTxHandle);
+        }
+        
+        public Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetCurrencyToken(string aConnectionId, long aCurrencyID, string aContractAddress) {
+            return base.Channel.GetCurrencyToken(aConnectionId, aCurrencyID, aContractAddress);
+        }
+        
+        public System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetCurrencyTokenAsync(string aConnectionId, long aCurrencyID, string aContractAddress) {
+            return base.Channel.GetCurrencyTokenAsync(aConnectionId, aCurrencyID, aContractAddress);
         }
         
         public Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetTransactionId(string aConnectionId, long aSendTxHandle) {

@@ -22,6 +22,8 @@
 using Newtonsoft.Json;
 using Pandora.Client.ClientLib;
 using Pandora.Client.Crypto.Currencies;
+using Pandora.Client.Crypto.Currencies.Ethereum;
+using Pandora.Client.PandorasWallet.Models;
 using Pandora.Client.ServerAccess;
 using Pandora.Client.Universal;
 using Pandora.Client.Universal.Threading;
@@ -30,6 +32,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 
 namespace Pandora.Client.PandorasWallet.ServerAccess
@@ -40,7 +43,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
     public delegate void DelegateOnBlockHeightChange(object aSender, long aCurrencyId, long aBlockHeight);
 
-    public delegate void DelegateOnTransaction(object aSender, TransactionRecord aTransactionRecord);
+    public delegate void DelegateOnTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction = null);
+
+    public delegate void DelegateOnTokenTransaction(object aSender, ClientTokenTransactionItem aTransactionRecord);
 
     public delegate void DelegateOnSendTransactionCompleted(object aSender, string aErrorMsg, string aTxId);
 
@@ -64,12 +69,14 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private DateTime FTimeToCheckForNewCurrencies = DateTime.Now;
         private PandoraJsonConverter FConverter = new PandoraJsonConverter();
         private bool FExecuted;
-        DateTime FLastCheckedForUpgrade = DateTime.MinValue;
-        string FUpgradePath;
+        private DateTime FLastCheckedForUpgrade = DateTime.MinValue;
+        private string FUpgradePath;
         private MyWebClient FWebClientDownloader;
+
         private class MyWebClient : WebClient
         {
             public string FileName { get; private set; }
+
             public MyWebClient(string aFileName) : base()
             {
                 FileName = aFileName;
@@ -140,7 +147,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public event DelegateOnTransaction OnUpdatedTransaction;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         public event DelegateOnUpgradeFileReady OnUpgradeFileReady;
 
@@ -163,7 +170,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public void AddExistingCurrency(CurrencyItem aCurrencyItem, CurrencyStatusItem aLastCurrencyStatusItem)
         {
             CheckIfNotifierIsExecuting();
-            var lId = (uint)aCurrencyItem.Id;
+            var lId = (uint) aCurrencyItem.Id;
             FExistingCurrencyIds.Add(lId, new CurrencyInfo() { CurrencyItem = aCurrencyItem, LastCurrencyStatusItem = aLastCurrencyStatusItem });
             if (lId > LastNotifiedCurrencyId)
                 LastNotifiedCurrencyId = lId;
@@ -235,7 +242,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             FExecuted = true;
         }
 
-        // once a day 
+        // once a day
         // go check https://api.github.com/repos/DavinciCodes15/PandorasWallet/releases/latest
         // for latest version and download.
         private void LookForUpgrade()
@@ -308,7 +315,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 FWebClientDownloader = null;
                 lSender.Dispose();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 this.DoErrorHandler(ex);
             }
@@ -572,12 +579,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             foreach (var lCurrencyInfo in FExistingCurrencyIds.Values)
                 if (lCurrencyInfo.MonitoredCurrency)
                 {
+                    bool lCanBeToken = lCurrencyInfo.CurrencyItem.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol);
                     // Get trasactions from server that is greater than > the current ID.
-                    // thus this tx id must the oldest tx and has less than max Confimations 
+                    // thus this tx id must the oldest tx and has less than max Confimations
                     // just incase the tx moves to a new block in a chain reorg
-                    string s = FServerAccess.GetTransactionRecords(lCurrencyInfo.CurrencyItem.Id, lCurrencyInfo.LastTransactionRecordId);
+                    string s = FServerAccess.GetTransactionRecords(lCurrencyInfo.CurrencyItem.Id, lCurrencyInfo.LastTransactionRecordId, lCanBeToken);
                     List<TransactionRecord> lRemoteTransactionRecords = JsonConvert.DeserializeObject<List<TransactionRecord>>(s, FConverter);
-                    // if we have tranacations we are looking for changes based on the max confirmations 
+                    // if we have tranacations we are looking for changes based on the max confirmations
                     // lets see if we need to stop look for them.
                     if (lCurrencyInfo.LocalTransactionRecords.Any())
                     {
@@ -619,7 +627,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         for (int i = 0; i < lRemoteTransactionRecords.Count; i++)
                         {
                             var lTx = lRemoteTransactionRecords[i];// this is done for RevDebug for testing
-                            DoOnNewTransaction(lTx);
+                            var lTokenTx = ProcessTokenTransaction(lCurrencyInfo, lTx);
+                            DoOnNewTransaction(lTx, lTokenTx);
                             lCurrencyInfo.LocalTransactionRecords.Add(lTx);
                         }
                     }
@@ -628,6 +637,48 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     if (lCurrencyInfo.LocalTransactionRecords.Any())
                         lCurrencyInfo.LastTransactionRecordId = lCurrencyInfo.LocalTransactionRecords.First().TransactionRecordId - 1;
                 }
+        }
+
+        private ClientTokenTransactionItem ProcessTokenTransaction(CurrencyInfo aCurrencyInfo, TransactionRecord aTransactionRecord)
+        {
+            ClientTokenTransactionItem lResult = null;
+            if (aCurrencyInfo.CurrencyItem.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
+            {
+                try
+                {
+                    var lOutputScript = aTransactionRecord.Outputs.Where(lOutput => !string.IsNullOrEmpty(lOutput.Script)).Select(lOutput => lOutput.Script).FirstOrDefault();
+                    if (lOutputScript != null)
+                    {
+                        var lTxJson = Encoding.UTF8.GetString(Convert.FromBase64String(lOutputScript));
+                        var lTokenInfo = JsonConvert.DeserializeObject<TokenTransactionInfo>(lTxJson);
+                        if (!string.IsNullOrEmpty(lTokenInfo.Input.Replace("0x", string.Empty)))
+                            lResult = BuildERC20TokenTransaction(aTransactionRecord, lTokenInfo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Write($"Unable to process token transaction. TxID: {aTransactionRecord.TxId}. Details: {ex}");
+                }
+            }
+            return lResult;
+        }
+
+        private ClientTokenTransactionItem BuildERC20TokenTransaction(TransactionRecord aTx, TokenTransactionInfo aTokenTxInfo)
+        {
+            ClientTokenTransactionItem lResult = null;
+            var lDecodedTransactionPayload = ERC20TokenDecoder.TryDecode(aTokenTxInfo.Input);
+            if (lDecodedTransactionPayload != null)
+            {
+                lResult = new ClientTokenTransactionItem
+                {
+                    From = string.IsNullOrEmpty(lDecodedTransactionPayload.OriginAddress) ? aTokenTxInfo.From : lDecodedTransactionPayload.OriginAddress,
+                    To = lDecodedTransactionPayload.DestinationAddress,
+                    TokenAddress = aTokenTxInfo.To,
+                    Amount = lDecodedTransactionPayload.AmountSent,
+                    ParentTransactionID = aTx.TxId
+                };
+            }
+            return lResult;
         }
 
         private int ComparerTX(TransactionRecord x, TransactionRecord y)
@@ -698,11 +749,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        private void DoOnNewTransaction(TransactionRecord aTransactionRecord)
+        private void DoOnNewTransaction(TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction = null)
         {
             try
             {
-                this.SynchronizingObject?.Invoke(OnNewTransaction, new object[] { this, aTransactionRecord });
+                this.SynchronizingObject?.Invoke(OnNewTransaction, new object[] { this, aTransactionRecord, aTokenTransaction });
             }
             catch (Exception e)
             {
@@ -756,6 +807,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             aIsHandled = true;
             Log.Write(LogLevel.Error, "Error in PandoraObjectNotifier : {0}", e);
+        }
+
+        private class TokenTransactionInfo
+        {
+            public string From { get; set; }
+            public string To { get; set; }
+            public string Input { get; set; }
         }
 
         private class CurrencyInfo

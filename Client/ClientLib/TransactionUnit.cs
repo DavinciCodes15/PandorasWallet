@@ -30,13 +30,14 @@ namespace Pandora.Client.ClientLib
         {
         }
 
-        public TransactionUnit(long aId, BigInteger aAmount, string aAddress, int aIndex = -1, string aParentTxID = null)
+        public TransactionUnit(long aId, BigInteger aAmount, string aAddress, int aIndex = -1, string aParentTxID = null, string aScript = null)
         {
             Id = aId;
             Amount = aAmount;
             Address = aAddress;
             Index = aIndex;
             TxID = aParentTxID;
+            Script = aScript;
         }
 
         public long Id { get; private set; }
@@ -48,5 +49,7 @@ namespace Pandora.Client.ClientLib
         public string TxID { get; private set; }
 
         public int Index { get; private set; }
+
+        public string Script { get; private set; }
     }
 }

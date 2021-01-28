@@ -24,6 +24,7 @@
 
 using Pandora.Client.ClientLib;
 using Pandora.Client.Crypto.Currencies;
+using Pandora.Client.PandorasWallet.Models;
 using Pandora.Client.Universal;
 using System;
 using System.Collections.Generic;
@@ -39,6 +40,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public class DBManager : IDisposable
 
         {
+            private const int FVERSION = 10004;
             private SQLiteConnection FDBConnection;
             private List<string> TableNames;
 
@@ -114,8 +116,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
             }
 
-            private const int VERSION = 10003;
-
             private void CreateTables()
             {
                 string[] lTables = GetTableNames();
@@ -127,7 +127,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         TableNames = new List<string>(lTables);
                         ClearAll(); // clears data from all tables
                     }
-                    else if (GetVersion() >= VERSION)
+                    else if (GetVersion() >= FVERSION)
                     {
                         return;
                     }
@@ -141,8 +141,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 SQLiteCommand CreateExtTxTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS TxExt (internalid BIGINT PRIMARY KEY, extdata varchar(100))", FDBConnection);
                 SQLiteCommand CreateDataRetrievalTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS DataReferences (type VARCHAR(100) PRIMARY KEY, lastdataretrieval DATETIME INTEGER)", FDBConnection);
                 SQLiteCommand CreateVersionTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS Version (NVersion BIGINT PRIMARY KEY)", FDBConnection);
+                SQLiteCommand CreateCurrencyTokenTable = new SQLiteCommand("CREATE TABLE IF NOT EXISTS CurrencyToken (id int PRIMARY KEY, name VARCHAR(100), symbol VARCHAR(50), precision INT, parentcurrency INT, Icon BLOB, IconSize int, address VARCHAR(300))");
                 SQLiteCommand WriteVersion = new SQLiteCommand("DELETE FROM VERSION ; INSERT OR REPLACE INTO Version (NVersion) VALUES (@Version)", FDBConnection);
-                WriteVersion.Parameters.Add(new SQLiteParameter("Version", VERSION));
+
+                WriteVersion.Parameters.Add(new SQLiteParameter("Version", FVERSION));
 
                 using (SQLiteTransaction lTransaction = FDBConnection.BeginTransaction())
                 {
@@ -157,6 +159,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         CreateExtTxTable.ExecuteNonQuery();
                         CreateDataRetrievalTable.ExecuteNonQuery();
                         CreateVersionTable.ExecuteNonQuery();
+                        CreateCurrencyTokenTable.ExecuteNonQuery();
                         WriteVersion.ExecuteNonQuery();
 
                         lTransaction.Commit();
@@ -667,18 +670,19 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 ChainParams lParams = new ChainParams();
                                 lParams.CopyFrom(lChainParamsObject);
 
-                                aCurrencyList.Add(new CurrencyItem(
-                                    Convert.ToInt32(rdr.GetInt32(0)),
-                                    rdr.GetString(1),
-                                    rdr.GetString(2),
-                                    (ushort) rdr.GetInt16(3),
-                                    rdr.GetDateTime(5),
-                                    Convert.ToInt16(rdr.GetInt16(4)),
-                                    lIcon,
-                                    rdr.GetInt64(8),
-                                    lParams,
-                                    (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus), rdr.GetString(10))
-                                    ));
+                                aCurrencyList.Add(new CurrencyItem
+                                {
+                                    Id = Convert.ToInt32(rdr.GetInt32(0)),
+                                    Name = rdr.GetString(1),
+                                    Ticker = rdr.GetString(2),
+                                    Precision = (ushort) rdr.GetInt16(3),
+                                    LiveDate = rdr.GetDateTime(5),
+                                    MinConfirmations = Convert.ToInt16(rdr.GetInt16(4)),
+                                    Icon = lIcon,
+                                    FeePerKb = rdr.GetInt64(8),
+                                    ChainParamaters = lParams,
+                                    CurrentStatus = (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus), rdr.GetString(10))
+                                });
                             }
                         }
                     }

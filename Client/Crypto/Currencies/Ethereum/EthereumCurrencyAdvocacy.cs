@@ -3,6 +3,7 @@ using Nethereum.Web3;
 using Org.BouncyCastle.Math;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -115,17 +116,18 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
         {
             if (aValidationInfo.Outputs.Length > 2)
                 throw new ArgumentException("Invalid output.");
-            var lSigner = new TransactionSigner();
+            var lTxOutput = aValidationInfo.Outputs.First();
             var lFromAddress = aValidationInfo.Inputs[0].Address.ToLower();
-            var lToAddress = aValidationInfo.Outputs[0].Address;
+            var lToAddress = lTxOutput.Address;
             var lKeyIndex = FAddresses[lFromAddress];
-            var lAmount = aValidationInfo.Outputs[0].Amount;
+            var lAmount = lTxOutput.Amount;
+            var lTokenData = !string.IsNullOrEmpty(lTxOutput.Script) ? lTxOutput.Script : null;
             //var lNonceStr = Encoding.Default.GetString(HexStringToByteArray(aTxData)); //I removed this line because biginteger already accepts hex
             string lCleanHexNonce = string.Concat("0", aTxData.Replace("0x", string.Empty));
             var lNonce = BigInteger.Parse(lCleanHexNonce, System.Globalization.NumberStyles.HexNumber);
-            var lGasLimit = 21000; // number of gass units you can use
+            var lGasLimit = lTokenData == null ? 21000 : 60000; // number of gass units you can use
             BigInteger lGasPrice = aValidationInfo.TxFee / lGasLimit;
-            var lResult = lSigner.SignTransaction(GetBinaryPrivateKey((int) lKeyIndex), lToAddress, lAmount, lNonce, lGasPrice, lGasLimit);
+            var lResult = (new TransactionSigner()).SignTransaction(GetBinaryPrivateKey((int) lKeyIndex), lToAddress, lAmount, lNonce, lGasPrice, lGasLimit, lTokenData);
             return lResult;
         }
 

@@ -38,6 +38,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.txtUsername = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -165,11 +166,21 @@
             this.label1.TabIndex = 3;
             this.label1.Text = "&Username";
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(12, 238);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(80, 26);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "Advanced";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
             // ConnectDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 17F);
             this.BackColor = System.Drawing.SystemColors.InactiveCaption;
             this.ClientSize = new System.Drawing.Size(512, 286);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.groupBox1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
             this.KeyPreview = true;
@@ -185,6 +196,7 @@
             this.Controls.SetChildIndex(this.btnOK, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.groupBox1, 0);
+            this.Controls.SetChildIndex(this.button1, 0);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -203,5 +215,6 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ComboBox txtEmail;
         private System.Windows.Forms.CheckBox cbxSavePassword;
+        private System.Windows.Forms.Button button1;
     }
 }

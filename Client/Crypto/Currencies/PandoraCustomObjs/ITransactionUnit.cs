@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 
-
 namespace Pandora.Client.Crypto.Currencies
 {
     public interface ITransactionUnit
@@ -24,5 +23,10 @@ namespace Pandora.Client.Crypto.Currencies
         /// Index of output associated to this txunit
         /// </summary>
         int Index { get; }
+
+        /// <summary>
+        /// Script of output
+        /// </summary>
+        string Script { get; }
     }
 }

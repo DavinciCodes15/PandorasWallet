@@ -11,7 +11,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Contracts
     {
         long[] SelectedCurrencyIds { get; }
 
-        void AddCurrencies(IEnumerable<CurrencyViewItemModel> aListOfCurrencyModel);
+        void AddCurrencies(IEnumerable<GUICurrency> aListOfCurrencyModel);
 
         void Clear();
     }

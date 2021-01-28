@@ -31,7 +31,7 @@ namespace Pandora.Client.Crypto.Currencies
         /// </summary>
         /// <param name="aAmount">Amount to send to what address.</param>
         /// <param name="aAddress">The address that will get the coins.</param>
-        void AddOutput(BigInteger aAmount, string aAddress, int aIndex = -1, long aId = 0, string aTxID = null);
+        void AddOutput(BigInteger aAmount, string aAddress, int aIndex = -1, long aId = 0, string aTxID = null, string aScript = null);
 
         /// <summary>
         /// The amount of fee that will used to send the coins.
