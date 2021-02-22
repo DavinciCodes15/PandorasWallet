@@ -29,5 +29,6 @@ namespace Pandora.Client.ClientLib
         public string Ticker { get; set; }
         public ushort Precision { get; set; }
         public long ParentCurrencyID { get; set; }
+        public long Id { get; set; }
     }
 }

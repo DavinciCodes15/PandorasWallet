@@ -73,6 +73,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\ICurrencyIdentity.cs" />
     <Compile Include="Contracts\ICurrencyItem.cs" />
     <Compile Include="Contracts\ICurrencyToken.cs" />
     <Compile Include="CurrencyAccount.cs" />

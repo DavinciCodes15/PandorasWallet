@@ -15,7 +15,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     internal class LocalCacheDB : IDisposable
 
     {
-        private const int VERSION = 10015;
+        private const int VERSION = 10016;
 
         protected SQLiteConnection FSQLiteConnection;
 
@@ -88,7 +88,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS TxIn (internalid BIGINT, id BIGINT, address varchar(100), ammount BIGINT, ExAmount BIGINT DEFAULT 0, PRIMARY KEY (internalid,id,address,ammount))");
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS TxOut (internalid BIGINT, id BIGINT, address varchar(100), ammount BIGINT, nindex INT, ExAmount BIGINT DEFAULT 0, PRIMARY KEY (internalid,id,address,ammount))");
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS TxExt (internalid BIGINT PRIMARY KEY, extdata varchar(100))");
-                    ExecuteQuery("CREATE TABLE IF NOT EXISTS TokenTx (currencyTxID varchar(100), Txfrom varchar(100), TxTo varchar(100), amount BIGINT, examount BIGINT, tokenaddress varchar(100))");
+
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS BlockHeight (blockcount BIGINT, currencyid BIGINT PRIMARY KEY)");
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS CurrencyToken (id int PRIMARY KEY, name VARCHAR(100), symbol VARCHAR(50), precision INT, parentcurrency INT, Icon BLOB, IconSize int, address VARCHAR(300))");
 
@@ -100,22 +100,36 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         WritePrimaryCurrencyId(Convert.ToInt64(ExecuteQueryValue("SELECT currencyid FROM PrimaryCurrency where primaryid = 0")));
                         ExecuteQuery("DROP TABLE IF EXISTS PrimaryCurrency");
                     }
-
+                    // Added tables to support token transactions. (Starting from version 10016)
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS CurrencyVisible (CurrencyId INT PRIMARY KEY, Visible BOOLEAN)");
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS TokenVisible (TokenID INT PRIMARY KEY, Visible BOOLEAN)");
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS SentTransactions (TxId VARCHAR(100) PRIMARY KEY, CurrencyId BIGINT, TxData BLOB, SentTime DATETIME, ResponseTime DATETIME )");
-                    if (0 < lVersion && lVersion < 10014)
+                    ExecuteQuery("CREATE TABLE IF NOT EXISTS TokenTx (currencyTxID varchar(100), Txfrom varchar(100), TxTo varchar(100), amount BIGINT, examount BIGINT, tokenaddress varchar(100))");
+                    if (0 < lVersion)
                     {
-                        try
+                        if (lVersion < 10014)
                         {
-                            ExecuteQuery("ALTER TABLE TXOut ADD COLUMN ExAmount BIGINT DEFAULT 0");
-                            ExecuteQuery("ALTER TABLE TXIn ADD COLUMN ExAmount BIGINT DEFAULT 0");
+                            try
+                            {
+                                ExecuteQuery("ALTER TABLE TXOut ADD COLUMN ExAmount BIGINT DEFAULT 0");
+                                ExecuteQuery("ALTER TABLE TXIn ADD COLUMN ExAmount BIGINT DEFAULT 0");
+                            }
+                            catch (Exception ex)
+                            {
+                                Universal.Log.Write(Universal.LogLevel.Warning, $"Exception thrown when altering table on application of DB Version 10014. {ex}");
+                            }
                         }
-                        catch (Exception ex)
+
+                        if (lVersion < 10016)
                         {
-                            Universal.Log.Write(Universal.LogLevel.Warning, $"Exception thrown when altering table. {ex}");
+                            //Remove past ethereum transactions from cache in case there was already a token in the address
+                            ExecuteQuery("delete from TXIN where internalid in (select internalid from txtable where currencyid = 10194 or currencyid = 10196);");
+                            ExecuteQuery("delete from TXOUT where internalid in (select internalid from txtable where currencyid = 10194 or currencyid = 10196);");
+                            ExecuteQuery("delete from TXEXT where internalid in (select internalid from txtable where currencyid = 10194 or currencyid = 10196);");
+                            ExecuteQuery("delete from TXTABLE where currencyid = 10194 or currencyid = 10196;");
                         }
                     }
+
                     WriteKeyValue("Version", VERSION.ToString());
                     lTransaction.Commit();
                 }
@@ -260,7 +274,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("IconSize", aCurrencyItem.Icon.Count()));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("FeePerKb", aCurrencyItem.FeePerKb));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("Status", aCurrencyItem.CurrentStatus));
-                PandorasCache.MyCacheChainParams lChainParamsCopy = new PandorasCache.MyCacheChainParams();
+                DBChainParams lChainParamsCopy = new DBChainParams();
                 using (MemoryStream lMemoryStream = new MemoryStream())
                 {
                     BinaryFormatter lBinaryFormatter = new BinaryFormatter();
@@ -336,7 +350,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO CurrencyToken (id, name, symbol, precision, parentcurrency, Icon, IconSize, address) VALUES (@id, @name, @symbol, @precision, @parentcurrency, @icon, @iconsize, @address)", FSQLiteConnection))
             {
-                lSQLiteCommand.Parameters.Add(new SQLiteParameter("id", aCurrencyToken.ID));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("id", aCurrencyToken.Id));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("name", aCurrencyToken.Name));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("symbol", aCurrencyToken.Ticker));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("precision", aCurrencyToken.Precision));
@@ -441,7 +455,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         {
             public byte[] Icon { get; set; }
 
-            public int ID { get; set; }
+            public long Id { get; set; }
 
             public string ContractAddress { get; set; }
 
@@ -707,7 +721,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             aReader.GetBytes(5, 0, lIcon, 0, lIcon.Length);
             aList.Add(new DBCurrencyTokenItem
             {
-                ID = aReader.GetInt32(0),
+                Id = aReader.GetInt32(0),
                 Name = aReader.GetString(1),
                 Ticker = aReader.GetString(2),
                 Precision = Convert.ToUInt16(aReader.GetInt32(3)),
@@ -752,13 +766,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
             byte[] lChainParams = Convert.FromBase64String(aSQLiteDataReader.GetString(9));
 
-            PandorasCache.MyCacheChainParams lChainParamsObject;
+            DBChainParams lChainParamsObject;
 
             using (MemoryStream ms = new MemoryStream(lChainParams))
             {
                 BinaryFormatter lBf = new BinaryFormatter();
-                lBf.Binder = PandorasCache.MyCacheChainParams.GetSerializationBinder();
-                lChainParamsObject = (PandorasCache.MyCacheChainParams) lBf.Deserialize(ms);
+                lBf.Binder = DBChainParams.GetSerializationBinder();
+                lChainParamsObject = (DBChainParams) lBf.Deserialize(ms);
             }
 
             aSQLiteDataReader.GetBytes(6, 0, lIcon, 0, aSQLiteDataReader.GetInt32(7));
@@ -925,8 +939,58 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         #endregion IDisposable Support
 
-        //private class MyCacheChainParams : PandorasCache.MyCacheChainParams
-        //{
-        //}
+        [Serializable]
+        public class DBChainParams : IChainParams
+        {
+            public long ForkFromId { get; set; }
+            public ChainParams.NetworkType Network { get; set; }
+            public string NetworkName { get; set; }
+            public byte[] PublicKeyAddress { get; set; }
+            public byte[] ScriptAddress { get; set; }
+            public byte[] SecretKey { get; set; }
+            public byte[] ExtPublicKey { get; set; }
+            public byte[] ExtSecretKey { get; set; }
+            public byte[] EncryptedSecretKeyNoEc { get; set; }
+            public byte[] EncryptedSecretKeyEc { get; set; }
+            public byte[] PasspraseCode { get; set; }
+            public byte[] ConfirmationCode { get; set; }
+            public byte[] StealthAddress { get; set; }
+            public byte[] AssetId { get; set; }
+            public byte[] ColoredAddress { get; set; }
+            public string Encoder { get; set; }
+            public CapablityFlags Capabilities { get; set; }
+            public long Version { get; set; }
+
+            public static System.Runtime.Serialization.SerializationBinder GetSerializationBinder()
+            {
+                return new ChainParamsBinder();
+            }
+
+            private class ChainParamsBinder : System.Runtime.Serialization.SerializationBinder
+            {
+                private List<Type> FTypesHandled;
+
+                public ChainParamsBinder() : base()
+                {
+                    FTypesHandled = new List<Type>();
+                    FTypesHandled.Add(typeof(DBChainParams));
+                    FTypesHandled.Add(typeof(ChainParams.NetworkType));
+                    FTypesHandled.Add(typeof(CapablityFlags));
+                }
+
+                public override Type BindToType(string assemblyName, string aTypeName)
+                {
+                    Type lResult = null;
+                    string lTypeName = aTypeName.ToLowerInvariant();
+                    if (lTypeName.Contains(@"networktype"))
+                        lResult = typeof(ChainParams.NetworkType);
+                    else if (lTypeName.Contains(@"chainparams"))
+                        lResult = typeof(DBChainParams);
+                    else if (lTypeName.Contains(@"capablityflags"))
+                        lResult = typeof(CapablityFlags);
+                    return lResult;
+                }
+            }
+        }
     }
 }

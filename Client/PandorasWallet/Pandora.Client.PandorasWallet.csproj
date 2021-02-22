@@ -95,7 +95,9 @@
     <None Include="Properties\DataSources\Pandora.Client.PandorasWallet.Dialogs.LoginAccount.datasource" />
     <None Include="Resources\cancel.png" />
     <None Include="Resources\ok.png" />
-    <None Include="Resources\Puzzle-128px.gif" />
+    <None Include="Resources\Puzzle-128px.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -130,6 +132,14 @@
     <Compile Include="Dialogs\AddTokenDialog.Designer.cs">
       <DependentUpon>AddTokenDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\CurrencyToken\DefaultTokens\DefaultToken.cs" />
+    <Compile Include="Models\CurrencyToken\DefaultTokens\DJ15Token.cs" />
+    <Compile Include="Dialogs\FindUsersToResetWalletDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\FindUsersToResetWalletDialog.Designer.cs">
+      <DependentUpon>FindUsersToResetWalletDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\GUI\GUIAccount.cs" />
     <Compile Include="Models\GUI\GUIModelProducer.cs" />
     <Compile Include="Models\GUI\GUIToken.cs" />
@@ -139,7 +149,6 @@
     <Compile Include="Models\CurrencyToken\ClientCurrencyTokenItem.cs" />
     <Compile Include="Models\CurrencyToken\ClientTokenTransactionItem.cs" />
     <Compile Include="ServerAccess\CacheServerAccessHelper.cs" />
-    <Compile Include="ServerAccess\DBManager.cs" />
     <Compile Include="SystemBackup\BackupController.cs" />
     <Compile Include="SystemBackup\BackupObjects.cs" />
     <Compile Include="SystemBackup\BackupDelegates.cs" />
@@ -280,8 +289,8 @@
     <Compile Include="Utils\OldFileStructureUtils.cs" />
     <Compile Include="Utils\PandorasEncryptor.cs" />
     <Compile Include="PandorasExt.cs" />
-    <Compile Include="Wallet\BaseTransactionMaker.cs" />
-    <Compile Include="Wallet\BitcoinTransactionMaker.cs" />
+    <Compile Include="Wallet\TransactionMaker\BaseTransactionMaker.cs" />
+    <Compile Include="Wallet\TransactionMaker\BitcoinTransactionMaker.cs" />
     <Compile Include="Wallet\ClientExceptions.cs" />
     <Compile Include="Dialogs\BaseDialog.cs">
       <SubType>Form</SubType>
@@ -307,8 +316,6 @@
     <Compile Include="Dialogs\ConnectDialog.Designer.cs">
       <DependentUpon>ConnectDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="ServerAccess\PandorasCache.cs" />
-    <Compile Include="ServerAccess\PandorasServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -317,10 +324,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Utils\SettingsManager.cs" />
-    <Compile Include="Wallet\EthereumTransactioMaker.cs" />
+    <Compile Include="Wallet\TransactionMaker\EthereumTransactioMaker.cs" />
     <Compile Include="Wallet\KeyManager.cs" />
-    <Compile Include="Wallet\TokenTransactionMaker.cs" />
-    <Compile Include="Wallet\TransactionMakerFactory.cs" />
+    <Compile Include="Wallet\TransactionMaker\TokenTransactionMaker.cs" />
+    <Compile Include="Wallet\TransactionMaker\TransactionMakerFactory.cs" />
     <Compile Include="Wallet\TransactionViewModel.cs" />
     <EmbeddedResource Include="CurrencyView.resx">
       <DependentUpon>CurrencyView.cs</DependentUpon>
@@ -376,6 +383,9 @@
     <EmbeddedResource Include="Dialogs\PasswordDialog.resx">
       <DependentUpon>PasswordDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\FindUsersToResetWalletDialog.resx">
+      <DependentUpon>FindUsersToResetWalletDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MenuButton.resx">
       <DependentUpon>MenuButton.cs</DependentUpon>
     </EmbeddedResource>
@@ -422,9 +432,10 @@
   <ItemGroup>
     <Content Include="32x32%28Pandora%29 1.ico" />
     <Content Include="Pandora_Icon.ico" />
-    <Content Include="Resources\16x16%28Pandora%29.ico" />
     <Content Include="Resources\300x300%28pandora%29-01.png" />
-    <Content Include="Resources\32x32%28Pandora%29 1.ico" />
+    <None Include="Resources\eth.png" />
+    <None Include="Resources\token_default.ico" />
+    <None Include="Resources\eth_Acy_icon.ico" />
     <Content Include="upgrade.vbs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

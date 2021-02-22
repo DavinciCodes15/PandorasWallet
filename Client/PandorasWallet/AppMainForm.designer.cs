@@ -32,7 +32,7 @@ namespace Pandora.Client.PandorasWallet
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AppMainForm));
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "00/00.00 00:00:00 PM",
             "39sbRRh2qwRwjA5ABrFLFbYP5fToXkB5Ab"}, -1);
             this.imageListTx = new System.Windows.Forms.ImageList(this.components);
@@ -407,7 +407,7 @@ namespace Pandora.Client.PandorasWallet
             this.listTransactions.FullRowSelect = true;
             this.listTransactions.HideSelection = false;
             this.listTransactions.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem2});
+            listViewItem1});
             this.listTransactions.Location = new System.Drawing.Point(9, 6);
             this.listTransactions.MultiSelect = false;
             this.listTransactions.Name = "listTransactions";

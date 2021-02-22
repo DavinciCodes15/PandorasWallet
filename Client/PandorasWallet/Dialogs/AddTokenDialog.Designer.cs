@@ -29,9 +29,11 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AddTokenDialog));
             this.lstViewTokens = new System.Windows.Forms.ListView();
             this.columnName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnSymbol = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnNetwork = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.label1 = new System.Windows.Forms.Label();
             this.picToken = new System.Windows.Forms.PictureBox();
             this.TxtBoxTokenAddress = new System.Windows.Forms.TextBox();
@@ -47,6 +49,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.picToken)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -54,12 +57,12 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(397, 419);
+            this.btnCancel.Location = new System.Drawing.Point(504, 419);
             // 
             // btnOK
             // 
             this.btnOK.Enabled = false;
-            this.btnOK.Location = new System.Drawing.Point(315, 419);
+            this.btnOK.Location = new System.Drawing.Point(422, 419);
             this.btnOK.Text = "Add";
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
@@ -67,7 +70,8 @@
             // 
             this.lstViewTokens.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnName,
-            this.columnSymbol});
+            this.columnSymbol,
+            this.columnNetwork});
             this.lstViewTokens.Enabled = false;
             this.lstViewTokens.FullRowSelect = true;
             this.lstViewTokens.GridLines = true;
@@ -75,7 +79,7 @@
             this.lstViewTokens.Location = new System.Drawing.Point(9, 26);
             this.lstViewTokens.MultiSelect = false;
             this.lstViewTokens.Name = "lstViewTokens";
-            this.lstViewTokens.Size = new System.Drawing.Size(195, 375);
+            this.lstViewTokens.Size = new System.Drawing.Size(314, 375);
             this.lstViewTokens.TabIndex = 7;
             this.lstViewTokens.UseCompatibleStateImageBehavior = false;
             this.lstViewTokens.View = System.Windows.Forms.View.Details;
@@ -84,12 +88,17 @@
             // columnName
             // 
             this.columnName.Text = "Name";
-            this.columnName.Width = 131;
+            this.columnName.Width = 146;
             // 
             // columnSymbol
             // 
             this.columnSymbol.Text = "Symbol";
-            this.columnSymbol.Width = 66;
+            this.columnSymbol.Width = 52;
+            // 
+            // columnNetwork
+            // 
+            this.columnNetwork.Text = "Network";
+            this.columnNetwork.Width = 110;
             // 
             // label1
             // 
@@ -102,12 +111,15 @@
             // 
             // picToken
             // 
-            this.picToken.BackgroundImage = global::Pandora.Client.PandorasWallet.Properties.Resources.goldbars;
-            this.picToken.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.picToken.BackColor = System.Drawing.Color.White;
+            this.picToken.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.picToken.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.picToken.Image = ((System.Drawing.Image)(resources.GetObject("picToken.Image")));
             this.picToken.InitialImage = null;
-            this.picToken.Location = new System.Drawing.Point(93, 29);
+            this.picToken.Location = new System.Drawing.Point(93, 26);
             this.picToken.Name = "picToken";
-            this.picToken.Size = new System.Drawing.Size(64, 64);
+            this.picToken.Size = new System.Drawing.Size(65, 65);
+            this.picToken.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             this.picToken.TabIndex = 9;
             this.picToken.TabStop = false;
             // 
@@ -188,6 +200,7 @@
             this.comboBoxNetwork.Name = "comboBoxNetwork";
             this.comboBoxNetwork.Size = new System.Drawing.Size(221, 21);
             this.comboBoxNetwork.TabIndex = 13;
+            this.comboBoxNetwork.SelectedIndexChanged += new System.EventHandler(this.comboBoxNetwork_SelectedIndexChanged);
             // 
             // TokenIconsList
             // 
@@ -212,7 +225,7 @@
             this.groupBox1.Controls.Add(this.label5);
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.label4);
-            this.groupBox1.Location = new System.Drawing.Point(216, 229);
+            this.groupBox1.Location = new System.Drawing.Point(329, 229);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(249, 172);
             this.groupBox1.TabIndex = 15;
@@ -226,18 +239,23 @@
             this.groupBox2.Controls.Add(this.label6);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.comboBoxNetwork);
-            this.groupBox2.Location = new System.Drawing.Point(216, 22);
+            this.groupBox2.Location = new System.Drawing.Point(329, 26);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(249, 201);
+            this.groupBox2.Size = new System.Drawing.Size(249, 197);
             this.groupBox2.TabIndex = 16;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Insert your token address";
+            // 
+            // notifyIcon1
+            // 
+            this.notifyIcon1.Text = "notifyIcon1";
+            this.notifyIcon1.Visible = true;
             // 
             // AddTokenDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(484, 454);
+            this.ClientSize = new System.Drawing.Size(591, 454);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label1);
@@ -281,5 +299,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.ColumnHeader columnNetwork;
+        private System.Windows.Forms.NotifyIcon notifyIcon1;
     }
 }

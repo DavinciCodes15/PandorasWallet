@@ -24,7 +24,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
 
         public GUIToken(IClientCurrencyToken aToken, IGUICurrency aParentCurrency) : this(aParentCurrency)
         {
-            Id = (aToken?.ID ?? throw new ArgumentNullException(nameof(aToken))) > 0 ? throw new ArgumentOutOfRangeException(nameof(aToken), "Token ID must be negative") : aToken.ID;
+            Id = (aToken?.Id ?? throw new ArgumentNullException(nameof(aToken))) > 0 ? throw new ArgumentOutOfRangeException(nameof(aToken), "Token ID must be negative") : aToken.Id;
             Name = aToken.Name;
             Ticker = aToken.Ticker;
             Precision = aToken.Precision;

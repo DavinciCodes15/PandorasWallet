@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.ClientLib.Contracts
 {
-    public interface ICurrencyToken : ICurrencyIdentity
+    public interface ICurrencyIdentity
     {
-        string ContractAddress { get; }
-        ushort Precision { get; }
-        long ParentCurrencyID { get; }
+        long Id { get; }
+
+        string Name { get; }
+
+        string Ticker { get; }
     }
 }

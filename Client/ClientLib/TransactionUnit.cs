@@ -40,16 +40,16 @@ namespace Pandora.Client.ClientLib
             Script = aScript;
         }
 
-        public long Id { get; private set; }
+        public long Id { get; set; }
 
-        public BigInteger Amount { get; private set; }
+        public BigInteger Amount { get; set; }
 
-        public string Address { get; private set; }
+        public string Address { get; set; }
 
-        public string TxID { get; private set; }
+        public string TxID { get; set; }
 
-        public int Index { get; private set; }
+        public int Index { get; set; }
 
-        public string Script { get; private set; }
+        public string Script { get; set; }
     }
 }

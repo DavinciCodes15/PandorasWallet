@@ -1524,5 +1524,7 @@ namespace Pandora.Client.PandorasWallet
                 this.StandardExceptionMsgBox(ex);
             }
         }
+
+      
     }
 }

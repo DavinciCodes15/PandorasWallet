@@ -38,7 +38,7 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
                     lResult = new ERC20DataOutput()
                     {
                         DestinationAddress = string.Concat("0x", (lRawHex.Substring(8, 64).TrimStart('0'))),
-                        AmountSent = BigInteger.Parse(lRawHex.Substring(72, 64), System.Globalization.NumberStyles.HexNumber)
+                        AmountSent = BigInteger.Parse(string.Concat("0",lRawHex.Substring(72, 64)), System.Globalization.NumberStyles.HexNumber)
                     };
                     break;
 
@@ -47,7 +47,7 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
                     {
                         OriginAddress = lRawHex.Substring(8, 64).TrimStart('0'),
                         DestinationAddress = lRawHex.Substring(64, 64).TrimStart('0'),
-                        AmountSent = BigInteger.Parse(lRawHex.Substring(136, 64), System.Globalization.NumberStyles.HexNumber)
+                        AmountSent = BigInteger.Parse(string.Concat("0", lRawHex.Substring(136, 64)), System.Globalization.NumberStyles.HexNumber)
                     };
                     break;
             }
@@ -60,7 +60,7 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
             switch (aERC20Method)
             {
                 case ERC20Methods.Transfer:
-                    var lHexAddress = BigInteger.Parse(aParams[0].Replace("0x", string.Empty), System.Globalization.NumberStyles.HexNumber);
+                    var lHexAddress = BigInteger.Parse(string.Concat("0", aParams[0].Replace("0x", string.Empty)), System.Globalization.NumberStyles.HexNumber);
                     var lDestinationAmount = BigInteger.Parse(aParams[1]);
                     lResult = string.Concat(aERC20Method.GetHex(), lHexAddress.ToString("X64"), lDestinationAmount.ToString("X64"));
                     break;

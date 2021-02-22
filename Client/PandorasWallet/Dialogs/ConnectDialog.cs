@@ -27,7 +27,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 {
     public partial class ConnectDialog : BaseDialog
     {
-        Stack<Keys> KeysConnectionSettings { get; set; } = new Stack<Keys>();
+        private Stack<Keys> KeysConnectionSettings { get; set; } = new Stack<Keys>();
         public string Email { get => txtEmail.Text; set => txtEmail.Text = value; }
         public string Username { get => txtUsername.Text; set => txtUsername.Text = value; }
         public string Password { get => txtPassword.Text; set => txtPassword.Text = value; }
@@ -42,17 +42,59 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public bool SavePassword { get => cbxSavePassword.Checked; set => cbxSavePassword.Checked = value; }
 
+        public event EventHandler findUsersClick;
+
         public ConnectDialog()
         {
             InitializeComponent();
             Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
             Name = string.Format("Connect to {0} Server", AboutBox.AssemblyProduct);
+
+            AddButtonResetWallet();
+        }
+
+        private void AddButtonResetWallet()
+        {
+            btn_resetWallet.AddMenuItem("Reset your wallet");
+            btn_resetWallet.AssingOnClickEvent(ActFindUser, 0);
         }
 
         private void ConnectDialog_Shown(object sender, EventArgs e)
         {
             txtEmail.Focus();
             Password = string.Empty;
+        }
+
+        public void CreateMyMenu()
+        {
+            // Create a main menu object.
+            MainMenu mainMenu1 = new MainMenu();
+
+            // Create empty menu item objects.
+            MenuItem menuItem1 = new MenuItem();
+            MenuItem menuItem2 = new MenuItem();
+
+            // Set the caption of the menu items.
+            menuItem1.Text = "&File";
+            menuItem2.Text = "&Edit";
+
+            // Add the menu items to the main menu.
+            mainMenu1.MenuItems.Add(menuItem1);
+            mainMenu1.MenuItems.Add(menuItem2);
+
+            // Add functionality to the menu items.
+            menuItem1.Click += new System.EventHandler(this.menuItem1_Click);
+
+            // Assign mainMenu1 to the form.
+            this.Menu = mainMenu1;
+
+            // Perform a click on the File menu item.
+            //  menuItem1.PerformClick();
+        }
+
+        private void menuItem1_Click(object sender, System.EventArgs e)
+        {
+            MessageBox.Show("You clicked the File menu.", "The Event Information");
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -135,8 +177,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             ValidationEventKeyPress(e.KeyCode);
         }
 
-
-
         private void ValidationEventKeyPress(Keys e)
         {
             switch (e)
@@ -145,15 +185,19 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                     KeysConnectionSettings.Clear();
                     KeysConnectionSettings.Push(e);
                     break;
+
                 case Keys.Right:
                     EvaluateKeysPressed(e, Keys.Left);
                     break;
+
                 case Keys.Up:
                     EvaluateKeysPressed(e, Keys.Right);
                     break;
+
                 case Keys.Down:
                     EvaluateKeysPressed(e, Keys.Up);
                     break;
+
                 default:
                     KeysConnectionSettings.Clear();
                     break;
@@ -202,7 +246,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                     break;
                 }
             }
-
             return lReturn;
         }
 
@@ -213,6 +256,30 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 OnCallSettingDialog?.Invoke(this, EventArgs.Empty);
             }
         }
+
+        private void ActFindUser(object sender, EventArgs e)
+        {
+            try
+            {
+                string lMessage = "\nPlease take precaution before pressing OK. \nIf you continue with this process, you may lose all funds in your wallet.";
+                string lTitle = "                   WARNING";
+                bool msgbox = this.StandardWarningMsgBoxAsk(lTitle, lMessage);
+                if (msgbox)
+                {
+                    findUsersClick?.Invoke(this, EventArgs.Empty);
+                }
+            }
+            catch (Exception)
+            {
+                this.StandardErrorMsgBox("Error");
+            }
+        }
+
+        //show item button under the father button
+        private void btn_resetWallet_Click(object sender, EventArgs e)
+        {
+            btn_resetWallet.Menu.Show(btn_resetWallet, 0, btn_resetWallet.Height);
+        }
     }
 
     public class LoginAccount
@@ -220,11 +287,25 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public string Email { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
+
         public override string ToString()
         {
             return $"{Email} - {UserName}";
         }
     }
 
+    public class HashInfoUser
+    {
+        public string Hash { get; set; }
+        public string UserNameEmail { get; set; }
 
+        public string Username { get; set; }
+
+        public string HashEmail => $"{UserNameEmail} - {Hash}";
+
+        public override string ToString()
+        {
+            return $"{Hash} - {UserNameEmail}";
+        }
+    }
 }

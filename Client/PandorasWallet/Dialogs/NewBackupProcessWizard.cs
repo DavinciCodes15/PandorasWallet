@@ -40,6 +40,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public event Action<string> OnBackupByFileNeeded;
 
         public event ExecuteRestoreDelegate OnExecuteRestore;
+
         public event EventHandler OnFinishRestore;
 
         public WizardPhases WizardPhase
@@ -47,7 +48,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             get => FPhase;
             set
             {
-                tabStepsControl.SelectTab((int)value);
+                tabStepsControl.SelectTab((int) value);
                 FPhase = value;
             }
         }
@@ -73,8 +74,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             txtBoxRecoveryWordsRestore.Text = lblWords.Text = string.Empty;
         }
 
-
-
         public void SetRecoveryPhraseAutoCompleteWords(string[] aSetOfWords)
         {
             if (aSetOfWords == null || aSetOfWords.Length == 0) throw new Exception("Autocomplete list of words can not be empty");
@@ -91,6 +90,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             {
                 var lTextType = IsRestore ? "restore" : "backup";
                 this.StandardErrorMsgBox($"Error in {lTextType} process", ex.Message);
+                GoPreviousPhase();
             }
         }
 
@@ -282,7 +282,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             if (ParentWindow == null)
                 lResult = this.ShowDialog() == DialogResult.OK;
             else
-                lResult = this.ShowDialog((IWin32Window)ParentWindow) == DialogResult.OK;
+                lResult = this.ShowDialog((IWin32Window) ParentWindow) == DialogResult.OK;
             return lResult;
         }
 

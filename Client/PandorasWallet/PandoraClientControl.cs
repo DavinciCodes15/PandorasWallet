@@ -42,12 +42,14 @@ using Pandora.Client.PandorasWallet.Dialogs.Models;
 using Pandora.Client.PandorasWallet.Models;
 using System.Text.RegularExpressions;
 using Pandora.Client.ClientLib.Contracts;
+using Pandora.Client.PandorasWallet.Wallet.TransactionMaker;
 
 namespace Pandora.Client.PandorasWallet
 {
     public delegate bool PasswordValidationDelegate(string aPassword);
 
     internal class PandoraClientControl : IDisposable
+
     {
         private delegate void DelegateSendTransaction(CurrencyItem lSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee);
 
@@ -75,6 +77,7 @@ namespace Pandora.Client.PandorasWallet
         public AppMainForm AppMainForm { get; private set; }
         public string DefaultPath { get; private set; }
 
+       
         /*************************************************************************************************************************\
          *                                                                                                                       *
          *          Initialization methods                                                                                       *
@@ -102,25 +105,52 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.OnRemoveCurrencyRequested += AppMainForm_OnRemoveCurrencyRequested;
             AppMainForm.TickerQuantity = string.Empty;
             AppMainForm.TickerTotalReceived = string.Empty;
+
+        }
+
+        private void SetDefaultCurrencyTokens()
+        {
+            var lUserTokens = FServerConnection.GetCurrencyTokens();
+            var lDefaultTokens = ClientCurrencyTokenItem.DefaultInventory.GetTokens();
+
+            foreach (var lDefaultToken in lDefaultTokens)
+            {
+                var lUserDefaultToken = lUserTokens.FirstOrDefault(lUserToken => string.Equals(lUserToken.ContractAddress, lDefaultToken.ContractAddress, StringComparison.OrdinalIgnoreCase));
+                if (lUserDefaultToken == null)
+                    FServerConnection.RegisterNewCurrencyToken(lDefaultToken);
+                else if (lUserDefaultToken.Id != lDefaultToken.Id)
+                {
+                    Log.Write(LogLevel.Warning, $"Found default token already added, updating token data. Default Token: {lDefaultToken.Name} - ID: {lDefaultToken.Id}. User Token: {lUserDefaultToken.Name} - ID: {lUserDefaultToken.Id}");
+                    lUserDefaultToken.Name = lDefaultToken.Name;
+                    lUserDefaultToken.Ticker = lDefaultToken.Ticker;
+                    lUserDefaultToken.Precision = lDefaultToken.Precision;
+                    lUserDefaultToken.Icon = lDefaultToken.Icon;
+                    FServerConnection.RegisterNewCurrencyToken(lUserDefaultToken);
+                }
+            }
         }
 
         private void AppMainForm_OnAddTokenBtnClick(object sender, EventArgs e)
         {
             var lUserTokens = FServerConnection.GetCurrencyTokens();
+            var lVisibleTokens = FServerConnection.GetDisplayedCurrencyTokens().Select(lToken => lToken.Id);
             var lAddTokenDialog = new AddTokenDialog();
             lAddTokenDialog.OnTokenAddressChanged += AddTokenDialog_OnTokenAddressChanged;
-            if (lUserTokens.Any())
-                foreach (var lToken in lUserTokens)
+
+            //We add all currencies that are ethereum like
+            foreach (var lEthereumCurrency in FServerConnection.GetCurrencies().Where(lCurrency => lCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol)))
+                lAddTokenDialog.AddParentCurrency(lEthereumCurrency);
+
+            //Now we add all registered tokens, disabling those already at the main interface
+            foreach (var lToken in lUserTokens)
+            {
+                var lCurrency = FServerConnection.GetCurrency(lToken.ParentCurrencyID);
+                if (lCurrency != null)
                 {
-                    var lCurrency = FServerConnection.GetCurrency(lToken.ParentCurrencyID);
-                    if (lCurrency != null)
-                    {
-                        var lParentGUICurrency = AppMainForm.GetCurrency(lToken.ParentCurrencyID) ?? GUIModelProducer.CreateFrom(lCurrency);
-                        lAddTokenDialog.AddTokenItem(GUIModelProducer.CreateFrom(lToken, lParentGUICurrency));
-                    }
+                    var lParentGUICurrency = AppMainForm.GetCurrency(lToken.ParentCurrencyID) ?? GUIModelProducer.CreateFrom(lCurrency);
+                    lAddTokenDialog.AddTokenItem(GUIModelProducer.CreateFrom(lToken, lParentGUICurrency), lVisibleTokens.Contains(lToken.Id));
                 }
-            else
-                lAddTokenDialog.AddParentCurrency(FServerConnection.GetCurrency(10196)); //Default parent currency: Ethereum
+            }
 
             if (lAddTokenDialog.Execute() && FromUserDecryptWallet(Settings.RequestWalletPassword))
             {
@@ -130,6 +160,10 @@ namespace Pandora.Client.PandorasWallet
                     var lAddedTokenItem = lUserTokens.SingleOrDefault(lToken => lToken.ContractAddress == lDialogToken.ContractAddress);
                     if (lAddedTokenItem == null)
                     {
+                        long lMinTokenID = -1000;
+                        if (lUserTokens.Any() && lUserTokens.Min(lToken => lToken.Id) < -1000)
+                            lMinTokenID = lUserTokens.Min(lToken => lToken.Id);
+
                         lAddedTokenItem = new ClientCurrencyTokenItem()
                         {
                             ContractAddress = lDialogToken.ContractAddress,
@@ -138,11 +172,11 @@ namespace Pandora.Client.PandorasWallet
                             Ticker = lDialogToken.Ticker,
                             Precision = lDialogToken.Precision,
                             Icon = Globals.IconToBytes(lDialogToken.Icon),
-                            ID = (lUserTokens.Any() ? lUserTokens.Min(lToken => lToken.ID) : 0) - 5 //Token Ids are negatives
+                            Id = lMinTokenID - 3 //Token Ids are negatives
                         };
                         FServerConnection.RegisterNewCurrencyToken(lAddedTokenItem);
                     }
-                    FServerConnection.SetDisplayedCurrencyToken(lAddedTokenItem.ID, true);
+                    FServerConnection.SetDisplayedCurrencyToken(lAddedTokenItem.Id, true);
                     AppMainForm.BeginInvoke(new DelegateDisplayCurrencyToken(Event_DisplayCurrencyToken), new object[] { lAddedTokenItem, null, FCancellationTokenSource.Token });
                 }
                 catch (Exception ex)
@@ -290,8 +324,9 @@ namespace Pandora.Client.PandorasWallet
         {
             var lSelectedCurrency = AppMainForm.SelectedCurrency;
             TransactionUnit[] lUnspent;
+            bool lIsToken = lSelectedCurrency.Id < 0;
             //If form id is less than 0, then it is a token
-            if (lSelectedCurrency.Id < 0)
+            if (lIsToken)
             {
                 lUnspent = FServerConnection.GetUnspentOutputs(((GUIToken) lSelectedCurrency).ParentCurrency.Id);
             }
@@ -303,15 +338,12 @@ namespace Pandora.Client.PandorasWallet
                 aAmountToSend = 0;
             if (string.IsNullOrWhiteSpace(AppMainForm.ToSendAddress))
                 AppMainForm.StandardErrorMsgBox("Send Error", $"Please provide a valid {AppMainForm.SelectedCurrency.Name} address!");
-            else if (aAmountToSend <= 0)
+            else if (aAmountToSend < 0)
                 AppMainForm.StandardErrorMsgBox("Send Error", $"The amount '{aAmountToSend}' is an invalid amount for {AppMainForm.SelectedCurrency.Name}!");
             else
             {
-                var lTxFee = CalculateTxFee(AppMainForm.ToSendAddress, aAmountToSend, AppMainForm.SelectedCurrency);
-                if (aAmountToSend <= lTxFee)
-                    AppMainForm.StandardErrorMsgBox("Send Transaction Error", $"The {AppMainForm.SelectedCurrency.Name} amount must be higher than the transaction fees.\r\nCurrent Transaction Fee : {lTxFee}");
-                else
-                    ExecuteSendTxDialog(aAmountToSend, AppMainForm.SelectedCurrency, lTxFee, AppMainForm.SelectedCurrency.Balances.Total, AppMainForm.ToSendAddress, lUnspent[0].Address, aSubtractFee);
+                var lTxFee = CalculateTxFee(AppMainForm.ToSendAddress, aAmountToSend, AppMainForm.SelectedCurrency, out decimal lFeePerKb);
+                ExecuteSendTxDialog(aAmountToSend, AppMainForm.SelectedCurrency, lTxFee, lFeePerKb, AppMainForm.SelectedCurrency.Balances.Total, AppMainForm.ToSendAddress, lUnspent[0].Address, aSubtractFee);
             }
         }
 
@@ -378,7 +410,11 @@ namespace Pandora.Client.PandorasWallet
             {
                 ParentWindow = AppMainForm
             };
-
+            
+            
+            lConnectDialog.findUsersClick += ConnectDialog_findUsersClick;
+            
+            
             lConnectDialog.OnOkClick += new EventHandler(delegate (Object o, EventArgs a)
             {
                 ConnectDialog lDlg = o as ConnectDialog;
@@ -633,6 +669,10 @@ namespace Pandora.Client.PandorasWallet
             }
             FServerConnection.SetDisplayedCurrency(lDefaultCurrency.Id, true);
 
+            //Now we load defaults tokens if it is necessary
+
+            SetDefaultCurrencyTokens();
+
             // Now display the default currency first and
             // send a message to do the rest of the currencies.
 
@@ -741,7 +781,7 @@ namespace Pandora.Client.PandorasWallet
                 if (lToken != null)
                 {
                     lFormTransaction = GUIModelProducer.CreateFrom(aTokenTransaction, lToken, aTransactionRecord, lAddresses);
-                    AddNewFormTransaction(lFormTransaction, lToken.ID);
+                    AddNewFormTransaction(lFormTransaction, lToken.Id);
                 }
             }
         }
@@ -768,10 +808,6 @@ namespace Pandora.Client.PandorasWallet
                     AppMainForm.UpdateCurrency(lFormCurrency.Id);
                 }
             }
-        }
-
-        private void AddNewFormTransaction(GUITransaction aFormTransaction)
-        {
         }
 
         private void ServerConnection_SendTransactionCompleted(object aSender, string aErrorMsg, string aTxId)
@@ -819,42 +855,66 @@ namespace Pandora.Client.PandorasWallet
             FromUserSendAmount(AppMainForm.ToSendAmount, false);
         }
 
-        private string ExecuteSendTxDialog(decimal aAmount, ICurrencyItem aSelectedCoin, decimal aTxFee, decimal aBalance, string aAddress, string aFromAddress, bool aSubtractFee)
+        private int CalculateEthTransactionNonce(long aCurrencyID)
+        {
+            int lResult = -1;
+            var lCurrency = FServerConnection.GetCurrency(aCurrencyID);
+            if (lCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
+            {
+                var lMonitoredAddresses = FServerConnection.GetMonitoredAddresses(aCurrencyID);
+                var lTransactionOutputs = FServerConnection.GetTransactionRecords(aCurrencyID).Where(lTx => lTx.Inputs != null).SelectMany(lTx => lTx.Outputs).ToArray();
+                if (lTransactionOutputs.Any())
+                    lResult = lTransactionOutputs.Where(lTxOut => !string.IsNullOrEmpty(lTxOut.Script)).Max(lTxOut => lTxOut.Index);
+            }
+            return lResult;
+        }
+
+        private string ExecuteSendTxDialog(decimal aAmount, ICurrencyItem aSelectedCoin, decimal aTxFee, decimal aFeePerKb, decimal aBalance, string aAddress, string aFromAddress, bool aSubtractFee)
         {
             string lTicker = aSelectedCoin.Ticker;
             bool lIsEthereum = aSelectedCoin.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol);
-            var lSendTransactionDlg = new SendTransactionDialog(lIsEthereum);
+            bool lIsToken = aSelectedCoin.Id < 0;
+            int lNonce = CalculateEthTransactionNonce(lIsToken ? ((ICurrencyToken) aSelectedCoin).ParentCurrencyID : aSelectedCoin.Id);
 
-            lSendTransactionDlg.ParentWindow = AppMainForm;
-            lSendTransactionDlg.SubstractFee = aSubtractFee;
-            lSendTransactionDlg.Ticker = lTicker;
-            lSendTransactionDlg.Amount = aAmount;
-            lSendTransactionDlg.ToAddress = aAddress;
-            lSendTransactionDlg.Balance = aBalance;
-            lSendTransactionDlg.TxFee = aTxFee;
-            lSendTransactionDlg.FromAddress = aFromAddress;
-            lSendTransactionDlg.TxFeeRate = aSelectedCoin.AmountToDecimal(aSelectedCoin.FeePerKb);
+            var lSendTxDialogInfo = new SendTransactionDialog.SendTransactionInfo
+            {
+                BalanceTicker = aSelectedCoin.Ticker,
+                FeeTicker = lIsToken ? FServerConnection.GetCurrency(((ICurrencyToken) aSelectedCoin).ParentCurrencyID).Ticker : aSelectedCoin.Ticker,
+                AmountToSend = aAmount,
+                CurrentBalance = aBalance,
+                FeeRate = aFeePerKb,
+                FromAddress = aFromAddress,
+                ToAddress = aAddress,
+                TotalFee = aTxFee,
+                IsSentAll = aSubtractFee,
+                Nonce = lNonce
+            };
 
+            var lSendTransactionDlg = new SendTransactionDialog(lSendTxDialogInfo, lIsEthereum)
+            {
+                ParentWindow = AppMainForm
+            };
             string lRetunedTxID = null;
 
             if (lSendTransactionDlg.Execute() && FromUserDecryptWallet(true))
             {
+                var lAdvancedTxOptions = lSendTransactionDlg.AdvancedTxOptions;
                 FSendingTxDialog = new SendingTxDialog();
                 FSendingTxDialog.ParentWindow = AppMainForm;
                 Task.Run(() =>
                 {
-                    Event_SendTransaction(aSelectedCoin, aAddress, lSendTransactionDlg.Amount, lSendTransactionDlg.TxFee);
+                    Event_SendTransaction(aSelectedCoin, aAddress, lSendTransactionDlg.TotalAmountToSend, aTxFee, lAdvancedTxOptions);
                 });
                 FSendingTxDialog.Execute();
             }
             return lRetunedTxID;
         }
 
-        private void Event_SendTransaction(ICurrencyItem aSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee)
+        private void Event_SendTransaction(ICurrencyItem aSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee, params object[] aExtOptions)
         {
             try
             {
-                var lTx = GetNewSignedTransaction(aSelectedCoin, aToAddress, aAmount, aTxFee);
+                var lTx = GetNewSignedTransaction(aSelectedCoin, aToAddress, aAmount, aTxFee, aExtOptions);
                 SendNewTransaction(lTx, aSelectedCoin, new DelegateOnSendTransactionCompleted(ServerConnection_SendTransactionCompleted));
             }
             catch (Exception ex)
@@ -867,10 +927,10 @@ namespace Pandora.Client.PandorasWallet
         private Task FTask;
         private TransactionMakerFactory FTransactionMakerFactory;
 
-        internal string GetNewSignedTransaction(ICurrencyItem aSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee)
+        internal string GetNewSignedTransaction(ICurrencyItem aSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee, params object[] aExtParams)
         {
             var lTransactionMaker = FTransactionMakerFactory.GetMaker(aSelectedCoin, FKeyManager);
-            return lTransactionMaker.CreateSignedTransaction(aToAddress, aAmount, aTxFee);
+            return lTransactionMaker.CreateSignedTransaction(aToAddress, aAmount, aTxFee, aExtParams);
         }
 
         internal void SendNewTransaction(string aRawTX, ICurrencyItem aCurrency, DelegateOnSendTransactionCompleted aTxSentEventDelegate)
@@ -879,9 +939,10 @@ namespace Pandora.Client.PandorasWallet
             lTransactionMaker.SendRawTransaction(aRawTX, aTxSentEventDelegate);
         }
 
-        internal decimal CalculateTxFee(string aToAddress, decimal aAmount, ICurrencyItem aCurrency)
+        internal decimal CalculateTxFee(string aToAddress, decimal aAmount, ICurrencyItem aCurrency, out decimal aFeePerKb)
         {
             decimal lResult;
+
             if (aCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
             {
                 long lGasLimit;
@@ -896,14 +957,15 @@ namespace Pandora.Client.PandorasWallet
                     lGasLimit = 21000;
                     lAmountFormatter = aCurrency;
                 }
-                lResult = lAmountFormatter.AmountToDecimal(aCurrency.FeePerKb * lGasLimit);
+                long lFeePerKb = FServerConnection.EstimateCurrencyTxFee(((ICurrencyIdentity) lAmountFormatter).Id);
+                aFeePerKb = lAmountFormatter.AmountToDecimal(lFeePerKb);
+                lResult = lAmountFormatter.AmountToDecimal(lFeePerKb * lGasLimit);
             }
             else
             {
                 int lInputCount = FServerConnection.GetUnspentOutputs(aCurrency.Id).Count();
-                var lCurrencyAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrency.Id, aCurrency.ChainParamaters);
-                var lUserAddresses = new string[2] { lCurrencyAdvocacy.GetAddress(0), lCurrencyAdvocacy.GetAddress(1) };
-                int lOutputCount = lUserAddresses.Contains(aToAddress) ? 1 : 2;
+                var lUserAccounts = FServerConnection.GetMonitoredAccounts(aCurrency.Id);
+                int lOutputCount = lUserAccounts.Any(lUserAccount => string.Equals(lUserAccount.Address, aToAddress)) ? 1 : 2;
 
                 //Note: Estimation formulas taken from https://btc.network/estimate
                 double lEstimatedTxByteSize;
@@ -912,15 +974,18 @@ namespace Pandora.Client.PandorasWallet
                 else
                     lEstimatedTxByteSize = (lInputCount * 146) + (lOutputCount * 33) + 10;
 
-                long lTxFee = Convert.ToInt64(lEstimatedTxByteSize * aCurrency.FeePerKb);
+                long lFeePerKb = FServerConnection.EstimateCurrencyTxFee(aCurrency.Id);
+                long lTxFee = Convert.ToInt64(lEstimatedTxByteSize * lFeePerKb / 1024);
+                aFeePerKb = aCurrency.AmountToDecimal(lFeePerKb);
                 lResult = aCurrency.AmountToDecimal(lTxFee);
             }
+
             return lResult;
         }
 
         internal decimal CalculateTxFee(string aToAddress, decimal aAmount, long aCurrencyId)
         {
-            return CalculateTxFee(aToAddress, aAmount, FServerConnection.GetCurrency(aCurrencyId));
+            return CalculateTxFee(aToAddress, aAmount, FServerConnection.GetCurrency(aCurrencyId), out _);
         }
 
         public decimal GetBalance(long aCurrencyId)
@@ -943,6 +1008,273 @@ namespace Pandora.Client.PandorasWallet
         }
 
         #endregion Send Coins Event Code
+
+
+
+        /*************************************************************************************************************************\
+         *                                                                                                                       *
+         *          Reset wallet code                                                                                            *
+         *                                                                                                                       *
+        \*************************************************************************************************************************/
+
+        #region Reset wallet
+        private void ConnectDialog_findUsersClick(object sender, EventArgs e)
+        {
+            try
+            {
+                FindUsers();
+            }
+            catch (Exception ex)
+            {
+                Log.Write(LogLevel.Critical, $"Fatal error when calling findusers method. Exception: {ex}");
+                AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to call method to findusers. If error persist, please contact support@davincicodes.net. The application will close.");
+                AppMainForm.Close();
+            }   
+        }
+
+        public void DirectoryCopySelectedFiles(string lSourceDirName, string lDestDirName, FileInfo[] pFiles)
+        {
+            try
+            {
+                // Get the subdirectories for the specified directory.
+                DirectoryInfo lDir = new DirectoryInfo(lSourceDirName);
+                if (!lDir.Exists)
+                {
+                    throw new DirectoryNotFoundException(
+                        "Source directory does not exist or could not be found: "
+                        + lSourceDirName);
+                }
+                DirectoryInfo[] lDirs = lDir.GetDirectories();
+                // If the destination directory doesn't exist, create it.       
+                Directory.CreateDirectory(lDestDirName);
+                
+                // Get the files in the directory and copy them to the new location.
+                // FileInfo[] files = lDir.GetFiles();                 
+               
+                //travel pFiles
+                foreach (FileInfo file in pFiles)
+                {
+                    string tempPath = Path.Combine(lDestDirName, file.Name);
+                    file.CopyTo(tempPath, false);
+                }                
+            }
+            catch (Exception ex)
+            {
+                Log.Write(LogLevel.Critical, $"Fatal error when creating backup by file. Exception: {ex}");
+                AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to backup wallet data. If error persist, please contact support@davincicodes.net. The application will close.");
+                AppMainForm.Close();
+
+            }
+        }
+
+        public void FindUsers()
+        {
+            try
+            {
+                //find potential users according to the files.
+                string lFolderPath = Settings.DataPath;
+                DirectoryInfo lDir = new DirectoryInfo(lFolderPath);
+                //all that have the structure..., in the root path.
+                FileInfo[] lFiles = lDir.GetFiles("*.sqlite=*", SearchOption.TopDirectoryOnly);
+
+                var lListHash = new List<HashInfoUser>();
+
+                foreach (var file in lFiles)
+                {
+                    //split filename into hash and then username-email.
+                    string[] lNameFileDirectoryUsers = file.Name.Split(new String[] { ".sqlite=" }, StringSplitOptions.None);
+
+                    HashInfoUser lUserHash = new HashInfoUser();
+
+                    lUserHash.Hash = lNameFileDirectoryUsers[0];
+                    lUserHash.UserNameEmail = lNameFileDirectoryUsers[1];
+                    
+                    //lUserHash.Username = file.Name.Split(new String[] { ".txt" }, StringSplitOptions.None);
+                   string [] lNameUser = lUserHash.UserNameEmail.Split(new String[] { ".txt" }, StringSplitOptions.None);
+
+                    //set username without extension
+                    lUserHash.Username = lNameUser[0];
+
+                    //select user to delete after
+                    lListHash.Add(lUserHash);
+                }
+
+                var lFindUserHash = new FindUsersToResetWalletDialog(lListHash);
+
+                //if the list has something, add it to var
+                if (lListHash.Count() != 0)
+                {
+                    if (lFindUserHash.Execute())
+                    {
+                        var lHashUserSelected = lFindUserHash.SelectedUserHash;
+
+                        //get files with hash before all name
+                        FileInfo[] lFilesUsersHashToCopy = lDir.GetFiles(@lHashUserSelected + "*", SearchOption.TopDirectoryOnly);
+
+                        string lPath = Settings.DataPath;
+                        string lDateTimeNow = DateTime.UtcNow.ToString("yyyyMMddHHmm");
+
+                        //final path to decide where and how name copy directory files
+                        string lFinalPath = string.Concat(lPath, "_bkp_", lDateTimeNow);
+                          
+                        // last warning
+                        string lMessage = "\nBefore pressing ok, you need to be completely sure and understand the risks of resetting your wallet. \n\nIf you do not want to continue, press cancel.  ";
+                        string lTitle = "                   WARNING";
+                        // bool msgbox = AppMainForm.StandardAskMsgBox(lTitle, lMessage);
+                        bool msgbox = AppMainForm.StandardWarningMsgBoxAsk(lTitle, lMessage);
+                        
+                        //bool msgbox = AppMainForm.StandardWarningBox(lTitle, lMessage);
+                        //last msgbox for the user warning his operation 
+                        if (msgbox)
+                        {
+                            DirectoryCopySelectedFiles(lPath, lFinalPath, lFilesUsersHashToCopy);
+
+                            //compare two directories
+                            if (CompareDirs(lFinalPath, lHashUserSelected))
+                            {
+                                //if the same files in root path, and on new file backup, delete files on rootpath.
+                                deleteFilesRootPath(lHashUserSelected);
+
+                                Log.Write(LogLevel.Critical, $"Generated Backup Wallet.");
+
+
+                                string lMsg = "Reset wallet process completed.  Now the app will close.";
+                                string lTitle2 = " Process Completed ";
+                                AppMainForm.StandardInfoMsgBox(lTitle2, lMsg);
+
+                                Application.Exit();
+                            }
+                        }
+
+                    }
+                }
+                else
+                {
+                    AppMainForm.StandardInfoMsgBox("Attention", "No user has been found to restart wallet. ");                    
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write(LogLevel.Critical, $"Fatal error when Finding User. Exception: {ex}");
+                AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to find user. If error persist, please contact support@davincicodes.net. The application will close.");
+                AppMainForm.Close();
+            }
+           
+        }
+
+        public bool CompareDirs(string pNewPath, string pHashUserSelected) {                           
+            
+            System.IO.DirectoryInfo dir1 = new System.IO.DirectoryInfo(Settings.DataPath);
+            System.IO.DirectoryInfo dir2 = new System.IO.DirectoryInfo(pNewPath);
+
+            // Take a snapshot of the file system.  
+            IEnumerable<System.IO.FileInfo> list1 = dir1.GetFiles(@pHashUserSelected + "*", SearchOption.TopDirectoryOnly);
+            IEnumerable<System.IO.FileInfo> list2 = dir2.GetFiles("*.*", SearchOption.TopDirectoryOnly);
+
+            //A custom file comparer defined below  
+            FileCompare myFileCompare = new FileCompare();
+
+            // This query determines whether the two folders contain  
+            // identical file lists, based on the custom file comparer  
+            // that is defined in the FileCompare class.  
+            // The query executes immediately because it returns a bool.  
+            bool areIdentical = list1.SequenceEqual(list2, myFileCompare);
+
+            if (areIdentical == true)
+            {
+                Console.WriteLine("the two folders are the same");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("The two folders are not the same");
+            }
+
+            // Find the common files. It produces a sequence and doesn't
+            // execute until the foreach statement.  
+            var queryCommonFiles = list1.Intersect(list2, myFileCompare);
+
+            if (queryCommonFiles.Any())
+            {
+                Console.WriteLine("The following files are in both folders:");
+                foreach (var v in queryCommonFiles)
+                {
+                    Console.WriteLine(v.FullName); //shows which items end up in result list  
+                }
+            }
+            else
+            {
+                Console.WriteLine("There are no common files in the two folders.");
+            }
+
+            // Find the set difference between the two folders.  
+            // For this example we only check one way.  
+            var queryList1Only = (from file in list1
+                                  select file).Except(list2, myFileCompare);
+
+            Console.WriteLine("The following files are in list1 but not list2:");
+            foreach (var v in queryList1Only)
+            {
+                Console.WriteLine(v.FullName);
+            }
+
+            // Keep the console window open in debug mode.  
+            Console.WriteLine("Press any key to exit.");
+            Console.ReadKey();
+            return false;
+        }
+
+        // This implementation defines a very simple comparison  
+        // between two FileInfo objects. It only compares the name  
+        // of the files being compared and their length in bytes.  
+        class FileCompare : System.Collections.Generic.IEqualityComparer<System.IO.FileInfo>
+        {
+            public FileCompare() { }
+
+            public bool Equals(System.IO.FileInfo f1, System.IO.FileInfo f2)
+            {
+                return (f1.Name == f2.Name &&
+                        f1.Length == f2.Length);
+            }
+
+            // Return a hash that reflects the comparison criteria. According to the
+            // rules for IEqualityComparer<T>, if Equals is true, then the hash codes must  
+            // also be equal. Because equality as defined here is a simple value equality, not  
+            // reference identity, it is possible that two or more objects will produce the same  
+            // hash code.  
+            public int GetHashCode(System.IO.FileInfo fi)
+            {
+                string s = $"{fi.Name}{fi.Length}";
+                return s.GetHashCode();
+            }
+        }
+
+        public void deleteFilesRootPath(string pUserHashFileToRemove) {
+
+            try
+            {
+                string[] filePaths = Directory.GetFiles(Settings.DataPath, @pUserHashFileToRemove + "*");
+                foreach (string filePath in filePaths)
+                {
+                    File.Delete(filePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Write(LogLevel.Critical, $"Fatal error when deletting rootpath. Exception: {ex}");
+                AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to delete files. If error persist, please contact support@davincicodes.net. The application will close.");
+                AppMainForm.Close();
+            }
+
+        }
+
+      
+
+        #endregion
+
+
+
+
 
         private void MainForm_OnBackupClick(object sender, EventArgs e)
         {
@@ -1098,6 +1430,7 @@ namespace Pandora.Client.PandorasWallet
                 AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to copy wallet data please contact support@davincicodes.net. The application will close.");
                 AppMainForm.Close();
                 return;
+               
             }
         }
 
@@ -1361,7 +1694,7 @@ namespace Pandora.Client.PandorasWallet
             // read existing transactions.
             Log.Write(LogLevel.Debug, "Reading transactions, blockheight and accounts for {0}", aTokenItem.Name);
             var lParentTransactionRecordList = lServer.GetTransactionRecords(aTokenItem.ParentCurrencyID);
-            var lTokenTransactionRecordList = lServer.GetTokenTransactionRecords(aTokenItem.ID, aTokenItem.ContractAddress);
+            var lTokenTransactionRecordList = lServer.GetTokenTransactionRecords(aTokenItem.Id, aTokenItem.ContractAddress);
             var lBlockHeight = lServer.GetBlockHeight(aTokenItem.ParentCurrencyID);
             var lAccounts = lServer.GetMonitoredAccounts(aTokenItem.ParentCurrencyID);
             var lCurrencyStatus = lServer.GetCurrencyStatus(aTokenItem.ParentCurrencyID);
@@ -1377,8 +1710,14 @@ namespace Pandora.Client.PandorasWallet
             var lParentCurrency = AppMainForm.GetCurrency(aTokenItem.ParentCurrencyID);
             if (lParentCurrency == null)
             {
-                var lServerParentCurrency = FServerConnection.GetCurrency(aTokenItem.ParentCurrencyID);
-                DisplayCurrency(lServerParentCurrency);
+                if (FServerConnection.GetMonitoredAccounts(aTokenItem.ParentCurrencyID).Any())
+                {
+                    var lServerParentCurrency = FServerConnection.GetCurrency(aTokenItem.ParentCurrencyID);
+                    DisplayCurrency(lServerParentCurrency);
+                }
+                else
+                    AddNewCurrencyForDisplay(aTokenItem.ParentCurrencyID, FCancellationTokenSource.Token); //This will only execute the first time ever a token is added to the wallet
+
                 lParentCurrency = AppMainForm.GetCurrency(aTokenItem.ParentCurrencyID);
             }
             var lAppMainFormCurrency = GUIModelProducer.CreateFrom(aTokenItem, lParentCurrency);

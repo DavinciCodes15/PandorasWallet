@@ -9,7 +9,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Pandora.Client.PandorasWallet.Wallet
+namespace Pandora.Client.PandorasWallet.Wallet.TransactionMaker
 {
     internal class BitcoinTransactionMaker : BaseTransactionMaker
     {
@@ -17,9 +17,15 @@ namespace Pandora.Client.PandorasWallet.Wallet
         {
         }
 
-        public override string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee)
+        public override string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee, params object[] aExtParams)
         {
             var lUnspents = FServerConnection.GetUnspentOutputs(FCurrencyItem.Id);
+            if (aExtParams != null && aExtParams.Any())
+            {
+                var lCustomTxFee = aExtParams.FirstOrDefault() as decimal?;
+                if (lCustomTxFee.HasValue && lCustomTxFee.Value != aTxFee && lCustomTxFee.Value > 0)
+                    aTxFee = lCustomTxFee.Value;
+            }
             string lData = PrepareNewTransaction(aToAddress, aAmount, aTxFee, FCurrencyItem, lUnspents, out CurrencyTransaction lCurrencyTransaction);
             return SignTransactionData(lData, lCurrencyTransaction, FKeyManager.GetCurrencyAdvocacy(FCurrencyItem.Id, FCurrencyItem.ChainParamaters));
         }

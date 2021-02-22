@@ -8,14 +8,8 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.ClientLib.Contracts
 {
-    public interface ICurrencyItem : ICurrencyAmountFormatter
+    public interface ICurrencyItem : ICurrencyIdentity, ICurrencyAmountFormatter
     {
-        long Id { get; }
-
-        string Name { get; }
-
-        string Ticker { get; }
-
         ushort Precision { get; }
 
         DateTime LiveDate { get; }

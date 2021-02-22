@@ -19,6 +19,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE
 using Pandora.Client.ClientLib;
+using Pandora.Client.ClientLib.Contracts;
 using Pandora.Client.Exchange;
 using Pandora.Client.Exchange.Exchanges;
 using Pandora.Client.Exchange.Factories;
@@ -86,7 +87,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
             ExchangeInitialize();
         }
 
-        public List<CurrencyItem> UserCoins { get => FPandorasWalletConnection.GetDisplayedCurrencies(); }
         public long ActiveCurrencyID { get; private set; }
         public AppMainForm MainForm { get; private set; }
 
@@ -175,7 +175,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
 
                 FDataLoadingTask = Task.Run(() =>
                 {
-                    foreach (CurrencyItem lCurrencyItem in UserCoins)
+                    foreach (var lCurrencyItem in GetUserDisplayedCurrencies())
                     {
 #if DEBUG
                         System.Diagnostics.Debug.WriteLine($"Now loading order data for {lCurrencyItem.Name}");
@@ -198,7 +198,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             }
         }
 
-        public void LoadNewCurrencyData(CurrencyItem aCurrencyItem)
+        public void LoadNewCurrencyData(ICurrencyIdentity aCurrencyItem)
         {
             var lCurrencyOrders = FOrderManager.LoadOrders(aCurrencyItem.Ticker, aCurrencyItem.Id);
             var lExchangeFactory = GetCurrentExchangeFactory();
@@ -219,6 +219,15 @@ namespace Pandora.Client.PandorasWallet.Controlers
             }
         }
 
+        private IEnumerable<ICurrencyIdentity> GetUserDisplayedCurrencies()
+        {
+            var lResult = new List<ICurrencyIdentity>();
+            lResult.AddRange(FPandorasWalletConnection.GetDisplayedCurrencies().Cast<ICurrencyIdentity>());
+            lResult.AddRange(FPandorasWalletConnection.GetDisplayedCurrencyTokens().Where(lToken => lToken.ParentCurrencyID == 10194).Cast<ICurrencyIdentity>()); //Currently we are going to only support with tokens based on ethereum
+            //TODO: Add an identifier to choose which coins are good to be tradable
+            return lResult;
+        }
+
         private IPandoraExchangeFactory GetCurrentExchangeFactory()
         {
             return FExchangeFactoryProducer.GetExchangeFactory(FPandorasWalletConnection.UserName, FPandorasWalletConnection.Email, 0);
@@ -229,9 +238,9 @@ namespace Pandora.Client.PandorasWallet.Controlers
             return GetCurrencyFromIdentifier(aCurrencyName, aTicker)?.Id;
         }
 
-        private CurrencyItem GetCurrencyFromIdentifier(string aCurrencyName, string aTicker)
+        private ICurrencyIdentity GetCurrencyFromIdentifier(string aCurrencyName, string aTicker)
         {
-            CurrencyItem lResult = UserCoins.Where(lCoin => string.Equals(lCoin.Ticker, aTicker, StringComparison.OrdinalIgnoreCase) || string.Equals(lCoin.Name, aCurrencyName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            ICurrencyIdentity lResult = GetUserDisplayedCurrencies().Where(lCoin => string.Equals(lCoin.Ticker, aTicker, StringComparison.OrdinalIgnoreCase) || string.Equals(lCoin.Name, aCurrencyName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
             return lResult;
         }
 
@@ -320,25 +329,25 @@ namespace Pandora.Client.PandorasWallet.Controlers
         /// </summary>
         /// <param name="aCurrencyTicker">Selected currency ticker</param>
         /// <returns>Tuple array where first element is a currency item with market and second is current price market</returns>
-        private Tuple<CurrencyItem, decimal>[] GetCoinsWithExchangePrice(CurrencyItem aCurrency)
+        private IEnumerable<Tuple<ICurrencyIdentity, decimal>> GetCoinsWithExchangePrice(string aName, string aTicker)
         {
             var lUserPossibleMarkets = new List<ExchangeMarket>();
-            ExchangeMarket[] lFullMarkets = FCurrentExchanger.GetMarketCoins(aCurrency.Name, aCurrency.Ticker, GetCurrencyIDFromIdentifier);
-            List<Tuple<CurrencyItem, decimal>> lCoinsWithMarket = new List<Tuple<CurrencyItem, decimal>>();
-            List<CurrencyItem> lUserCoins = UserCoins;
+            ExchangeMarket[] lFullMarkets = FCurrentExchanger.GetMarketCoins(aName, aTicker, GetCurrencyIDFromIdentifier);
+            List<Tuple<ICurrencyIdentity, decimal>> lCoinsWithMarket = new List<Tuple<ICurrencyIdentity, decimal>>();
+            var lUserCoins = GetUserDisplayedCurrencies();
             foreach (ExchangeMarket lMarket in lFullMarkets)
             {
-                CurrencyItem lCoin = lUserCoins.Find(lItem => (lMarket.DestinationCurrencyInfo.WalletID.HasValue && lItem.Id == lMarket.DestinationCurrencyInfo.WalletID)
+                ICurrencyIdentity lCoin = lUserCoins.FirstOrDefault(lItem => (lMarket.DestinationCurrencyInfo.WalletID.HasValue && lItem.Id == lMarket.DestinationCurrencyInfo.WalletID)
                                                                                                     || string.Equals(lItem.Ticker, lMarket.DestinationCurrencyInfo.Ticker, StringComparison.OrdinalIgnoreCase)
                                                                                                     || string.Equals(lItem.Name, lMarket.DestinationCurrencyInfo.Name, StringComparison.OrdinalIgnoreCase));
                 if (lCoin != null)
                 {
-                    lCoinsWithMarket.Add(new Tuple<CurrencyItem, decimal>(lCoin, lMarket.IsSell ? lMarket.Prices.Bid : lMarket.Prices.Ask));
+                    lCoinsWithMarket.Add(new Tuple<ICurrencyIdentity, decimal>(lCoin, lMarket.IsSell ? lMarket.Prices.Bid : lMarket.Prices.Ask));
                     lUserPossibleMarkets.Add(lMarket);
                 }
             }
             Interlocked.Exchange(ref FExchangeCoinMarkets, new ConcurrentBag<ExchangeMarket>(lUserPossibleMarkets));
-            return lCoinsWithMarket.ToArray();
+            return lCoinsWithMarket;
         }
 
         /// <summary>
@@ -355,11 +364,15 @@ namespace Pandora.Client.PandorasWallet.Controlers
             }));
             if ((bool) MainForm.Invoke((Func<bool>) (() => MainForm.SelectedExchange == null)) || !FCurrentExchanger.IsCredentialsSet)
                 return;
-            var lWalletCurrency = FPandorasWalletConnection.GetCurrency(aCurrency);
-            Tuple<CurrencyItem, decimal>[] lCoinsWithMarket = GetCoinsWithExchangePrice(lWalletCurrency);
-            foreach (Tuple<CurrencyItem, decimal> lCurrencyItemWithPrice in lCoinsWithMarket)
+
+            ICurrencyIdentity lCurrency = FPandorasWalletConnection.GetCurrency(aCurrency);
+            if (lCurrency == null)
+                lCurrency = FPandorasWalletConnection.GetCurrencyToken(aCurrency) ?? throw new Exception($"No existing currency with id {aCurrency} found on the wallet");
+            var lCoinsWithMarket = GetCoinsWithExchangePrice(lCurrency.Name, lCurrency.Ticker);
+
+            foreach (var lCurrencyItemWithPrice in lCoinsWithMarket)
             {
-                CurrencyItem lCurrencyItem = lCurrencyItemWithPrice.Item1;
+                var lCurrencyItem = lCurrencyItemWithPrice.Item1;
                 decimal lPrice = lCurrencyItemWithPrice.Item2;
                 MainForm.BeginInvoke(new Action(() => MainForm.AddCoinExchangeTo(lCurrencyItem.Id, lCurrencyItem.Name, lCurrencyItem.Ticker, lPrice)));
             }
@@ -631,7 +644,8 @@ namespace Pandora.Client.PandorasWallet.Controlers
             if (MainForm.SelectedExchangeMarket != null)
             {
                 //Even if the reference does not change anywhere else, this maybe will be used by others threads so I want this to be an atomic operation
-                Interlocked.Exchange(ref FExchangeSelectedCoin, FExchangeCoinMarkets.ToList().Find(x => MainForm.SelectedExchangeMarket.Name == x.DestinationCurrencyInfo.WalletID.ToString()));
+                var lSelectedCoin = FExchangeCoinMarkets.ToList().Find(x => MainForm.SelectedExchangeMarket.Name == x.DestinationCurrencyInfo.WalletID.ToString());
+                Interlocked.Exchange(ref FExchangeSelectedCoin, lSelectedCoin);
                 MainForm.EstimatePrice = FExchangeSelectedCoin.IsSell ? FExchangeSelectedCoin.Prices.Bid : FExchangeSelectedCoin.Prices.Ask;
                 MainForm.LabelPriceInCoin = "BTC";
                 MainForm.TickerTotalReceived = MainForm.SelectedExchangeMarket.SubItems[1].Text;
@@ -711,7 +725,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 foreach (ExchangeMarket lMarket in FExchangeCoinMarkets.Where(lMarket => aMarketBalanceChanged.Any(lMarketBalanceChanged => string.Equals(lMarketBalanceChanged, lMarket.MarketName, StringComparison.OrdinalIgnoreCase))))
                 {
                     if (FDisableUpdating) return;
-                    CurrencyItem lCurrency = UserCoins.Find(lItem => (lMarket.DestinationCurrencyInfo.WalletID.HasValue && lItem.Id == lMarket.DestinationCurrencyInfo.WalletID)
+                    var lCurrency = GetUserDisplayedCurrencies().FirstOrDefault(lItem => (lMarket.DestinationCurrencyInfo.WalletID.HasValue && lItem.Id == lMarket.DestinationCurrencyInfo.WalletID)
                                                                                     || string.Equals(lItem.Ticker, lMarket.DestinationCurrencyInfo.Ticker, StringComparison.OrdinalIgnoreCase)
                                                                                     || string.Equals(lItem.Name, lMarket.DestinationCurrencyInfo.Name, StringComparison.OrdinalIgnoreCase));
                     if (lCurrency != null)

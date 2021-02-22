@@ -443,6 +443,26 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return FCurrentStatus;
         }
 
+        public long EstimateCurrencyTxFee(long aCurrencyId)
+        {
+            CheckConnected();
+            long lResult = 0;
+            try
+            {
+                lResult = FPandoraWalletServiceAccess.GetCurrencyTxFee(aCurrencyId);
+            }
+            catch (Exception)
+            {
+                Log.Write(LogLevel.Warning, $"Unable to retrieve txfee from server for currency id: {aCurrencyId}. Setting default tx fee for currency");
+            }
+            finally
+            {
+                if (lResult <= 0)
+                    lResult = GetCurrency(aCurrencyId).FeePerKb;
+            }
+            return lResult;
+        }
+
         /// <summary>
         /// Gets currencies from the Cache new currencies that are later
         /// added to the case will be sent to you via the OnNewCurrency event
@@ -475,7 +495,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return FLocalCacheDB.ReadCurrencyTokens(aTokenID: aTokenID).Select(lToken => new ClientCurrencyTokenItem(lToken)).FirstOrDefault();
         }
 
-        public void RegisterNewCurrencyToken(ClientCurrencyTokenItem aCurrencyToken)
+        public void RegisterNewCurrencyToken(IClientCurrencyToken aCurrencyToken)
         {
             CheckConnected();
             if (aCurrencyToken == null) throw new ArgumentNullException(nameof(aCurrencyToken), "Currency token can't be null");

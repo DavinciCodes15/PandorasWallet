@@ -585,6 +585,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     // just incase the tx moves to a new block in a chain reorg
                     string s = FServerAccess.GetTransactionRecords(lCurrencyInfo.CurrencyItem.Id, lCurrencyInfo.LastTransactionRecordId, lCanBeToken);
                     List<TransactionRecord> lRemoteTransactionRecords = JsonConvert.DeserializeObject<List<TransactionRecord>>(s, FConverter);
+                    lRemoteTransactionRecords = (List<TransactionRecord>) ProcessEthereumTransactions(lCurrencyInfo, lRemoteTransactionRecords);
                     // if we have tranacations we are looking for changes based on the max confirmations
                     // lets see if we need to stop look for them.
                     if (lCurrencyInfo.LocalTransactionRecords.Any())
@@ -626,7 +627,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     {
                         for (int i = 0; i < lRemoteTransactionRecords.Count; i++)
                         {
-                            var lTx = lRemoteTransactionRecords[i];// this is done for RevDebug for testing
+                            var lTx = lRemoteTransactionRecords[i];
                             var lTokenTx = ProcessTokenTransaction(lCurrencyInfo, lTx);
                             DoOnNewTransaction(lTx, lTokenTx);
                             lCurrencyInfo.LocalTransactionRecords.Add(lTx);
@@ -637,6 +638,26 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     if (lCurrencyInfo.LocalTransactionRecords.Any())
                         lCurrencyInfo.LastTransactionRecordId = lCurrencyInfo.LocalTransactionRecords.First().TransactionRecordId - 1;
                 }
+        }
+
+        private IEnumerable<TransactionRecord> ProcessEthereumTransactions(CurrencyInfo aCurrencyInfo, IEnumerable<TransactionRecord> aTransactionRecords)
+        {
+            if (aCurrencyInfo.CurrencyItem.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
+            {
+                foreach (var lTransaction in aTransactionRecords)
+                {
+                    var lFirstTxOutput = lTransaction.Outputs.Where(lOutput => !string.IsNullOrEmpty(lOutput.Script)).FirstOrDefault();
+                    if (lFirstTxOutput != null)
+                    {
+                        var lTxJson = Encoding.UTF8.GetString(Convert.FromBase64String(lFirstTxOutput.Script));
+                        dynamic lTokenInfo = JsonConvert.DeserializeObject(lTxJson);
+                        string lNonceString = (string) lTokenInfo.nonce;
+                        lFirstTxOutput.Index = int.Parse($"0{lNonceString.Replace("0x", string.Empty)}", System.Globalization.NumberStyles.HexNumber);
+                    }
+                }
+            }
+
+            return aTransactionRecords;
         }
 
         private ClientTokenTransactionItem ProcessTokenTransaction(CurrencyInfo aCurrencyInfo, TransactionRecord aTransactionRecord)

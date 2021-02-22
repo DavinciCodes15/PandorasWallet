@@ -64,6 +64,13 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetCurrency", ReplyAction="*")]
         System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetCurrencyAsync(string aConnectionId, long aCurrencyId);
         
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetCurrencyTxFee", ReplyAction="*")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetCurrencyTxFee(string aConnectionId, long aCurrencyId);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetCurrencyTxFee", ReplyAction="*")]
+        System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetCurrencyTxFeeAsync(string aConnectionId, long aCurrencyId);
+        
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/GetCurrencyIcon", ReplyAction="*")]
         [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
         Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetCurrencyIcon(string aConnectionId, long aCurrencyId);
@@ -335,6 +342,14 @@ namespace Pandora.Client.ServerAccess.PandoraWalletService1_2 {
         
         public System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetCurrencyAsync(string aConnectionId, long aCurrencyId) {
             return base.Channel.GetCurrencyAsync(aConnectionId, aCurrencyId);
+        }
+        
+        public Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetCurrencyTxFee(string aConnectionId, long aCurrencyId) {
+            return base.Channel.GetCurrencyTxFee(aConnectionId, aCurrencyId);
+        }
+        
+        public System.Threading.Tasks.Task<Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult> GetCurrencyTxFeeAsync(string aConnectionId, long aCurrencyId) {
+            return base.Channel.GetCurrencyTxFeeAsync(aConnectionId, aCurrencyId);
         }
         
         public Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult GetCurrencyIcon(string aConnectionId, long aCurrencyId) {

@@ -128,6 +128,15 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        public static bool StandardWarningMsgBoxAsk(this Form aform, string aTitle, string aDescription = null)
+        {
+            using (var lMsgBox = MessageBoxDialog.GetWarningBoxDialog(aTitle, aDescription, aform))
+            {                
+                Log.Write(LogLevel.Warning, "Warning Dialog displayed.\r\nMsg: {0}", aTitle);
+                return lMsgBox.Execute();
+            }
+        }
+
         public static void StandardErrorMsgBox(this Form aform, string aTitle, string aDescription = null)
         {
             using (var lMsgBox = MessageBoxDialog.GetErrorBoxDialog(aTitle, aDescription, aform))

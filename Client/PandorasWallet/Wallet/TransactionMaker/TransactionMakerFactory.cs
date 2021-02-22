@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Pandora.Client.PandorasWallet.Wallet
+namespace Pandora.Client.PandorasWallet.Wallet.TransactionMaker
 {
     public interface ITransactionMaker
     {
-        string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee);
+        string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee, params object[] aExtParams);
 
         void SendRawTransaction(string aRawTX, DelegateOnSendTransactionCompleted aTxSentEventDelegate);
     }

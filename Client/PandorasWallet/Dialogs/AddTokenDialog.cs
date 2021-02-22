@@ -17,7 +17,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
     public partial class AddTokenDialog : BaseDialog
     {
         private bool FOkPressed;
-        private Dictionary<string, IGUIToken> FTokens;
+        private Dictionary<string, DialogTokenitem> FTokens;
         private List<IGUICurrency> FParentCurrencies;
         private static ConcurrentDictionary<string, IGUIToken> FCacheTokens;
 
@@ -31,7 +31,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public AddTokenDialog()
         {
             InitializeComponent();
-            FTokens = new Dictionary<string, IGUIToken>();
+            FTokens = new Dictionary<string, DialogTokenitem>();
             FParentCurrencies = new List<IGUICurrency>();
             lstViewTokens.SmallImageList = TokenIconsList;
             lstViewTokens.LargeImageList = TokenIconsList;
@@ -55,7 +55,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 try
                 {
                     this.SetWaitCursor();
-                    if (!FTokens.ContainsKey(TokenAddress) && !FCacheTokens.ContainsKey(TokenAddress))
+                    if (!FTokens.ContainsKey(TokenAddress.ToLowerInvariant()) && !FCacheTokens.ContainsKey(TokenAddress.ToLowerInvariant()))
                     {
                         lstViewTokens.Enabled = false;
                         btnOK.Enabled = false;
@@ -66,14 +66,15 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                     }
                     else
                     {
-                        if (FTokens.TryGetValue(TokenAddress, out IGUIToken lTokenItem))
+                        if (FTokens.TryGetValue(TokenAddress, out DialogTokenitem lTokenItem))
                         {
-                            var lListViewItem = lstViewTokens.Items.Find(lTokenItem.ContractAddress, false).FirstOrDefault();
-                            lListViewItem.Selected = true;
+                            var lListViewItem = lstViewTokens.Items.Find(lTokenItem.Token.ContractAddress, false).FirstOrDefault();
+                            if (lListViewItem != null)
+                                lListViewItem.Selected = true;
                         }
-                        else if (FCacheTokens.TryGetValue(TokenAddress, out lTokenItem))
+                        else if (FCacheTokens.TryGetValue(TokenAddress, out IGUIToken lCacheToken))
                         {
-                            SetTokenInfo(lTokenItem);
+                            SetTokenInfo(lCacheToken);
                             btnOK.Enabled = true;
                         }
                     }
@@ -101,8 +102,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 var lCurrencyToken = (ICurrencyToken) OnTokenAddressChanged.EndInvoke(aResult);
                 if (lCurrencyToken != null)
                 {
-                    var lBitmapIcon = new Bitmap(picToken.BackgroundImage);
-
                     this.Invoke(new Action(() =>
                     {
                         SelectedToken = new GUIToken(SelectedCurrencyNetwork)
@@ -111,7 +110,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                             Ticker = lCurrencyToken.Ticker,
                             Precision = lCurrencyToken.Precision,
                             Name = lCurrencyToken.Name,
-                            Icon = Globals.IconToBytes(Icon.FromHandle(lBitmapIcon.GetHicon()))
+                            Icon = Globals.IconToBytes(Properties.Resources.eth_Acy_icon)
                         };
                         FCacheTokens.TryAdd(SelectedToken.ContractAddress, SelectedToken);
                         SetTokenInfo(SelectedToken);
@@ -119,10 +118,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                     }));
                 }
                 else
-                {
-                    TxtBoxTokenAddress.Focus();
-                    this.Invoke(new Action(SetTokenInfoNoData));
-                }
+                    this.Invoke(new Action(() => { TxtBoxTokenAddress.Focus(); SetTokenInfoNoData(); }));
             }
             catch (Exception ex)
             {
@@ -141,6 +137,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         private void SetTokenInfo(IGUIToken aTokenModel)
         {
+            picToken.Image = aTokenModel.Icon.ToBitmap();
             TokenName = aTokenModel.Name;
             TokenSymbol = aTokenModel.Ticker;
             TokenDecimals = aTokenModel.Precision;
@@ -160,14 +157,15 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             txtBoxTokenDecimals.Text = "-NO DATA-";
         }
 
-        public void AddTokenItem(IGUIToken aTokenItem)
+        public void AddTokenItem(IGUIToken aTokenItem, bool aAlreadyAdded)
         {
             if (aTokenItem == null || FTokens.ContainsKey(aTokenItem.ContractAddress))
                 return;
-            FTokens.Add(aTokenItem.ContractAddress, aTokenItem);
+            var lInternalToken = new DialogTokenitem { Token = aTokenItem, AlreadyAdded = aAlreadyAdded };
+            FTokens.Add(aTokenItem.ContractAddress.ToLowerInvariant(), lInternalToken);
             SetParentCurrency(aTokenItem.ParentCurrency);
-            TokenIconsList.Images.Add(aTokenItem.ContractAddress, aTokenItem.Icon);
-            lstViewTokens.Items.Add(ConstructListViewItem(aTokenItem));
+            TokenIconsList.Images.Add(aTokenItem.ContractAddress.ToLowerInvariant(), aTokenItem.Icon);
+            lstViewTokens.Items.Add(ConstructListViewItem(lInternalToken));
             if (lstViewTokens.Enabled == false)
                 lstViewTokens.Enabled = true;
         }
@@ -187,14 +185,15 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
         }
 
-        private ListViewItem ConstructListViewItem(IGUIToken aTokenItem)
+        private ListViewItem ConstructListViewItem(DialogTokenitem aTokenItem)
         {
             var lListViewItem = new ListViewItem();
-            lListViewItem.Text = aTokenItem.Name;
-            lListViewItem.ImageKey = aTokenItem.ContractAddress;
-            lListViewItem.Name = aTokenItem.ContractAddress;
+            lListViewItem.Text = aTokenItem.Token.Name;
+            lListViewItem.ImageKey = aTokenItem.Token.ContractAddress;
+            lListViewItem.Name = aTokenItem.Token.ContractAddress;
             lListViewItem.Tag = aTokenItem;
-            lListViewItem.SubItems.Add(aTokenItem.Ticker);
+            lListViewItem.SubItems.Add(aTokenItem.Token.Ticker);
+            lListViewItem.SubItems.Add(aTokenItem.Token.ParentCurrency.Name);
             return lListViewItem;
         }
 
@@ -204,7 +203,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             {
                 FOkPressed = false;
                 if (TxtBoxTokenAddress.ReadOnly)
-                    SelectedToken = (IGUIToken) lstViewTokens.SelectedItems[0].Tag;
+                    SelectedToken = ((DialogTokenitem) lstViewTokens.SelectedItems[0].Tag).Token;
                 else
                     SelectedToken = FCacheTokens[TokenAddress];
             }
@@ -220,20 +219,35 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             {
                 TokenAddress = string.Empty;
                 TxtBoxTokenAddress.ReadOnly = false;
+                comboBoxNetwork.Enabled = true;
                 btnOK.Enabled = false;
                 SetTokenInfoNoData();
+                btnOK.Text = "Add";
             }
             else
             {
-                var lSelectedItemToken = (IGUIToken) lstViewTokens.SelectedItems[0].Tag;
-                TokenAddress = lSelectedItemToken.ContractAddress;
+                var lSelectedItemToken = (DialogTokenitem) lstViewTokens.SelectedItems[0].Tag;
+                TokenAddress = lSelectedItemToken.Token.ContractAddress;
                 TxtBoxTokenAddress.ReadOnly = true;
-                comboBoxNetwork.SelectedItem = comboBoxNetwork.Items.IndexOf(lSelectedItemToken.ParentCurrency.Id);
-                SetTokenInfo(lSelectedItemToken);
-                btnOK.Enabled = true;
+                comboBoxNetwork.SelectedIndex = comboBoxNetwork.FindStringExact(lSelectedItemToken.Token.ParentCurrency.Name);
+                comboBoxNetwork.Enabled = false;
+                SetTokenInfo(lSelectedItemToken.Token);
+                btnOK.Enabled = !lSelectedItemToken.AlreadyAdded;
+                btnOK.Text = lSelectedItemToken.AlreadyAdded ? "Added" : "Add";
             }
 
             TxtBoxTokenAddress.TextChanged += TxtBoxTokenAddress_TextChanged;
+        }
+
+        private class DialogTokenitem
+        {
+            public IGUIToken Token { get; set; }
+            public bool AlreadyAdded { get; set; }
+        }
+
+        private void comboBoxNetwork_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TxtBoxTokenAddress_TextChanged(sender, e);
         }
     }
 }

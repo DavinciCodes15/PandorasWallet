@@ -50,22 +50,31 @@
             this.lblBalanceBefore = new System.Windows.Forms.Label();
             this.lblWarning = new System.Windows.Forms.Label();
             this.pictureBox = new System.Windows.Forms.PictureBox();
+            this.checkBoxAdvanced = new System.Windows.Forms.CheckBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.lblNonce = new System.Windows.Forms.Label();
+            this.groupBoxAdvanced = new System.Windows.Forms.GroupBox();
+            this.numericCustomFee = new System.Windows.Forms.NumericUpDown();
+            this.numericNonce = new System.Windows.Forms.NumericUpDown();
             this.chckBoxSubsFee = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).BeginInit();
+            this.groupBoxAdvanced.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericCustomFee)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericNonce)).BeginInit();
             this.SuspendLayout();
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(803, 321);
+            this.btnCancel.Location = new System.Drawing.Point(803, 392);
             this.btnCancel.Margin = new System.Windows.Forms.Padding(4);
             this.btnCancel.Size = new System.Drawing.Size(112, 30);
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(680, 321);
+            this.btnOK.Location = new System.Drawing.Point(680, 392);
             this.btnOK.Margin = new System.Windows.Forms.Padding(4);
             this.btnOK.Size = new System.Drawing.Size(112, 30);
             this.btnOK.Text = "Confirm";
@@ -267,12 +276,12 @@
             // lblDiscounted
             // 
             this.lblDiscounted.AutoSize = true;
-            this.lblDiscounted.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
-            this.lblDiscounted.ForeColor = System.Drawing.Color.Red;
+            this.lblDiscounted.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F, System.Drawing.FontStyle.Bold);
+            this.lblDiscounted.ForeColor = System.Drawing.Color.Black;
             this.lblDiscounted.Location = new System.Drawing.Point(176, 63);
             this.lblDiscounted.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lblDiscounted.Name = "lblDiscounted";
-            this.lblDiscounted.Size = new System.Drawing.Size(79, 17);
+            this.lblDiscounted.Size = new System.Drawing.Size(89, 17);
             this.lblDiscounted.TabIndex = 10;
             this.lblDiscounted.Text = "Discounted";
             // 
@@ -311,10 +320,10 @@
             // 
             // lblWarning
             // 
-            this.lblWarning.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblWarning.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.lblWarning.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
             this.lblWarning.ForeColor = System.Drawing.Color.Red;
-            this.lblWarning.Location = new System.Drawing.Point(562, 300);
+            this.lblWarning.Location = new System.Drawing.Point(562, 370);
             this.lblWarning.Name = "lblWarning";
             this.lblWarning.Size = new System.Drawing.Size(353, 17);
             this.lblWarning.TabIndex = 19;
@@ -333,23 +342,106 @@
             this.pictureBox.TabIndex = 15;
             this.pictureBox.TabStop = false;
             // 
+            // checkBoxAdvanced
+            // 
+            this.checkBoxAdvanced.AutoSize = true;
+            this.checkBoxAdvanced.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.checkBoxAdvanced.Location = new System.Drawing.Point(803, 103);
+            this.checkBoxAdvanced.Name = "checkBoxAdvanced";
+            this.checkBoxAdvanced.Size = new System.Drawing.Size(113, 19);
+            this.checkBoxAdvanced.TabIndex = 21;
+            this.checkBoxAdvanced.Text = "Show advanced";
+            this.checkBoxAdvanced.UseVisualStyleBackColor = true;
+            this.checkBoxAdvanced.CheckedChanged += new System.EventHandler(this.checkBoxAdvanced_CheckedChanged);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.label9.Location = new System.Drawing.Point(19, 32);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(157, 17);
+            this.label9.TabIndex = 0;
+            this.label9.Text = "Custom transaction fee:";
+            // 
+            // lblNonce
+            // 
+            this.lblNonce.AutoSize = true;
+            this.lblNonce.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.lblNonce.Location = new System.Drawing.Point(351, 34);
+            this.lblNonce.Name = "lblNonce";
+            this.lblNonce.Size = new System.Drawing.Size(130, 17);
+            this.lblNonce.TabIndex = 2;
+            this.lblNonce.Text = "Transaction nonce:";
+            // 
+            // groupBoxAdvanced
+            // 
+            this.groupBoxAdvanced.Controls.Add(this.numericCustomFee);
+            this.groupBoxAdvanced.Controls.Add(this.numericNonce);
+            this.groupBoxAdvanced.Controls.Add(this.lblNonce);
+            this.groupBoxAdvanced.Controls.Add(this.label9);
+            this.groupBoxAdvanced.Location = new System.Drawing.Point(8, 294);
+            this.groupBoxAdvanced.Name = "groupBoxAdvanced";
+            this.groupBoxAdvanced.Size = new System.Drawing.Size(907, 70);
+            this.groupBoxAdvanced.TabIndex = 22;
+            this.groupBoxAdvanced.TabStop = false;
+            this.groupBoxAdvanced.Text = "Advanced transaction options";
+            this.groupBoxAdvanced.Visible = false;
+            // 
+            // numericCustomFee
+            // 
+            this.numericCustomFee.DecimalPlaces = 8;
+            this.numericCustomFee.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.numericCustomFee.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            524288});
+            this.numericCustomFee.Location = new System.Drawing.Point(182, 31);
+            this.numericCustomFee.Maximum = new decimal(new int[] {
+            1569325055,
+            23283064,
+            0,
+            0});
+            this.numericCustomFee.Name = "numericCustomFee";
+            this.numericCustomFee.Size = new System.Drawing.Size(120, 23);
+            this.numericCustomFee.TabIndex = 23;
+            this.numericCustomFee.ValueChanged += new System.EventHandler(this.numericCustomFee_ValueChanged);
+            // 
+            // numericNonce
+            // 
+            this.numericNonce.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.numericNonce.Location = new System.Drawing.Point(484, 32);
+            this.numericNonce.Maximum = new decimal(new int[] {
+            1569325055,
+            23283064,
+            0,
+            0});
+            this.numericNonce.Name = "numericNonce";
+            this.numericNonce.Size = new System.Drawing.Size(120, 23);
+            this.numericNonce.TabIndex = 23;
+            // 
             // chckBoxSubsFee
             // 
+            this.chckBoxSubsFee.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.chckBoxSubsFee.AutoSize = true;
             this.chckBoxSubsFee.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
-            this.chckBoxSubsFee.Location = new System.Drawing.Point(12, 330);
+            this.chckBoxSubsFee.Location = new System.Drawing.Point(30, 398);
             this.chckBoxSubsFee.Name = "chckBoxSubsFee";
             this.chckBoxSubsFee.Size = new System.Drawing.Size(249, 21);
-            this.chckBoxSubsFee.TabIndex = 20;
+            this.chckBoxSubsFee.TabIndex = 23;
             this.chckBoxSubsFee.Text = "Substract Fee from amount to send";
             this.chckBoxSubsFee.UseVisualStyleBackColor = true;
+            this.chckBoxSubsFee.CheckedChanged += new System.EventHandler(this.checkSubtFee_CheckedChanged);
             // 
             // SendTransactionDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 17F);
             this.BackColor = System.Drawing.SystemColors.InactiveCaption;
-            this.ClientSize = new System.Drawing.Size(933, 366);
+            this.ClientSize = new System.Drawing.Size(933, 437);
             this.Controls.Add(this.chckBoxSubsFee);
+            this.Controls.Add(this.groupBoxAdvanced);
+            this.Controls.Add(this.checkBoxAdvanced);
             this.Controls.Add(this.lblWarning);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -361,21 +453,26 @@
             this.Name = "SendTransactionDialog";
             this.ShowIcon = false;
             this.Text = "Confirmation";
-            this.Shown += new System.EventHandler(this.SendTransaction_Shown);
             this.Controls.SetChildIndex(this.label1, 0);
             this.Controls.SetChildIndex(this.label2, 0);
             this.Controls.SetChildIndex(this.pictureBox, 0);
             this.Controls.SetChildIndex(this.groupBox1, 0);
             this.Controls.SetChildIndex(this.groupBox2, 0);
+            this.Controls.SetChildIndex(this.lblWarning, 0);
+            this.Controls.SetChildIndex(this.checkBoxAdvanced, 0);
+            this.Controls.SetChildIndex(this.groupBoxAdvanced, 0);
             this.Controls.SetChildIndex(this.btnOK, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
-            this.Controls.SetChildIndex(this.lblWarning, 0);
             this.Controls.SetChildIndex(this.chckBoxSubsFee, 0);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
+            this.groupBoxAdvanced.ResumeLayout(false);
+            this.groupBoxAdvanced.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericCustomFee)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericNonce)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -405,7 +502,13 @@
         private System.Windows.Forms.Label lblWarning;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label lblDiscounted;
+        private System.Windows.Forms.CheckBox checkBoxAdvanced;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label lblNonce;
+        private System.Windows.Forms.GroupBox groupBoxAdvanced;
+        private System.Windows.Forms.NumericUpDown numericNonce;
         private System.Windows.Forms.CheckBox chckBoxSubsFee;
+        private System.Windows.Forms.NumericUpDown numericCustomFee;
         //private System.Windows.Forms.Timer timer1;
     }
 }

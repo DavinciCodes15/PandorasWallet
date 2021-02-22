@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Pandora.Client.PandorasWallet.Wallet
+namespace Pandora.Client.PandorasWallet.Wallet.TransactionMaker
 {
     internal abstract class BaseTransactionMaker : ITransactionMaker
     {
@@ -27,7 +27,7 @@ namespace Pandora.Client.PandorasWallet.Wallet
             FCurrencyItem = aCurrencyItem;
         }
 
-        public abstract string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee);
+        public abstract string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee, params object[] aExtParams);
 
         public virtual void SendRawTransaction(string aRawTX, DelegateOnSendTransactionCompleted aTxSentEventDelegate)
         {

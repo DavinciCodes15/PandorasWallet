@@ -26,82 +26,26 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 {
     public partial class SendTransactionDialog : BaseDialog
     {
+        private Size FNormalSize = new Size(949, 417);
+        private Size FExpandedSize = new Size(949, 476);
         public EventHandler OnConfirmButtonClick;
         public EventHandler OnCancelButtonClick;
+        private bool FEthereumStyleEnabled;
+        private decimal FTotalAmounToSend;
+        private SendTransactionInfo FTxInfo;
 
-        private decimal FBalance;
-        private decimal FTxFee;
-        private decimal FTxFeeRate;
-        private decimal FAmount;
-        private decimal FBalanceAfter;
-        private decimal FDiscounted;
-        private decimal FCachedAmount;
-        public string FromAddress { get => lblFromAddress.Text; set => lblFromAddress.Text = value; }
+        public decimal TotalAmountToSend { get => FTotalAmounToSend; private set { lblAmount.Text = $"{value} {FTxInfo.BalanceTicker}"; FTotalAmounToSend = value; } }
 
-        public string ToAddress { get => lblToAddress.Text; set => lblToAddress.Text = value; }
+        public object[] AdvancedTxOptions { get; internal set; }
 
-        public decimal Amount { get => FAmount; set { FAmount = value; lblAmount.Text = value.ToString() + Ticker; } }
-
-        public decimal Balance { get => FBalance; set { FBalance = value; lblBalanceBefore.Text = value.ToString() + Ticker; } }
-
-        public decimal TxFee { get => FTxFee; set { FTxFee = value; lblTxFee.Text = value.ToString() + Ticker; } }
-
-        public decimal TxFeeRate { get => FTxFeeRate; set { FTxFeeRate = value; lblTxFeeRate.Text = value.ToString() + Ticker; } }
-
-        public bool SubstractFee
-        {
-            get => chckBoxSubsFee.Checked;
-            set => chckBoxSubsFee.Checked = value;
-        }
-
-        public string Ticker { get; set; }
-
-        public bool EthereumStyleEnabled { get; private set; }
-
-        public SendTransactionDialog(bool aUseEthereumLayout = false)
+        public SendTransactionDialog(SendTransactionInfo aTxInfo, bool aUseEthereumLayout = false)
         {
             InitializeComponent();
-            EthereumStyleEnabled = aUseEthereumLayout;
-        }
-
-        private decimal BalanceAfterSend
-        {
-            get => FBalanceAfter;
-            set
-            {
-                FBalanceAfter = value;
-                lblBalanceAfter.Text = value.ToString() + Ticker;
-                if (value < 0)
-                {
-                    lblBalanceAfter.ForeColor = Color.Red;
-                    lblWarning.Text = "Not enough coins to send transaction with TxFee.";
-                    lblWarning.Visible = true;
-                    btnOK.Enabled = false;
-                }
-                else
-                {
-                    lblBalanceAfter.ForeColor = Color.Black;
-                    lblWarning.Text = "";
-                    lblWarning.Visible = false;
-                    btnOK.Enabled = true;
-                }
-            }
-        }
-
-        public decimal Discounted
-        {
-            get => FDiscounted;
-            set
-            {
-                FDiscounted = value;
-                lblDiscounted.Text = FDiscounted.ToString() + Ticker;
-            }
-        }
-
-        public SendTransactionDialog()
-        {
-            InitializeComponent();
-            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
+            FEthereumStyleEnabled = aUseEthereumLayout;
+            FTxInfo = aTxInfo;
+            numericCustomFee.Value = aTxInfo.TotalFee;
+            if (aTxInfo.Nonce >= 0)
+                numericNonce.Value = aTxInfo.Nonce + 1;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -116,30 +60,91 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public new bool Execute()
         {
-            if (EthereumStyleEnabled)
-                ChangeLayoutToEthereum();
-            FCachedAmount = FAmount;
-            return ShowDialog() == DialogResult.OK;
+            this.Size = FNormalSize;
+            FillDialogWithInfo(FTxInfo);
+            chckBoxSubsFee.Visible = !FTxInfo.IsSentAll && !IsToken();
+            chckBoxSubsFee.Checked = FTxInfo.IsSentAll;
+            CalculateDiscountedAndAmount(chckBoxSubsFee.Checked);
+            bool lOkPressed = ShowDialog() == DialogResult.OK;
+            AdvancedTxOptions = new object[] { GetTotalFee(), $"0x{Convert.ToInt32(numericNonce.Value).ToString("X")}" };
+            return lOkPressed;
         }
 
-        private void ChangeLayoutToEthereum()
+        private bool IsToken()
         {
-            lblFeeRateTitle.Text = "Gas Price:";
+            return FTxInfo.BalanceTicker != FTxInfo.FeeTicker;
+        }
+
+        private void FillDialogWithInfo(SendTransactionInfo aInfo)
+        {
+            lblFromAddress.Text = aInfo.FromAddress;
+            lblToAddress.Text = aInfo.ToAddress;
+            if (FEthereumStyleEnabled)
+            {
+                lblFeeRateTitle.Text = "Gas Price:";
+            }
+            lblBalanceBefore.Text = $"{aInfo.CurrentBalance} {aInfo.BalanceTicker}";
+        }
+
+        private decimal GetTotalFee()
+        {
+            bool lIsCustomFeeEnabled = numericCustomFee.Value != FTxInfo.TotalFee;
+            lblTxFeeRate.Text = lIsCustomFeeEnabled ? $"CUSTOM" : $"{FTxInfo.FeeRate.ToString("G8")} {FTxInfo.FeeTicker}";
+            return lIsCustomFeeEnabled ? numericCustomFee.Value : FTxInfo.TotalFee;
+        }
+
+        private void CalculateDiscountedAndAmount(bool isSubsFromAmountChecked)
+        {
+            decimal lAmountDiscounted;
+            decimal lBalanceAfter;
+            if (isSubsFromAmountChecked)
+            {
+                lAmountDiscounted = FTxInfo.AmountToSend;
+                TotalAmountToSend = IsToken() ? FTxInfo.AmountToSend : FTxInfo.AmountToSend - GetTotalFee();
+            }
+            else
+            {
+                lAmountDiscounted = IsToken() ? FTxInfo.AmountToSend : FTxInfo.AmountToSend + GetTotalFee();
+                TotalAmountToSend = FTxInfo.AmountToSend;
+            }
+            lblTxFee.Text = $"{GetTotalFee()} {FTxInfo.FeeTicker}";
+            lblDiscounted.Text = $"-{lAmountDiscounted} {FTxInfo.BalanceTicker}";
+            lBalanceAfter = FTxInfo.CurrentBalance - lAmountDiscounted;
+            lblBalanceAfter.Text = $"{lBalanceAfter} {FTxInfo.BalanceTicker}";
+            btnOK.Enabled = (FEthereumStyleEnabled ? TotalAmountToSend >= 0 : TotalAmountToSend > 0) && lBalanceAfter >= 0;
+            if (lblWarning.Visible = !btnOK.Enabled)
+                lblWarning.Text = "Invalid transaction amounts.";
         }
 
         private void checkSubtFee_CheckedChanged(object sender, EventArgs e)
         {
-            if (SubstractFee)
-                Discounted = TxFee;
-            else
-                Discounted = 0;
-            Amount = FCachedAmount - Discounted;
-            BalanceAfterSend = Balance - (Amount + TxFee);
+            CalculateDiscountedAndAmount(((CheckBox) sender).Checked);
         }
 
-        private void SendTransaction_Shown(object sender, EventArgs e)
+        private void checkBoxAdvanced_CheckedChanged(object sender, EventArgs e)
         {
-            checkSubtFee_CheckedChanged(this, null);
+            groupBoxAdvanced.Visible = ((CheckBox) sender).Checked;
+            this.Size = groupBoxAdvanced.Visible ? FExpandedSize : FNormalSize;
+            lblNonce.Visible = numericNonce.Visible = FEthereumStyleEnabled;
+        }
+
+        public class SendTransactionInfo
+        {
+            public string FromAddress { get; set; }
+            public string ToAddress { get; set; }
+            public decimal AmountToSend { get; set; }
+            public decimal CurrentBalance { get; set; }
+            public string BalanceTicker { get; set; }
+            public decimal TotalFee { get; set; }
+            public string FeeTicker { get; set; }
+            public decimal FeeRate { get; set; }
+            public bool IsSentAll { get; set; }
+            public int Nonce { get; set; }
+        }
+
+        private void numericCustomFee_ValueChanged(object sender, EventArgs e)
+        {
+            CalculateDiscountedAndAmount(chckBoxSubsFee.Checked);
         }
     }
 }

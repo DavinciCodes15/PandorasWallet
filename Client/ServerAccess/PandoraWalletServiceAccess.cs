@@ -87,6 +87,8 @@ namespace Pandora.Client.ServerAccess
 
         private delegate string GetCurrencyTokenDelegate(long aCurrencyId, string aTokenContract);
 
+        private delegate long GetCurrencyTxFeeDelegate(long aCurrencyId);
+
         private delegate bool MarkOldUserDelegate(string aEmail, string aUserName);
 
         private PandoraWalletWebService FServer;
@@ -416,6 +418,11 @@ namespace Pandora.Client.ServerAccess
             return (string) ReadServerResult(FServer.GetCurrencyIcon(ConnectionId, aCurrencyId));
         }
 
+        private long ThreadGetCurrencyTxFee(long aCurrencyId)
+        {
+            return Convert.ToInt64(ReadServerResult(FServer.GetCurrencyTxFee(ConnectionId, aCurrencyId)));
+        }
+
         private long ThreadGetBlockHeight(long aCurrencyId)
         {
             return Convert.ToInt64(ReadServerResult(FServer.GetBlockHeight(ConnectionId, aCurrencyId)));
@@ -646,6 +653,12 @@ namespace Pandora.Client.ServerAccess
         {
             CheckConnected();
             return (string) this.Invoke(new GetCurrencyIconDelegate(ThreadGetCurrencyIcon), aCurrencyId);
+        }
+
+        public long GetCurrencyTxFee(long aCurrencyId)
+        {
+            CheckConnected();
+            return (long) this.Invoke(new GetCurrencyTxFeeDelegate(ThreadGetCurrencyTxFee), aCurrencyId);
         }
 
         public long GetBlockHeight(long aCurrencyId)

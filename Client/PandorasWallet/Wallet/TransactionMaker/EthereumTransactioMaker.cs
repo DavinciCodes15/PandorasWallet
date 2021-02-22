@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Pandora.Client.PandorasWallet.Wallet
+namespace Pandora.Client.PandorasWallet.Wallet.TransactionMaker
 {
     internal class EthereumTransactioMaker : BaseTransactionMaker
     {
@@ -16,12 +16,22 @@ namespace Pandora.Client.PandorasWallet.Wallet
         {
         }
 
-        public override string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee)
+        public override string CreateSignedTransaction(string aToAddress, decimal aAmount, decimal aTxFee, params object[] aExtParams)
         {
+            string lNonce = null;
+            if (aExtParams != null && aExtParams.Any())
+            {
+                var lCustomTxFee = aExtParams.FirstOrDefault() as decimal?;
+                if (lCustomTxFee.HasValue && lCustomTxFee.Value != aTxFee && lCustomTxFee.Value > 0)
+                    aTxFee = lCustomTxFee.Value;
+                if (aExtParams.Length >= 2)
+                    lNonce = aExtParams[1] as string;
+            }
             var lEthAdvocacy = FKeyManager.GetCurrencyAdvocacy(FCurrencyItem.Id, FCurrencyItem.ChainParamaters);
             var lAddress = lEthAdvocacy.GetAddress(1);
             var lTransaction = PrepareNewTransaction(lAddress, aToAddress, aAmount, aTxFee);
-            var lNonce = FServerConnection.DirectCreateTransaction(lTransaction);
+            if (string.IsNullOrEmpty(lNonce))
+                lNonce = FServerConnection.DirectCreateTransaction(lTransaction);
             return SignTransactionData(lNonce, lTransaction, lEthAdvocacy);
         }
 

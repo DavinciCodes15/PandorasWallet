@@ -24,7 +24,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
         }
 
-
         public string Title
         {
             get => lblTitle.Text;
@@ -36,7 +35,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             get => lblDescription.Text;
             set => lblDescription.Text = value;
         }
-
 
         private MessageBoxDialog() : base()
         {
@@ -59,7 +57,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 var lNewSize = (lblDescription.Height - 17);
                 this.Height += lNewSize;
             }
-                                    
         }
 
         private MessageBoxDialog(string aTitle, string aDescription, TypeMessageBox atypeMessage, IWin32Window aParentWindow) : this()
@@ -87,30 +84,35 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 case TypeMessageBox.Info:
                     pbIcon.Image = Properties.Resources.Information;
                     Text = "Pandora's Wallet Information Message";
+                    base.btnCancel.Text = "OK";
+                    base.btnOK.Visible = false;
                     break;
+
                 case TypeMessageBox.Warning:
                     pbIcon.Image = Properties.Resources.Warning2;
                     Text = "Pandora's Wallet Warning Message";
                     break;
+
                 case TypeMessageBox.Error:
                     pbIcon.Image = Properties.Resources.Error;
                     Text = "Pandora's Wallet Error Message";
                     base.btnOK.Location = base.btnCancel.Location;
                     base.btnCancel.Visible = false;
                     break;
+
                 case TypeMessageBox.Ask:
                     pbIcon.Image = Properties.Resources.ask;
                     Text = "Pandora's Wallet Question";
                     base.btnCancel.Text = "NO";
                     break;
+
                 default:
                     break;
             }
         }
 
-
-
         #region Static Methods
+
         public static MessageBoxDialog GetMessageBoxDialog(string aTitle, string aDescription, TypeMessageBox atypeMessage, IWin32Window aParentWindow)
         {
             return new MessageBoxDialog(aTitle, aDescription, atypeMessage, aParentWindow);
@@ -136,6 +138,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             return GetMessageBoxDialog(aTitle, aDescription, TypeMessageBox.Error, aParentWindow);
         }
 
-        #endregion
+        #endregion Static Methods
     }
 }
