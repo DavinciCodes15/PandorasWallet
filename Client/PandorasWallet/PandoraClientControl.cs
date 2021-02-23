@@ -77,7 +77,6 @@ namespace Pandora.Client.PandorasWallet
         public AppMainForm AppMainForm { get; private set; }
         public string DefaultPath { get; private set; }
 
-       
         /*************************************************************************************************************************\
          *                                                                                                                       *
          *          Initialization methods                                                                                       *
@@ -105,7 +104,6 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.OnRemoveCurrencyRequested += AppMainForm_OnRemoveCurrencyRequested;
             AppMainForm.TickerQuantity = string.Empty;
             AppMainForm.TickerTotalReceived = string.Empty;
-
         }
 
         private void SetDefaultCurrencyTokens()
@@ -334,12 +332,12 @@ namespace Pandora.Client.PandorasWallet
             {
                 lUnspent = FServerConnection.GetUnspentOutputs(lSelectedCurrency.Id);
             }
-            if (!lUnspent.Any())
-                aAmountToSend = 0;
             if (string.IsNullOrWhiteSpace(AppMainForm.ToSendAddress))
                 AppMainForm.StandardErrorMsgBox("Send Error", $"Please provide a valid {AppMainForm.SelectedCurrency.Name} address!");
             else if (aAmountToSend < 0)
                 AppMainForm.StandardErrorMsgBox("Send Error", $"The amount '{aAmountToSend}' is an invalid amount for {AppMainForm.SelectedCurrency.Name}!");
+            else if (!lUnspent.Any())
+                AppMainForm.StandardErrorMsgBox("Send Error", $"No balance for {AppMainForm.SelectedCurrency.Name}!");
             else
             {
                 var lTxFee = CalculateTxFee(AppMainForm.ToSendAddress, aAmountToSend, AppMainForm.SelectedCurrency, out decimal lFeePerKb);
@@ -410,11 +408,9 @@ namespace Pandora.Client.PandorasWallet
             {
                 ParentWindow = AppMainForm
             };
-            
-            
+
             lConnectDialog.findUsersClick += ConnectDialog_findUsersClick;
-            
-            
+
             lConnectDialog.OnOkClick += new EventHandler(delegate (Object o, EventArgs a)
             {
                 ConnectDialog lDlg = o as ConnectDialog;
@@ -1009,8 +1005,6 @@ namespace Pandora.Client.PandorasWallet
 
         #endregion Send Coins Event Code
 
-
-
         /*************************************************************************************************************************\
          *                                                                                                                       *
          *          Reset wallet code                                                                                            *
@@ -1018,6 +1012,7 @@ namespace Pandora.Client.PandorasWallet
         \*************************************************************************************************************************/
 
         #region Reset wallet
+
         private void ConnectDialog_findUsersClick(object sender, EventArgs e)
         {
             try
@@ -1029,7 +1024,7 @@ namespace Pandora.Client.PandorasWallet
                 Log.Write(LogLevel.Critical, $"Fatal error when calling findusers method. Exception: {ex}");
                 AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to call method to findusers. If error persist, please contact support@davincicodes.net. The application will close.");
                 AppMainForm.Close();
-            }   
+            }
         }
 
         public void DirectoryCopySelectedFiles(string lSourceDirName, string lDestDirName, FileInfo[] pFiles)
@@ -1045,25 +1040,24 @@ namespace Pandora.Client.PandorasWallet
                         + lSourceDirName);
                 }
                 DirectoryInfo[] lDirs = lDir.GetDirectories();
-                // If the destination directory doesn't exist, create it.       
+                // If the destination directory doesn't exist, create it.
                 Directory.CreateDirectory(lDestDirName);
-                
+
                 // Get the files in the directory and copy them to the new location.
-                // FileInfo[] files = lDir.GetFiles();                 
-               
+                // FileInfo[] files = lDir.GetFiles();
+
                 //travel pFiles
                 foreach (FileInfo file in pFiles)
                 {
                     string tempPath = Path.Combine(lDestDirName, file.Name);
                     file.CopyTo(tempPath, false);
-                }                
+                }
             }
             catch (Exception ex)
             {
                 Log.Write(LogLevel.Critical, $"Fatal error when creating backup by file. Exception: {ex}");
                 AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to backup wallet data. If error persist, please contact support@davincicodes.net. The application will close.");
                 AppMainForm.Close();
-
             }
         }
 
@@ -1088,9 +1082,9 @@ namespace Pandora.Client.PandorasWallet
 
                     lUserHash.Hash = lNameFileDirectoryUsers[0];
                     lUserHash.UserNameEmail = lNameFileDirectoryUsers[1];
-                    
+
                     //lUserHash.Username = file.Name.Split(new String[] { ".txt" }, StringSplitOptions.None);
-                   string [] lNameUser = lUserHash.UserNameEmail.Split(new String[] { ".txt" }, StringSplitOptions.None);
+                    string[] lNameUser = lUserHash.UserNameEmail.Split(new String[] { ".txt" }, StringSplitOptions.None);
 
                     //set username without extension
                     lUserHash.Username = lNameUser[0];
@@ -1116,15 +1110,15 @@ namespace Pandora.Client.PandorasWallet
 
                         //final path to decide where and how name copy directory files
                         string lFinalPath = string.Concat(lPath, "_bkp_", lDateTimeNow);
-                          
+
                         // last warning
                         string lMessage = "\nBefore pressing ok, you need to be completely sure and understand the risks of resetting your wallet. \n\nIf you do not want to continue, press cancel.  ";
                         string lTitle = "                   WARNING";
                         // bool msgbox = AppMainForm.StandardAskMsgBox(lTitle, lMessage);
                         bool msgbox = AppMainForm.StandardWarningMsgBoxAsk(lTitle, lMessage);
-                        
+
                         //bool msgbox = AppMainForm.StandardWarningBox(lTitle, lMessage);
-                        //last msgbox for the user warning his operation 
+                        //last msgbox for the user warning his operation
                         if (msgbox)
                         {
                             DirectoryCopySelectedFiles(lPath, lFinalPath, lFilesUsersHashToCopy);
@@ -1137,7 +1131,6 @@ namespace Pandora.Client.PandorasWallet
 
                                 Log.Write(LogLevel.Critical, $"Generated Backup Wallet.");
 
-
                                 string lMsg = "Reset wallet process completed.  Now the app will close.";
                                 string lTitle2 = " Process Completed ";
                                 AppMainForm.StandardInfoMsgBox(lTitle2, lMsg);
@@ -1145,12 +1138,11 @@ namespace Pandora.Client.PandorasWallet
                                 Application.Exit();
                             }
                         }
-
                     }
                 }
                 else
                 {
-                    AppMainForm.StandardInfoMsgBox("Attention", "No user has been found to restart wallet. ");                    
+                    AppMainForm.StandardInfoMsgBox("Attention", "No user has been found to restart wallet. ");
                 }
             }
             catch (Exception ex)
@@ -1159,25 +1151,24 @@ namespace Pandora.Client.PandorasWallet
                 AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to find user. If error persist, please contact support@davincicodes.net. The application will close.");
                 AppMainForm.Close();
             }
-           
         }
 
-        public bool CompareDirs(string pNewPath, string pHashUserSelected) {                           
-            
+        public bool CompareDirs(string pNewPath, string pHashUserSelected)
+        {
             System.IO.DirectoryInfo dir1 = new System.IO.DirectoryInfo(Settings.DataPath);
             System.IO.DirectoryInfo dir2 = new System.IO.DirectoryInfo(pNewPath);
 
-            // Take a snapshot of the file system.  
+            // Take a snapshot of the file system.
             IEnumerable<System.IO.FileInfo> list1 = dir1.GetFiles(@pHashUserSelected + "*", SearchOption.TopDirectoryOnly);
             IEnumerable<System.IO.FileInfo> list2 = dir2.GetFiles("*.*", SearchOption.TopDirectoryOnly);
 
-            //A custom file comparer defined below  
+            //A custom file comparer defined below
             FileCompare myFileCompare = new FileCompare();
 
-            // This query determines whether the two folders contain  
-            // identical file lists, based on the custom file comparer  
-            // that is defined in the FileCompare class.  
-            // The query executes immediately because it returns a bool.  
+            // This query determines whether the two folders contain
+            // identical file lists, based on the custom file comparer
+            // that is defined in the FileCompare class.
+            // The query executes immediately because it returns a bool.
             bool areIdentical = list1.SequenceEqual(list2, myFileCompare);
 
             if (areIdentical == true)
@@ -1191,7 +1182,7 @@ namespace Pandora.Client.PandorasWallet
             }
 
             // Find the common files. It produces a sequence and doesn't
-            // execute until the foreach statement.  
+            // execute until the foreach statement.
             var queryCommonFiles = list1.Intersect(list2, myFileCompare);
 
             if (queryCommonFiles.Any())
@@ -1199,7 +1190,7 @@ namespace Pandora.Client.PandorasWallet
                 Console.WriteLine("The following files are in both folders:");
                 foreach (var v in queryCommonFiles)
                 {
-                    Console.WriteLine(v.FullName); //shows which items end up in result list  
+                    Console.WriteLine(v.FullName); //shows which items end up in result list
                 }
             }
             else
@@ -1207,8 +1198,8 @@ namespace Pandora.Client.PandorasWallet
                 Console.WriteLine("There are no common files in the two folders.");
             }
 
-            // Find the set difference between the two folders.  
-            // For this example we only check one way.  
+            // Find the set difference between the two folders.
+            // For this example we only check one way.
             var queryList1Only = (from file in list1
                                   select file).Except(list2, myFileCompare);
 
@@ -1218,18 +1209,20 @@ namespace Pandora.Client.PandorasWallet
                 Console.WriteLine(v.FullName);
             }
 
-            // Keep the console window open in debug mode.  
+            // Keep the console window open in debug mode.
             Console.WriteLine("Press any key to exit.");
             Console.ReadKey();
             return false;
         }
 
-        // This implementation defines a very simple comparison  
-        // between two FileInfo objects. It only compares the name  
-        // of the files being compared and their length in bytes.  
-        class FileCompare : System.Collections.Generic.IEqualityComparer<System.IO.FileInfo>
+        // This implementation defines a very simple comparison
+        // between two FileInfo objects. It only compares the name
+        // of the files being compared and their length in bytes.
+        private class FileCompare : System.Collections.Generic.IEqualityComparer<System.IO.FileInfo>
         {
-            public FileCompare() { }
+            public FileCompare()
+            {
+            }
 
             public bool Equals(System.IO.FileInfo f1, System.IO.FileInfo f2)
             {
@@ -1238,10 +1231,10 @@ namespace Pandora.Client.PandorasWallet
             }
 
             // Return a hash that reflects the comparison criteria. According to the
-            // rules for IEqualityComparer<T>, if Equals is true, then the hash codes must  
-            // also be equal. Because equality as defined here is a simple value equality, not  
-            // reference identity, it is possible that two or more objects will produce the same  
-            // hash code.  
+            // rules for IEqualityComparer<T>, if Equals is true, then the hash codes must
+            // also be equal. Because equality as defined here is a simple value equality, not
+            // reference identity, it is possible that two or more objects will produce the same
+            // hash code.
             public int GetHashCode(System.IO.FileInfo fi)
             {
                 string s = $"{fi.Name}{fi.Length}";
@@ -1249,8 +1242,8 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        public void deleteFilesRootPath(string pUserHashFileToRemove) {
-
+        public void deleteFilesRootPath(string pUserHashFileToRemove)
+        {
             try
             {
                 string[] filePaths = Directory.GetFiles(Settings.DataPath, @pUserHashFileToRemove + "*");
@@ -1265,16 +1258,9 @@ namespace Pandora.Client.PandorasWallet
                 AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to delete files. If error persist, please contact support@davincicodes.net. The application will close.");
                 AppMainForm.Close();
             }
-
         }
 
-      
-
-        #endregion
-
-
-
-
+        #endregion Reset wallet
 
         private void MainForm_OnBackupClick(object sender, EventArgs e)
         {
@@ -1430,7 +1416,6 @@ namespace Pandora.Client.PandorasWallet
                 AppMainForm.StandardErrorMsgBox("Critical Error", $"{ex.Message}{Environment.NewLine}Unable to copy wallet data please contact support@davincicodes.net. The application will close.");
                 AppMainForm.Close();
                 return;
-               
             }
         }
 
@@ -1696,38 +1681,28 @@ namespace Pandora.Client.PandorasWallet
             var lParentTransactionRecordList = lServer.GetTransactionRecords(aTokenItem.ParentCurrencyID);
             var lTokenTransactionRecordList = lServer.GetTokenTransactionRecords(aTokenItem.Id, aTokenItem.ContractAddress);
             var lBlockHeight = lServer.GetBlockHeight(aTokenItem.ParentCurrencyID);
-            var lAccounts = lServer.GetMonitoredAccounts(aTokenItem.ParentCurrencyID);
+
             var lCurrencyStatus = lServer.GetCurrencyStatus(aTokenItem.ParentCurrencyID);
             Log.Write(LogLevel.Debug, "Displaying currency {0}", aTokenItem.Name);
             var lAddresses = new List<string>();
             var lAppMainFormAccounts = new List<GUIAccount>();
-            int lIndex = 0;
-            foreach (var lAccount in lAccounts)
-            {
-                lAddresses.Add(lAccount.Address);
-                lAppMainFormAccounts.Add(GUIModelProducer.CreateFrom(lAccount.Address, $"{lIndex++}"));
-            }
             var lParentCurrency = AppMainForm.GetCurrency(aTokenItem.ParentCurrencyID);
             if (lParentCurrency == null)
             {
-                if (FServerConnection.GetMonitoredAccounts(aTokenItem.ParentCurrencyID).Any())
-                {
-                    var lServerParentCurrency = FServerConnection.GetCurrency(aTokenItem.ParentCurrencyID);
-                    DisplayCurrency(lServerParentCurrency);
-                }
-                else
+                if (!lServer.GetMonitoredAccounts(aTokenItem.ParentCurrencyID).Any())
                     AddNewCurrencyForDisplay(aTokenItem.ParentCurrencyID, FCancellationTokenSource.Token); //This will only execute the first time ever a token is added to the wallet
-
+                var lServerParentCurrency = FServerConnection.GetCurrency(aTokenItem.ParentCurrencyID);
+                DisplayCurrency(lServerParentCurrency);
                 lParentCurrency = AppMainForm.GetCurrency(aTokenItem.ParentCurrencyID);
             }
             var lAppMainFormCurrency = GUIModelProducer.CreateFrom(aTokenItem, lParentCurrency);
             lAppMainFormCurrency.BlockHeight = lBlockHeight;
-            lAppMainFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
+            lAppMainFormCurrency.Addresses = lParentCurrency.Addresses.ToArray();
             foreach (ClientTokenTransactionItem lTokenTxRecord in lTokenTransactionRecordList)
             {
                 var lParentTx = lParentTransactionRecordList.SingleOrDefault((lTx) => string.Equals(lTx.TxId, lTokenTxRecord.ParentTransactionID, StringComparison.OrdinalIgnoreCase));
                 if (lParentTx != null)
-                    lAppMainFormCurrency.Transactions.AddTransaction(GUIModelProducer.CreateFrom(lTokenTxRecord, aTokenItem, lParentTx, lAddresses));
+                    lAppMainFormCurrency.Transactions.AddTransaction(GUIModelProducer.CreateFrom(lTokenTxRecord, aTokenItem, lParentTx, lParentCurrency.Addresses.Select(lAccount => lAccount.Address)));
                 else
                     Log.Write(LogLevel.Error, $"Missing parent transaction for token transaction with id {lTokenTxRecord.GetRecordID()}, Parent TXID: {lTokenTxRecord.ParentTransactionID}, Contract Address: {lTokenTxRecord.TokenAddress}");
             }
@@ -1859,7 +1834,7 @@ namespace Pandora.Client.PandorasWallet
         {
             var lRemoteMonitoredAddresses = FServerConnection.GetMonitoredAccounts(1);
 
-            if (lRemoteMonitoredAddresses.Count < 2)
+            if (lRemoteMonitoredAddresses.Count == 1)
             {
                 AppMainForm.StandardWarningMsgBox("Warning a new backup is needed", "With this version you will have 24 words, and the backup file change internally. Your previous passphrase and backup files will not work with this version");
 

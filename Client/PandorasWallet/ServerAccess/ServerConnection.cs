@@ -27,10 +27,12 @@ using Pandora.Client.PandorasWallet.Wallet;
 using Pandora.Client.ServerAccess;
 using Pandora.Client.Universal;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Pandora.Client.PandorasWallet.ServerAccess
 {
@@ -42,6 +44,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private LocalCacheDB FLocalCacheDB;
         private List<string> FInternalErrors = new List<string>();
         private UserStatus FCurrentStatus;
+        private ConcurrentDictionary<long, long> FCacheTxFee = new ConcurrentDictionary<long, long>();
 
         public ServerConnection(string aDataPath, System.ComponentModel.ISynchronizeInvoke aSynchronizingObject)
         {
@@ -449,7 +452,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             long lResult = 0;
             try
             {
-                lResult = FPandoraWalletServiceAccess.GetCurrencyTxFee(aCurrencyId);
+                var lGetTxFeeTask = Task.Run(() =>
+                {
+                    var lServerFee = FPandoraWalletServiceAccess.GetCurrencyTxFee(aCurrencyId);
+                    FCacheTxFee.AddOrUpdate(aCurrencyId, lServerFee, (k, u) => lServerFee);
+                });
+                Task.WaitAny(new Task[] { lGetTxFeeTask }, 1000);
             }
             catch (Exception)
             {
@@ -457,7 +465,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
             finally
             {
-                if (lResult <= 0)
+                if (!FCacheTxFee.TryGetValue(aCurrencyId, out lResult) || lResult <= 0)
                     lResult = GetCurrency(aCurrencyId).FeePerKb;
             }
             return lResult;
