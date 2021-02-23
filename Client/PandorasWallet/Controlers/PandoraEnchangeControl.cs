@@ -350,10 +350,10 @@ namespace Pandora.Client.PandorasWallet.Controlers
             return lCoinsWithMarket;
         }
 
-        /// <summary>
-        /// Triggers with event OnCurrencyItemSelectionChanged. It will generate his own thread
-        /// </summary>
-        /// <param name="aCurrency">Selected currency id</param>
+        /// <summary> 
+        /// Triggers with event OnCurrencyItemSelectionChanged. It will generate his own thread 
+        /// </summary> 
+        /// <param name="aCurrency">Selected currency id</param> 
         private void PandoraCurrencyChangedProcess(long aCurrency)
         {
             MainForm.BeginInvoke(new Action(() =>
@@ -362,8 +362,10 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 MainForm.StatusControlExchange.ClearStatusList();
                 MainForm.StatusControlOrderHistory.ClearStatusList();
             }));
-            if ((bool) MainForm.Invoke((Func<bool>) (() => MainForm.SelectedExchange == null)) || !FCurrentExchanger.IsCredentialsSet)
-                return;
+
+            //added condition before to last conditional if;  unexpected null issue removed since first execution of PW without exchange's credentials. 
+            if ((bool) MainForm.Invoke((Func<bool>) (() => MainForm.SelectedExchange == null)) || FCurrentExchanger==null|| !FCurrentExchanger.IsCredentialsSet )
+            return;
 
             ICurrencyIdentity lCurrency = FPandorasWalletConnection.GetCurrency(aCurrency);
             if (lCurrency == null)
@@ -897,7 +899,9 @@ namespace Pandora.Client.PandorasWallet.Controlers
             //FPandoraClientControl.InitializeRootSeed();
             var lClientControl = PandoraClientControl.GetInstance();
             string lTx = lClientControl.GetNewSignedTransaction(lClientControl.GetCurrency(aActiveCurrencyID), aExchangeAddress, aAmount, aTxFee);
+
             long lTxHandle = FPandorasWalletConnection.DirectSendTransaction(aActiveCurrencyID, lTx);
+      
             string lReturnedTxID = null;
 
             try
