@@ -43,7 +43,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
     public delegate void DelegateOnBlockHeightChange(object aSender, long aCurrencyId, long aBlockHeight);
 
-    public delegate void DelegateOnTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction = null);
+    public delegate void DelegateOnTransaction(object aSender, TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransaction = null);
 
     public delegate void DelegateOnTokenTransaction(object aSender, ClientTokenTransactionItem aTransactionRecord);
 
@@ -660,9 +660,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return aTransactionRecords;
         }
 
-        private ClientTokenTransactionItem ProcessTokenTransaction(CurrencyInfo aCurrencyInfo, TransactionRecord aTransactionRecord)
+        private IEnumerable<ClientTokenTransactionItem> ProcessTokenTransaction(CurrencyInfo aCurrencyInfo, TransactionRecord aTransactionRecord)
         {
-            ClientTokenTransactionItem lResult = null;
+            IEnumerable<ClientTokenTransactionItem> lResult = null;
             if (aCurrencyInfo.CurrencyItem.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
             {
                 try
@@ -684,20 +684,23 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return lResult;
         }
 
-        private ClientTokenTransactionItem BuildERC20TokenTransaction(TransactionRecord aTx, TokenTransactionInfo aTokenTxInfo)
+        private IEnumerable<ClientTokenTransactionItem> BuildERC20TokenTransaction(TransactionRecord aTx, TokenTransactionInfo aTokenTxInfo)
         {
-            ClientTokenTransactionItem lResult = null;
-            var lDecodedTransactionPayload = ERC20TokenDecoder.TryDecode(aTokenTxInfo.Input);
-            if (lDecodedTransactionPayload != null)
+            var lResult = new List<ClientTokenTransactionItem>();
+
+            if (ERC20TokenDecoder.TryDecode(aTokenTxInfo.Input, out IEnumerable<ERC20DataOutput> lDecodedTransactionPayloads))
             {
-                lResult = new ClientTokenTransactionItem
+                foreach (var lDecodedPayload in lDecodedTransactionPayloads)
                 {
-                    From = string.IsNullOrEmpty(lDecodedTransactionPayload.OriginAddress) ? aTokenTxInfo.From : lDecodedTransactionPayload.OriginAddress,
-                    To = lDecodedTransactionPayload.DestinationAddress,
-                    TokenAddress = aTokenTxInfo.To,
-                    Amount = lDecodedTransactionPayload.AmountSent,
-                    ParentTransactionID = aTx.TxId
-                };
+                    lResult.Add(new ClientTokenTransactionItem
+                    {
+                        From = string.IsNullOrEmpty(lDecodedPayload.OriginAddress) ? aTokenTxInfo.From : lDecodedPayload.OriginAddress,
+                        To = lDecodedPayload.DestinationAddress,
+                        TokenAddress = string.IsNullOrEmpty(lDecodedPayload.ContractAddress) ? aTokenTxInfo.To : lDecodedPayload.ContractAddress,
+                        Amount = lDecodedPayload.AmountSent,
+                        ParentTransactionID = aTx.TxId
+                    });
+                }
             }
             return lResult;
         }
@@ -770,7 +773,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        private void DoOnNewTransaction(TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction = null)
+        private void DoOnNewTransaction(TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransaction = null)
         {
             try
             {

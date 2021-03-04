@@ -748,7 +748,7 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void ServerConnection_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction)
+        private void ServerConnection_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransactions)
         {
             var lItem = GUIModelProducer.CreateFrom(aTransactionRecord,
             FServerConnection.GetCurrency(aTransactionRecord.CurrencyId),
@@ -764,20 +764,23 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.UpdateCurrency(lFormCurrency.Id);
         }
 
-        private void ServerConnection_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction)
+        private void ServerConnection_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransactions)
         {
             if (!aTransactionRecord.Valid) return;
             var lAddresses = FServerConnection.GetMonitoredAddresses(aTransactionRecord.CurrencyId);
             var lCurrency = FServerConnection.GetCurrency(aTransactionRecord.CurrencyId);
             var lFormTransaction = GUIModelProducer.CreateFrom(aTransactionRecord, lCurrency, lAddresses);
             AddNewFormTransaction(lFormTransaction, aTransactionRecord.CurrencyId);
-            if (aTokenTransaction != null)
+            if (aTokenTransactions != null)
             {
-                var lToken = FServerConnection.GetCurrencyToken(aTokenTransaction.TokenAddress);
-                if (lToken != null)
+                foreach (var lTokenTx in aTokenTransactions)
                 {
-                    lFormTransaction = GUIModelProducer.CreateFrom(aTokenTransaction, lToken, aTransactionRecord, lAddresses);
-                    AddNewFormTransaction(lFormTransaction, lToken.Id);
+                    var lToken = FServerConnection.GetCurrencyToken(lTokenTx.TokenAddress);
+                    if (lToken != null)
+                    {
+                        lFormTransaction = GUIModelProducer.CreateFrom(lTokenTx, lToken, aTransactionRecord, lAddresses);
+                        AddNewFormTransaction(lFormTransaction, lToken.Id);
+                    }
                 }
             }
         }

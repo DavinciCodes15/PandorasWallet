@@ -92,6 +92,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ContractFunctions\BulkSendMethods.cs" />
+    <Compile Include="ContractFunctions\Models\BulksendTokenFunction.cs" />
+    <Compile Include="ContractFunctions\ITokenFunction.cs" />
+    <Compile Include="ContractFunctions\Models\ERC20TransferFromFunction.cs" />
+    <Compile Include="ContractFunctions\Models\ERC20TransferFunction.cs" />
+    <Compile Include="ERC20DataOutput.cs" />
+    <Compile Include="ContractFunctions\ERC20Methods.cs" />
     <Compile Include="ERC20TokenDecoder.cs" />
     <Compile Include="EthChainParams.cs" />
     <Compile Include="EthereumCurrencyAdvocacy.cs" />

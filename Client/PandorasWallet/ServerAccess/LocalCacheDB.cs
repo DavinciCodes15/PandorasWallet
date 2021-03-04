@@ -15,7 +15,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     internal class LocalCacheDB : IDisposable
 
     {
-        private const int VERSION = 10016;
+        private const int VERSION = 10017;
 
         protected SQLiteConnection FSQLiteConnection;
 
@@ -120,7 +120,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             }
                         }
 
-                        if (lVersion < 10016)
+                        if (lVersion < 10017)
                         {
                             //Remove past ethereum transactions from cache in case there was already a token in the address
                             ExecuteQuery("delete from TXIN where internalid in (select internalid from txtable where currencyid = 10194 or currencyid = 10196);");

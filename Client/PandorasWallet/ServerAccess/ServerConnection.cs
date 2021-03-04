@@ -297,7 +297,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             FLocalCacheDB.WriteTransactionSentData(aTxData, aTxId, aCurrencyId, aStartTime, aEndTime);
         }
 
-        private void PandoraObjectNotifier_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransactionItem)
+        private void PandoraObjectNotifier_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransactionItem)
         {
             if (FLocalCacheDB == null) return; // Note: if the thread sent out this message before the object was terminated
             Log.Write(LogLevel.Debug, "Updated Transaction TxId {0}\r\n        ID: {1}, bock: {2}, Valid: {3}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid);
@@ -317,17 +317,23 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             OnUpdatedCurrency?.Invoke(this, aCurrencyItem);
         }
 
-        private void PandoraObjectNotifier_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord, ClientTokenTransactionItem aTokenTransaction)
+        private void PandoraObjectNotifier_OnNewTransaction(object aSender, TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransactions)
         {
             if (FLocalCacheDB == null) return; // Note: if the thread sent out this message before the object was terminated
-            if (aTokenTransaction != null)
+            IEnumerable<ClientTokenTransactionItem> lUserTokenTxs = null;
+            if (aTokenTransactions != null)
             {
-                Log.Write(LogLevel.Debug, "*Writing NEW TokenTx for txid {0}\r\n        ID: {1}, Block: {2}, Valid: {3}, CurrencyId:{4}, TokenAddress: {5}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid, aTransactionRecord.CurrencyId, aTokenTransaction.TokenAddress);
-                FLocalCacheDB.Write(aTokenTransaction);
+                var lMonitoredAddresses = GetMonitoredAddresses(aTransactionRecord.CurrencyId).Select(lAddress => lAddress.ToLowerInvariant());
+                lUserTokenTxs = aTokenTransactions.Where(lTx => lMonitoredAddresses.Contains(lTx.To.ToLowerInvariant()) || (!string.IsNullOrEmpty(lTx.From) && lMonitoredAddresses.Contains(lTx.From.ToLowerInvariant())));
+                foreach (var lTokenTx in lUserTokenTxs)
+                {
+                    Log.Write(LogLevel.Debug, "*Writing NEW TokenTx for txid {0}\r\n        ID: {1}, Block: {2}, Valid: {3}, CurrencyId:{4}, TokenAddress: {5}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid, aTransactionRecord.CurrencyId, lTokenTx.TokenAddress);
+                    FLocalCacheDB.Write(lTokenTx);
+                }
             }
             Log.Write(LogLevel.Debug, "*Writing NEW TXid {0}\r\n        ID: {1}, Block: {2}, Valid: {3}, CurrencyId:{4}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid, aTransactionRecord.CurrencyId);
             FLocalCacheDB.Write(aTransactionRecord);
-            OnNewTransaction?.Invoke(this, aTransactionRecord, aTokenTransaction);
+            OnNewTransaction?.Invoke(this, aTransactionRecord, lUserTokenTxs);
         }
 
         private void PandoraObjectNotifier_OnNewCurrency(object aSender, CurrencyItem aCurrencyItem)
