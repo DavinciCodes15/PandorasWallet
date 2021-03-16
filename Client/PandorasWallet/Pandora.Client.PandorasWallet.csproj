@@ -132,6 +132,12 @@
     <Compile Include="Dialogs\AddTokenDialog.Designer.cs">
       <DependentUpon>AddTokenDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Dialogs\SignMessageDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Dialogs\SignMessageDialog.Designer.cs">
+      <DependentUpon>SignMessageDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\CurrencyToken\DefaultTokens\DefaultToken.cs" />
     <Compile Include="Models\CurrencyToken\DefaultTokens\DJ15Token.cs" />
     <Compile Include="Dialogs\FindUsersToResetWalletDialog.cs">
@@ -144,11 +150,12 @@
     <Compile Include="Models\GUI\GUIModelProducer.cs" />
     <Compile Include="Models\GUI\GUIToken.cs" />
     <Compile Include="Models\GUI\GUITransaction.cs" />
-    <Compile Include="Dialogs\Models\IGUIToken.cs" />
+    <Compile Include="Dialogs\Models\IGUICurrencyToken.cs" />
     <Compile Include="ExchangeStageOperator.cs" />
     <Compile Include="Models\CurrencyToken\ClientCurrencyTokenItem.cs" />
     <Compile Include="Models\CurrencyToken\ClientTokenTransactionItem.cs" />
     <Compile Include="ServerAccess\CacheServerAccessHelper.cs" />
+    <Compile Include="SignerMessage.cs" />
     <Compile Include="SystemBackup\BackupController.cs" />
     <Compile Include="SystemBackup\BackupObjects.cs" />
     <Compile Include="SystemBackup\BackupDelegates.cs" />
@@ -385,6 +392,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\FindUsersToResetWalletDialog.resx">
       <DependentUpon>FindUsersToResetWalletDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Dialogs\SignMessageDialog.resx">
+      <DependentUpon>SignMessageDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MenuButton.resx">
       <DependentUpon>MenuButton.cs</DependentUpon>

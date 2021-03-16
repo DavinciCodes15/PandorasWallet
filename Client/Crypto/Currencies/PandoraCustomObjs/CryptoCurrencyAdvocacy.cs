@@ -185,5 +185,50 @@ namespace Pandora.Client.Crypto.Currencies
                 throw new ArgumentException($"The address '{aAddress}' for the {Network.NetworkName} network is invalid.");
             return lResult;
         }
+
+        public virtual string SignMessage(string aMessage, string aPublicAddress)
+        {
+            if (!FAddressLookup.Any())
+            {
+                GetAddress(0);
+                GetAddress(1);
+            }
+            if (!FAddressLookup.TryGetValue(aPublicAddress, out long lIndex))
+                throw new ArgumentException("No private key found for provided address");
+            var lKey = GetCCKey(lIndex);
+            return lKey.SignMessage(aMessage);
+        }
+
+        public virtual bool VerifyMessage(string aMessage, string aSignature, out string aAddress)
+        {
+            bool lResult = false;
+            aAddress = null;
+            if (!FAddressLookup.Any())
+            {
+                GetAddress(0);
+                GetAddress(1);
+            }
+
+            foreach (var lIndex in FAddressLookup.Values)
+            {
+                var lKey = GetCCKey(lIndex);
+                try
+                {
+                    if (lResult = lKey.PubKey.VerifyMessage(aMessage, aSignature))
+                    {
+                        if (Network.ChainParams.Capabilities.HasFlag(CapablityFlags.SegWitSupport) && lIndex > 0)
+                            aAddress = lKey.PubKey.GetSegwitAddress(Network).GetScriptAddress().ToString();
+                        else
+                            aAddress = lKey.PubKey.GetAddress(Network).ToString();
+                        break;
+                    }
+                }
+                catch
+                {
+                    continue;
+                }
+            }
+            return lResult;
+        }
     }
 }

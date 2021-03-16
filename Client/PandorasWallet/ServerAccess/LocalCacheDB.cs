@@ -794,6 +794,23 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 CurrentStatus = (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus), aSQLiteDataReader.GetString(10))
             });
         }
+        #region ClearCacheWallet
+        public void ClearCacheWallet() {
+            try
+            {
+                ExecuteQuery("DELETE FROM TxTable where true;");
+                ExecuteQuery("DELETE FROM TxIn where true;");
+                ExecuteQuery("DELETE FROM TxOut where true;");
+                ExecuteQuery("DELETE FROM TxExT where true;");
+                ExecuteQuery("DELETE FROM TokenTx where true;");
+            }
+            catch (Exception ex)
+            {
+                Universal.Log.Write(Universal.LogLevel.Error, "Error during truncating tables Txs: " + ex.Message );
+                throw;
+            }
+        }
+        #endregion
 
         public CurrencyStatusItem ReadCurrencyStatus(long aCurrencyId)
         {

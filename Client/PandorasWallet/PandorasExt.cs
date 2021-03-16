@@ -109,7 +109,6 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-
         public static void StandardInfoMsgBox(this Form aform, string aTitle, string aDescription = null)
         {
             using (var lMsgBox = MessageBoxDialog.GetInfoBoxDialog(aTitle, aDescription, aform))

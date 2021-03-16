@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.PandorasWallet.Dialogs.Models
 {
-    public class GUIToken : IGUICurrency, IGUIToken
+    public class GUIToken : IGUICurrency, IGUICurrencyToken
     {
         private GUICurrencyTxAndBalanceHelper FGUICurrencyHelper;
 
@@ -65,7 +65,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
 
         public IGUICurrencyBalance Balances => FGUICurrencyHelper;
 
-        Icon IGUIToken.Icon { get => Globals.BytesToIcon(Icon); set => Icon = Globals.IconToBytes(value); }
+        Icon IGUICurrencyToken.Icon { get => Globals.BytesToIcon(Icon); set => Icon = Globals.IconToBytes(value); }
 
         public IGUICurrencyTransactional Transactions => FGUICurrencyHelper;
 

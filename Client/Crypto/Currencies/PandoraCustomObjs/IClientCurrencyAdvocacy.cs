@@ -1,6 +1,4 @@
-﻿
-
-namespace Pandora.Client.Crypto.Currencies
+﻿namespace Pandora.Client.Crypto.Currencies
 {
     public interface ICryptoCurrencyAdvocacy
     {
@@ -48,7 +46,21 @@ namespace Pandora.Client.Crypto.Currencies
         /// <param name="aValidationInfo">Insure you are signing the right data.</param>
         /// <returns></returns>
         string SignTransaction(string aTxData, ICurrencyTransaction aValidationInfo);
-        
+
+        /// <summary>
+        /// Signs a message with the specified public address
+        /// </summary>
+        /// <param name="aMessage"></param>
+        /// <returns></returns>
+        string SignMessage(string aMessage, string aPublicAddress);
+
+        /// <summary>
+        /// Verifies that the message given has a valid signature of our ownership
+        /// </summary>
+        /// <param name="aMessage"></param>
+        /// <returns></returns>
+        bool VerifyMessage(string aMessage, string aSignature, out string aAddress);
+
         /// <summary>
         /// Used to check if an address is a valid address.
         /// </summary>

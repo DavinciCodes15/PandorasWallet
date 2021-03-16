@@ -366,6 +366,16 @@ namespace Pandora.Client.PandorasWallet
             return lListViewItem != null;
         }
 
+        public void ClearAllTransactions()
+        {
+            foreach (var lCurrency in FCurrencyLookup.Values)
+            {
+                lCurrency.Transactions.ClearTransactions();
+                UpdateCurrency(lCurrency.Id);
+            }
+            TransactionView.Items.Clear();
+        }
+
         public void RefreshTransactions(long aCurrencyID = -1)
         {
             if (SelectedCurrency.Id == aCurrencyID || aCurrencyID < 0)
@@ -1525,6 +1535,34 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-      
+        public event EventHandler OnClearWalletCache;
+
+        private void clearWalletCacheToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OnClearWalletCache?.Invoke(sender, e);
+
+                ClearAllTransactions();     //reset all currency amount
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        public event EventHandler OnSignMessage;
+
+        private void signMessageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OnSignMessage?.Invoke(sender, e);
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
     }
 }

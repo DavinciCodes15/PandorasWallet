@@ -12,10 +12,10 @@
     <ROW Property="DBUser" Value="cat"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{5E3B6386-338E-4320-BF75-FDB34E4D3EF8} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{92A5109E-F3D5-4797-8AA9-294EC278D123} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet v1.1"/>
-    <ROW Property="ProductVersion" Value="1.1.42.2546" Type="32" TargetFile="PandorasWallet.exe_1"/>
+    <ROW Property="ProductVersion" Value="1.1.42.2555" Type="32" TargetFile="PandorasWallet.exe_1"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{15B4F25B-B7AD-4B1B-9D26-98A1319C788C}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -132,7 +132,6 @@
     <ROW File="System.Security.Cryptography.Algorithms.dll" Component_="System.Security.Cryptography.Algorithms.dll" FileName="SYSTE~11.DLL|System.Security.Cryptography.Algorithms.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Algorithms.dll" SelfReg="false"/>
     <ROW File="System.Security.Cryptography.Encoding.dll" Component_="System.Security.Cryptography.Encoding.dll" FileName="SYSTE~12.DLL|System.Security.Cryptography.Encoding.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Encoding.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.Exchange.dll.config" Component_="System.Data.SQLite.dll.config" FileName="PANDOR~1.CON|Pandora.Client.Exchange.dll.config" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.dll.config" SelfReg="false"/>
-    <ROW File="Pandora.Client.ServerAccess.dll.config" Component_="System.Data.SQLite.dll.config" FileName="PANDOR~2.CON|Pandora.Client.ServerAccess.dll.config" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ServerAccess.dll.config" SelfReg="false"/>
     <ROW File="AutocompleteMenu.dll" Component_="AutocompleteMenu.dll" FileName="AUTOCO~1.DLL|AutocompleteMenu.dll" Attributes="0" SourcePath="..\..\bin\Release\AutocompleteMenu.dll" SelfReg="false"/>
     <ROW File="HashLib.dll" Component_="HashLib.dll" FileName="HashLib.dll" Attributes="0" SourcePath="..\..\bin\Release\HashLib.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.SystemBackup.dll" Component_="Pandora.Client.SystemBackup.dll" FileName="PANDOR~7.DLL|Pandora.Client.SystemBackup.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.SystemBackup.dll" SelfReg="false"/>

@@ -1,4 +1,4 @@
-﻿using Pandora.Client.ClientLib;
+using Pandora.Client.ClientLib;
 using Pandora.Client.Universal;
 using Pandora.Client.Universal.Threading;
 using System;
@@ -167,19 +167,23 @@ namespace Pandora.Client.ServerAccess
         private PandoraWalletWebService CreatePandoraWalletServer()
         {
             PandoraWalletWebService lResult;
-            Binding lBinding;
-            if (EncryptedConnection)
-                lBinding = new BasicHttpsBinding();
-            else
-            {
-                lBinding = new BasicHttpBinding();
-                ((BasicHttpBinding) lBinding).MaxReceivedMessageSize = Int32.MaxValue;
-                ((BasicHttpBinding) lBinding).MaxBufferSize = Int32.MaxValue;
-            }
 
-            lBinding.OpenTimeout = new TimeSpan(0, 0, 31);
-            lBinding.ReceiveTimeout = lBinding.OpenTimeout;
-            lBinding.SendTimeout = lBinding.OpenTimeout;
+            // Create connection binding
+            var lBinding = new BasicHttpBinding();
+            // Set maximum size of packages (maximum of 2147483647 = 2GB)
+            lBinding.MaxReceivedMessageSize = 5242880; // => 5MB limit
+            lBinding.MaxBufferPoolSize = 5242880;
+            lBinding.MaxBufferSize = 5242880;
+            if (EncryptedConnection)
+            {
+                lBinding.Security.Mode = BasicHttpSecurityMode.Transport;
+                lBinding.Security.Transport.ClientCredentialType = HttpClientCredentialType.None;
+                lBinding.Security.Transport.ProxyCredentialType = HttpProxyCredentialType.None;
+                lBinding.Security.Transport.Realm = string.Empty;
+                lBinding.Security.Message.ClientCredentialType = BasicHttpMessageCredentialType.Certificate;
+                lBinding.Security.Message.AlgorithmSuite = System.ServiceModel.Security.SecurityAlgorithmSuite.Default;
+            }
+            lBinding.Name = "PWService_SOAP_Binding";
             EndpointAddress lAddress = new EndpointAddress(GetConnectionURL(RemoteServer));
             lResult = new PandoraWalletWebService(lBinding, lAddress);
             lResult.GetServerId();

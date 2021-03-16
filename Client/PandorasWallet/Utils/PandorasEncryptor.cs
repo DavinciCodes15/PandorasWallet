@@ -26,7 +26,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
-
+//very interesting class
 namespace Pandora.Client.PandorasWallet.Utils
 {
     internal enum KeyInventoryItem

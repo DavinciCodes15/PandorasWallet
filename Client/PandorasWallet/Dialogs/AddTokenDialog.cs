@@ -19,13 +19,13 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         private bool FOkPressed;
         private Dictionary<string, DialogTokenitem> FTokens;
         private List<IGUICurrency> FParentCurrencies;
-        private static ConcurrentDictionary<string, IGUIToken> FCacheTokens;
+        private static ConcurrentDictionary<string, IGUICurrencyToken> FCacheTokens;
 
         public event Func<AddTokenDialog, long, string, ICurrencyToken> OnTokenAddressChanged;
 
         static AddTokenDialog()
         {
-            FCacheTokens = new ConcurrentDictionary<string, IGUIToken>();
+            FCacheTokens = new ConcurrentDictionary<string, IGUICurrencyToken>();
         }
 
         public AddTokenDialog()
@@ -45,7 +45,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public string TokenSymbol { get => txtBoxTokenSymbol.Text; set => txtBoxTokenSymbol.Text = value; }
         public GUICurrency SelectedCurrencyNetwork => comboBoxNetwork.SelectedItem as GUICurrency;
         public Image TokenIcon { get => picToken.Image; set => picToken.Image = value; }
-        public IGUIToken SelectedToken { get; private set; }
+        public IGUICurrencyToken SelectedToken { get; private set; }
 
         private void TxtBoxTokenAddress_TextChanged(object sender, EventArgs e)
         {
@@ -72,7 +72,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                             if (lListViewItem != null)
                                 lListViewItem.Selected = true;
                         }
-                        else if (FCacheTokens.TryGetValue(TokenAddress, out IGUIToken lCacheToken))
+                        else if (FCacheTokens.TryGetValue(TokenAddress, out IGUICurrencyToken lCacheToken))
                         {
                             SetTokenInfo(lCacheToken);
                             btnOK.Enabled = true;
@@ -135,7 +135,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
         }
 
-        private void SetTokenInfo(IGUIToken aTokenModel)
+        private void SetTokenInfo(IGUICurrencyToken aTokenModel)
         {
             picToken.Image = aTokenModel.Icon.ToBitmap();
             TokenName = aTokenModel.Name;
@@ -157,7 +157,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             txtBoxTokenDecimals.Text = "-NO DATA-";
         }
 
-        public void AddTokenItem(IGUIToken aTokenItem, bool aAlreadyAdded)
+        public void AddTokenItem(IGUICurrencyToken aTokenItem, bool aAlreadyAdded)
         {
             if (aTokenItem == null || FTokens.ContainsKey(aTokenItem.ContractAddress))
                 return;
@@ -241,7 +241,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         private class DialogTokenitem
         {
-            public IGUIToken Token { get; set; }
+            public IGUICurrencyToken Token { get; set; }
             public bool AlreadyAdded { get; set; }
         }
 

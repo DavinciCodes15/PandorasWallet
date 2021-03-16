@@ -40,7 +40,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     {
         private PandoraWalletServiceAccess FPandoraWalletServiceAccess;
         private PandoraObjectNotifier FPandoraObjectNotifier;
-        private PandoraJsonConverter FConverter = new PandoraJsonConverter();
+        private PandoraJsonConverter FConverter = new PandoraJsonConverter();  
         private LocalCacheDB FLocalCacheDB;
         private List<string> FInternalErrors = new List<string>();
         private UserStatus FCurrentStatus;
@@ -67,6 +67,21 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 throw new Exception($"{ex.Message}{Environment.NewLine} Unable to copy '{aRestoreDBFile}' to '{lDestFile}'.");
             }
             aServerConnection.FLocalCacheDB = new LocalCacheDB(lDestFile);
+        }
+
+        public void ClearCacheWallet() {
+            try
+            {
+                StopDataUpdating();
+                
+                FLocalCacheDB.ClearCacheWallet();
+               
+                StartDataUpdating();               
+            }
+            catch (Exception ex )
+            {
+               Log.Write(LogLevel.Error, "Error in Server Connection During ClearCacheWallet : " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -221,6 +236,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 Log.Write(LogLevel.Critical, "Local Address = {0},{1}\nRemote Address = {2}", DefaultBitcoinAddress[0], DefaultBitcoinAddress[1], aAddress);
             return lAddressExists;
         }
+
+      
 
         private void CreatePandoraObjectNotifier(PandoraWalletServiceAccess aServerAccess)
         {

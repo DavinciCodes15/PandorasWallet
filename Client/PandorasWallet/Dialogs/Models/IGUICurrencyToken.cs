@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Pandora.Client.PandorasWallet.Dialogs.Models
 {
-    public interface IGUIToken : ICurrencyToken
+    public interface IGUICurrencyToken : ICurrencyToken
     {
         Icon Icon { get; set; }
         IGUICurrency ParentCurrency { get; }

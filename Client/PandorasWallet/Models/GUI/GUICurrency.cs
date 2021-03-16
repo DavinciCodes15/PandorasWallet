@@ -70,6 +70,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
         public void ClearTransactions()
         {
             FTransactions.Clear();
+            UpdateBalance();
         }
 
         public void UpdateBalance()

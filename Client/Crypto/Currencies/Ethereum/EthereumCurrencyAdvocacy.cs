@@ -141,5 +141,43 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
         {
             return null;
         }
+
+        public string SignMessage(string aMessage, string aPublicAddress)
+        {
+            if (!FAddresses.Any())
+            {
+                GetAddress(0);
+                GetAddress(1);
+            }
+            if (!FAddresses.TryGetValue(aPublicAddress.ToLowerInvariant(), out long lIndex))
+                throw new ArgumentException("No private key found for provided address");
+            var lPrivateKey = GetPrivateKey(lIndex);
+            var lSigner = new EthereumMessageSigner();
+            return lSigner.EncodeUTF8AndSign(aMessage, new EthECKey(lPrivateKey));
+        }
+
+        public bool VerifyMessage(string aMessage, string aSignature, out string aAddress)
+        {
+            bool lResult = false;
+            if (!FAddresses.Any())
+            {
+                GetAddress(0);
+                GetAddress(1);
+            }
+            string lOutputAddress;
+            try
+            {
+                var lSigner = new EthereumMessageSigner();
+                lOutputAddress = lSigner.EncodeUTF8AndEcRecover(aMessage, aSignature);
+            }
+            catch
+            {
+                lOutputAddress = null;
+            }
+            if (lOutputAddress != null)
+                lResult = FAddresses.Keys.Any(lAddress => string.Equals(lAddress.ToLowerInvariant(), lOutputAddress.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase));
+            aAddress = lOutputAddress;
+            return lResult;
+        }
     }
 }

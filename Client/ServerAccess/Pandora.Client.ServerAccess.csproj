@@ -105,7 +105,6 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="Connected Services\PandoraWalletService1_2\Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraLogonResult.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>

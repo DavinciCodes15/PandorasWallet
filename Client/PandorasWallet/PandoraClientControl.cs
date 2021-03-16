@@ -21,7 +21,6 @@
 
 using Pandora.Client.ClientLib;
 using Pandora.Client.PandorasWallet.Dialogs;
-
 using Pandora.Client.PandorasWallet.Wallet;
 using Pandora.Client.Universal;
 using System;
@@ -40,9 +39,10 @@ using Pandora.Client.Crypto.Currencies;
 using System.Numerics;
 using Pandora.Client.PandorasWallet.Dialogs.Models;
 using Pandora.Client.PandorasWallet.Models;
-using System.Text.RegularExpressions;
 using Pandora.Client.ClientLib.Contracts;
+using System.Text.RegularExpressions;
 using Pandora.Client.PandorasWallet.Wallet.TransactionMaker;
+using Nethereum.Signer;
 
 namespace Pandora.Client.PandorasWallet
 {
@@ -77,6 +77,8 @@ namespace Pandora.Client.PandorasWallet
         public AppMainForm AppMainForm { get; private set; }
         public string DefaultPath { get; private set; }
 
+        private CryptoCurrencyAdvocacy FCryptoCurrencyAdvocacy;
+
         /*************************************************************************************************************************\
          *                                                                                                                       *
          *          Initialization methods                                                                                       *
@@ -104,6 +106,8 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.OnRemoveCurrencyRequested += AppMainForm_OnRemoveCurrencyRequested;
             AppMainForm.TickerQuantity = string.Empty;
             AppMainForm.TickerTotalReceived = string.Empty;
+            AppMainForm.OnClearWalletCache += AppMainForm_OnClearWalletCache;
+            AppMainForm.OnSignMessage += AppMainForm_OnSignMessage;
         }
 
         private void SetDefaultCurrencyTokens()
@@ -126,6 +130,63 @@ namespace Pandora.Client.PandorasWallet
                     FServerConnection.RegisterNewCurrencyToken(lUserDefaultToken);
                 }
             }
+        }
+
+        private void AppMainForm_OnClearWalletCache(object sender, EventArgs e)
+        {
+            try
+            {
+                string lMessage = "Do you want clear your wallet cache?\nPlease be patient, your balances will be reseted and reloaded.";
+                string lTitle = "Clear Wallet Cache";
+                bool msgbox = AppMainForm.StandardWarningMsgBoxAsk(lTitle, lMessage);
+                if (msgbox)
+                {
+                    FServerConnection.ClearCacheWallet();
+                    Log.Write(LogLevel.Info, "************* Cleared cache **************");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppMainForm.StandardExceptionMsgBox(ex, "Error");
+                Log.Write(LogLevel.Error, "Error: " + ex.Message);
+            }
+        }
+
+        public void AppMainForm_OnSignMessage(object sender, EventArgs e)
+        {
+            var lCurrencies = AppMainForm.Currencies.Where(lGUICurrency => !(lGUICurrency is IGUICurrencyToken));
+            SignMessageDialog lSignMessage = new SignMessageDialog(lCurrencies);
+            lSignMessage.OnSingMessageNeeded += SignMessage_OnSingMessageNeeded;
+            lSignMessage.OnVerifyMessageNeeded += SignMessage_OnVerifyMessageNeeded;
+            lSignMessage.Execute();
+        }
+
+        private bool SignMessage_OnVerifyMessageNeeded(IGUICurrency aGUICurrency, string aMessage, string aSignature, out string aAddress)
+        {
+            bool lResult = false;
+            aAddress = null;
+            if (FromUserDecryptWallet(false))
+            {
+                var lCurrency = FServerConnection.GetCurrency(aGUICurrency.Id);
+                var lAdvocacy = FKeyManager.GetCurrencyAdvocacy(lCurrency.Id, lCurrency.ChainParamaters);
+                lResult = lAdvocacy.VerifyMessage(aMessage, aSignature, out aAddress);
+            }
+            return lResult;
+        }
+
+        private string SignMessage_OnSingMessageNeeded(IGUICurrency aGUICurrency, string aMessage, out string aAddress)
+        {
+            string lResult = null;
+            aAddress = null;
+            if (FromUserDecryptWallet(false))
+            {
+                var lCurrency = FServerConnection.GetCurrency(aGUICurrency.Id);
+                var lAdvocacy = FKeyManager.GetCurrencyAdvocacy(lCurrency.Id, lCurrency.ChainParamaters);
+                aAddress = lAdvocacy.GetAddress(1);
+                lResult = lAdvocacy.SignMessage(aMessage, aAddress);
+            }
+
+            return lResult;
         }
 
         private void AppMainForm_OnAddTokenBtnClick(object sender, EventArgs e)
@@ -511,6 +572,28 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.Connected = FServerConnection != null && FServerConnection.Connected;
             if (!AppMainForm.Connected)
                 AppMainForm.Close();
+        }
+
+        private void ResetConnection(object s, EventArgs e)
+        {
+            //TODO: The following line updates dialog boxes so that they have new currencies that the DB does not have
+            //      We need to support update Currency so it changes to icon name or ticker on the fly.
+            //      where ever it is displayed.
+            FServerConnection.OnNewCurrency += ServerConnection_OnNewCurrency;
+            if (FServerConnection.NewAccount)
+                BuildNewAccount();
+            else if (FServerConnection.GetDefaultCurrency() == null)
+                if (!ExecuteRestoreWizard())
+                    throw new ClientExceptions.LoginFailedException("Restore required to continue.");
+            LoadCurrentUser();
+
+            FServerConnection.OnNewTransaction += ServerConnection_OnNewTransaction;
+            FServerConnection.OnUpdatedTransaction += ServerConnection_OnUpdatedTransaction;
+            FServerConnection.OnBlockHeightChange += ServerConnection_OnBlockHeightChange;
+            FServerConnection.OnCurrencyStatusChange += ServerConnection_OnCurrencyStatusChange;
+            FServerConnection.OnUpdatedCurrency += ServerConnection_OnUpdatedCurrency;
+            FServerConnection.OnUpdatedCurrencyParams += ServerConnection_OnUpdatedCurrencyParams;
+            FServerConnection.OnUpgradeFileReady += ServerConnection_OnUpgradeFileReady;
         }
 
         private void ServerConnection_OnUpgradeFileReady(object aSender, string aFileName)
@@ -1010,6 +1093,43 @@ namespace Pandora.Client.PandorasWallet
 
         /*************************************************************************************************************************\
          *                                                                                                                       *
+         *          Sign Message code                                                                                           *
+         *                                                                                                                       *
+        \*************************************************************************************************************************/
+
+        #region SignerMessage
+
+        public void SignMessage(string pMsgToEncrypt)
+        {
+            try
+            {
+                //obtain msg from gui  -- class signermessage
+                string Lmsg = "first message";
+                //who send (private key)
+
+                //really first try using privatekey, i dont really sure if use that, i will use mine.
+                string privateKey = "0xb5b1870957d373ef0eeffecc6e4812c0fd08f554b37b233526acc331bf1544f7";
+
+                if (Lmsg == null) { Lmsg = "Testing signature message if its null"; }
+                else
+                {
+                    var signer1 = new EthereumMessageSigner();
+                    var signature1 = signer1.EncodeUTF8AndSign(Lmsg, new EthECKey(privateKey));
+
+                    //verify msg
+                    var addressRec1 = signer1.EncodeUTF8AndEcRecover(Lmsg, signature1);
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        #endregion SignerMessage
+
+        /*************************************************************************************************************************\
+         *                                                                                                                       *
          *          Reset wallet code                                                                                            *
          *                                                                                                                       *
         \*************************************************************************************************************************/
@@ -1218,7 +1338,7 @@ namespace Pandora.Client.PandorasWallet
             return false;
         }
 
-        // This implementation defines a very simple comparison
+        // This implementation defines a  comparison
         // between two FileInfo objects. It only compares the name
         // of the files being compared and their length in bytes.
         private class FileCompare : System.Collections.Generic.IEqualityComparer<System.IO.FileInfo>
@@ -1716,7 +1836,8 @@ namespace Pandora.Client.PandorasWallet
 
         public void RestoreLocalCacheDB(string aRestoreFileName)
         {
-            ServerConnection.RestoreLocalCasheDB(aRestoreFileName, FServerConnection);
+            LoadCurrentUser();
+            // ServerConnection.RestoreLocalCasheDB(aRestoreFileName, FServerConnection);
         }
 
         private bool ValidatePasswordHash(string aPassword)
