@@ -127,7 +127,8 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
             var lNonce = BigInteger.Parse(lCleanHexNonce, System.Globalization.NumberStyles.HexNumber);
             var lGasLimit = lTokenData == null ? 21000 : 60000; // number of gass units you can use
             BigInteger lGasPrice = aValidationInfo.TxFee / lGasLimit;
-            var lResult = (new TransactionSigner()).SignTransaction(GetBinaryPrivateKey((int) lKeyIndex), lToAddress, lAmount, lNonce, lGasPrice, lGasLimit, lTokenData);
+            var lChainID = aValidationInfo.CurrencyId == 10196 ? 3 : 1; //10196 is ropsten but this may be changed to a boolean into currency item
+            var lResult = (new TransactionSigner()).SignTransaction(GetBinaryPrivateKey((int) lKeyIndex), lChainID, lToAddress, lAmount, lNonce, lGasPrice, lGasLimit, lTokenData);
             return lResult;
         }
 
