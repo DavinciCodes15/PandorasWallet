@@ -15,11 +15,13 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
     public class GUIToken : IGUICurrency, IGUICurrencyToken
     {
         private GUICurrencyTxAndBalanceHelper FGUICurrencyHelper;
+        private GUICurrencyMarketPriceHelper FGUIPricesHelper;
 
         public GUIToken(IGUICurrency aParentCurrency)
         {
             ParentCurrency = aParentCurrency ?? throw new ArgumentNullException(nameof(aParentCurrency));
             FGUICurrencyHelper = new GUICurrencyTxAndBalanceHelper(this);
+            FGUIPricesHelper = new GUICurrencyMarketPriceHelper(this);
         }
 
         public GUIToken(IClientCurrencyToken aToken, IGUICurrency aParentCurrency) : this(aParentCurrency)
@@ -70,6 +72,8 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
         public IGUICurrencyTransactional Transactions => FGUICurrencyHelper;
 
         public long ParentCurrencyID => ParentCurrency.Id;
+
+        public IGUICurrencyMarketPrices MarketPrices => FGUIPricesHelper;
 
         public decimal AmountToDecimal(BigInteger aAmount)
         {

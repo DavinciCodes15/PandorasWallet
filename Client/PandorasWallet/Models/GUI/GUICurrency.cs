@@ -12,13 +12,44 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
     {
         IStatusDetails StatusDetails { get; }
         IGUICurrencyTransactional Transactions { get; }
-
         IGUICurrencyBalance Balances { get; }
-
-        decimal DefaultCurrencyPricePerCoin { get; set; }
+        IGUICurrencyMarketPrices MarketPrices { get; }
         long BlockHeight { get; set; }
         IEnumerable<GUIAccount> Addresses { get; set; }
         string LastAddress { get; }
+    }
+
+    internal class GUICurrencyMarketPriceHelper : IGUICurrencyMarketPrices
+    {
+        //Note: This event is not thinked to be used on a multithread enviroment
+        public event Action<IGUICurrency> OnPricesChanged;
+
+        private IGUICurrency FGUICurrency;
+
+        public GUICurrencyMarketPriceHelper(IGUICurrency aGUICurrency)
+        {
+            FGUICurrency = aGUICurrency;
+            SymbolCurrency = null;
+            SymbolFiat = null;
+        }
+
+        public decimal DefaultCoinPrice { get; private set; }
+
+        public decimal FiatPrice { get; private set; }
+
+        public decimal DefaultCoinValue => FGUICurrency.Balances.Total * DefaultCoinPrice;
+        public decimal FiatValue => FGUICurrency.Balances.Total * FiatPrice;
+        public string SymbolCurrency { get; private set; }
+        public string SymbolFiat { get; private set; }
+
+        public void UpdatePrices(decimal aDefaultCoinPrice, decimal aFiatPrice, string aDefaultCurrencyTicker, string aFiatSymbol)
+        {
+            DefaultCoinPrice = aDefaultCoinPrice;
+            FiatPrice = aFiatPrice;
+            SymbolCurrency = aDefaultCurrencyTicker ?? throw new ArgumentNullException(nameof(aDefaultCurrencyTicker));
+            SymbolFiat = aFiatSymbol ?? throw new ArgumentNullException(nameof(aFiatSymbol));
+            OnPricesChanged?.Invoke(FGUICurrency);
+        }
     }
 
     internal class GUICurrencyTxAndBalanceHelper : IGUICurrencyTransactional, IGUICurrencyBalance
@@ -107,6 +138,20 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
         void UpdateBalance();
     }
 
+    public interface IGUICurrencyMarketPrices
+    {
+        event Action<IGUICurrency> OnPricesChanged;
+
+        void UpdatePrices(decimal aDefaultCoinPrice, decimal aFiatPrice, string aDefaultCurrencyTicker, string aFiatSymbol);
+
+        decimal DefaultCoinPrice { get; }
+        decimal FiatPrice { get; }
+        decimal DefaultCoinValue { get; }
+        decimal FiatValue { get; }
+        string SymbolCurrency { get; }
+        string SymbolFiat { get; }
+    }
+
     public interface IGUICurrencyTransactional
     {
         IEnumerable<GUITransaction> TransationItems { get; }
@@ -127,6 +172,8 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
     public class GUICurrency : CurrencyItem, IGUICurrency
     {
         private GUICurrencyTxAndBalanceHelper FGUICurrencyHelper;
+        private GUICurrencyMarketPriceHelper FGUICurrencyPricesHelper;
+
         public IStatusDetails StatusDetails { get; private set; }
         public decimal DefaultCurrencyPricePerCoin { get; set; }
         public long BlockHeight { get; set; }
@@ -137,10 +184,13 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
 
         public IGUICurrencyBalance Balances => FGUICurrencyHelper;
 
+        public IGUICurrencyMarketPrices MarketPrices => FGUICurrencyPricesHelper;
+
         public GUICurrency()
         {
             StatusDetails = new StatusDetailsObject();
             FGUICurrencyHelper = new GUICurrencyTxAndBalanceHelper(this);
+            FGUICurrencyPricesHelper = new GUICurrencyMarketPriceHelper(this);
         }
 
         public GUICurrency(ICurrencyItem aCurrency) : this()

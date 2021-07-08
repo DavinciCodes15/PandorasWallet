@@ -126,6 +126,12 @@
       <Link>Properties\VersionInfo.cs</Link>
       <Visible>true</Visible>
     </Compile>
+    <Compile Include="CoinAmountLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="CoinAmountLabel.Designer.cs">
+      <DependentUpon>CoinAmountLabel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\AddTokenDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -339,6 +345,9 @@
     <EmbeddedResource Include="CurrencyView.resx">
       <DependentUpon>CurrencyView.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="CoinAmountLabel.resx">
+      <DependentUpon>CoinAmountLabel.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </EmbeddedResource>
@@ -477,6 +486,10 @@
     <ProjectReference Include="..\Crypto\Currencies\Ethereum\Pandora.Client.Crypto.Currencies.Ethereum.csproj">
       <Project>{d1930f9b-4e8c-41f6-bd0d-9421c68f532c}</Project>
       <Name>Pandora.Client.Crypto.Currencies.Ethereum</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PriceSource\Pandora.Client.PriceSource.csproj">
+      <Project>{1a9ea64b-881a-4bf2-ad75-2760f7aff5ff}</Project>
+      <Name>Pandora.Client.PriceSource</Name>
     </ProjectReference>
     <ProjectReference Include="..\SystemBackup\Pandora.Client.SystemBackup.csproj">
       <Project>{9CC59458-5803-42FE-BC76-8FC3EC82829F}</Project>

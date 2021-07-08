@@ -103,7 +103,7 @@ namespace Pandora.Client.PandorasWallet
 
             Cursor.Current = Cursors.WaitCursor;
 
-            lstViewCurrencies.SetVisualOptions(CurrencyView.VisualOptionFlags.CurrencyNameVisible | CurrencyView.VisualOptionFlags.TickerColunmVisible | CurrencyView.VisualOptionFlags.IconVisible, new string[] { "Total", "Status" });
+            lstViewCurrencies.SetVisualOptions(CurrencyView.VisualOptionFlags.CurrencyNameVisible | CurrencyView.VisualOptionFlags.TickerColunmVisible | CurrencyView.VisualOptionFlags.IconVisible, new string[] { "Total", "Status", "Crypto value", "Fiat Value" });
 
             Cursor.Current = Cursors.Default;
 
@@ -161,19 +161,9 @@ namespace Pandora.Client.PandorasWallet
 
         public bool CoinImageVisibility { get => picCoinImage.Visible; set => picCoinImage.Visible = value; }
 
-        public string UnconfirmedBalance { get => lblUnconfirmed.Text; set => lblUnconfirmed.Text = value; }
-
-        public Color UnconfirmedBalanceColor { get => lblUnconfirmed.ForeColor; set => lblUnconfirmed.ForeColor = lblNameUnconfirmed.ForeColor = value; }
-
-        //public Color ConfirmedBalanceColor { get => lblConfirmed.ForeColor; set => lblConfirmed.ForeColor = lblNameConfirmed.ForeColor = value; }
-
-        //public string Confirmed { get => lblConfirmed.Text; set => lblConfirmed.Text = value; }
-
         public string SearchBar { get => txtBoxSearchCoin.Text; set => txtBoxSearchCoin.Text = value; }
 
         public long SelectedCurrencyId { get => lstViewCurrencies.SelectedCurrencyId; set => lstViewCurrencies.SelectedCurrencyId = value; }
-
-        public string TotalCoins { get => lblTotal.Text; set => lblTotal.Text = value; }
 
         public string CoinName { get => lblCoinName.Text; set => lblCoinName.Text = value; }
 
@@ -201,10 +191,35 @@ namespace Pandora.Client.PandorasWallet
         {
             if (!FCurrencyLookup.ContainsKey(aCurrency.Id))
             {
-                var lCustomValues = new string[] { FormatedAmount(aCurrency.Balances.Total, aCurrency.Precision), aCurrency.CurrentStatus.ToString() };
+                string lMarketValue = aCurrency.MarketPrices.DefaultCoinPrice > 0 ? $"{FormatedAmount(aCurrency.MarketPrices.DefaultCoinValue, aCurrency.Precision)} {aCurrency.MarketPrices.SymbolCurrency}" : "-";
+                string lFiatValue = aCurrency.MarketPrices.FiatPrice > 0 ? $"{aCurrency.MarketPrices.FiatValue.ToString("F")}  {aCurrency.MarketPrices.SymbolFiat}" : "-";
+                var lCustomValues = new string[] { FormatedAmount(aCurrency.Balances.Total, aCurrency.Precision), aCurrency.CurrentStatus.ToString(), lMarketValue, lFiatValue };
                 CurrencyViewControl.AddCurrency(aCurrency.Id, aCurrency.Name, aCurrency.Ticker, Globals.BytesToIcon(aCurrency.Icon), lCustomValues);
+                aCurrency.MarketPrices.OnPricesChanged += CurrencyMarketPrices_OnPricesChanged;
                 FCurrencyLookup.Add(aCurrency.Id, aCurrency);
             }
+        }
+
+        public void RemoveCurrency(long aCurrencyIDToRemove, long aDefaultCurrencyID)
+        {
+            if (FCurrencyLookup.TryGetValue(aCurrencyIDToRemove, out IGUICurrency lGUICurrency))
+            {
+                if (SelectedCurrencyId != aCurrencyIDToRemove)
+                    OnSelectedCurrencyChanged?.Invoke(null, null); //This is only to trigger exchange tab to refresh
+                CurrencyViewControl.RemoveCurrency(aCurrencyIDToRemove);
+                FCurrencyLookup.Remove(aCurrencyIDToRemove);
+                lGUICurrency.MarketPrices.OnPricesChanged -= CurrencyMarketPrices_OnPricesChanged;
+                UpdateWalletTotals();
+            }
+            else
+                throw new Exception("Default currency id provided not found");
+        }
+
+        private void CurrencyMarketPrices_OnPricesChanged(IGUICurrency aCurrency)
+        {
+            if (aCurrency.Id == SelectedCurrencyId)
+                UpdateCurrencyView();
+            UpdateCurrency(aCurrency.Id);
         }
 
         public void SetTxSendAreaUsability(bool aEnabled)
@@ -267,9 +282,22 @@ namespace Pandora.Client.PandorasWallet
         private void UpdateCurrencyView()
         {
             SetCurrencyTooltip(SelectedCurrency);
-            this.TotalCoins = FormatedAmount(SelectedCurrency.Balances.Total, SelectedCurrency.Precision);
-            this.UnconfirmedBalance = FormatedAmount(SelectedCurrency.Balances.UnconfirmedBalance, SelectedCurrency.Precision);
-            //this.Confirmed = FormatedAmount(SelectedCurrency.ConfirmedBalance, SelectedCurrency.Precision);
+            this.lblTotal.SetAmount(SelectedCurrency.Balances.Total, SelectedCurrency.Precision);
+            this.lblUnconfirmed.SetAmount(SelectedCurrency.Balances.UnconfirmedBalance, SelectedCurrency.Precision);
+            this.lblCurrencyPrice.SetAmount(SelectedCurrency.MarketPrices.DefaultCoinPrice, 8);
+            this.lblMarketTickerPrice.Text = $"{SelectedCurrency.MarketPrices.SymbolCurrency ?? "Coin"} Price :";
+            this.lblFiatTickerPrice.Text = $"{SelectedCurrency.MarketPrices.SymbolFiat ?? "Fiat"} Price :";
+            this.lblMarketTickerValue.Enabled = this.lblFiatTickerValue.Enabled = this.grpBoxWalletTotals.Enabled = this.grpPrices.Enabled =
+                this.lblFiatValue.Enabled = this.lblCurrencyValue.Enabled = this.lblTickerFiatTotal.Enabled =
+                this.lblTickerCurrencyTotal.Enabled = this.lblCurrencyTotal.Enabled =
+                this.lblFiatTotal.Enabled = !string.IsNullOrEmpty(SelectedCurrency.MarketPrices.SymbolCurrency);
+            this.lblMarketTickerValue.Text = $"{SelectedCurrency.MarketPrices.SymbolCurrency ?? "Coin"} Value :";
+            this.lblFiatTickerValue.Text = $"{SelectedCurrency.MarketPrices.SymbolFiat ?? "Fiat"} Value :";
+            this.lblTickerCurrencyTotal.Text = $"{SelectedCurrency.MarketPrices.SymbolCurrency ?? "Coin"} Value :";
+            this.lblTickerFiatTotal.Text = $"{SelectedCurrency.MarketPrices.SymbolFiat ?? "Fiat"} Value :";
+            this.lblCurrencyValue.SetAmount(SelectedCurrency.MarketPrices.DefaultCoinValue, 8);
+            this.lblFiatPrice.SetAmount(SelectedCurrency.MarketPrices.FiatPrice, 2);
+            this.lblFiatValue.SetAmount(SelectedCurrency.MarketPrices.FiatValue, 2);
             this.CoinName = SelectedCurrency.Name;
             this.CoinStatus = SelectedCurrency.CurrentStatus.ToString();
             this.ReceiveAddress = SelectedCurrency.LastAddress;
@@ -334,15 +362,31 @@ namespace Pandora.Client.PandorasWallet
             if (FCurrencyLookup.TryGetValue(aCurrencyID, out IGUICurrency lCurrency))
             {
                 lCurrency.Balances.UpdateBalance();
-                var lCustomValues = new string[] { FormatedAmount(lCurrency.Balances.Total, lCurrency.Precision), lCurrency.CurrentStatus.ToString() };
+                string lMarketValue = lCurrency.MarketPrices.DefaultCoinPrice > 0 ? $"{FormatedAmount(lCurrency.MarketPrices.DefaultCoinValue, lCurrency.Precision)} {lCurrency.MarketPrices.SymbolCurrency}" : "-";
+                string lFiatValue = lCurrency.MarketPrices.FiatPrice > 0 ? $"{lCurrency.MarketPrices.FiatValue.ToString("F")}  {lCurrency.MarketPrices.SymbolFiat}" : "-";
+                var lCustomValues = new string[] { FormatedAmount(lCurrency.Balances.Total, lCurrency.Precision), lCurrency.CurrentStatus.ToString(), lMarketValue, lFiatValue };
                 CurrencyViewControl.UpdateCurrency(lCurrency.Id, lCurrency.Name, lCurrency.Ticker, lCustomValues);
                 if (SelectedCurrency.Id == lCurrency.Id)
                     UpdateCurrencyView();
                 foreach (var lTx in lCurrency.Transactions.TransationItems)
                     this.UpdateTransaction(lTx);
+                UpdateWalletTotals();
                 return true;
             }
+
             return false;
+        }
+
+        private void UpdateWalletTotals()
+        {
+            lblCurrencyTotal.SetAmount(FCurrencyLookup.Sum(lCurrency => lCurrency.Value.MarketPrices.DefaultCoinValue), 8);
+            lblFiatTotal.SetAmount(FCurrencyLookup.Sum(lCurrency => lCurrency.Value.MarketPrices.FiatValue), 2);
+        }
+
+        public void UpdateCurrencyMarketPrices(long aCurrencyID, long aBaseCurrencyID, decimal aDefaultCoinPrice, decimal aFiatPrice, string aFiatSymbol)
+        {
+            if (FCurrencyLookup.TryGetValue(aCurrencyID, out IGUICurrency lCurrency))
+                lCurrency.MarketPrices.UpdatePrices(aDefaultCoinPrice, aFiatPrice, FCurrencyLookup[aBaseCurrencyID].Ticker, aFiatSymbol);
         }
 
         public bool RemoveTransaction(GUITransaction aTransaction)
@@ -1303,19 +1347,6 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        public void RemoveCurrency(long aCurrencyIDToRemove, long aDefaultCurrencyID)
-        {
-            if (!FCurrencyLookup.ContainsKey(aDefaultCurrencyID))
-                throw new Exception("Default currency id provided not found");
-            if (FCurrencyLookup.ContainsKey(aCurrencyIDToRemove))
-            {
-                if (SelectedCurrencyId != aCurrencyIDToRemove)
-                    OnSelectedCurrencyChanged?.Invoke(null, null); //This is only to trigger exchange tab to refresh
-                CurrencyViewControl.RemoveCurrency(aCurrencyIDToRemove);
-                FCurrencyLookup.Remove(aCurrencyIDToRemove);
-            }
-        }
-
         public class ExchangeOrderLogViewModel
         {
             public int ID { get; set; }
@@ -1535,15 +1566,17 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        public event EventHandler OnClearWalletCache;
+        public event Func<bool> OnClearWalletCache;
 
         private void clearWalletCacheToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                OnClearWalletCache?.Invoke(sender, e);
-
-                ClearAllTransactions();     //reset all currency amount
+                var lResult = OnClearWalletCache?.Invoke();
+                if (lResult.HasValue && lResult.Value)
+                {
+                    ClearAllTransactions();     //reset all currency amount
+                }
             }
             catch (Exception ex)
             {

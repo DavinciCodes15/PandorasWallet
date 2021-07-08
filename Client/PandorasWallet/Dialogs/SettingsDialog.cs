@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Pandora.Client.PandorasWallet.Dialogs
@@ -40,6 +41,8 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public bool RequestWalletPassword { get => checkEncryptWallet.Checked; set => checkEncryptWallet.Checked = value; }
 
         public bool AutoUpdate { get => cbAutoUpdate.Checked; set => cbAutoUpdate.Checked = value; }
+
+        public string SelectedFiat { get => (string) cmboBoxFiatCurrency.SelectedItem; set => cmboBoxFiatCurrency.SelectedItem = value; }
 
         public string PrivateKeyBtnText { get => btnPrivKey.Text; set => btnPrivKey.Text = $"View {FCurrencyName = value} private key..."; }
 
@@ -66,14 +69,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
-        private void btnOK_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void btnCancel_Click(object sender, EventArgs e)
-        {
-        }
-
         private void btnChangeDefaultCoin_Click(object sender, EventArgs e)
         {
             try
@@ -92,10 +87,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 DataPath = SelectFolderDialog.SelectedPath;
         }
 
-        private void SettingsDialogDummy_Shown(object sender, EventArgs e)
-        {
-        }
-
         private void SettingsDialogDummy_FormClosing(object sender, FormClosingEventArgs e)
         {
             string lErrorMsg = "";
@@ -111,14 +102,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 if (e.Cancel)
                     this.StandardErrorMsgBox("Settings Error", lErrorMsg);
             }
-        }
-
-        private void checkEncryptWallet_CheckedChanged(object sender, EventArgs e)
-        {
-        }
-
-        private void txtDataPath_Leave(object sender, EventArgs e)
-        {
         }
 
         private void btnPrivKey_Click(object sender, EventArgs e)
@@ -140,14 +123,11 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             }
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        public void SetFiatCurrencies(IEnumerable<string> aFiatCurrencies)
         {
-
+            if (aFiatCurrencies == null || !aFiatCurrencies.Any()) throw new ArgumentException(nameof(aFiatCurrencies), "FiatCurrencies can not be empty or null");
+            cmboBoxFiatCurrency.Items.Clear();
+            cmboBoxFiatCurrency.Items.AddRange(aFiatCurrencies.ToArray());
         }
-
-        //private void BtnDefault_Click(object sender, EventArgs e)
-        //{
-        //    DataPath = Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), "Pandora's Wallet");
-        //}
     }
 }

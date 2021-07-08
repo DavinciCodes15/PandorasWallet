@@ -11,6 +11,8 @@ namespace Pandora.Client.PandorasWallet
         public string Email { get; set; }
         public bool RequestWalletPassword { get; set; }
         public bool AutoUpdate { get; set; }
+
+        public string FiatCurrency { get; set; }
         public string ServerName { get; set; }
         public int Port { get; set; }
         public bool EncryptedConnection { get; set; }
@@ -38,11 +40,12 @@ namespace Pandora.Client.PandorasWallet
                 SaveLogingPasswords = lConfigFile.ReadBoolValue("SaveLogingPasswords", false),
                 LoginHistory = lConfigFile.ReadStringValue("LoginHistory", ""),
                 LogFileName = lConfigFile.ReadStringValue("LogFileName", ""),
-                LogMaxSize = (ushort)lConfigFile.ReadIntValue("LogMaxSize", 100),
-                LogLevelFlags = (LogLevelFlags)Enum.Parse(typeof(LogLevelFlags), lConfigFile.ReadStringValue("LogLevelFlags", "All")),
-                LogLineLength = (ushort)lConfigFile.ReadIntValue("LogLineLength", 120),
+                LogMaxSize = (ushort) lConfigFile.ReadIntValue("LogMaxSize", 100),
+                LogLevelFlags = (LogLevelFlags) Enum.Parse(typeof(LogLevelFlags), lConfigFile.ReadStringValue("LogLevelFlags", "All")),
+                LogLineLength = (ushort) lConfigFile.ReadIntValue("LogLineLength", 120),
                 LogRollOver = lConfigFile.ReadBoolValue("LogRollOver", true),
-                AutoUpdate = lConfigFile.ReadBoolValue("AutoUpdate",true)
+                AutoUpdate = lConfigFile.ReadBoolValue("AutoUpdate", true),
+                FiatCurrency = lConfigFile.ReadStringValue("FiatCurrency", "USD")
             };
             return lResult;
         }
@@ -65,6 +68,7 @@ namespace Pandora.Client.PandorasWallet
             lConfigFile.WriteIntValue("LogLineLength", aSettings.LogLineLength);
             lConfigFile.WriteBoolValue("LogRollOver", aSettings.LogRollOver);
             lConfigFile.WriteBoolValue("AutoUpdate", aSettings.AutoUpdate);
+            lConfigFile.WriteStringValue("FiatCurrency", aSettings.FiatCurrency);
             lConfigFile.SaveToFile(aFileName);
         }
 

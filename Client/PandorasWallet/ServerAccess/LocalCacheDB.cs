@@ -1,6 +1,7 @@
 ﻿using Pandora.Client.ClientLib;
 using Pandora.Client.Crypto.Currencies;
 using Pandora.Client.PandorasWallet.Models;
+using Pandora.Client.Universal;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -15,7 +16,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     internal class LocalCacheDB : IDisposable
 
     {
-        private const int VERSION = 10017;
+        private const int VERSION = 10019;
 
         protected SQLiteConnection FSQLiteConnection;
 
@@ -104,7 +105,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS CurrencyVisible (CurrencyId INT PRIMARY KEY, Visible BOOLEAN)");
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS TokenVisible (TokenID INT PRIMARY KEY, Visible BOOLEAN)");
                     ExecuteQuery("CREATE TABLE IF NOT EXISTS SentTransactions (TxId VARCHAR(100) PRIMARY KEY, CurrencyId BIGINT, TxData BLOB, SentTime DATETIME, ResponseTime DATETIME )");
-                    ExecuteQuery("CREATE TABLE IF NOT EXISTS TokenTx (currencyTxID varchar(100), Txfrom varchar(100), TxTo varchar(100), amount BIGINT, examount BIGINT, tokenaddress varchar(100))");
+                    ExecuteQuery("CREATE TABLE IF NOT EXISTS TokenTx (currencyTxID varchar(100), Txfrom varchar(100), TxTo varchar(100), amount BIGINT, examount BIGINT, tokenaddress varchar(100), valid BOOLEAN)");
                     if (0 < lVersion)
                     {
                         if (lVersion < 10014)
@@ -127,6 +128,17 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             ExecuteQuery("delete from TXOUT where internalid in (select internalid from txtable where currencyid = 10194 or currencyid = 10196);");
                             ExecuteQuery("delete from TXEXT where internalid in (select internalid from txtable where currencyid = 10194 or currencyid = 10196);");
                             ExecuteQuery("delete from TXTABLE where currencyid = 10194 or currencyid = 10196;");
+                        }
+                        if (lVersion < 10019)
+                        {
+                            try
+                            {
+                                ExecuteQuery("ALTER TABLE TokenTx ADD COLUMN valid BOOLEAN DEFAULT TRUE");
+                            }
+                            catch (Exception ex)
+                            {
+                                Universal.Log.Write(Universal.LogLevel.Warning, $"Exception thrown when altering table on application of DB Version 10014. {ex}");
+                            }
                         }
                     }
 
@@ -374,7 +386,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         public bool Write(IClientTokenTransaction aTokenTx)
         {
-            using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TokenTx (currencyTxID, TxFrom, TxTo, amount, examount, tokenaddress) VALUES (@txid, @from, @to, @amount, @examount, @tokenaddress)", FSQLiteConnection))
+            using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TokenTx (currencyTxID, TxFrom, TxTo, amount, examount, tokenaddress, valid) VALUES (@txid, @from, @to, @amount, @examount, @tokenaddress,@valid)", FSQLiteConnection))
             {
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("txid", aTokenTx.ParentTransactionID));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("from", aTokenTx.From));
@@ -383,7 +395,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 long lExAmount = 0;
                 if (aTokenTx.Amount > long.MaxValue)
                 {
-                    var lAmounts = ConvertHexToDoubleLong(aTokenTx.Amount.ToString("X"));
+                    var lAmounts = SystemUtils.ConvertHexToDoubleLong(aTokenTx.Amount.ToString("X"));
                     lAmount = lAmounts.Item1;
                     if (lAmounts.Item2.HasValue)
                         lExAmount = lAmounts.Item2.Value;
@@ -394,6 +406,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("amount", lAmount));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("examount", lExAmount));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("tokenaddress", aTokenTx.TokenAddress));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("valid", aTokenTx.Valid));
 
                 try
                 {
@@ -408,31 +421,67 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        public IEnumerable<ITokenTransaction> ReadTokenTransactions(string aTokenAddress)
+        public bool UpdateTokenTransactions(string aParentTxId, bool aValid)
+        {
+            using (SQLiteCommand lSQLiteCommand = new SQLiteCommand($"UPDATE TokenTx set valid = @valid where currencyTxID = @txid", FSQLiteConnection))
+            {
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("txid", aParentTxId));
+                lSQLiteCommand.Parameters.Add(new SQLiteParameter("valid", aValid));
+
+                try
+                {
+                    lSQLiteCommand.ExecuteNonQuery();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Universal.Log.Write(Universal.LogLevel.Error, $"Update token tx {aParentTxId} exception: {ex.Message} on {ex.Source}");
+                    return false;
+                }
+            }
+        }
+
+        public IEnumerable<ITokenTransaction> ReadTokenTransactionsByCurrencyTxID(string aTransactionID)
         {
             var lTokenTransactionList = new List<ITokenTransaction>();
-            string qry = $"SELECT currencyTxID, TxFrom, TxTo, amount, examount, tokenaddress from TokenTx where tokenaddress = '{aTokenAddress}'";
+            string qry = $"SELECT currencyTxID, TxFrom, TxTo, amount, examount, tokenaddress, valid from TokenTx where currencyTxID = '{aTransactionID}'";
             using (SQLiteCommand command = new SQLiteCommand(qry, FSQLiteConnection))
             using (SQLiteDataReader rdr = command.ExecuteReader())
                 while (rdr.Read())
                 {
                     long lAmount = rdr.GetInt64(3);
                     long lExAmount = rdr.GetInt64(4);
-                    BigInteger lBigAmount = lAmount;
-                    if (lExAmount > 0)
-                    {
-                        string lLessSigHex = lAmount.ToString("X");
-                        string lMoreSigHex = lExAmount.ToString("X");
-                        string lFinalHex = string.Concat("0", lMoreSigHex, lLessSigHex);
-                        lBigAmount = BigInteger.Parse(lFinalHex, System.Globalization.NumberStyles.HexNumber);
-                    }
                     lTokenTransactionList.Add(new DBTokenTransactionItem
                     {
                         ParentTransactionID = rdr.GetString(0),
                         From = rdr.GetString(1),
                         To = rdr.GetString(2),
-                        Amount = lBigAmount,
-                        TokenAddress = rdr.GetString(5)
+                        Amount = SystemUtils.ConvertDoubleLongToBigInteger(lAmount, lExAmount),
+                        TokenAddress = rdr.GetString(5),
+                        Valid = rdr.GetBoolean(6)
+                    });
+                }
+            return lTokenTransactionList;
+        }
+
+        public IEnumerable<ITokenTransaction> ReadTokenTransactions(string aTokenAddress)
+        {
+            var lTokenTransactionList = new List<ITokenTransaction>();
+            string qry = $"SELECT currencyTxID, TxFrom, TxTo, amount, examount, tokenaddress, valid from TokenTx where tokenaddress = '{aTokenAddress}' and valid = 1";
+            using (SQLiteCommand command = new SQLiteCommand(qry, FSQLiteConnection))
+            using (SQLiteDataReader rdr = command.ExecuteReader())
+                while (rdr.Read())
+                {
+                    long lAmount = rdr.GetInt64(3);
+                    long lExAmount = rdr.GetInt64(4);
+                    lTokenTransactionList.Add(new DBTokenTransactionItem
+                    {
+                        ParentTransactionID = rdr.GetString(0),
+                        From = rdr.GetString(1),
+                        To = rdr.GetString(2),
+                        Amount = SystemUtils.ConvertDoubleLongToBigInteger(lAmount, lExAmount),
+                        TokenAddress = rdr.GetString(5),
+                        Valid = rdr.GetBoolean(6)
                     });
                 }
             return lTokenTransactionList;
@@ -449,6 +498,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             public string TokenAddress { get; set; }
 
             public string ParentTransactionID { get; set; }
+
+            public bool Valid { get; set; }
         }
 
         public struct DBCurrencyTokenItem : IClientCurrencyToken
@@ -516,30 +567,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
         }
 
-        private Tuple<long, long?> ConvertHexToDoubleLong(string aHexNumber)
-        {
-            Tuple<long, long?> lResult;
-            string lValue = (aHexNumber?.ToString())?.Replace("0x", string.Empty);
-            if (lValue.Length > 15)
-            {
-                var lValueArray = new string[2];
-                lValueArray[0] = lValue.Substring(lValue.Length - 15, 15);
-                lValueArray[1] = lValue.Substring(0, lValue.Length - 15);
-                lResult = new Tuple<long, long?>(ConvertHexStringToDecimal(lValueArray[0]), ConvertHexStringToDecimal(lValueArray[1]));
-            }
-            else
-                lResult = new Tuple<long, long?>(ConvertHexStringToDecimal(lValue), null);
-            return lResult;
-        }
-
-        private long ConvertHexStringToDecimal(dynamic aHexNumber)
-        {
-            long lResult = 0;
-            if (string.IsNullOrEmpty(aHexNumber) || !long.TryParse(aHexNumber, System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out lResult))
-                throw new Exception($"Unable to convert {aHexNumber ?? "NULL"} to decimal");
-            return lResult;
-        }
-
         protected void WriteTransaction(TransactionRecord aTransactionRecord, SQLiteConnection aSQLConnection)
         {
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand("INSERT OR REPLACE INTO TxTable (internalid, currencyid, id, dattime, block, TxFee, Valid) VALUES (@internalid, @currencyid, @id, @dattime, @block, @TxFee, @Valid)", aSQLConnection))
@@ -565,7 +592,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         long lExAmount = 0;
                         if (lTransactionUnit.Amount > long.MaxValue)
                         {
-                            var lAmounts = ConvertHexToDoubleLong(lTransactionUnit.Amount.ToString("X"));
+                            var lAmounts = SystemUtils.ConvertHexToDoubleLong(lTransactionUnit.Amount.ToString("X"));
                             lAmount = lAmounts.Item1;
                             if (lAmounts.Item2.HasValue)
                                 lExAmount = lAmounts.Item2.Value;
@@ -590,7 +617,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     long lExAmount = 0;
                     if (lTransactionUnit.Amount > long.MaxValue)
                     {
-                        var lAmounts = ConvertHexToDoubleLong(lTransactionUnit.Amount.ToString("X"));
+                        var lAmounts = SystemUtils.ConvertHexToDoubleLong(lTransactionUnit.Amount.ToString("X"));
                         lAmount = lAmounts.Item1;
                         if (lAmounts.Item2.HasValue)
                             lExAmount = lAmounts.Item2.Value;
@@ -794,8 +821,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 CurrentStatus = (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus), aSQLiteDataReader.GetString(10))
             });
         }
+
         #region ClearCacheWallet
-        public void ClearCacheWallet() {
+
+        public void ClearCacheWallet()
+        {
             try
             {
                 ExecuteQuery("DELETE FROM TxTable where true;");
@@ -806,11 +836,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
             catch (Exception ex)
             {
-                Universal.Log.Write(Universal.LogLevel.Error, "Error during truncating tables Txs: " + ex.Message );
+                Universal.Log.Write(Universal.LogLevel.Error, "Error during truncating tables Txs: " + ex.Message);
                 throw;
             }
         }
-        #endregion
+
+        #endregion ClearCacheWallet
 
         public CurrencyStatusItem ReadCurrencyStatus(long aCurrencyId)
         {
@@ -824,30 +855,36 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     return null;
         }
 
-        public virtual List<TransactionRecord> ReadTransactionRecords(long aCurrencyId)
+        public virtual IEnumerable<TransactionRecord> ReadTransactionRecords(long aCurrencyId)
         {
             var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {aCurrencyId} and Valid = 1 order by internalid desc";
-            return ReadTransactionRecords(lQuery);
+            return InternalReadTransactionRecords(lQuery);
         }
 
-        public virtual List<TransactionRecord> ReadTransactionRecords(long aCurrencyId, long aMaxBlockHeight)
+        public virtual IEnumerable<TransactionRecord> ReadTransactionRecords(string aTransactionID)
+        {
+            var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE id = '{aTransactionID}' order by internalid desc";
+            return InternalReadTransactionRecords(lQuery);
+        }
+
+        public virtual IEnumerable<TransactionRecord> ReadTransactionRecords(long aCurrencyId, long aMaxBlockHeight)
         {
             var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {aCurrencyId} and Valid = true and (block > {aMaxBlockHeight} or block = 0) order by internalid desc";
-            return ReadTransactionRecords(lQuery);
+            return InternalReadTransactionRecords(lQuery);
         }
 
         public virtual TransactionRecord ReadLastTransactionRecord(long aCurrencyId)
         {
             var lQuery = $"SELECT internalid, currencyid, id, dattime, block, TxFee, Valid FROM TxTable WHERE currencyid = {aCurrencyId} order by internalid desc limit 1";
 
-            var lResult = ReadTransactionRecords(lQuery);
+            var lResult = InternalReadTransactionRecords(lQuery);
             if (lResult.Any())
                 return lResult[0];
             else
                 return null;
         }
 
-        private List<TransactionRecord> ReadTransactionRecords(string aQuery)
+        private List<TransactionRecord> InternalReadTransactionRecords(string aQuery)
         {
             var aTxList = new List<TransactionRecord>();
 
@@ -872,15 +909,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     {
                         long lAmount = lSQLiteDataReader.GetInt64(3);
                         long lExAmount = lSQLiteDataReader.GetInt64(4);
-                        BigInteger lBigAmount = lAmount;
-                        if (lExAmount > 0)
-                        {
-                            string lLessSigHex = lAmount.ToString("X");
-                            string lMoreSigHex = lExAmount.ToString("X");
-                            string lFinalHex = string.Concat("0", lMoreSigHex, lLessSigHex);
-                            lBigAmount = BigInteger.Parse(lFinalHex, System.Globalization.NumberStyles.HexNumber);
-                        }
-                        lTransactionRecord.AddInput(lBigAmount, lSQLiteDataReader.GetString(2), lSQLiteDataReader.GetInt64(1));
+                        lTransactionRecord.AddInput(SystemUtils.ConvertDoubleLongToBigInteger(lAmount, lExAmount), lSQLiteDataReader.GetString(2), lSQLiteDataReader.GetInt64(1));
                     }
 
                 aQuery = $"SELECT TxO.internalid, TxO.id, TxO.address, TxO.ammount, TxO.nindex, TxO.ExAmount, TxE.extdata FROM TxOut TxO LEFT JOIN TxExt TxE ON TxO.id = TxE.internalid WHERE TxO.internalid =  {lTransactionRecord.TransactionRecordId}";
@@ -891,16 +920,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     {
                         long lAmount = lSQLiteDataReader.GetInt64(3);
                         long lExAmount = lSQLiteDataReader.GetInt64(5);
-                        BigInteger lBigAmount = lAmount;
-                        if (lExAmount > 0)
-                        {
-                            string lLessSigHex = lAmount.ToString("X");
-                            string lMoreSigHex = lExAmount.ToString("X");
-                            string lFinalHex = string.Concat("0", lMoreSigHex, lLessSigHex);
-                            lBigAmount = BigInteger.Parse(lFinalHex, System.Globalization.NumberStyles.HexNumber);
-                        }
                         var lOutputScript = lSQLiteDataReader.IsDBNull(6) ? null : lSQLiteDataReader.GetString(6);
-                        lTransactionRecord.AddOutput(lBigAmount, lSQLiteDataReader.GetString(2), lSQLiteDataReader.GetInt32(4), lSQLiteDataReader.GetInt64(1), lTransactionRecord.TxId, lOutputScript);
+                        lTransactionRecord.AddOutput(SystemUtils.ConvertDoubleLongToBigInteger(lAmount, lExAmount), lSQLiteDataReader.GetString(2), lSQLiteDataReader.GetInt32(4), lSQLiteDataReader.GetInt64(1), lTransactionRecord.TxId, lOutputScript);
                     }
             }
             return aTxList;

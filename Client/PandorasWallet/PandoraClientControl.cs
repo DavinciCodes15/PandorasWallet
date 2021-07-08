@@ -43,6 +43,7 @@ using Pandora.Client.ClientLib.Contracts;
 using System.Text.RegularExpressions;
 using Pandora.Client.PandorasWallet.Wallet.TransactionMaker;
 using Nethereum.Signer;
+using Pandora.Client.PriceSource;
 
 namespace Pandora.Client.PandorasWallet
 {
@@ -108,6 +109,10 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.TickerTotalReceived = string.Empty;
             AppMainForm.OnClearWalletCache += AppMainForm_OnClearWalletCache;
             AppMainForm.OnSignMessage += AppMainForm_OnSignMessage;
+
+            //Start CurrencyPriceSource if not already started
+            FPriceSourceManager = CurrencyPriceSource.GetInstance();
+            FPriceSourceManager.OnPricesUpdated += PriceSourceManager_OnPricesUpdated;
         }
 
         private void SetDefaultCurrencyTokens()
@@ -132,14 +137,14 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void AppMainForm_OnClearWalletCache(object sender, EventArgs e)
+        private bool AppMainForm_OnClearWalletCache()
         {
+            bool lResult = false;
             try
             {
                 string lMessage = "Do you want clear your wallet cache?\nPlease be patient, your balances will be reseted and reloaded.";
                 string lTitle = "Clear Wallet Cache";
-                bool msgbox = AppMainForm.StandardWarningMsgBoxAsk(lTitle, lMessage);
-                if (msgbox)
+                if (lResult = AppMainForm.StandardWarningMsgBoxAsk(lTitle, lMessage))
                 {
                     FServerConnection.ClearCacheWallet();
                     Log.Write(LogLevel.Info, "************* Cleared cache **************");
@@ -150,6 +155,7 @@ namespace Pandora.Client.PandorasWallet
                 AppMainForm.StandardExceptionMsgBox(ex, "Error");
                 Log.Write(LogLevel.Error, "Error: " + ex.Message);
             }
+            return lResult;
         }
 
         public void AppMainForm_OnSignMessage(object sender, EventArgs e)
@@ -491,12 +497,14 @@ namespace Pandora.Client.PandorasWallet
                     FExchangeControl?.Dispose();
                     FCancellationTokenSource?.Cancel();
                     FTask?.Wait();
+                    FPriceSourceManager.ClearAllCurrenciesToWatch();
 
                     FCancellationTokenSource = new CancellationTokenSource();
                     FServerConnection = lConnection;
                     FExchangeControl = new PandoraEnchangeControl(FServerConnection);
                     FExchangeControl.GetKeyManagerMethod += Exchange_GetKeyManager;
                     FExchangeControl.SetKeyManagerPassword += () => FromUserDecryptWallet(Settings.RequestWalletPassword);
+
                     FTransactionMakerFactory = new TransactionMakerFactory(FServerConnection);
                     Log.Write(LogLevel.Debug, "user Connected and is New Account = {0}", FServerConnection.NewAccount);
                 }
@@ -572,6 +580,27 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.Connected = FServerConnection != null && FServerConnection.Connected;
             if (!AppMainForm.Connected)
                 AppMainForm.Close();
+        }
+
+        private void PriceSourceManager_OnPricesUpdated(CurrencyPriceSource aPriceSourceManager)
+        {
+            if (FServerConnection == null) return;
+            var lDisplayedCurrencies = FServerConnection.GetDisplayedCurrencies();
+            var lDefaultCurrecy = FServerConnection.GetDefaultCurrency();
+            var lFiat = (FiatCurrencies) Enum.Parse(typeof(FiatCurrencies), Settings.FiatCurrency.ToUpperInvariant());
+            foreach (var lDisplayedCurrency in lDisplayedCurrencies)
+            {
+                var lRelativePrice = aPriceSourceManager.GetPrice(lDisplayedCurrency.Id, lDefaultCurrecy.Id);
+                var lFiatPrice = aPriceSourceManager.GetPrice(lDisplayedCurrency.Id, lFiat);
+                AppMainForm.BeginInvoke(new Action(() => AppMainForm.UpdateCurrencyMarketPrices(lDisplayedCurrency.Id, lDefaultCurrecy.Id, lRelativePrice, lFiatPrice, Enum.GetName(typeof(FiatCurrencies), lFiat))));
+            }
+            var lDisplayedTokens = FServerConnection.GetDisplayedCurrencyTokens();
+            foreach (var lDisplayedToken in lDisplayedTokens)
+            {
+                var lRelativePrice = aPriceSourceManager.GetTokenPrice(lDisplayedToken.ContractAddress, lDefaultCurrecy.Id);
+                var lFiatPrice = aPriceSourceManager.GetTokenPrice(lDisplayedToken.ContractAddress, lFiat);
+                AppMainForm.BeginInvoke(new Action(() => AppMainForm.UpdateCurrencyMarketPrices(lDisplayedToken.Id, lDefaultCurrecy.Id, lRelativePrice, lFiatPrice, Enum.GetName(typeof(FiatCurrencies), lFiat))));
+            }
         }
 
         private void ResetConnection(object s, EventArgs e)
@@ -714,6 +743,10 @@ namespace Pandora.Client.PandorasWallet
                     EncryptedRootSeed = FServerConnection.ReadKeyValue("EncryptedRootSeed")
                 };
             }
+            //Pre-load possible currency prices
+            FPriceSourceManager.AddCurrenciesToWatch(FServerConnection.GetCurrencies().Where(lCurrency => lCurrency.ChainParamaters.Network != ChainParams.NetworkType.TestNet));
+            FPriceSourceManager.AddCurrenciesToWatch(FServerConnection.GetCurrencyTokens());
+
             var lDefaultCurrency = FServerConnection.GetDefaultCurrency();
             // if the blow code is not done because of an error the next time
             // the user logs in they will need to repeat the following and enter the wallet password.
@@ -815,7 +848,7 @@ namespace Pandora.Client.PandorasWallet
         private void ServerConnection_OnNewCurrency(object aSender, CurrencyItem aCurrencyItem)
         {
 #if !DEBUG
-                if (aCurrencyItem.CurrentStatus == CurrencyStatus.Disabled) return;
+            if (aCurrencyItem.CurrentStatus == CurrencyStatus.Disabled) return;
 #endif
             DefaultCoinSelectorDialog?.AddDialogCurrencyItem(new DefaultCurrencySelectorDialog.DialogCurrencyItem() { CurrencyID = aCurrencyItem.Id, CurrencyName = aCurrencyItem.Name, CurrencySymbol = aCurrencyItem.Ticker, CurrencyIcon = SystemUtils.BytesToIcon(aCurrencyItem.Icon) });
             AddCoinSelectorDialog?.AddCurrency(GUIModelProducer.CreateFrom(aCurrencyItem));
@@ -833,10 +866,29 @@ namespace Pandora.Client.PandorasWallet
 
         private void ServerConnection_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransactions)
         {
-            var lItem = GUIModelProducer.CreateFrom(aTransactionRecord,
-            FServerConnection.GetCurrency(aTransactionRecord.CurrencyId),
-            FServerConnection.GetMonitoredAddresses(aTransactionRecord.CurrencyId)
-            );
+            var lAddresses = FServerConnection.GetMonitoredAddresses(aTransactionRecord.CurrencyId);
+            var lCurrency = FServerConnection.GetCurrency(aTransactionRecord.CurrencyId);
+            if (aTokenTransactions != null)
+            {
+                foreach (var lTokenTx in aTokenTransactions)
+                {
+                    var lToken = FServerConnection.GetCurrencyToken(lTokenTx.TokenAddress);
+
+                    if (lToken != null)
+                    {
+                        var lFormToken = AppMainForm.GetCurrency(lToken.Id);
+                        var lFormTransaction = GUIModelProducer.CreateFrom(lTokenTx, lToken, aTransactionRecord, lAddresses);
+                        lFormToken.Transactions.UpdateTransaction(lFormTransaction);
+                        if (!lTokenTx.Valid)
+                        {
+                            lFormToken.Transactions.RemoveTransaction(lFormTransaction);
+                            AppMainForm.RemoveTransaction(lFormTransaction);
+                        }
+                    }
+                }
+            }
+
+            var lItem = GUIModelProducer.CreateFrom(aTransactionRecord, lCurrency, lAddresses);
             var lFormCurrency = AppMainForm.GetCurrency(aTransactionRecord.CurrencyId);
             lFormCurrency.Transactions.UpdateTransaction(lItem);
             if (!aTransactionRecord.Valid)
@@ -858,6 +910,7 @@ namespace Pandora.Client.PandorasWallet
             {
                 foreach (var lTokenTx in aTokenTransactions)
                 {
+                    if (!lTokenTx.Valid) continue;
                     var lToken = FServerConnection.GetCurrencyToken(lTokenTx.TokenAddress);
                     if (lToken != null)
                     {
@@ -946,7 +999,10 @@ namespace Pandora.Client.PandorasWallet
                 var lMonitoredAddresses = FServerConnection.GetMonitoredAddresses(aCurrencyID);
                 var lTransactionOutputs = FServerConnection.GetTransactionRecords(aCurrencyID).Where(lTx => lTx.Inputs != null).SelectMany(lTx => lTx.Outputs).ToArray();
                 if (lTransactionOutputs.Any())
-                    lResult = lTransactionOutputs.Where(lTxOut => !string.IsNullOrEmpty(lTxOut.Script)).Max(lTxOut => lTxOut.Index);
+                {
+                    var lOutputsWithScript = lTransactionOutputs.Where(lTxOut => !string.IsNullOrEmpty(lTxOut.Script));
+                    lResult = lOutputsWithScript.Any() ? lOutputsWithScript.Max(lTxOut => lTxOut.Index) : 0;
+                }
             }
             return lResult;
         }
@@ -969,7 +1025,9 @@ namespace Pandora.Client.PandorasWallet
                 ToAddress = aAddress,
                 TotalFee = aTxFee,
                 IsSentAll = aSubtractFee,
-                Nonce = lNonce
+                Nonce = lNonce,
+                FiatPrice = FPriceSourceManager.GetPrice(aSelectedCoin.Id, (FiatCurrencies) Enum.Parse(typeof(FiatCurrencies), Settings.FiatCurrency)),
+                FiatSymbol = Settings.FiatCurrency
             };
 
             var lSendTransactionDlg = new SendTransactionDialog(lSendTxDialogInfo, lIsEthereum)
@@ -1008,6 +1066,7 @@ namespace Pandora.Client.PandorasWallet
         private SendingTxDialog FSendingTxDialog;
         private Task FTask;
         private TransactionMakerFactory FTransactionMakerFactory;
+        private CurrencyPriceSource FPriceSourceManager;
 
         internal string GetNewSignedTransaction(ICurrencyItem aSelectedCoin, string aToAddress, decimal aAmount, decimal aTxFee, params object[] aExtParams)
         {
@@ -1452,6 +1511,8 @@ namespace Pandora.Client.PandorasWallet
             SettingsDlg.AutoUpdate = Settings.AutoUpdate;
             SettingsDlg.SetDefaultCurrency(FServerConnection.DefualtCurrencyItem.Id, FServerConnection.DefualtCurrencyItem.Name, SystemUtils.BytesToIcon(FServerConnection.DefualtCurrencyItem.Icon).ToBitmap());
             SettingsDlg.SetActiveCurrency(AppMainForm.SelectedCurrencyId, AppMainForm.SelectedCurrency.Name, SystemUtils.BytesToIcon(AppMainForm.SelectedCurrency.Icon).ToBitmap());
+            SettingsDlg.SetFiatCurrencies(Enum.GetNames(typeof(FiatCurrencies)));
+            SettingsDlg.SelectedFiat = Settings.FiatCurrency.ToUpperInvariant();
             if (SettingsDlg.Execute())
             {
                 if (Settings.DataPath != SettingsDlg.DataPath)
@@ -1488,6 +1549,11 @@ namespace Pandora.Client.PandorasWallet
                 else
                     Program.UpgradeFileName = FServerConnection.UpgradeFileName;
                 FServerConnection.AutoUpdate = Settings.AutoUpdate;
+                if (Settings.FiatCurrency != SettingsDlg.SelectedFiat)
+                {
+                    Settings.FiatCurrency = SettingsDlg.SelectedFiat;
+                    PriceSourceManager_OnPricesUpdated(FPriceSourceManager);
+                }
                 CoreSettings.SaveSettings(Settings, FSettingsFile);
                 if (FServerConnection.DefualtCurrencyItem.Id != SettingsDlg.DefaultCurrencyId)
                 {
@@ -1499,6 +1565,7 @@ namespace Pandora.Client.PandorasWallet
                         Event_DisplayCurrency(FServerConnection.GetCurrency(SettingsDlg.DefaultCurrencyId), null, FCancellationTokenSource.Token);
                     }
                     FServerConnection.SetDefaultCurrency(SettingsDlg.DefaultCurrencyId);
+                    PriceSourceManager_OnPricesUpdated(FPriceSourceManager);
                 }
             }
         }
@@ -1793,6 +1860,8 @@ namespace Pandora.Client.PandorasWallet
             lAppMainFormCurrency.StatusDetails.StatusMessage = lCurrencyStatus.ExtendedInfo;
             lAppMainFormCurrency.StatusDetails.StatusTime = lCurrencyStatus.StatusTime;
             AppMainForm.AddCurrency(lAppMainFormCurrency);
+            if (aCurrency.ChainParamaters.Network == ChainParams.NetworkType.MainNet)
+                FPriceSourceManager.AddCurrenciesToWatch(aCurrency);
         }
 
         private void DisplayToken(ClientCurrencyTokenItem aTokenItem)
@@ -1832,6 +1901,7 @@ namespace Pandora.Client.PandorasWallet
             lAppMainFormCurrency.StatusDetails.StatusMessage = lCurrencyStatus.ExtendedInfo;
             lAppMainFormCurrency.StatusDetails.StatusTime = lCurrencyStatus.StatusTime;
             AppMainForm.AddCurrency(lAppMainFormCurrency);
+            FPriceSourceManager.AddCurrenciesToWatch(aTokenItem);
         }
 
         public void RestoreLocalCacheDB(string aRestoreFileName)

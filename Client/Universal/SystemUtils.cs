@@ -7,6 +7,7 @@ using System.Text;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
+using System.Numerics;
 
 #if MONO
 #else
@@ -19,6 +20,50 @@ namespace Pandora.Client.Universal
 {
     public static class SystemUtils
     {
+        public static BigInteger ConvertDoubleLongToBigInteger(long aAmount, long aExAmount)
+        {
+            BigInteger lBigAmount = aAmount;
+            if (aExAmount > 0)
+            {
+                string lLessSigHex = aAmount.ToString("X");
+                if (lLessSigHex.Length > 15) throw new Exception($"Unable to interpretate double long. Value to big: {lLessSigHex}");
+                if (lLessSigHex.Length < 15)
+                {
+                    int lLeadingZeros = 15 - lLessSigHex.Length;
+                    for (var lCounter = 0; lCounter < lLeadingZeros; lCounter++)
+                        lLessSigHex = string.Concat('0', lLessSigHex);
+                }
+                string lMoreSigHex = aExAmount.ToString("X");
+                string lFinalHex = string.Concat("0", lMoreSigHex, lLessSigHex);
+                lBigAmount = BigInteger.Parse(lFinalHex, System.Globalization.NumberStyles.HexNumber);
+            }
+            return lBigAmount;
+        }
+
+        public static Tuple<long, long?> ConvertHexToDoubleLong(string aHexNumber)
+        {
+            Tuple<long, long?> lResult;
+            string lValue = (aHexNumber?.ToString())?.Replace("0x", string.Empty);
+            if (lValue.Length > 15)
+            {
+                var lValueArray = new string[2];
+                lValueArray[0] = lValue.Substring(lValue.Length - 15, 15);
+                lValueArray[1] = lValue.Substring(0, lValue.Length - 15);
+                lResult = new Tuple<long, long?>(ConvertHexStringToDecimal(lValueArray[0]), ConvertHexStringToDecimal(lValueArray[1]));
+            }
+            else
+                lResult = new Tuple<long, long?>(ConvertHexStringToDecimal(lValue), null);
+            return lResult;
+        }
+
+        public static long ConvertHexStringToDecimal(dynamic aHexNumber)
+        {
+            long lResult = 0;
+            if (string.IsNullOrEmpty(aHexNumber) || !long.TryParse($"0{aHexNumber}", System.Globalization.NumberStyles.HexNumber, System.Globalization.CultureInfo.InvariantCulture, out lResult))
+                throw new Exception($"Unable to convert {aHexNumber ?? "NULL"} to decimal");
+            return lResult;
+        }
+
         public static Type[] GetChildrenFromBaseClass<T>(this Assembly aAssembly) where T : class
         {
             var lTypes = aAssembly.GetTypes()

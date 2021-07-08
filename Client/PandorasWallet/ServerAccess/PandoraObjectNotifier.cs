@@ -28,6 +28,7 @@ using Pandora.Client.ServerAccess;
 using Pandora.Client.Universal;
 using Pandora.Client.Universal.Threading;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -65,7 +66,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     {
         private Timer FFindServerItemsTimer;
         private PandoraWalletServiceAccess FServerAccess;
-        private Dictionary<long, CurrencyInfo> FExistingCurrencyIds = new Dictionary<long, CurrencyInfo>();
+        private Dictionary<long, CurrencyInfo> FCurrencyInventory = new Dictionary<long, CurrencyInfo>();
+        private Dictionary<long, TransactionTracker> FTransactionTrackers = new Dictionary<long, TransactionTracker>();
         private DateTime FTimeToCheckForNewCurrencies = DateTime.Now;
         private PandoraJsonConverter FConverter = new PandoraJsonConverter();
         private bool FExecuted;
@@ -167,11 +169,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         /// </summary>
         /// <param name="aCurrencyItem">Id of the existing currency</param>
         /// <param name="aLastCurrencyStatusItem">Id of the last known status Item recived</param>
-        public void AddExistingCurrency(CurrencyItem aCurrencyItem, CurrencyStatusItem aLastCurrencyStatusItem)
+        public void AddExistingCurrency(CurrencyItem aCurrencyItem, CurrencyStatusItem aLastCurrencyStatusItem, long aCurrentBlockHeight)
         {
             CheckIfNotifierIsExecuting();
             var lId = (uint) aCurrencyItem.Id;
-            FExistingCurrencyIds.Add(lId, new CurrencyInfo() { CurrencyItem = aCurrencyItem, LastCurrencyStatusItem = aLastCurrencyStatusItem });
+            var lCurrencyInfo = new CurrencyInfo()
+            {
+                CurrencyItem = aCurrencyItem,
+                LastCurrencyStatusItem = aLastCurrencyStatusItem,
+                BlockHeight = aCurrentBlockHeight
+            };
+            FCurrencyInventory.Add(lId, lCurrencyInfo);
+            FTransactionTrackers.Add(lId, new TransactionTracker(lCurrencyInfo));
             if (lId > LastNotifiedCurrencyId)
                 LastNotifiedCurrencyId = lId;
         }
@@ -185,10 +194,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         /// <returns></returns>
         public bool AddCurrencyToBeNotified(long aCurrencyId)
         {
-            lock (FExistingCurrencyIds)
-                if (FExistingCurrencyIds.ContainsKey(aCurrencyId))
+            lock (FCurrencyInventory)
+                if (FCurrencyInventory.ContainsKey(aCurrencyId))
                 {
-                    FExistingCurrencyIds[aCurrencyId].MonitoredCurrency = true;
+                    FCurrencyInventory[aCurrencyId].MonitoredCurrency = true;
                     return true;
                 }
             return false;
@@ -196,21 +205,20 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         /// <summary>
         /// Provide a list of existing currencies for Accounts to be notified
-        /// So this object can determin of any changes have occured to an unconfirmed
+        /// So this object can determine of any changes have occured to an unconfirmed
         /// transaction.
         /// </summary>
         /// <param name="aCurrencyId"></param>
         /// <param name="aTansactionRecords"></param>
-        public bool AddUnconfirmedTransactions(long aCurrencyId, TransactionRecord[] aTansactionRecords)
+        public bool AddDBTransactions(long aCurrencyId, IEnumerable<TransactionRecord> aTransactionRecords)
         {
-            if (aTansactionRecords.Any())
+            if (aTransactionRecords.Any())
             {
                 CheckIfNotifierIsExecuting();
-                if (FExistingCurrencyIds.ContainsKey(aCurrencyId))
+                if (FTransactionTrackers.TryGetValue(aCurrencyId, out TransactionTracker lTxTracker))
                 {
-                    FExistingCurrencyIds[aCurrencyId].LocalTransactionRecords.AddRange(aTansactionRecords);
-                    FExistingCurrencyIds[aCurrencyId].LocalTransactionRecords.Sort(TransactionRecord.GetTransactionRecordIdComparer()); //Note is this sorted correctly?
-                    FExistingCurrencyIds[aCurrencyId].LastTransactionRecordId = FExistingCurrencyIds[aCurrencyId].LocalTransactionRecords.First().TransactionRecordId - 1;
+                    foreach (var lTx in aTransactionRecords)
+                        lTxTracker.AddUpdateTransaction(lTx);
                     return true;
                 }
             }
@@ -445,12 +453,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             {
                 Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetCurrencies.");
                 GetCurrencies();
-                Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetBlockHeight.");
-                GetAllBlockHeights();
                 Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetLatestStatus.");
                 GetLatestStatus();
                 Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetTransactions");
                 GetTransactions();
+                Log.Write(LogLevel.Debug, "ThreadEventFindServerItems: GetBlockHeight.");
+                GetAllBlockHeights(); //NOTE: This shoud be always the last thing (currency related) to do
                 LookForUpgrade();
             }
             catch (Exception ex)
@@ -496,7 +504,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         if (lList.Any())
                             BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), lList.ToArray(), 0);
                 }
-                else if (!FExistingCurrencyIds.ContainsKey(aCurrencyIdArray[aStartIndex]))
+                else if (!FCurrencyInventory.ContainsKey(aCurrencyIdArray[aStartIndex]))
                 {
                     var lCurrencyItem = JsonConvert.DeserializeObject<CurrencyItem>(FServerAccess.GetCurrency(aCurrencyIdArray[aStartIndex]), FConverter);
                     if (!Terminated)
@@ -507,8 +515,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             DoOnNewCurrency(lCurrencyItem);
                             DoOnCurrencyStatusChange(lCurrencyStatusItem);
                             LastNotifiedCurrencyId = lCurrencyItem.Id;
-                            lock (FExistingCurrencyIds)
-                                FExistingCurrencyIds.Add(LastNotifiedCurrencyId, new CurrencyInfo() { CurrencyItem = lCurrencyItem, LastCurrencyStatusItem = lCurrencyStatusItem });
+                            lock (FCurrencyInventory)
+                                FCurrencyInventory.Add(LastNotifiedCurrencyId, new CurrencyInfo() { CurrencyItem = lCurrencyItem, LastCurrencyStatusItem = lCurrencyStatusItem });
                             BeginInvoke(new DelegateDoNewCurrencyThreadEvent(ThreadDoNewCurrency), aCurrencyIdArray, ++aStartIndex);
                         }
                     }
@@ -524,7 +532,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private void GetAllBlockHeights()
         {
             if (Terminated) return;
-            foreach (var lKeyValue in FExistingCurrencyIds)
+            foreach (var lKeyValue in FCurrencyInventory)
                 if (lKeyValue.Value.MonitoredCurrency)
                 {
                     var lCurrentHeight = FServerAccess.GetBlockHeight(lKeyValue.Key);
@@ -540,7 +548,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         private void GetLatestStatus()
         {
             if (Terminated) return;
-            foreach (var lKeyValue in FExistingCurrencyIds)
+            foreach (var lKeyValue in FCurrencyInventory)
                 if (lKeyValue.Value.NextReadTime < DateTime.Now)
                 {
                     string s = FServerAccess.GetCurrencyStatusList(lKeyValue.Key, lKeyValue.Value.LastCurrencyStatusItem.StatusId);
@@ -566,83 +574,49 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 }
         }
 
-        private TransactionRecord FindTransactionId(List<TransactionRecord> aTransactionRecords, long aTransactionRecordId)
-        {
-            foreach (var lTx in aTransactionRecords)
-                if (lTx.TransactionRecordId == aTransactionRecordId) return lTx;
-            return null;
-        }
-
         private void GetTransactions()
         {
             if (Terminated) return;
-            foreach (var lCurrencyInfo in FExistingCurrencyIds.Values)
-                if (lCurrencyInfo.MonitoredCurrency)
+            foreach (var lCurrencyInfo in FCurrencyInventory.Values)
+                if (lCurrencyInfo.MonitoredCurrency && FTransactionTrackers.TryGetValue(lCurrencyInfo.CurrencyItem.Id, out TransactionTracker lTxTracker))
                 {
                     bool lCanBeToken = lCurrencyInfo.CurrencyItem.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol);
                     // Get trasactions from server that is greater than > the current ID.
                     // thus this tx id must the oldest tx and has less than max Confimations
                     // just incase the tx moves to a new block in a chain reorg
-                    string s = FServerAccess.GetTransactionRecords(lCurrencyInfo.CurrencyItem.Id, lCurrencyInfo.LastTransactionRecordId, lCanBeToken);
+                    string s = FServerAccess.GetTransactionRecords(lCurrencyInfo.CurrencyItem.Id, lTxTracker.ScanTransactionRecordId, lCanBeToken);
                     List<TransactionRecord> lRemoteTransactionRecords = JsonConvert.DeserializeObject<List<TransactionRecord>>(s, FConverter);
-                    lRemoteTransactionRecords = (List<TransactionRecord>) ProcessEthereumTransactions(lCurrencyInfo, lRemoteTransactionRecords);
-                    // if we have tranacations we are looking for changes based on the max confirmations
-                    // lets see if we need to stop look for them.
-                    if (lCurrencyInfo.LocalTransactionRecords.Any())
-                    {
-                        if (Terminated) return;
-                        int lIndex = 0;
-                        while (lIndex < lCurrencyInfo.LocalTransactionRecords.Count)
-                        {
-                            if (Terminated) return;
-                            var lLocalTransactionRecord = lCurrencyInfo.LocalTransactionRecords[lIndex];
-                            var lLocalTxConfirmation = lLocalTransactionRecord.Block == 0 ? 0 : lCurrencyInfo.BlockHeight + 1 - lLocalTransactionRecord.Block;
-
-                            var lRemoteTransactionRecord = FindTransactionId(lRemoteTransactionRecords, lLocalTransactionRecord.TransactionRecordId);
-                            if (lRemoteTransactionRecord == null)
-                            {
-                                s = string.Format("Transaction Record {0} TXID {1} is missing from remote Database", lLocalTransactionRecord.TransactionRecordId, lLocalTransactionRecord.TxId);
-                                DoErrorHandler(new Exception(s));
-                                lCurrencyInfo.LocalTransactionRecords.Remove(lLocalTransactionRecord);
-                                lIndex--;
-                            }
-                            else if (!lRemoteTransactionRecord.IsEqual(lLocalTransactionRecord))
-                            {
-                                DoOnUpdatedTransaction(lRemoteTransactionRecord);
-                                lCurrencyInfo.LocalTransactionRecords[lIndex] = lRemoteTransactionRecord;
-                            }
-                            else if ((lLocalTransactionRecord.Block != 0 && lLocalTxConfirmation > lCurrencyInfo.CurrencyItem.MinConfirmations) || !lLocalTransactionRecord.Valid)
-                            {
-                                lCurrencyInfo.LocalTransactionRecords.Remove(lLocalTransactionRecord);
-                                lCurrencyInfo.LastTransactionRecordId = lLocalTransactionRecord.TransactionRecordId;      // if no more records this value will be the last to start the looking for
-                                lIndex--;
-                            }
-                            lRemoteTransactionRecords.Remove(lRemoteTransactionRecord);
-                            lIndex++;
-                        }
-                    }
+                    lRemoteTransactionRecords = (List<TransactionRecord>) ProcessForEthereumTransactions(lCurrencyInfo.CurrencyItem, lRemoteTransactionRecords);
                     if (Terminated) return;
                     // if there is any remote TX that are new we will add them to our look up list
                     if (lRemoteTransactionRecords.Any())
                     {
-                        for (int i = 0; i < lRemoteTransactionRecords.Count; i++)
+                        TransactionRecord[] lOrderedRemoteTxRecords = lRemoteTransactionRecords.OrderBy(lTx => lTx.TransactionRecordId).ToArray();
+                        for (int i = 0; i < lOrderedRemoteTxRecords.Length; i++)
                         {
-                            var lTx = lRemoteTransactionRecords[i];
-                            var lTokenTx = ProcessTokenTransaction(lCurrencyInfo, lTx);
-                            DoOnNewTransaction(lTx, lTokenTx);
-                            lCurrencyInfo.LocalTransactionRecords.Add(lTx);
+                            var lTx = lOrderedRemoteTxRecords[i];
+                            if (lTxTracker.Contains(lTx))
+                            {
+                                if (lTxTracker.CheckForChanges(lTx))
+                                {
+                                    DoOnUpdatedTransaction(lTx);
+                                    lTxTracker.AddUpdateTransaction(lTx);
+                                }
+                            }
+                            else
+                            {
+                                var lTokenTx = TryProcessNewTokenTransaction(lCurrencyInfo, lTx);
+                                DoOnNewTransaction(lTx, lTokenTx);
+                                lTxTracker.AddUpdateTransaction(lTx);
+                            }
                         }
                     }
-                    // sort records and set the last TX id to be looking for
-                    lCurrencyInfo.LocalTransactionRecords.Sort(ComparerTX);
-                    if (lCurrencyInfo.LocalTransactionRecords.Any())
-                        lCurrencyInfo.LastTransactionRecordId = lCurrencyInfo.LocalTransactionRecords.First().TransactionRecordId - 1;
                 }
         }
 
-        private IEnumerable<TransactionRecord> ProcessEthereumTransactions(CurrencyInfo aCurrencyInfo, IEnumerable<TransactionRecord> aTransactionRecords)
+        public IEnumerable<TransactionRecord> ProcessForEthereumTransactions(CurrencyItem aCurrencyItem, IEnumerable<TransactionRecord> aTransactionRecords)
         {
-            if (aCurrencyInfo.CurrencyItem.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
+            if (aCurrencyItem.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
             {
                 foreach (var lTransaction in aTransactionRecords)
                 {
@@ -660,7 +634,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return aTransactionRecords;
         }
 
-        private IEnumerable<ClientTokenTransactionItem> ProcessTokenTransaction(CurrencyInfo aCurrencyInfo, TransactionRecord aTransactionRecord)
+        private IEnumerable<ClientTokenTransactionItem> TryProcessNewTokenTransaction(CurrencyInfo aCurrencyInfo, TransactionRecord aTransactionRecord)
         {
             IEnumerable<ClientTokenTransactionItem> lResult = null;
             if (aCurrencyInfo.CurrencyItem.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol))
@@ -671,20 +645,39 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     if (lOutputScript != null)
                     {
                         var lTxJson = Encoding.UTF8.GetString(Convert.FromBase64String(lOutputScript));
-                        var lTokenInfo = JsonConvert.DeserializeObject<TokenTransactionInfo>(lTxJson);
-                        if (!string.IsNullOrEmpty(lTokenInfo.Input.Replace("0x", string.Empty)))
-                            lResult = BuildERC20TokenTransaction(aTransactionRecord, lTokenInfo);
+                        if (aTransactionRecord.TxId.Contains("FEERETURN_"))
+                        {
+                            var lTokenTxReceipt = JsonConvert.DeserializeObject<TokenTransactionReceipt>(lTxJson);
+                            string lTokenTxStatus = lTokenTxReceipt.Status.Replace("0x", string.Empty);
+                            if (!string.IsNullOrEmpty(lTokenTxStatus) && ushort.TryParse(lTokenTxStatus, out ushort lStatus))
+                            {
+                                var lStatusTx = new ClientTokenTransactionItem
+                                {
+                                    ParentTransactionID = aTransactionRecord.TxId.Replace("FEERETURN_", string.Empty),
+                                    Valid = (lStatus == 1)
+                                };
+                                DoOnUpdatedTransaction(null, new ClientTokenTransactionItem[] { lStatusTx });
+                            }
+                            else
+                                Log.Write(LogLevel.Error, $"Unable to read receipt for transaction id {aTransactionRecord.TxId}");
+                        }
+                        else
+                        {
+                            var lTokenInfo = JsonConvert.DeserializeObject<TokenTransactionInfo>(lTxJson);
+                            if (!string.IsNullOrEmpty(lTokenInfo.Input.Replace("0x", string.Empty)))
+                                lResult = BuildERC20TokenTransaction(aTransactionRecord, lTokenInfo);
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Write($"Unable to process token transaction. TxID: {aTransactionRecord.TxId}. Details: {ex}");
+                    Log.Write(LogLevel.Error, $"Unable to process token transaction. TxID: {aTransactionRecord.TxId}. Details: {ex}");
                 }
             }
             return lResult;
         }
 
-        private IEnumerable<ClientTokenTransactionItem> BuildERC20TokenTransaction(TransactionRecord aTx, TokenTransactionInfo aTokenTxInfo)
+        private IEnumerable<ClientTokenTransactionItem> BuildERC20TokenTransaction(TransactionRecord aTx, TokenTransactionInfo aTokenTxInfo, bool aIsValid = true)
         {
             var lResult = new List<ClientTokenTransactionItem>();
 
@@ -698,16 +691,12 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         To = lDecodedPayload.DestinationAddress,
                         TokenAddress = string.IsNullOrEmpty(lDecodedPayload.ContractAddress) ? aTokenTxInfo.To : lDecodedPayload.ContractAddress,
                         Amount = lDecodedPayload.AmountSent,
-                        ParentTransactionID = aTx.TxId
+                        ParentTransactionID = aTx.TxId,
+                        Valid = aIsValid
                     });
                 }
             }
             return lResult;
-        }
-
-        private int ComparerTX(TransactionRecord x, TransactionRecord y)
-        {
-            return Convert.ToInt32(x.TransactionRecordId - y.TransactionRecordId);
         }
 
         private void DoSendTransactionCompleted(SendTxPackage aDataPackage, string aErrorMsg, string aTxId)
@@ -785,11 +774,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             }
         }
 
-        private void DoOnUpdatedTransaction(TransactionRecord aTransactionRecord)
+        private void DoOnUpdatedTransaction(TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransaction = null)
         {
             try
             {
-                this.SynchronizingObject?.Invoke(OnUpdatedTransaction, new object[] { this, aTransactionRecord });
+                this.SynchronizingObject?.Invoke(OnUpdatedTransaction, new object[] { this, aTransactionRecord, aTokenTransaction });
             }
             catch (Exception e)
             {
@@ -840,13 +829,18 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             public string Input { get; set; }
         }
 
+        private class TokenTransactionReceipt
+        {
+            public string GasUsed { get; set; }
+            public string Status { get; set; }
+        }
+
         private class CurrencyInfo
         {
             public CurrencyInfo()
             {
                 MonitoredCurrency = false;
                 NextReadTime = DateTime.Now;
-                LocalTransactionRecords = new List<TransactionRecord>();
                 LastCurrencyStatusItem = new CurrencyStatusItem();
             }
 
@@ -855,8 +849,52 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             public bool MonitoredCurrency;
             public DateTime NextReadTime;
             public long BlockHeight;
-            public long LastTransactionRecordId;
-            public List<TransactionRecord> LocalTransactionRecords;
+        }
+
+        private class TransactionTracker
+        {
+            private ConcurrentDictionary<string, TransactionRecord> FTransactionRecordsCache;
+            private CurrencyInfo FCurrencyInfo;
+            private long FLastTxRecordId;
+            public long ScanTransactionRecordId => FTransactionRecordsCache.Any() ? FTransactionRecordsCache.Values.Min(lTx => lTx.TransactionRecordId) - 1 : FLastTxRecordId;
+
+            public IEnumerable<TransactionRecord> TransactionCache => FTransactionRecordsCache.Values.OrderBy(lTx => lTx.TransactionRecordId);
+
+            public TransactionTracker(CurrencyInfo aCurrencyInfo)
+            {
+                FCurrencyInfo = aCurrencyInfo;
+                FTransactionRecordsCache = new ConcurrentDictionary<string, TransactionRecord>();
+            }
+
+            public void AddUpdateTransaction(TransactionRecord aTransaction)
+            {
+                if (aTransaction.TransactionRecordId > FLastTxRecordId)
+                    FLastTxRecordId = aTransaction.TransactionRecordId;
+                FTransactionRecordsCache.TryAdd(aTransaction.TxId, aTransaction);
+
+                //Clean cache from confirmed transactions
+                var lToRemoveTransactions = FTransactionRecordsCache.Where(lTxKeyPair => (lTxKeyPair.Value.Block > 0) && ((FCurrencyInfo.BlockHeight - lTxKeyPair.Value.Block) > (2 * FCurrencyInfo.CurrencyItem.MinConfirmations))).ToArray();
+                foreach (var lTx in lToRemoveTransactions)
+                    RemoveTransaction(lTx.Key);
+            }
+
+            public bool Contains(TransactionRecord aTx)
+            {
+                return FTransactionRecordsCache.ContainsKey(aTx.TxId);
+            }
+
+            public bool CheckForChanges(TransactionRecord aTx)
+            {
+                bool lResult = false;
+                if (FTransactionRecordsCache.TryGetValue(aTx.TxId, out TransactionRecord lCacheTx))
+                    lResult = !aTx.IsEqual(lCacheTx);
+                return lResult;
+            }
+
+            public void RemoveTransaction(string aTxID)
+            {
+                FTransactionRecordsCache.TryRemove(aTxID, out _);
+            }
         }
     }
 }

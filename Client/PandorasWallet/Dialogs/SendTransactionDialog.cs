@@ -34,7 +34,15 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         private decimal FTotalAmounToSend;
         private SendTransactionInfo FTxInfo;
 
-        public decimal TotalAmountToSend { get => FTotalAmounToSend; private set { lblAmount.Text = $"{value} {FTxInfo.BalanceTicker}"; FTotalAmounToSend = value; } }
+        public decimal TotalAmountToSend
+        {
+            get => FTotalAmounToSend;
+            private set
+            {
+                lblAmount.Text = $"{value} {FTxInfo.BalanceTicker} ≈ {FTxInfo.FiatSymbol} {Math.Round(FTxInfo.FiatPrice * value, 2)}";
+                FTotalAmounToSend = value;
+            }
+        }
 
         public object[] AdvancedTxOptions { get; internal set; }
 
@@ -107,7 +115,8 @@ namespace Pandora.Client.PandorasWallet.Dialogs
                 lAmountDiscounted = IsToken() ? FTxInfo.AmountToSend : FTxInfo.AmountToSend + GetTotalFee();
                 TotalAmountToSend = FTxInfo.AmountToSend;
             }
-            lblTxFee.Text = $"{GetTotalFee()} {FTxInfo.FeeTicker}";
+            var lTotalFee = GetTotalFee();
+            lblTxFee.Text = $"{lTotalFee} {FTxInfo.FeeTicker} ≈ {FTxInfo.FiatSymbol} {Math.Round(FTxInfo.FiatPrice * lTotalFee, 2)}";
             lblDiscounted.Text = $"-{lAmountDiscounted} {FTxInfo.BalanceTicker}";
             lBalanceAfter = FTxInfo.CurrentBalance - lAmountDiscounted;
             lblBalanceAfter.Text = $"{lBalanceAfter} {FTxInfo.BalanceTicker}";
@@ -140,6 +149,8 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             public decimal FeeRate { get; set; }
             public bool IsSentAll { get; set; }
             public int Nonce { get; set; }
+            public decimal FiatPrice { get; set; }
+            public string FiatSymbol { get; set; }
         }
 
         private void numericCustomFee_ValueChanged(object sender, EventArgs e)

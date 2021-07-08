@@ -12,10 +12,10 @@
     <ROW Property="DBUser" Value="cat"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{5A9ECD34-7567-4E92-B860-4D50F463DECE} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{B2BA4954-15B7-418D-8003-2BC6AA76C0C8} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet v1.1"/>
-    <ROW Property="ProductVersion" Value="1.1.42.2557" Type="32" TargetFile="PandorasWallet.exe_1"/>
+    <ROW Property="ProductVersion" Value="1.1.45.2578" Type="32" TargetFile="PandorasWallet.exe_1"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{15B4F25B-B7AD-4B1B-9D26-98A1319C788C}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -78,6 +78,7 @@
     <ROW Component="Pandora.Client.Crypto.dll" ComponentId="{3E12F171-DC1D-4221-92D0-943845B0DF83}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Crypto.dll"/>
     <ROW Component="Pandora.Client.Exchange.JKrof.dll" ComponentId="{D36C7A1A-2218-4F91-BBF0-5EF27131BBA9}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.JKrof.dll"/>
     <ROW Component="Pandora.Client.Exchange.dll" ComponentId="{5DF341F9-7D11-4FB7-8BD1-F4EDF8A7A439}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.dll"/>
+    <ROW Component="Pandora.Client.PriceSource.dll" ComponentId="{44A9B04A-48BD-41A7-9B29-2AECA4F75A83}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.PriceSource.dll"/>
     <ROW Component="Pandora.Client.ServerAccess.dll" ComponentId="{9EABB609-B5C3-48B8-82FD-9602211E03AB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.ServerAccess.dll"/>
     <ROW Component="Pandora.Client.SystemBackup.dll" ComponentId="{DC2D064B-03C0-4F32-BD23-C5D34A8F66CB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.SystemBackup.dll"/>
     <ROW Component="Pandora.Client.Universal.dll" ComponentId="{0A7F2746-683E-4F7E-A716-338FF00DACB2}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Universal.dll"/>
@@ -164,6 +165,7 @@
     <ROW File="Owin.dll" Component_="Owin.dll" FileName="Owin.dll" Attributes="0" SourcePath="..\..\bin\Release\Owin.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.Crypto.Currencies.Ethereum.dll" Component_="Pandora.Client.Crypto.Currencies.Ethereum.dll" FileName="PANDOR~8.DLL|Pandora.Client.Crypto.Currencies.Ethereum.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Crypto.Currencies.Ethereum.dll" SelfReg="false"/>
     <ROW File="Pandora.Server.Crypto.dll" Component_="Pandora.Server.Crypto.dll" FileName="PANDOR~9.DLL|Pandora.Server.Crypto.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Server.Crypto.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.PriceSource.dll" Component_="Pandora.Client.PriceSource.dll" FileName="PANDO~10.DLL|Pandora.Client.PriceSource.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.PriceSource.dll" SelfReg="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.custcomp.AiPropertyAliasComponent">
     <ROW AliasRowId="DBServer" AliasRowOperation="1"/>
@@ -183,6 +185,12 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.DigCertStoreComponent">
     <ROW TimeStampUrl="http://timestamp.digicert.com" SignerDescription="[|ProductName]" SignOptions="0" SignTool="0" UseSha256="1"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.FileDependencyComponent">
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Pandora.Client.PriceSource.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.FileDependencyOptionComponent">
+    <ROW File="PandorasWallet.exe_1" Exclude="mscorlib.dll|System.dll|netstandard.dll|System.Numerics.dll|System.Core.dll|System.Xml.dll|System.Xml.Linq.dll|System.Runtime.Serialization.dll|System.Data.dll|System.Windows.Forms.dll|System.Drawing.dll|System.Net.Http.dll|System.Net.Http.WebRequest.dll|System.Web.dll|System.Transactions.dll|Microsoft.CSharp.dll|System.ServiceModel.dll|System.Runtime.dll|System.Resources.ResourceManager.dll|System.Diagnostics.Tracing.dll|System.Threading.dll|System.Diagnostics.Debug.dll" Sha1="b599c288b1edbf68f23b7e8a5513825d18aa07e9"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
     <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
@@ -353,6 +361,7 @@
     <ROW Feature_="ClientsFeature" Component_="Owin.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Crypto.Currencies.Ethereum.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Server.Crypto.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.PriceSource.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
     <ROW Name="PandorasWallet_1.exe" SourcePath="..\Icons\Pandora&apos;s Wallet.ico" Index="0"/>

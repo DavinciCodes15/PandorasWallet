@@ -22,6 +22,7 @@ namespace Pandora.Client.PandorasWallet.Models
         string To { get; }
         BigInteger Amount { get; }
         string TokenAddress { get; }
+        bool Valid { get; }
     }
 
     public class ClientTokenTransactionItem : IClientTokenTransaction
@@ -37,6 +38,7 @@ namespace Pandora.Client.PandorasWallet.Models
             Amount = aClientTokenTransaction.Amount;
             TokenAddress = aClientTokenTransaction.TokenAddress;
             ParentTransactionID = aClientTokenTransaction.ParentTransactionID;
+            Valid = aClientTokenTransaction.Valid;
         }
 
         public string From { get; set; }
@@ -44,6 +46,8 @@ namespace Pandora.Client.PandorasWallet.Models
         public BigInteger Amount { get; set; }
         public string TokenAddress { get; set; }
         public string ParentTransactionID { get; set; }
+
+        public bool Valid { get; set; }
 
         private long FRecordID;
 

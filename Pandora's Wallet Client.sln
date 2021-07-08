@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandora.Client.PandorasWallet", "Client\PandorasWallet\Pandora.Client.PandorasWallet.csproj", "{0E7309A6-B089-43BC-8F90-466661A46EA4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandora.Client.Crypto", "Client\Crypto\Pandora.Client.Crypto.csproj", "{74BF1128-0E40-4D89-814B-9B7565C211B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandora.Client.Universal", "Client\Universal\Pandora.Client.Universal.csproj", "{E798FC0D-EAFD-49A9-B5FB-5391AD59364F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pandora.Client.Universal", "Client\Universal\Pandora.Client.Universal.csproj", "{E798FC0D-EAFD-49A9-B5FB-5391AD59364F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandora.Client.ServerAccess", "Client\ServerAccess\Pandora.Client.ServerAccess.csproj", "{9DEE773E-3023-46FE-945B-AFF5974D1170}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutocompleteMenu", "Libs\AutocompleteMenu\AutocompleteMenu.csproj", "{43CBC9AA-6A8E-463F-83A9-AFF3124AFDB6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandora.Client.Crypto.Currencies.Ethereum", "Client\Crypto\Currencies\Ethereum\Pandora.Client.Crypto.Currencies.Ethereum.csproj", "{D1930F9B-4E8C-41F6-BD0D-9421C68F532C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pandora.Client.PriceSource", "Client\PriceSource\Pandora.Client.PriceSource.csproj", "{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -121,12 +123,20 @@ Global
 		{D1930F9B-4E8C-41F6-BD0D-9421C68F532C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D1930F9B-4E8C-41F6-BD0D-9421C68F532C}.RemoteDebug|Any CPU.ActiveCfg = RemoteDebug|Any CPU
 		{D1930F9B-4E8C-41F6-BD0D-9421C68F532C}.RemoteDebug|Any CPU.Build.0 = RemoteDebug|Any CPU
+		{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}.Debug32|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}.Debug32|Any CPU.Build.0 = Debug|Any CPU
+		{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}.RemoteDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A9EA64B-881A-4BF2-AD75-2760F7AFF5FF}.RemoteDebug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		                SolutionGuid = {38BFCE37-BDA8-40EF-83D6-6AD82D6B0C3B}
 		SolutionGuid = {E5B3AFCC-5AF8-4BFC-80DA-04868F972990}
+		                SolutionGuid = {38BFCE37-BDA8-40EF-83D6-6AD82D6B0C3B}
 	EndGlobalSection
 EndGlobal

@@ -36,6 +36,8 @@
             this.btnChangeDefaultCoin = new System.Windows.Forms.Button();
             this.BrowseButton = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.cmboBoxFiatCurrency = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.cbAutoUpdate = new System.Windows.Forms.CheckBox();
             this.lblSelectedCoin = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -52,16 +54,14 @@
             // btnCancel
             // 
             this.btnCancel.BackColor = System.Drawing.Color.Transparent;
-            this.btnCancel.Location = new System.Drawing.Point(341, 260);
+            this.btnCancel.Location = new System.Drawing.Point(341, 295);
             this.btnCancel.UseVisualStyleBackColor = false;
-            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // btnOK
             // 
             this.btnOK.BackColor = System.Drawing.Color.Transparent;
-            this.btnOK.Location = new System.Drawing.Point(259, 260);
+            this.btnOK.Location = new System.Drawing.Point(259, 295);
             this.btnOK.UseVisualStyleBackColor = false;
-            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // txtDataPath
             // 
@@ -69,7 +69,6 @@
             this.txtDataPath.Name = "txtDataPath";
             this.txtDataPath.Size = new System.Drawing.Size(228, 20);
             this.txtDataPath.TabIndex = 11;
-            this.txtDataPath.Leave += new System.EventHandler(this.txtDataPath_Leave);
             // 
             // lblDataPath
             // 
@@ -125,6 +124,8 @@
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.cmboBoxFiatCurrency);
+            this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.cbAutoUpdate);
             this.groupBox2.Controls.Add(this.lblSelectedCoin);
             this.groupBox2.Controls.Add(this.label2);
@@ -140,10 +141,27 @@
             this.groupBox2.Controls.Add(this.label1);
             this.groupBox2.Location = new System.Drawing.Point(16, 12);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(400, 242);
+            this.groupBox2.Size = new System.Drawing.Size(400, 277);
             this.groupBox2.TabIndex = 22;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Wallet";
+            // 
+            // cmboBoxFiatCurrency
+            // 
+            this.cmboBoxFiatCurrency.FormattingEnabled = true;
+            this.cmboBoxFiatCurrency.Location = new System.Drawing.Point(189, 235);
+            this.cmboBoxFiatCurrency.Name = "cmboBoxFiatCurrency";
+            this.cmboBoxFiatCurrency.Size = new System.Drawing.Size(186, 21);
+            this.cmboBoxFiatCurrency.TabIndex = 29;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(66, 238);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(117, 13);
+            this.label3.TabIndex = 28;
+            this.label3.Text = "Selected Fiat Currency:";
             // 
             // cbAutoUpdate
             // 
@@ -154,7 +172,6 @@
             this.cbAutoUpdate.TabIndex = 27;
             this.cbAutoUpdate.Text = "Auto Update";
             this.cbAutoUpdate.UseVisualStyleBackColor = true;
-            this.cbAutoUpdate.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
             // lblSelectedCoin
             // 
@@ -217,13 +234,12 @@
             this.checkEncryptWallet.TabIndex = 21;
             this.checkEncryptWallet.Text = "Ask for wallet password (Encrypt Wallet)";
             this.checkEncryptWallet.UseVisualStyleBackColor = true;
-            this.checkEncryptWallet.CheckedChanged += new System.EventHandler(this.checkEncryptWallet_CheckedChanged);
             // 
             // SettingsDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.BackColor = System.Drawing.SystemColors.InactiveCaption;
-            this.ClientSize = new System.Drawing.Size(428, 295);
+            this.ClientSize = new System.Drawing.Size(428, 330);
             this.Controls.Add(this.groupBox2);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximumSize = new System.Drawing.Size(500, 500);
@@ -232,7 +248,6 @@
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Pandora\'s Wallet Settings";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SettingsDialogDummy_FormClosing);
-            this.Shown += new System.EventHandler(this.SettingsDialogDummy_Shown);
             this.Controls.SetChildIndex(this.btnOK, 0);
             this.Controls.SetChildIndex(this.btnCancel, 0);
             this.Controls.SetChildIndex(this.groupBox2, 0);
@@ -260,5 +275,7 @@
         private System.Windows.Forms.PictureBox imgCurrentCoin;
         private System.Windows.Forms.Label lblSelectedCoin;
         private System.Windows.Forms.CheckBox cbAutoUpdate;
+        private System.Windows.Forms.ComboBox cmboBoxFiatCurrency;
+        private System.Windows.Forms.Label label3;
     }
 }

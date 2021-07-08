@@ -22,6 +22,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Pandora.Client.ClientLib;
+using Pandora.Client.Crypto.Currencies;
 using Pandora.Client.PandorasWallet.Models;
 using Pandora.Client.PandorasWallet.Wallet;
 using Pandora.Client.ServerAccess;
@@ -40,7 +41,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
     {
         private PandoraWalletServiceAccess FPandoraWalletServiceAccess;
         private PandoraObjectNotifier FPandoraObjectNotifier;
-        private PandoraJsonConverter FConverter = new PandoraJsonConverter();  
+        private PandoraJsonConverter FConverter = new PandoraJsonConverter();
         private LocalCacheDB FLocalCacheDB;
         private List<string> FInternalErrors = new List<string>();
         private UserStatus FCurrentStatus;
@@ -69,18 +70,19 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             aServerConnection.FLocalCacheDB = new LocalCacheDB(lDestFile);
         }
 
-        public void ClearCacheWallet() {
+        public void ClearCacheWallet()
+        {
             try
             {
                 StopDataUpdating();
-                
+
                 FLocalCacheDB.ClearCacheWallet();
-               
-                StartDataUpdating();               
+
+                StartDataUpdating();
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
-               Log.Write(LogLevel.Error, "Error in Server Connection During ClearCacheWallet : " + ex.Message);
+                Log.Write(LogLevel.Error, "Error in Server Connection During ClearCacheWallet : " + ex.Message);
             }
         }
 
@@ -237,8 +239,6 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             return lAddressExists;
         }
 
-      
-
         private void CreatePandoraObjectNotifier(PandoraWalletServiceAccess aServerAccess)
         {
             FPandoraObjectNotifier = new PandoraObjectNotifier(aServerAccess.RemoteServer, aServerAccess.Port, aServerAccess.EncryptedConnection, aServerAccess.ConnectionId, DataPath);
@@ -264,17 +264,17 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     {
                         long lCurrencyId = lCurrency.Id;
                         var lCurrencyStatusItem = FLocalCacheDB.ReadCurrencyStatus(lCurrencyId);
+                        long lStartBlock = FLocalCacheDB.ReadBlockHeight(lCurrencyId) - (lCurrency.MinConfirmations * 2);
                         if (lCurrencyStatusItem != null)
-                            FPandoraObjectNotifier.AddExistingCurrency(lCurrency, lCurrencyStatusItem);
+                            FPandoraObjectNotifier.AddExistingCurrency(lCurrency, lCurrencyStatusItem, lStartBlock);
 
                         //If the currency is being monitored (selected as a currency)
                         List<CurrencyAccount> lCurrencyAccountList = FLocalCacheDB.ReadMonitoredAccounts(lCurrencyId);
                         if (lCurrencyAccountList.Any())
                         {
                             FPandoraObjectNotifier.AddCurrencyToBeNotified(lCurrencyId);
-                            long lStartBlock = FLocalCacheDB.ReadBlockHeight(lCurrencyId) - lCurrency.MinConfirmations;
-                            var lTransactionRecords = FLocalCacheDB.ReadTransactionRecords(lCurrencyId, lStartBlock);
-                            Log.Write(LogLevel.Debug, "For currency '{0}' ID:{1} found {2} unconfirmed.", lCurrency.Name, lCurrencyId, lTransactionRecords.Count);
+                            var lTransactionRecords = FLocalCacheDB.ReadTransactionRecords(lCurrencyId, lStartBlock).ToList();
+                            Log.Write(LogLevel.Debug, "For currency '{0}' ID:{1} found {2} unconfirmed.", lCurrency.Name, lCurrencyId, lTransactionRecords.Count());
 
                             if (!lTransactionRecords.Any())
                             {
@@ -285,9 +285,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                     lTransactionRecords.Add(lTx);
                                 }
                                 else
-                                    Log.Write(LogLevel.Debug, "Found no transaction records.", lCurrency.Name, lCurrencyId, lTransactionRecords.Count);
+                                    Log.Write(LogLevel.Debug, "Found no transaction records.", lCurrency.Name, lCurrencyId, lTransactionRecords.Count());
                             }
-                            FPandoraObjectNotifier.AddUnconfirmedTransactions(lCurrencyId, lTransactionRecords.ToArray());
+                            FPandoraObjectNotifier.AddDBTransactions(lCurrencyId, lTransactionRecords.ToArray());
                         }
                     }
                 }
@@ -314,12 +314,28 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             FLocalCacheDB.WriteTransactionSentData(aTxData, aTxId, aCurrencyId, aStartTime, aEndTime);
         }
 
-        private void PandoraObjectNotifier_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransactionItem)
+        private void PandoraObjectNotifier_OnUpdatedTransaction(object aSender, TransactionRecord aTransactionRecord, IEnumerable<ClientTokenTransactionItem> aTokenTransactions)
         {
             if (FLocalCacheDB == null) return; // Note: if the thread sent out this message before the object was terminated
-            Log.Write(LogLevel.Debug, "Updated Transaction TxId {0}\r\n        ID: {1}, bock: {2}, Valid: {3}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid);
-            FLocalCacheDB.Write(aTransactionRecord);
-            OnUpdatedTransaction?.Invoke(this, aTransactionRecord);
+            if (aTokenTransactions != null)
+            {
+                foreach (var lTokenTransaction in aTokenTransactions)
+                {
+                    if (FLocalCacheDB.UpdateTokenTransactions(lTokenTransaction.ParentTransactionID, lTokenTransaction.Valid))
+                    {
+                        var lJustUpdatedTokenTx = FLocalCacheDB.ReadTokenTransactionsByCurrencyTxID(lTokenTransaction.ParentTransactionID).Select(lTTx => new ClientTokenTransactionItem(lTTx)).ToList();
+                        var lParentTx = FLocalCacheDB.ReadTransactionRecords(lTokenTransaction.ParentTransactionID).SingleOrDefault();
+                        if (lParentTx != null)
+                            OnUpdatedTransaction?.Invoke(this, lParentTx, lJustUpdatedTokenTx);
+                    }
+                }
+            }
+            if (aTransactionRecord != null)
+            {
+                Log.Write(LogLevel.Debug, "Updated Transaction TxId {0}\r\n        ID: {1}, bock: {2}, Valid: {3}", aTransactionRecord.TxId, aTransactionRecord.TransactionRecordId, aTransactionRecord.Block, aTransactionRecord.Valid);
+                FLocalCacheDB.Write(aTransactionRecord);
+                OnUpdatedTransaction?.Invoke(this, aTransactionRecord);
+            }
         }
 
         private void PandoraObjectNotifier_OnUpdatedCurrency(object aSender, CurrencyItem aCurrencyItem)
@@ -436,8 +452,11 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         public IEnumerable<TransactionRecord> DirectGetTransactionRecords(long aCurrencyId, long aStartTxRecordId)
         {
             CheckConnected();
-            Log.Write(LogLevel.Warning, "A direct call to DirectGetCurrencyStatus should not be made.");
-            return JsonConvert.DeserializeObject<List<TransactionRecord>>(FPandoraWalletServiceAccess.GetTransactionRecords(aCurrencyId, aStartTxRecordId), FConverter);
+            Log.Write(LogLevel.Warning, "A direct call to DirectGetTransactions should not be made.");
+            var lCurrency = GetCurrency(aCurrencyId);
+            bool lCanBeToken = lCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol);
+            string lRawTxs = FPandoraWalletServiceAccess.GetTransactionRecords(aCurrencyId, aStartTxRecordId, lCanBeToken);
+            return FPandoraObjectNotifier.ProcessForEthereumTransactions(lCurrency, JsonConvert.DeserializeObject<List<TransactionRecord>>(lRawTxs, FConverter));
         }
 
         public string DirectCreateTransaction(CurrencyTransaction aSendTx)
