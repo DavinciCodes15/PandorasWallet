@@ -8,7 +8,7 @@
 		<OutputPath>$(SolutionDir)bin\DEBUG\</OutputPath>
 	</PropertyGroup>
 	<PropertyGroup>
-		<SignAssembly>true</SignAssembly>
+		<SignAssembly>false</SignAssembly>
 		<AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
 		<DelaySign>false</DelaySign>
 		<AssemblyVersion>1.1.42.2492</AssemblyVersion>

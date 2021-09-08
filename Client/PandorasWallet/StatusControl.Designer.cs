@@ -43,10 +43,11 @@
             this.columnHeader1,
             this.columnHeader2});
             this.lstStatus.FullRowSelect = true;
-            this.lstStatus.Location = new System.Drawing.Point(3, 20);
+            this.lstStatus.HideSelection = false;
+            this.lstStatus.Location = new System.Drawing.Point(0, 0);
             this.lstStatus.MultiSelect = false;
             this.lstStatus.Name = "lstStatus";
-            this.lstStatus.Size = new System.Drawing.Size(550, 283);
+            this.lstStatus.Size = new System.Drawing.Size(554, 288);
             this.lstStatus.TabIndex = 0;
             this.lstStatus.UseCompatibleStateImageBehavior = false;
             this.lstStatus.View = System.Windows.Forms.View.Details;
@@ -63,8 +64,9 @@
             // 
             // lblStatusBar
             // 
+            this.lblStatusBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblStatusBar.AutoSize = true;
-            this.lblStatusBar.Location = new System.Drawing.Point(3, 4);
+            this.lblStatusBar.Location = new System.Drawing.Point(3, 292);
             this.lblStatusBar.Name = "lblStatusBar";
             this.lblStatusBar.Size = new System.Drawing.Size(167, 13);
             this.lblStatusBar.TabIndex = 80;
@@ -77,7 +79,7 @@
             this.Controls.Add(this.lblStatusBar);
             this.Controls.Add(this.lstStatus);
             this.Name = "StatusControl";
-            this.Size = new System.Drawing.Size(555, 307);
+            this.Size = new System.Drawing.Size(554, 310);
             this.ResumeLayout(false);
             this.PerformLayout();
 

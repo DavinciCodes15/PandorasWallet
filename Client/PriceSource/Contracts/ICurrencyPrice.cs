@@ -10,6 +10,7 @@ namespace Pandora.Client.PriceSource.Contracts
     {
         string Id { get; }
         string Name { get; }
+        string Ticker { get; }
         string Reference { get; }
         decimal Price { get; }
     }

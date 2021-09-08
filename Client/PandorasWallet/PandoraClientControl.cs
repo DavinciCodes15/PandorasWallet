@@ -109,10 +109,46 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.TickerTotalReceived = string.Empty;
             AppMainForm.OnClearWalletCache += AppMainForm_OnClearWalletCache;
             AppMainForm.OnSignMessage += AppMainForm_OnSignMessage;
+            AppMainForm.OnExportTxsMenuClick += AppMainForm_OnExportTxsMenuClick;
 
             //Start CurrencyPriceSource if not already started
             FPriceSourceManager = CurrencyPriceSource.GetInstance();
             FPriceSourceManager.OnPricesUpdated += PriceSourceManager_OnPricesUpdated;
+        }
+
+        private void AppMainForm_OnExportTxsMenuClick(string aSaveFilePath)
+        {
+            var lDisplayedCurrencies = FServerConnection.GetDisplayedCurrencies().Cast<ICurrencyIdentity>();
+            var lDisplayedTokens = FServerConnection.GetDisplayedCurrencyTokens().Cast<ICurrencyIdentity>();
+            var lReportContent = new StringBuilder();
+            lReportContent.Append("TransactionID,Currency,IsToken,DateTime,Amount,Type,BlockNumber,IsConfirmed,TxFee" + Environment.NewLine);
+            foreach (ICurrencyIdentity lCurrency in lDisplayedCurrencies.Concat(lDisplayedTokens))
+            {
+                var lFormCurrency = AppMainForm.GetCurrency(lCurrency.Id);
+                var lFormTxs = lFormCurrency.Transactions.TransactionItems;
+                foreach (var lFormTx in lFormTxs)
+                {
+                    string lTxType;
+                    switch (lFormTx.TxType)
+                    {
+                        case TransactionDirection.Both:
+                            lTxType = "Debit";
+                            break;
+
+                        case TransactionDirection.Unknown:
+                            lTxType = "Undetermined";
+                            break;
+
+                        default:
+                            lTxType = Enum.GetName(typeof(TransactionDirection), lFormTx.TxType);
+                            break;
+                    }
+
+                    bool lIsToken = lCurrency.Id < 0;
+                    lReportContent.AppendLine($"{lFormTx.TxId},{lCurrency.Name},{lIsToken},{lFormTx.TxDate},{lFormTx.Amount},{lTxType},{lFormTx.BlockNumber},{lFormTx.Confirmed},{lFormTx.Fee}");
+                }
+            }
+            File.WriteAllText(aSaveFilePath, lReportContent.ToString());
         }
 
         private void SetDefaultCurrencyTokens()
@@ -239,6 +275,9 @@ namespace Pandora.Client.PandorasWallet
                             Icon = Globals.IconToBytes(lDialogToken.Icon),
                             Id = lMinTokenID - 3 //Token Ids are negatives
                         };
+                        var lCurrencies = FServerConnection.GetCurrencies();
+                        if (lCurrencies.Any(lCurrency => string.Equals(lCurrency.Ticker, lAddedTokenItem.Ticker) || string.Equals(lCurrency.Name, lAddedTokenItem.Name)))
+                            throw new Exception($"Can not add token {lAddedTokenItem.Name} ({lAddedTokenItem.Ticker}). There is already a currency register with this identification.");
                         FServerConnection.RegisterNewCurrencyToken(lAddedTokenItem);
                     }
                     FServerConnection.SetDisplayedCurrencyToken(lAddedTokenItem.Id, true);
@@ -407,7 +446,7 @@ namespace Pandora.Client.PandorasWallet
                 AppMainForm.StandardErrorMsgBox("Send Error", $"No balance for {AppMainForm.SelectedCurrency.Name}!");
             else
             {
-                var lTxFee = CalculateTxFee(AppMainForm.ToSendAddress, aAmountToSend, AppMainForm.SelectedCurrency, out decimal lFeePerKb);
+                var lTxFee = CalculateTxFee(AppMainForm.ToSendAddress, AppMainForm.SelectedCurrency, out decimal lFeePerKb);
                 ExecuteSendTxDialog(aAmountToSend, AppMainForm.SelectedCurrency, lTxFee, lFeePerKb, AppMainForm.SelectedCurrency.Balances.Total, AppMainForm.ToSendAddress, lUnspent[0].Address, aSubtractFee);
             }
         }
@@ -1080,7 +1119,7 @@ namespace Pandora.Client.PandorasWallet
             lTransactionMaker.SendRawTransaction(aRawTX, aTxSentEventDelegate);
         }
 
-        internal decimal CalculateTxFee(string aToAddress, decimal aAmount, ICurrencyItem aCurrency, out decimal aFeePerKb)
+        internal decimal CalculateTxFee(string aToAddress, ICurrencyItem aCurrency, out decimal aFeePerKb)
         {
             decimal lResult;
 
@@ -1124,23 +1163,21 @@ namespace Pandora.Client.PandorasWallet
             return lResult;
         }
 
-        internal decimal CalculateTxFee(string aToAddress, decimal aAmount, long aCurrencyId)
+        internal decimal CalculateTxFee(long aCurrencyId, string aToAddress = "")
         {
-            return CalculateTxFee(aToAddress, aAmount, FServerConnection.GetCurrency(aCurrencyId), out _);
+            var lCurrency = AppMainForm.GetCurrency(aCurrencyId);
+            return CalculateTxFee(aToAddress, lCurrency, out _);
         }
 
         public decimal GetBalance(long aCurrencyId)
         {
-            var lOutputs = FServerConnection.GetUnspentOutputs(aCurrencyId);
-            BigInteger lTotal = 0;
-            foreach (var lOutput in lOutputs)
-                lTotal += lOutput.Amount;
-            return GetCurrency(aCurrencyId).AmountToDecimal(lTotal);
+            var lGUICurrency = AppMainForm.GetCurrency(aCurrencyId);
+            return lGUICurrency?.Balances?.Total ?? throw new Exception($"Balance for currency id {aCurrencyId} not found");
         }
 
-        public CurrencyItem GetCurrency(long aCurrencyId)
+        public ICurrencyItem GetCurrency(long aCurrencyId)
         {
-            return FServerConnection.GetCurrency(aCurrencyId);
+            return AppMainForm.GetCurrency(aCurrencyId);
         }
 
         private void AppMainForm_OnSendAllMenuClick(object sender, EventArgs e)
@@ -2120,7 +2157,7 @@ namespace Pandora.Client.PandorasWallet
                     {
                         FExchangeControl.EndBackupRestore(lExchangeDBCopyFileName);
                     }
-                    FExchangeControl.SaveRestoredKeyAndSecret(lEncryptedKey, lEncryptedSecret);
+                    FExchangeControl.SaveRestoredKeyAndSecret();
                 }
                 else
                 {

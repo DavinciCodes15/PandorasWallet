@@ -20,6 +20,19 @@ namespace Pandora.Client.Universal
 {
     public static class SystemUtils
     {
+        public static IEnumerable<Type> GetLoadableTypes(this Assembly assembly)
+        {
+            if (assembly == null) throw new ArgumentNullException(nameof(assembly));
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                return e.Types.Where(t => t != null);
+            }
+        }
+
         public static BigInteger ConvertDoubleLongToBigInteger(long aAmount, long aExAmount)
         {
             BigInteger lBigAmount = aAmount;
@@ -95,6 +108,11 @@ namespace Pandora.Client.Universal
                 icon.Save(ms);
                 return ms.ToArray();
             }
+        }
+
+        public static int ToUnixTimestamp(this DateTime value)
+        {
+            return (int) Math.Truncate((value.ToUniversalTime().Subtract(new DateTime(1970, 1, 1))).TotalSeconds);
         }
 
         public static byte[] ImageToByte(Image img)

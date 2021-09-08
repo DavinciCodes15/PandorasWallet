@@ -2,20 +2,23 @@
 <DOCUMENT Type="Advanced Installer" CreateVersion="15.1" version="17.3" Modules="enterprise" RootPath="." Language="en" Id="{011E0EA6-A7D2-4072-BB19-019DD7A57009}">
   <COMPONENT cid="caphyon.advinst.msicomp.MsiPropsComponent">
     <ROW Property="AI_BITMAP_DISPLAY_MODE" Value="0"/>
+    <ROW Property="AI_ThemeStyle" Value="aero" MsiKey="AI_ThemeStyle"/>
     <ROW Property="AI_UPGRADE" Value="YES"/>
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
     <ROW Property="ARPPRODUCTICON" Value="PandorasWallet_1.exe" Type="8"/>
+    <ROW Property="BannerBitmap" Value="banner" MultiBuildValue="MsiBuild:PWInstallerBannerImage.jpg" Type="1" MsiKey="BannerBitmap"/>
     <ROW Property="DBName" Value="Pandora"/>
     <ROW Property="DBPassword" Value="support"/>
     <ROW Property="DBServer" Value="ontime\davinciaxosoft"/>
     <ROW Property="DBUser" Value="cat"/>
+    <ROW Property="DialogBitmap" Value="dialog" MultiBuildValue="MsiBuild:PWInstallerDialogImage.jpg" Type="1" MsiKey="DialogBitmap"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{B2BA4954-15B7-418D-8003-2BC6AA76C0C8} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{850432D2-9E9C-40E2-92AF-1586D1D9DD06} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet v1.1"/>
-    <ROW Property="ProductVersion" Value="1.1.45.2578" Type="32" TargetFile="PandorasWallet.exe_1"/>
+    <ROW Property="ProductVersion" Value="1.1.45.2615" Type="32" TargetFile="PandorasWallet.exe_1"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{15B4F25B-B7AD-4B1B-9D26-98A1319C788C}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -45,18 +48,17 @@
     <ROW Component="APPDIR" ComponentId="{96C46B93-6199-4A9B-AD08-B6A14B1E76DB}" Directory_="APPDIR" Attributes="0"/>
     <ROW Component="Assets" ComponentId="{F1D1FC4D-D54C-4931-AE5A-2718C17849EE}" Directory_="Assets" Attributes="0"/>
     <ROW Component="AutocompleteMenu.dll" ComponentId="{B50E45E3-5DE6-48E4-B581-8238962E2C28}" Directory_="APPDIR" Attributes="0" KeyPath="AutocompleteMenu.dll"/>
+    <ROW Component="Bitfinex.Net.dll" ComponentId="{E64CFB3C-7381-4D6C-ACD5-74A1498DE085}" Directory_="APPDIR" Attributes="0" KeyPath="Bitfinex.Net.dll"/>
+    <ROW Component="Bittrex.Net.dll" ComponentId="{4684F90E-6319-4E6C-AC1C-1869EBAB075E}" Directory_="APPDIR" Attributes="0" KeyPath="Bittrex.Net.dll"/>
     <ROW Component="BouncyCastle.Crypto.dll" ComponentId="{91116251-5E8C-48B6-8410-047FBFF23148}" Directory_="APPDIR" Attributes="0" KeyPath="BouncyCastle.Crypto.dll"/>
     <ROW Component="Common.Logging.Core.dll" ComponentId="{2A164A8C-FBD5-460B-9C06-288292DF9843}" Directory_="APPDIR" Attributes="0" KeyPath="Common.Logging.Core.dll"/>
+    <ROW Component="Crc32.NET.dll" ComponentId="{20A61CEF-0A0F-408E-BFF7-6C604E24E497}" Directory_="APPDIR" Attributes="0" KeyPath="Crc32.NET.dll"/>
     <ROW Component="CryptSharp.dll" ComponentId="{A68B0A6A-FE00-4955-A3E5-EC235B9E71EC}" Directory_="APPDIR" Attributes="0" KeyPath="CryptSharp.dll"/>
+    <ROW Component="CryptoExchange.Net.dll" ComponentId="{99BB6A0B-2814-4A73-A2C6-6A50BF1EB339}" Directory_="APPDIR" Attributes="0" KeyPath="CryptoExchange.Net.dll"/>
     <ROW Component="HashLib.dll" ComponentId="{A78E6042-EE0B-4B9F-A294-4578E51021A4}" Directory_="APPDIR" Attributes="0" KeyPath="HashLib.dll"/>
     <ROW Component="Log" ComponentId="{056457DC-DD09-4001-AF52-DF20D77F7E6A}" Directory_="Log_Dir" Attributes="0"/>
     <ROW Component="Microsoft.AspNet.SignalR.Client.dll" ComponentId="{FA1858C6-C03E-4512-9F46-815F53C60D49}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.AspNet.SignalR.Client.dll"/>
-    <ROW Component="Microsoft.AspNet.SignalR.Core.dll" ComponentId="{5412788B-4679-499F-AC90-4AE40A53163F}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.AspNet.SignalR.Core.dll"/>
-    <ROW Component="Microsoft.AspNet.SignalR.SystemWeb.dll" ComponentId="{4C6020D1-BD1C-4BA5-B7B6-7E9735D72745}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.AspNet.SignalR.SystemWeb.dll"/>
     <ROW Component="Microsoft.Extensions.Logging.Abstractions.dll" ComponentId="{E210311F-AD62-4A5E-8F0E-9340CDA8D59C}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.Extensions.Logging.Abstractions.dll"/>
-    <ROW Component="Microsoft.Owin.Host.SystemWeb.dll" ComponentId="{60FF285F-EF72-48B1-BB66-905A901B043D}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.Owin.Host.SystemWeb.dll"/>
-    <ROW Component="Microsoft.Owin.Security.dll" ComponentId="{71D646EF-76E8-45C8-BDB0-12F6F104ACA9}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.Owin.Security.dll"/>
-    <ROW Component="Microsoft.Owin.dll" ComponentId="{E11624B6-9696-4FB6-BFEA-A8902F5DA8B9}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.Owin.dll"/>
     <ROW Component="Nethereum.ABI.dll" ComponentId="{995D137B-297D-452B-9A48-4546B8162306}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.ABI.dll"/>
     <ROW Component="Nethereum.Accounts.dll" ComponentId="{F2552DE1-09A7-4857-A70C-E46CFF3037EA}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.Accounts.dll"/>
     <ROW Component="Nethereum.BlockchainProcessing.dll" ComponentId="{8897A8AC-F54E-4107-847D-C91FDE9B11E8}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.BlockchainProcessing.dll"/>
@@ -71,25 +73,22 @@
     <ROW Component="Nethereum.Signer.dll" ComponentId="{D8AE5D67-0001-45B8-B827-B5BAF50F1EA5}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.Signer.dll"/>
     <ROW Component="Nethereum.Util.dll" ComponentId="{0439CB16-A5C9-4332-9972-F494076B1078}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.Util.dll"/>
     <ROW Component="Nethereum.Web3.dll" ComponentId="{4E235AA7-DC7A-40A9-9C58-3C762A117690}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.Web3.dll"/>
-    <ROW Component="Newtonsoft.Json.dll" ComponentId="{4865941B-CEF0-4031-8C1D-B2706000BC6F}" Directory_="APPDIR" Attributes="0" KeyPath="Newtonsoft.Json.dll"/>
-    <ROW Component="Owin.dll" ComponentId="{13675D21-CF00-448D-B7DC-DD37EB129ECE}" Directory_="APPDIR" Attributes="0" KeyPath="Owin.dll"/>
+    <ROW Component="Newtonsoft.Json.dll" ComponentId="{90E1D167-B3AB-4EBF-A4C7-E8365EF46DA8}" Directory_="APPDIR" Attributes="0" KeyPath="Newtonsoft.Json.dll"/>
     <ROW Component="Pandora.Client.ClientLib.dll" ComponentId="{09E42C15-D0E5-4115-A92D-8AF1DE219BA4}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.ClientLib.dll"/>
     <ROW Component="Pandora.Client.Crypto.Currencies.Ethereum.dll" ComponentId="{26E1536E-B343-4F5F-ADA9-54EB54F197D7}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Crypto.Currencies.Ethereum.dll"/>
     <ROW Component="Pandora.Client.Crypto.dll" ComponentId="{3E12F171-DC1D-4221-92D0-943845B0DF83}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Crypto.dll"/>
-    <ROW Component="Pandora.Client.Exchange.JKrof.dll" ComponentId="{D36C7A1A-2218-4F91-BBF0-5EF27131BBA9}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.JKrof.dll"/>
+    <ROW Component="Pandora.Client.Exchange.CustomAPI.dll" ComponentId="{20B2CE9F-167A-4B17-BBA6-E2A77C356300}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.CustomAPI.dll"/>
     <ROW Component="Pandora.Client.Exchange.dll" ComponentId="{5DF341F9-7D11-4FB7-8BD1-F4EDF8A7A439}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.dll"/>
     <ROW Component="Pandora.Client.PriceSource.dll" ComponentId="{44A9B04A-48BD-41A7-9B29-2AECA4F75A83}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.PriceSource.dll"/>
     <ROW Component="Pandora.Client.ServerAccess.dll" ComponentId="{9EABB609-B5C3-48B8-82FD-9602211E03AB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.ServerAccess.dll"/>
     <ROW Component="Pandora.Client.SystemBackup.dll" ComponentId="{DC2D064B-03C0-4F32-BD23-C5D34A8F66CB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.SystemBackup.dll"/>
     <ROW Component="Pandora.Client.Universal.dll" ComponentId="{0A7F2746-683E-4F7E-A716-338FF00DACB2}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Universal.dll"/>
-    <ROW Component="Pandora.Server.Crypto.dll" ComponentId="{14D12ABD-D819-4915-8D4D-9C8659F55472}" Directory_="APPDIR" Attributes="256" KeyPath="Pandora.Server.Crypto.dll"/>
     <ROW Component="PandorasWallet.exe_1" ComponentId="{E6F903BC-5821-42A6-BB00-0515E56E4382}" Directory_="APPDIR" Attributes="0" KeyPath="PandorasWallet.exe_1"/>
     <ROW Component="PandorasWalletGuide16012020.pdf" ComponentId="{C67CB368-5888-443C-93B2-32BF11773849}" Directory_="APPDIR" Attributes="0" KeyPath="PandorasWalletGuide16012020.pdf"/>
     <ROW Component="ProductInformation" ComponentId="{9A30C750-3C4C-4952-85DE-1D3B88868BFF}" Directory_="APPDIR" Attributes="4" KeyPath="Version"/>
     <ROW Component="SHORTCUTDIR" ComponentId="{7AA016DF-37D7-4A8A-82FF-DCF60614ABB6}" Directory_="SHORTCUTDIR" Attributes="0"/>
     <ROW Component="SQLite.Interop.dll" ComponentId="{5F98BFC1-0AB8-44A8-824F-3BD9347D879A}" Directory_="x64_Dir" Attributes="256" KeyPath="SQLite.Interop.dll"/>
     <ROW Component="SQLite.Interop.dll_1" ComponentId="{9BF7E384-C766-4F27-8AC9-810B6431E370}" Directory_="x86_Dir" Attributes="0" KeyPath="SQLite.Interop.dll_1"/>
-    <ROW Component="SuperSocket.ClientEngine.dll" ComponentId="{588814F4-9243-4471-87F4-94C3D1A387EF}" Directory_="APPDIR" Attributes="0" KeyPath="SuperSocket.ClientEngine.dll"/>
     <ROW Component="System.Buffers.dll" ComponentId="{69082ADA-B53D-41C9-A174-06A9C067352D}" Directory_="APPDIR" Attributes="0" KeyPath="System.Buffers.dll"/>
     <ROW Component="System.Collections.Specialized.dll" ComponentId="{D7AB946B-C93D-4D0C-AD92-CA9FD1CBEC7B}" Directory_="APPDIR" Attributes="0" KeyPath="System.Collections.Specialized.dll"/>
     <ROW Component="System.Data.SQLite.dll" ComponentId="{AC6A0D92-7401-4240-ADDB-95D14E99AB81}" Directory_="APPDIR" Attributes="0" KeyPath="System.Data.SQLite.dll"/>
@@ -102,7 +101,7 @@
     <ROW Component="System.Security.Cryptography.Encoding.dll" ComponentId="{3444E7CC-0177-4F91-B696-4A11F7E588E1}" Directory_="APPDIR" Attributes="0" KeyPath="System.Security.Cryptography.Encoding.dll"/>
     <ROW Component="System.Security.Cryptography.Primitives.dll" ComponentId="{93111244-363B-4FC5-81C3-9A1347D70D4D}" Directory_="APPDIR" Attributes="0" KeyPath="System.Security.Cryptography.Primitives.dll"/>
     <ROW Component="System.Security.Cryptography.X509Certificates.dll" ComponentId="{172779A4-E6A0-4BD2-AFE8-3CD2A26968B3}" Directory_="APPDIR" Attributes="0" KeyPath="System.Security.Cryptography.X509Certificates.dll"/>
-    <ROW Component="WebSocket4Net.dll" ComponentId="{854CFFE8-1F3D-4E8E-BEA2-18E683782480}" Directory_="APPDIR" Attributes="0" KeyPath="WebSocket4Net.dll"/>
+    <ROW Component="netstandard.dll" ComponentId="{4707E807-639C-4275-A3F1-920479544009}" Directory_="APPDIR" Attributes="0" KeyPath="netstandard.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiFeatsComponent">
     <ROW Feature="ClientsFeature" Title="MainClients" Description="Pandora Client Server Setup" Display="3" Level="1" Directory_="APPDIR" Attributes="0"/>
@@ -113,17 +112,13 @@
     <ROW File="SQLite.Interop.dll_1" Component_="SQLite.Interop.dll_1" FileName="SQLITE~1.DLL|SQLite.Interop.dll" Attributes="512" SourcePath="..\..\bin\Release\x86\SQLite.Interop.dll" SelfReg="false"/>
     <ROW File="System.Security.Cryptography.Primitives.dll" Component_="System.Security.Cryptography.Primitives.dll" FileName="SYSTEM~1.DLL|System.Security.Cryptography.Primitives.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.Primitives.dll" SelfReg="false"/>
     <ROW File="System.Security.Cryptography.X509Certificates.dll" Component_="System.Security.Cryptography.X509Certificates.dll" FileName="SYSTEM~2.DLL|System.Security.Cryptography.X509Certificates.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Security.Cryptography.X509Certificates.dll" SelfReg="false"/>
-    <ROW File="WebSocket4Net.dll" Component_="WebSocket4Net.dll" FileName="WEBSOC~1.DLL|WebSocket4Net.dll" Attributes="0" SourcePath="..\..\bin\Release\WebSocket4Net.dll" SelfReg="false"/>
     <ROW File="CryptSharp.dll" Component_="CryptSharp.dll" FileName="CRYPTS~1.DLL|CryptSharp.dll" Attributes="0" SourcePath="..\..\bin\Release\CryptSharp.dll" SelfReg="false"/>
     <ROW File="Microsoft.AspNet.SignalR.Client.dll" Component_="Microsoft.AspNet.SignalR.Client.dll" FileName="MICROS~1.DLL|Microsoft.AspNet.SignalR.Client.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.AspNet.SignalR.Client.dll" SelfReg="false"/>
-    <ROW File="Newtonsoft.Json.dll" Component_="Newtonsoft.Json.dll" FileName="NEWTON~1.DLL|Newtonsoft.Json.dll" Attributes="0" SourcePath="..\..\bin\Release\Newtonsoft.Json.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.ClientLib.dll" Component_="Pandora.Client.ClientLib.dll" FileName="PANDOR~1.DLL|Pandora.Client.ClientLib.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ClientLib.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.Crypto.dll" Component_="Pandora.Client.Crypto.dll" FileName="PANDOR~2.DLL|Pandora.Client.Crypto.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Crypto.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.Exchange.dll" Component_="Pandora.Client.Exchange.dll" FileName="PANDOR~3.DLL|Pandora.Client.Exchange.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.dll" SelfReg="false"/>
-    <ROW File="Pandora.Client.Exchange.JKrof.dll" Component_="Pandora.Client.Exchange.JKrof.dll" FileName="PANDOR~4.DLL|Pandora.Client.Exchange.JKrof.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.JKrof.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.ServerAccess.dll" Component_="Pandora.Client.ServerAccess.dll" FileName="PANDOR~5.DLL|Pandora.Client.ServerAccess.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.ServerAccess.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.Universal.dll" Component_="Pandora.Client.Universal.dll" FileName="PANDOR~6.DLL|Pandora.Client.Universal.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Universal.dll" SelfReg="false"/>
-    <ROW File="SuperSocket.ClientEngine.dll" Component_="SuperSocket.ClientEngine.dll" FileName="SUPERS~1.DLL|SuperSocket.ClientEngine.dll" Attributes="0" SourcePath="..\..\bin\Release\SuperSocket.ClientEngine.dll" SelfReg="false"/>
     <ROW File="System.Buffers.dll" Component_="System.Buffers.dll" FileName="SYSTEM~3.DLL|System.Buffers.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Buffers.dll" SelfReg="false"/>
     <ROW File="System.Collections.Specialized.dll" Component_="System.Collections.Specialized.dll" FileName="SYSTEM~4.DLL|System.Collections.Specialized.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Collections.Specialized.dll" SelfReg="false"/>
     <ROW File="System.Data.SQLite.dll" Component_="System.Data.SQLite.dll" FileName="SYSTEM~5.DLL|System.Data.SQLite.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Data.SQLite.dll" SelfReg="false"/>
@@ -142,12 +137,7 @@
     <ROW File="System.Net.Http.dll" Component_="System.Net.Http.dll" FileName="SYSTEM~6.DLL|System.Net.Http.dll" Attributes="0" SourcePath="..\..\bin\Release\System.Net.Http.dll" SelfReg="false"/>
     <ROW File="BouncyCastle.Crypto.dll" Component_="BouncyCastle.Crypto.dll" FileName="BOUNCY~1.DLL|BouncyCastle.Crypto.dll" Attributes="0" SourcePath="..\..\bin\Release\BouncyCastle.Crypto.dll" SelfReg="false"/>
     <ROW File="Common.Logging.Core.dll" Component_="Common.Logging.Core.dll" FileName="COMMON~1.DLL|Common.Logging.Core.dll" Attributes="0" SourcePath="..\..\bin\Release\Common.Logging.Core.dll" SelfReg="false"/>
-    <ROW File="Microsoft.AspNet.SignalR.Core.dll" Component_="Microsoft.AspNet.SignalR.Core.dll" FileName="MICROS~2.DLL|Microsoft.AspNet.SignalR.Core.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.AspNet.SignalR.Core.dll" SelfReg="false"/>
-    <ROW File="Microsoft.AspNet.SignalR.SystemWeb.dll" Component_="Microsoft.AspNet.SignalR.SystemWeb.dll" FileName="MICROS~3.DLL|Microsoft.AspNet.SignalR.SystemWeb.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.AspNet.SignalR.SystemWeb.dll" SelfReg="false"/>
     <ROW File="Microsoft.Extensions.Logging.Abstractions.dll" Component_="Microsoft.Extensions.Logging.Abstractions.dll" FileName="MICROS~4.DLL|Microsoft.Extensions.Logging.Abstractions.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.Extensions.Logging.Abstractions.dll" SelfReg="false"/>
-    <ROW File="Microsoft.Owin.dll" Component_="Microsoft.Owin.dll" FileName="MICROS~5.DLL|Microsoft.Owin.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.Owin.dll" SelfReg="false"/>
-    <ROW File="Microsoft.Owin.Host.SystemWeb.dll" Component_="Microsoft.Owin.Host.SystemWeb.dll" FileName="MICROS~6.DLL|Microsoft.Owin.Host.SystemWeb.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.Owin.Host.SystemWeb.dll" SelfReg="false"/>
-    <ROW File="Microsoft.Owin.Security.dll" Component_="Microsoft.Owin.Security.dll" FileName="MICROS~7.DLL|Microsoft.Owin.Security.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.Owin.Security.dll" SelfReg="false"/>
     <ROW File="Nethereum.ABI.dll" Component_="Nethereum.ABI.dll" FileName="NETHER~1.DLL|Nethereum.ABI.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.ABI.dll" SelfReg="false"/>
     <ROW File="Nethereum.Accounts.dll" Component_="Nethereum.Accounts.dll" FileName="NETHER~2.DLL|Nethereum.Accounts.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.Accounts.dll" SelfReg="false"/>
     <ROW File="Nethereum.BlockchainProcessing.dll" Component_="Nethereum.BlockchainProcessing.dll" FileName="NETHER~3.DLL|Nethereum.BlockchainProcessing.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.BlockchainProcessing.dll" SelfReg="false"/>
@@ -162,10 +152,15 @@
     <ROW File="Nethereum.Signer.dll" Component_="Nethereum.Signer.dll" FileName="NETHE~12.DLL|Nethereum.Signer.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.Signer.dll" SelfReg="false"/>
     <ROW File="Nethereum.Util.dll" Component_="Nethereum.Util.dll" FileName="NETHE~13.DLL|Nethereum.Util.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.Util.dll" SelfReg="false"/>
     <ROW File="Nethereum.Web3.dll" Component_="Nethereum.Web3.dll" FileName="NETHE~14.DLL|Nethereum.Web3.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.Web3.dll" SelfReg="false"/>
-    <ROW File="Owin.dll" Component_="Owin.dll" FileName="Owin.dll" Attributes="0" SourcePath="..\..\bin\Release\Owin.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.Crypto.Currencies.Ethereum.dll" Component_="Pandora.Client.Crypto.Currencies.Ethereum.dll" FileName="PANDOR~8.DLL|Pandora.Client.Crypto.Currencies.Ethereum.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Crypto.Currencies.Ethereum.dll" SelfReg="false"/>
-    <ROW File="Pandora.Server.Crypto.dll" Component_="Pandora.Server.Crypto.dll" FileName="PANDOR~9.DLL|Pandora.Server.Crypto.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Server.Crypto.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.PriceSource.dll" Component_="Pandora.Client.PriceSource.dll" FileName="PANDO~10.DLL|Pandora.Client.PriceSource.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.PriceSource.dll" SelfReg="false"/>
+    <ROW File="CryptoExchange.Net.dll" Component_="CryptoExchange.Net.dll" FileName="CRYPTO~1.DLL|CryptoExchange.Net.dll" Attributes="0" SourcePath="..\..\bin\Release\CryptoExchange.Net.dll" SelfReg="false"/>
+    <ROW File="Bitfinex.Net.dll" Component_="Bitfinex.Net.dll" FileName="BITFIN~1.DLL|Bitfinex.Net.dll" Attributes="0" SourcePath="..\..\bin\Release\Bitfinex.Net.dll" SelfReg="false"/>
+    <ROW File="Crc32.NET.dll" Component_="Crc32.NET.dll" FileName="CRC32N~1.DLL|Crc32.NET.dll" Attributes="0" SourcePath="..\..\bin\Release\Crc32.NET.dll" SelfReg="false"/>
+    <ROW File="Bittrex.Net.dll" Component_="Bittrex.Net.dll" FileName="BITTRE~1.DLL|Bittrex.Net.dll" Attributes="0" SourcePath="..\..\bin\Release\Bittrex.Net.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.Exchange.CustomAPI.dll" Component_="Pandora.Client.Exchange.CustomAPI.dll" FileName="PANDO~11.DLL|Pandora.Client.Exchange.CustomAPI.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.CustomAPI.dll" SelfReg="false"/>
+    <ROW File="Newtonsoft.Json.dll" Component_="Newtonsoft.Json.dll" FileName="NEWTON~1.DLL|Newtonsoft.Json.dll" Attributes="0" SourcePath="..\..\bin\Release\Newtonsoft.Json.dll" SelfReg="false"/>
+    <ROW File="netstandard.dll" Component_="netstandard.dll" FileName="NETSTA~1.DLL|netstandard.dll" Attributes="0" SourcePath="..\..\bin\Release\netstandard.dll" SelfReg="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.custcomp.AiPropertyAliasComponent">
     <ROW AliasRowId="DBServer" AliasRowOperation="1"/>
@@ -188,9 +183,15 @@
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FileDependencyComponent">
     <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Pandora.Client.PriceSource.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="CryptoExchange.Net.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Bitfinex.Net.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Crc32.NET.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Bittrex.Net.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Pandora.Client.Exchange.CustomAPI.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Newtonsoft.Json.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FileDependencyOptionComponent">
-    <ROW File="PandorasWallet.exe_1" Exclude="mscorlib.dll|System.dll|netstandard.dll|System.Numerics.dll|System.Core.dll|System.Xml.dll|System.Xml.Linq.dll|System.Runtime.Serialization.dll|System.Data.dll|System.Windows.Forms.dll|System.Drawing.dll|System.Net.Http.dll|System.Net.Http.WebRequest.dll|System.Web.dll|System.Transactions.dll|Microsoft.CSharp.dll|System.ServiceModel.dll|System.Runtime.dll|System.Resources.ResourceManager.dll|System.Diagnostics.Tracing.dll|System.Threading.dll|System.Diagnostics.Debug.dll" Sha1="b599c288b1edbf68f23b7e8a5513825d18aa07e9"/>
+    <ROW File="PandorasWallet.exe_1" Exclude="mscorlib.dll|System.dll|netstandard.dll|System.Numerics.dll|System.Core.dll|System.Xml.dll|System.Xml.Linq.dll|System.Runtime.Serialization.dll|System.Data.dll|System.Windows.Forms.dll|System.Drawing.dll|System.Transactions.dll|System.Net.Http.dll|System.Net.Http.WebRequest.dll|Microsoft.CSharp.dll|System.Windows.Forms.DataVisualization.dll|System.ServiceModel.dll" Sha1="004cc59262b7188f1c41b884d899728bceea1adf"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
     <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
@@ -219,11 +220,55 @@
     <ROW Action="AI_XmlUninstall" Description="Generating actions to configure XML files" DescriptionLocId="ActionText.Description.AI_XmlUninstall"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiBinaryComponent">
+    <ROW Name="PWInstallerBannerImage.jpg" SourcePath="Images\PW Installer Banner Image.jpg"/>
+    <ROW Name="PWInstallerDialogImage.jpg" SourcePath="Images\PW Installer Dialog Image.jpg"/>
     <ROW Name="Prereq.dll" SourcePath="&lt;AI_CUSTACTS&gt;Prereq.dll"/>
     <ROW Name="ShortcutFlags.dll" SourcePath="&lt;AI_CUSTACTS&gt;ShortcutFlags.dll"/>
     <ROW Name="aicustact.dll" SourcePath="&lt;AI_CUSTACTS&gt;aicustact.dll"/>
     <ROW Name="userAccounts.dll" SourcePath="&lt;AI_CUSTACTS&gt;userAccounts.dll"/>
     <ROW Name="xmlCfg.dll" SourcePath="&lt;AI_CUSTACTS&gt;xmlCfg.dll"/>
+  </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiControlComponent">
+    <ROW Dialog_="AdminBrowseDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="1200" MsiKey="AdminBrowseDlg#BannerBitmap"/>
+    <ROW Dialog_="AdminBrowseDlg" Control="Description" Type="Text" X="25" Y="23" Width="280" Height="20" Attributes="196611" Text="Browse to the destination folder" TextStyle="CfTitleFont" Order="1400" TextLocId="Control.Text.AdminBrowseDlg#Description" MsiKey="AdminBrowseDlg#Description"/>
+    <ROW Dialog_="AdminInstallPointDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="900" MsiKey="AdminInstallPointDlg#BannerBitmap"/>
+    <ROW Dialog_="AdminInstallPointDlg" Control="Description" Type="Text" X="25" Y="20" Width="280" Height="20" Attributes="196611" Text="Please specify a network location for the server image of [ProductName] product" TextStyle="CfTitleFont" Order="1100" TextLocId="Control.Text.AdminInstallPointDlg#Description" MsiKey="AdminInstallPointDlg#Description"/>
+    <ROW Dialog_="BrowseDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="1200" MsiKey="BrowseDlg#BannerBitmap"/>
+    <ROW Dialog_="BrowseDlg" Control="Description" Type="Text" X="25" Y="23" Width="280" Height="20" Attributes="196611" Text="Browse to the destination folder" TextStyle="CfTitleFont" Order="1400" TextLocId="Control.Text.BrowseDlg#Description" MsiKey="BrowseDlg#Description"/>
+    <ROW Dialog_="CustomizeDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="1000" MsiKey="CustomizeDlg#BannerBitmap"/>
+    <ROW Dialog_="CustomizeDlg" Control="Description" Type="Text" X="25" Y="23" Width="280" Height="20" Attributes="196611" Text="Select the way you want features to be installed." TextStyle="CfTitleFont" Order="1300" TextLocId="Control.Text.CustomizeDlg#Description" MsiKey="CustomizeDlg#Description"/>
+    <ROW Dialog_="DiskCostDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="200" MsiKey="DiskCostDlg#BannerBitmap"/>
+    <ROW Dialog_="DiskCostDlg" Control="Description" Type="Text" X="20" Y="20" Width="280" Height="20" Attributes="196611" Text="The disk space required for the installation of the selected features." TextStyle="CfTitleFont" Order="800" TextLocId="Control.Text.DiskCostDlg#Description" MsiKey="DiskCostDlg#Description"/>
+    <ROW Dialog_="FilesInUse" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="400" MsiKey="FilesInUse#BannerBitmap"/>
+    <ROW Dialog_="FilesInUse" Control="Description" Type="Text" X="20" Y="23" Width="280" Height="20" Attributes="196611" Text="Some files that need to be updated are currently in use." TextStyle="CfTitleFont" Order="1000" TextLocId="Control.Text.FilesInUse#Description" MsiKey="FilesInUse#Description"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control="ChangeLabel" Type="Text" X="105" Y="65" Width="100" Height="10" Attributes="3" Text="&amp;Modify" TextStyle="DlgFont8" Order="100" TextLocId="Control.Text.MaintenanceTypeDlg#ChangeLabel" MsiKey="MaintenanceTypeDlg#ChangeLabel"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control="RepairLabel" Type="Text" X="105" Y="114" Width="100" Height="10" Attributes="3" Text="Re&amp;pair" TextStyle="DlgFont8" Order="300" TextLocId="Control.Text.MaintenanceTypeDlg#RepairLabel" MsiKey="MaintenanceTypeDlg#RepairLabel"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control="RemoveLabel" Type="Text" X="105" Y="163" Width="100" Height="10" Attributes="3" Text="&amp;Remove" TextStyle="DlgFont8" Order="500" TextLocId="Control.Text.MaintenanceTypeDlg#RemoveLabel" MsiKey="MaintenanceTypeDlg#RemoveLabel"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="1000" MsiKey="MaintenanceTypeDlg#BannerBitmap"/>
+    <ROW Dialog_="MaintenanceTypeDlg" Control="Description" Type="Text" X="25" Y="23" Width="280" Height="20" Attributes="196611" Text="Select the operation you wish to perform." TextStyle="CfTitleFont" Order="1300" TextLocId="Control.Text.MaintenanceTypeDlg#Description" MsiKey="MaintenanceTypeDlg#Description"/>
+    <ROW Dialog_="MsiRMFilesInUse" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="300" MsiKey="MsiRMFilesInUse#BannerBitmap"/>
+    <ROW Dialog_="MsiRMFilesInUse" Control="Description" Type="Text" X="20" Y="23" Width="280" Height="20" Attributes="196611" Text="Some files that need to be updated are currently in use." TextStyle="CfTitleFont" Order="500" TextLocId="Control.Text.MsiRMFilesInUse#Description" MsiKey="MsiRMFilesInUse#Description"/>
+    <ROW Dialog_="OutOfDiskDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="200" MsiKey="OutOfDiskDlg#BannerBitmap"/>
+    <ROW Dialog_="OutOfDiskDlg" Control="Description" Type="Text" X="20" Y="20" Width="280" Height="20" Attributes="196611" Text="Disk space required for the installation exceeds available disk space." TextStyle="CfTitleFont" Order="800" TextLocId="Control.Text.OutOfDiskDlg#Description" MsiKey="OutOfDiskDlg#Description"/>
+    <ROW Dialog_="OutOfRbDiskDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="300" MsiKey="OutOfRbDiskDlg#BannerBitmap"/>
+    <ROW Dialog_="OutOfRbDiskDlg" Control="Description" Type="Text" X="20" Y="20" Width="280" Height="20" Attributes="196611" Text="Disk space required for the installation exceeds available disk space." TextStyle="CfTitleFont" Order="800" TextLocId="Control.Text.OutOfRbDiskDlg#Description" MsiKey="OutOfRbDiskDlg#Description"/>
+    <ROW Dialog_="PrerequisitesDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="400" MsiKey="PrerequisitesDlg#BannerBitmap"/>
+    <ROW Dialog_="PrerequisitesDlg" Control="Description" Type="Text" X="25" Y="22" Width="250" Height="15" Attributes="196611" Text="Select which prerequisites will be installed" TextStyle="CfTitleFont" Order="700" TextLocId="Control.Text.PrerequisitesDlg#Description" MsiKey="PrerequisitesDlg#Description"/>
+    <ROW Dialog_="ProgressDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="200" MsiKey="ProgressDlg#BannerBitmap"/>
+    <ROW Dialog_="ProgressPrereqDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="400" MsiKey="ProgressPrereqDlg#BannerBitmap"/>
+    <ROW Dialog_="SetupTypeDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="300" MsiKey="SetupTypeDlg#BannerBitmap"/>
+    <ROW Dialog_="SetupTypeDlg" Control="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Attributes="196611" Text="Choose Setup Type" TextStyle="[DlgTitleFont]" Order="800" MsiKey="SetupTypeDlg#Title"/>
+    <ROW Dialog_="SetupTypeDlg" Control="Description" Type="Text" X="25" Y="22" Width="250" Height="15" Attributes="196611" Text="Choose the setup type that best suits your needs" TextStyle="CfTitleFont" Order="900" TextLocId="Control.Text.SetupTypeDlg#Description" MsiKey="SetupTypeDlg#Description"/>
+    <ROW Dialog_="SetupTypeDlg" Control="TypicalLabel" Type="Text" X="105" Y="65" Width="100" Height="10" Attributes="3" Text="&amp;Typical" TextStyle="DlgFont8" Order="1000" TextLocId="Control.Text.SetupTypeDlg#TypicalLabel" MsiKey="SetupTypeDlg#TypicalLabel"/>
+    <ROW Dialog_="SetupTypeDlg" Control="CustomLabel" Type="Text" X="105" Y="118" Width="100" Height="10" Attributes="3" Text="C&amp;ustom" TextStyle="DlgFont8" Order="1200" TextLocId="Control.Text.SetupTypeDlg#CustomLabel" MsiKey="SetupTypeDlg#CustomLabel"/>
+    <ROW Dialog_="SetupTypeDlg" Control="CompleteLabel" Type="Text" X="105" Y="171" Width="100" Height="10" Attributes="3" Text="C&amp;omplete" Order="1400" TextLocId="Control.Text.SetupTypeDlg#CompleteLabel" MsiKey="SetupTypeDlg#CompleteLabel"/>
+    <ROW Dialog_="SetupTypeDlg" Control="Logo" Type="Text" X="4" Y="228" Width="70" Height="12" Attributes="1" Text="Pandora&apos;s Wallet" Order="1700" MsiKey="SetupTypeDlg#Logo"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="300" MsiKey="VerifyReadyDlg#BannerBitmap"/>
+    <ROW Dialog_="VerifyReadyDlg" Control="Description" Type="Text" X="25" Y="19" Width="236" Height="21" Attributes="196611" Text="The [Wizard] is ready to begin the [ProductName] installation" TextStyle="CfTitleFont" Order="800" TextLocId="Control.Text.VerifyReadyDlg#Description" MsiKey="VerifyReadyDlg#Description"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="400" MsiKey="VerifyRemoveDlg#BannerBitmap"/>
+    <ROW Dialog_="VerifyRemoveDlg" Control="Description" Type="Text" X="25" Y="22" Width="250" Height="15" Attributes="196611" Text="You have chosen to remove the program from your computer." TextStyle="CfTitleFont" Order="900" TextLocId="Control.Text.VerifyRemoveDlg#Description" MsiKey="VerifyRemoveDlg#Description"/>
+    <ROW Dialog_="VerifyRepairDlg" Control="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" Attributes="1048577" Text="[BannerBitmap]" Order="300" MsiKey="VerifyRepairDlg#BannerBitmap"/>
+    <ROW Dialog_="VerifyRepairDlg" Control="Description" Type="Text" X="25" Y="22" Width="250" Height="15" Attributes="196611" Text="The [Wizard] is ready to repair [ProductName]." TextStyle="CfTitleFont" Order="900" MsiKey="VerifyRepairDlg#Description"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiControlEventComponent">
     <ROW Dialog_="WelcomeDlg" Control_="Next" Event="NewDialog" Argument="SetupTypeDlg" Condition="AI_INSTALL" Ordering="1"/>
@@ -308,10 +353,8 @@
     <ROW Feature_="ClientsFeature" Component_="HashLib.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Log"/>
     <ROW Feature_="ClientsFeature" Component_="Microsoft.AspNet.SignalR.Client.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Newtonsoft.Json.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.ClientLib.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Crypto.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Exchange.JKrof.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Exchange.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.ServerAccess.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.SystemBackup.dll"/>
@@ -319,7 +362,6 @@
     <ROW Feature_="ClientsFeature" Component_="ProductInformation"/>
     <ROW Feature_="ClientsFeature" Component_="SQLite.Interop.dll"/>
     <ROW Feature_="ClientsFeature" Component_="SQLite.Interop.dll_1"/>
-    <ROW Feature_="ClientsFeature" Component_="SuperSocket.ClientEngine.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Buffers.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Collections.Specialized.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Data.SQLite.dll"/>
@@ -331,19 +373,13 @@
     <ROW Feature_="ClientsFeature" Component_="System.Security.Cryptography.Encoding.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Security.Cryptography.Primitives.dll"/>
     <ROW Feature_="ClientsFeature" Component_="System.Security.Cryptography.X509Certificates.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="WebSocket4Net.dll"/>
     <ROW Feature_="ClientsFeature" Component_="PandorasWallet.exe_1"/>
     <ROW Feature_="ClientsFeature" Component_="PandorasWalletGuide16012020.pdf"/>
     <ROW Feature_="ClientsFeature" Component_="SHORTCUTDIR"/>
     <ROW Feature_="ClientsFeature" Component_="System.Net.Http.dll"/>
     <ROW Feature_="ClientsFeature" Component_="BouncyCastle.Crypto.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Common.Logging.Core.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Microsoft.AspNet.SignalR.Core.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Microsoft.AspNet.SignalR.SystemWeb.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Microsoft.Extensions.Logging.Abstractions.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Microsoft.Owin.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Microsoft.Owin.Host.SystemWeb.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Microsoft.Owin.Security.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.ABI.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.Accounts.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.BlockchainProcessing.dll"/>
@@ -358,10 +394,15 @@
     <ROW Feature_="ClientsFeature" Component_="Nethereum.Signer.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.Util.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.Web3.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Owin.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Crypto.Currencies.Ethereum.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Pandora.Server.Crypto.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.PriceSource.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="CryptoExchange.Net.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Bitfinex.Net.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Crc32.NET.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Bittrex.Net.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Exchange.CustomAPI.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Newtonsoft.Json.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="netstandard.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
     <ROW Name="PandorasWallet_1.exe" SourcePath="..\Icons\Pandora&apos;s Wallet.ico" Index="0"/>
@@ -414,6 +455,9 @@
     <ROW Shortcut="PandorasWalletv1.1" Directory_="DesktopFolder" Name="PANDOR~1.1|Pandora&apos;s Wallet v1.1" Component_="PandorasWallet.exe_1" Target="[#PandorasWallet.exe_1]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR" CustomFlags="1"/>
     <ROW Shortcut="PandorasWalletv1.1_1" Directory_="SHORTCUTDIR" Name="PANDOR~1.1|Pandora&apos;s Wallet v1.1" Component_="PandorasWallet.exe_1" Target="[#PandorasWallet.exe_1]" Description="Pandora&apos;s Wallet" Hotkey="0" Icon_="PandorasWallet_1.exe" IconIndex="0" ShowCmd="1" WkDir="APPDIR" CustomFlags="1"/>
   </COMPONENT>
+  <COMPONENT cid="caphyon.advinst.msicomp.MsiTextStyleComponent">
+    <ROW TextStyle="DlgFontBold8" FaceName="Tahoma" Size="8" Color="16777215" StyleBits="1" MsiKey="DlgFontBold8"/>
+  </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiThemeComponent">
     <ATTRIBUTE name="UsedTheme" value="classic"/>
   </COMPONENT>
@@ -421,11 +465,12 @@
     <ROW UpgradeCode="[|UpgradeCode]" VersionMin="0.0.1" VersionMax="[|ProductVersion]" Attributes="257" ActionProperty="OLDPRODUCTS"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.PreReqComponent">
-    <ROW PrereqKey="Microsoft.NETFrame" DisplayName="Microsoft .NET Framework 4.6.1" VersionMin="4.6.1055.0" SetupFileUrl="Prerequisites\.NET Framework 4.6.1\NDP461-KB3102438-Web.exe" Location="0" ExactSize="0" Operator="1" Options="y" TargetName="NDP461-KB3102438-Web.exe"/>
-    <ATTRIBUTE name="PrereqsOrder" value="Microsoft.NETFrame"/>
+    <ROW PrereqKey="Microsoft.NETFrame_1" DisplayName="Microsoft .NET Framework 4.8" VersionMin="4.8.4115.0" SetupFileUrl="Prerequisites\.NET Framewor 4.8\ndp48-web.exe" Location="0" ExactSize="0" Operator="0" Options="y" TargetName="Microsoft .NET Framework 4.8\ndp48-web.exe"/>
+    <ATTRIBUTE name="PrereqsOrder" value="Microsoft.NETFrame_1"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.PreReqSearchComponent">
-    <ROW SearchKey="ProdCode" Prereq="Microsoft.NETFrame" SearchType="3" SearchString="{2F0ECC80-B9E4-4485-8083-CD32F22ABD92}" Order="2" Property="PreReqSearch_1"/>
+    <ROW SearchKey="Full" Prereq="Microsoft.NETFrame_1" SearchType="5" SearchString="HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full" Order="0" Property="PreReqSearch_1"/>
+    <ROW SearchKey="SystemFolderfile.dll" Prereq="Microsoft.NETFrame_1" SearchType="9" SearchString="HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\Release" RefContent="G528039" Order="1" Property="PreReqSearch"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlAttributeComponent">
     <ROW XmlAttribute="allowExeDefinition" XmlElement="section_1" Name="allowExeDefinition" Flags="14" Order="2" Value="MachineToLocalUser"/>

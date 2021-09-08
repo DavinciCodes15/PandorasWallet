@@ -729,9 +729,9 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                     return 0;
         }
 
-        public void ReadCurrencies(out List<CurrencyItem> aCurrencyList, long? aId = null)
+        public IEnumerable<CurrencyItem> ReadCurrencies(long? aId = null)
         {
-            aCurrencyList = new List<CurrencyItem>();
+            var lCurrencyList = new List<CurrencyItem>();
 
             string lWhere = aId.HasValue ? (" WHERE id = " + aId.Value) : string.Empty;
             string lQuery = "SELECT id, name, ticker, precision, MinConfirmations, livedate, Icon, IconSize, FeePerKb, ChainParams, Status FROM Currencies" + lWhere;
@@ -739,7 +739,8 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, FSQLiteConnection))
             using (SQLiteDataReader lSQLiteDataReader = lSQLiteCommand.ExecuteReader())
                 while (lSQLiteDataReader.Read())
-                    SqlReadCurrencyIntoList(aCurrencyList, lSQLiteDataReader);
+                    SqlReadCurrencyIntoList(lCurrencyList, lSQLiteDataReader);
+            return lCurrencyList;
         }
 
         private static void SqlReadCurrencyTokensIntoList(List<IClientCurrencyToken> aList, SQLiteDataReader aReader)
@@ -783,8 +784,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         internal CurrencyItem ReadCurrency(long aCurrencyId)
         {
-            ReadCurrencies(out List<CurrencyItem> lList, aCurrencyId);
-            return lList.FirstOrDefault();
+            var lCurrencies = ReadCurrencies(aCurrencyId);
+            if (lCurrencies.Count() > 0)
+                Universal.Log.Write(LogLevel.Error, $"Duplicated currency with id {aCurrencyId} found"); // I will leave this error message as a precaution
+            return lCurrencies.FirstOrDefault();
         }
 
         private static void SqlReadCurrencyIntoList(IList<CurrencyItem> aCurrencyList, SQLiteDataReader aSQLiteDataReader)

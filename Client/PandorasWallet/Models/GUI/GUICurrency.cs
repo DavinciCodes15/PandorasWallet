@@ -59,7 +59,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
         public decimal UnconfirmedBalance { get; set; }
         public decimal ConfirmedBalance { get; set; }
         public decimal Total { get { return UnconfirmedBalance + ConfirmedBalance; } }
-        public IEnumerable<GUITransaction> TransationItems => FTransactions.Values;
+        public IEnumerable<GUITransaction> TransactionItems => FTransactions.Values;
 
         public GUICurrencyTxAndBalanceHelper(IGUICurrency aParentGUICurrency)
         {
@@ -108,7 +108,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
         {
             UnconfirmedBalance = 0;
             ConfirmedBalance = 0;
-            foreach (var lTx in TransationItems)
+            foreach (var lTx in TransactionItems)
             {
                 if (!lTx.Confirmed)
                     UnconfirmedBalance += lTx.Amount;
@@ -154,7 +154,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs.Models
 
     public interface IGUICurrencyTransactional
     {
-        IEnumerable<GUITransaction> TransationItems { get; }
+        IEnumerable<GUITransaction> TransactionItems { get; }
 
         void AddTransaction(GUITransaction aTransaction);
 

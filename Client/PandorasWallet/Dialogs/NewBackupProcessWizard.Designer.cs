@@ -44,6 +44,7 @@
             this.radioBtnFile = new System.Windows.Forms.RadioButton();
             this.RestoreWordTab = new System.Windows.Forms.TabPage();
             this.label5 = new System.Windows.Forms.Label();
+            this.txtBoxRecoveryWordsRestore = new System.Windows.Forms.TextBox();
             this.RestoreFileTab = new System.Windows.Forms.TabPage();
             this.btnRestoreOpenFileDialog = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
@@ -70,8 +71,7 @@
             this.openFileDlg = new System.Windows.Forms.OpenFileDialog();
             this.WizardToolTip = new System.Windows.Forms.ToolTip(this.components);
             this.DlgFolderBrowser = new System.Windows.Forms.SaveFileDialog();
-            this.txtBoxRecoveryWordsRestore = new System.Windows.Forms.TextBox();
-            this.autoCompleteMenu = new AutocompleteMenuNS.AutocompleteMenu();
+            this.autocompleteMenu = new AutocompleteMenuNS.AutocompleteMenu();
             this.tabStepsControl.SuspendLayout();
             this.InitialTab.SuspendLayout();
             this.SelectorTab.SuspendLayout();
@@ -187,7 +187,7 @@
             // 
             // textBox2
             // 
-            this.autoCompleteMenu.SetAutocompleteMenu(this.textBox2, null);
+            this.autocompleteMenu.SetAutocompleteMenu(this.textBox2, null);
             this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox2.Location = new System.Drawing.Point(34, 52);
             this.textBox2.Multiline = true;
@@ -199,7 +199,7 @@
             // 
             // textBox1
             // 
-            this.autoCompleteMenu.SetAutocompleteMenu(this.textBox1, null);
+            this.autocompleteMenu.SetAutocompleteMenu(this.textBox1, null);
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBox1.Location = new System.Drawing.Point(34, 131);
             this.textBox1.Multiline = true;
@@ -255,6 +255,19 @@
             this.label5.Text = "Please write down your wallet 12 or 24 word recovery phrase in the following box." +
     " \r\n\r\nEnsure that each word is separated by a white space.";
             // 
+            // txtBoxRecoveryWordsRestore
+            // 
+            this.txtBoxRecoveryWordsRestore.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.txtBoxRecoveryWordsRestore.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.txtBoxRecoveryWordsRestore.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtBoxRecoveryWordsRestore.Location = new System.Drawing.Point(19, 84);
+            this.txtBoxRecoveryWordsRestore.Multiline = true;
+            this.txtBoxRecoveryWordsRestore.Name = "txtBoxRecoveryWordsRestore";
+            this.txtBoxRecoveryWordsRestore.ShortcutsEnabled = false;
+            this.txtBoxRecoveryWordsRestore.Size = new System.Drawing.Size(465, 201);
+            this.txtBoxRecoveryWordsRestore.TabIndex = 0;
+            this.txtBoxRecoveryWordsRestore.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtBoxRecoveryWordsRestore_KeyPress);
+            // 
             // RestoreFileTab
             // 
             this.RestoreFileTab.BackColor = System.Drawing.Color.White;
@@ -298,7 +311,7 @@
             // 
             // txtBoxRestoreFilePath
             // 
-            this.autoCompleteMenu.SetAutocompleteMenu(this.txtBoxRestoreFilePath, null);
+            this.autocompleteMenu.SetAutocompleteMenu(this.txtBoxRestoreFilePath, null);
             this.txtBoxRestoreFilePath.Location = new System.Drawing.Point(27, 114);
             this.txtBoxRestoreFilePath.Name = "txtBoxRestoreFilePath";
             this.txtBoxRestoreFilePath.Size = new System.Drawing.Size(370, 20);
@@ -348,7 +361,7 @@
             // 
             // txtBoxBackupSelectedDir
             // 
-            this.autoCompleteMenu.SetAutocompleteMenu(this.txtBoxBackupSelectedDir, null);
+            this.autocompleteMenu.SetAutocompleteMenu(this.txtBoxBackupSelectedDir, null);
             this.txtBoxBackupSelectedDir.Location = new System.Drawing.Point(35, 117);
             this.txtBoxBackupSelectedDir.Name = "txtBoxBackupSelectedDir";
             this.txtBoxBackupSelectedDir.ReadOnly = true;
@@ -508,29 +521,15 @@
             this.DlgFolderBrowser.DefaultExt = "*.bkp";
             this.DlgFolderBrowser.Filter = "Pandora Backup File (*.bkp)|*.bkp";
             // 
-            // txtBoxRecoveryWordsRestore
+            // autocompleteMenu
             // 
-            this.autoCompleteMenu.SetAutocompleteMenu(this.txtBoxRecoveryWordsRestore, this.autoCompleteMenu);
-            this.txtBoxRecoveryWordsRestore.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.txtBoxRecoveryWordsRestore.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
-            this.txtBoxRecoveryWordsRestore.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtBoxRecoveryWordsRestore.Location = new System.Drawing.Point(19, 84);
-            this.txtBoxRecoveryWordsRestore.Multiline = true;
-            this.txtBoxRecoveryWordsRestore.Name = "txtBoxRecoveryWordsRestore";
-            this.txtBoxRecoveryWordsRestore.ShortcutsEnabled = false;
-            this.txtBoxRecoveryWordsRestore.Size = new System.Drawing.Size(465, 201);
-            this.txtBoxRecoveryWordsRestore.TabIndex = 0;
-            this.txtBoxRecoveryWordsRestore.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TxtBoxRecoveryWordsRestore_KeyPress);
-            // 
-            // autoCompleteMenu
-            // 
-            this.autoCompleteMenu.AllowsTabKey = true;
-            this.autoCompleteMenu.AppearInterval = 250;
-            this.autoCompleteMenu.Colors = ((AutocompleteMenuNS.Colors)(resources.GetObject("autoCompleteMenu.Colors")));
-            this.autoCompleteMenu.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
-            this.autoCompleteMenu.ImageList = null;
-            this.autoCompleteMenu.Items = new string[0];
-            this.autoCompleteMenu.TargetControlWrapper = null;
+            this.autocompleteMenu.AllowsTabKey = true;
+            this.autocompleteMenu.AppearInterval = 250;
+            this.autocompleteMenu.Colors = ((AutocompleteMenuNS.Colors)(resources.GetObject("autocompleteMenu.Colors")));
+            this.autocompleteMenu.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
+            this.autocompleteMenu.ImageList = null;
+            this.autocompleteMenu.Items = new string[0];
+            this.autocompleteMenu.TargetControlWrapper = null;
             // 
             // NewBackupProcessWizard
             // 
@@ -610,10 +609,10 @@
         private System.Windows.Forms.ToolTip WizardToolTip;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label lblFinish;
-        private AutocompleteMenuNS.AutocompleteMenu autoCompleteMenu;
         private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.SaveFileDialog DlgFolderBrowser;
+        private AutocompleteMenuNS.AutocompleteMenu autocompleteMenu;
     }
 }

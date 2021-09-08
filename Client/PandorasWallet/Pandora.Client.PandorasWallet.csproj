@@ -10,9 +10,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Pandora.Client.PandorasWallet</RootNamespace>
     <AssemblyName>Pandora%27s Wallet</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -52,7 +53,7 @@
     <ApplicationIcon>Pandora_Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
@@ -87,6 +88,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
   <ItemGroup>
     <None Include="packages.config">
       <SubType>Designer</SubType>
@@ -107,13 +112,14 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.111" />
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -380,6 +386,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\NewBackupProcessWizard.resx">
       <DependentUpon>NewBackupProcessWizard.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\PrivKeyDialog.resx">
       <DependentUpon>PrivKeyDialog.cs</DependentUpon>
@@ -487,6 +494,10 @@
       <Project>{d1930f9b-4e8c-41f6-bd0d-9421c68f532c}</Project>
       <Name>Pandora.Client.Crypto.Currencies.Ethereum</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Exchange\Pandora.Client.Exchange.csproj">
+      <Project>{22483063-f3be-4f4f-b2d4-d2c0aa9fda82}</Project>
+      <Name>Pandora.Client.Exchange</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PriceSource\Pandora.Client.PriceSource.csproj">
       <Project>{1a9ea64b-881a-4bf2-ad75-2760f7aff5ff}</Project>
       <Name>Pandora.Client.PriceSource</Name>
@@ -498,10 +509,6 @@
     <ProjectReference Include="..\Crypto\Pandora.Client.Crypto.csproj">
       <Project>{74bf1128-0e40-4d89-814b-9b7565c211b8}</Project>
       <Name>Pandora.Client.Crypto</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Exchange\Pandora.Client.Exchange\Pandora.Client.Exchange.csproj">
-      <Project>{22483063-f3be-4f4f-b2d4-d2c0aa9fda82}</Project>
-      <Name>Pandora.Client.Exchange</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServerAccess\Pandora.Client.ServerAccess.csproj">
       <Project>{9dee773e-3023-46fe-945b-aff5974d1170}</Project>

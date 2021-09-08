@@ -156,9 +156,10 @@ namespace Pandora.Client.PriceSource
             decimal lResult = 0;
             if (FCurrencyWatchInventory.TryGetValue(aCurrencyID, out ICurrencyItem lCurrency))
             {
-                var lFoundPrices = FCurrencyPrices.Where((lPricePair) => lPricePair.Key.Contains(lCurrency.Ticker.ToLowerInvariant())).Select(lPricePair => lPricePair.Value).ToArray();
-                var lPrice = lFoundPrices.Where(lFoundPrice => string.Equals(lFoundPrice.Name, lCurrency.Ticker, StringComparison.OrdinalIgnoreCase)
-                                             && string.Equals(lFoundPrice.Reference, aBaseFiatCurrency.ToString(), StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                var lFoundPrices = FCurrencyPrices.Where((lPricePair) => lPricePair.Key.Contains(lCurrency.Ticker.ToLowerInvariant())).Select(lPricePair => lPricePair.Value);
+                var lPrices = lFoundPrices.Where(lFoundPrice => string.Equals(lFoundPrice.Ticker, lCurrency.Ticker, StringComparison.OrdinalIgnoreCase)
+                                             && string.Equals(lFoundPrice.Reference, aBaseFiatCurrency.ToString(), StringComparison.OrdinalIgnoreCase));
+                var lPrice = lPrices.Count() > 1 ? lPrices.FirstOrDefault(lPriceItem => string.Equals(lPriceItem.Name, lCurrency.Name, StringComparison.OrdinalIgnoreCase)) : lPrices.FirstOrDefault();
                 if (lPrice != null)
                     lResult = lPrice.Price;
             }
@@ -170,28 +171,28 @@ namespace Pandora.Client.PriceSource
             decimal lResult = 0;
             if (FCurrencyWatchInventory.TryGetValue(aCurrencyID, out ICurrencyItem lCurrency) && FCurrencyWatchInventory.TryGetValue(aBaseCurrencyID, out ICurrencyItem lBaseCurrency))
             {
-                var lFoundPrices = FCurrencyPrices.Where((lPricePair) => lPricePair.Key.Contains(lCurrency.Ticker.ToLowerInvariant())).Select(lPricePair => lPricePair.Value);
+                var lFoundPrices = FCurrencyPrices.Where((lPricePair) => string.Equals(lPricePair.Value.Ticker, lCurrency.Ticker, StringComparison.OrdinalIgnoreCase)).Select(lPricePair => lPricePair.Value).ToArray();
                 if (lFoundPrices.Any())
                 {
-                    var lPrice = lFoundPrices.Where(lFoundPrice => string.Equals(lFoundPrice.Name, lCurrency.Ticker, StringComparison.OrdinalIgnoreCase)
-                             && string.Equals(lFoundPrice.Reference, lBaseCurrency.Ticker, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    var lPrices = lFoundPrices.Where(lFoundPrice => string.Equals(lFoundPrice.Reference, lBaseCurrency.Ticker, StringComparison.OrdinalIgnoreCase));
+                    var lPrice = lPrices.Count() > 1 ? lPrices.FirstOrDefault(lPriceItem => string.Equals(lPriceItem.Name, lCurrency.Name, StringComparison.OrdinalIgnoreCase)) : lPrices.FirstOrDefault();
                     if (lPrice != null)
                         lResult = lPrice.Price;
                     else
                     {
-                        var lFoundBasePrices = FCurrencyPrices.Where((lPricePair) => lPricePair.Key.Contains(lBaseCurrency.Ticker.ToLowerInvariant())).Select(lPricePair => lPricePair.Value);
+                        var lFoundBasePrices = FCurrencyPrices.Where((lPricePair) => lPricePair.Key.Contains(lBaseCurrency.Ticker.ToLowerInvariant()) && lPricePair.Value.Name.ToLowerInvariant().Contains(lBaseCurrency.Name.ToLowerInvariant())).Select(lPricePair => lPricePair.Value).ToArray();
                         if (lFoundBasePrices.Any())
                         {
-                            var lPrices = from lRequested in lFoundPrices
-                                          join lBase in lFoundBasePrices on lRequested.Reference equals lBase.Reference
-                                          select new
-                                          {
-                                              Price = lRequested.Price,
-                                              BasePrice = lBase.Price
-                                          };
-                            if (lPrices.Any())
+                            var lJoinedPrices = from lRequested in lFoundPrices
+                                                join lBase in lFoundBasePrices on lRequested.Reference equals lBase.Reference
+                                                select new
+                                                {
+                                                    Price = lRequested.Price,
+                                                    BasePrice = lBase.Price
+                                                };
+                            if (lJoinedPrices.Any())
                             {
-                                var lPriceRelation = lPrices.First();
+                                var lPriceRelation = lJoinedPrices.First();
                                 if (lPriceRelation.BasePrice > 0)
                                     lResult = lPriceRelation.Price / lPriceRelation.BasePrice;
                             }

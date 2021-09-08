@@ -18,7 +18,6 @@ namespace Pandora.Client.PriceSource.SourceAPIs.Entities
     {
         private const string FBaseAPIAddress = @"https://api.coingecko.com/api/v3";
 
-
         private HttpClient FHTTPClient;
         private CancellationTokenSource FCancellationTokenSource;
 
@@ -68,13 +67,16 @@ namespace Pandora.Client.PriceSource.SourceAPIs.Entities
                         var lPrices = JsonConvert.DeserializeObject<IDictionary<string, IDictionary<string, decimal>>>(await lPricesRequest.Content.ReadAsStringAsync());
                         foreach (var lPrice in lPrices)
                         {
-                            lResult.AddRange(lPrice.Value.Select(lSubPrice => new PriceModel
-                            {
-                                Name = lAPICurrencies.SingleOrDefault(lCurrency => string.Equals(lCurrency.Id, lPrice.Key, StringComparison.OrdinalIgnoreCase))?.Symbol ?? lPrice.Key,
-                                Reference = lSubPrice.Key,
-                                Price = lSubPrice.Value
-                            }
-                            ));
+                            var lSupportedCoin = lAPICurrencies.SingleOrDefault(lCurrency => string.Equals(lCurrency.Id, lPrice.Key, StringComparison.OrdinalIgnoreCase));
+                            if (lSupportedCoin != null)
+                                lResult.AddRange(lPrice.Value.Select(lSubPrice => new PriceModel
+                                {
+                                    Name = lSupportedCoin.Name,
+                                    Ticker = lSupportedCoin.Symbol,
+                                    Reference = lSubPrice.Key,
+                                    Price = lSubPrice.Value
+                                }
+                                ));
                         }
                     }
                 }

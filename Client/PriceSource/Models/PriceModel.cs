@@ -10,11 +10,12 @@ namespace Pandora.Client.PriceSource.Models
     internal class PriceModel : ICurrencyPrice
     {
         public string Name { get; set; }
+        public string Ticker { get; set; }
 
         public string Reference { get; set; }
 
         public decimal Price { get; set; }
 
-        public string Id => $"{Name}-{Reference}".ToLowerInvariant();
+        public string Id => $"{Ticker}-{Name}-{Reference}".ToLowerInvariant();
     }
 }

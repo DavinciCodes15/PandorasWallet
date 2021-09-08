@@ -13,11 +13,13 @@ namespace Pandora.Client.PandorasWallet
     public partial class TickerTextBox : UserControl
     {
         private bool FOptionsMenuEnabled;
+
         public TickerTextBox()
         {
-            InitializeComponent();            
+            InitializeComponent();
             AdjustTextBoxMargin();
         }
+
         [Browsable(true)]
         public event Action OnAmountChanged;
 
@@ -25,8 +27,8 @@ namespace Pandora.Client.PandorasWallet
         public string CurrencyTicker
         {
             get => lblTicker.Text;
-            set 
-            { 
+            set
+            {
                 lblTicker.Text = value.ToUpper();
                 AdjustTextBoxMargin();
             }
@@ -38,33 +40,32 @@ namespace Pandora.Client.PandorasWallet
         private void AdjustTextBoxMargin()
         {
             tableLayoutPanelTicker.Visible = !string.IsNullOrEmpty(CurrencyTicker);
-            paneltxtbox.Padding = new Padding 
+            paneltxtbox.Padding = new Padding
             {
-                Right = string.IsNullOrEmpty(CurrencyTicker)? 3 : tableLayoutPanelTicker.Size.Width + 5,
+                Right = string.IsNullOrEmpty(CurrencyTicker) ? 3 : tableLayoutPanelTicker.Size.Width + 5,
                 Bottom = 3,
-                Left = 3, 
-                Top = 3 
+                Left = 3,
+                Top = 3
             };
             txtBoxAmount.Refresh();
         }
 
         private void pictureDownArrow_Click(object sender, EventArgs e)
         {
-            contextMenuDownArrow.Show(pictureDownArrow, new Point(0,19));
+            contextMenuDownArrow.Show(pictureDownArrow, new Point(0, 19));
             pictureDownArrow.Enabled = false;
         }
 
         private void contextMenuDownArrow_Closed(object sender, ToolStripDropDownClosedEventArgs e)
         {
-            pictureDownArrow.Enabled = true;            
+            pictureDownArrow.Enabled = true;
         }
-
 
         [Description("Enable or disable dropdown menu"), Category("Data")]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
         public ToolStripItemCollection MenuCollection
         {
-            get => contextMenuDownArrow.Items; 
+            get => contextMenuDownArrow.Items;
             set
             {
                 if (value == null) return;
@@ -72,19 +73,30 @@ namespace Pandora.Client.PandorasWallet
                 contextMenuDownArrow.Items.AddRange(value);
             }
         }
+
         private int FPrecision = 8;
+
         [Description("Amount decimal precision"), Category("Appearance")]
-        public uint Precision { get => Convert.ToUInt32(FPrecision); set => FPrecision = Convert.ToInt32((value > 0)? value : 1); }
+        public uint Precision { get => Convert.ToUInt32(FPrecision); set => FPrecision = Convert.ToInt32((value > 0) ? value : 1); }
 
         [Description("Amount shown"), Category("Data")]
-        public decimal Amount { get => string.IsNullOrEmpty(txtBoxAmount.Text) ? 0 : Convert.ToDecimal(txtBoxAmount.Text); set => txtBoxAmount.Text = value.ToString(); }
+        private decimal FAmount;
+
+        public decimal Amount
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(txtBoxAmount.Text))
+                    FAmount = 0;
+                else if (Decimal.TryParse(txtBoxAmount.Text, out decimal lValue))
+                    FAmount = lValue;
+                return FAmount;
+            }
+            set => txtBoxAmount.Text = value.ToString();
+        }
 
         private void txtBoxAmount_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtBoxAmount.Text))
-            {
-                (sender as TextBox).Text = "0";
-            }
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
             {
                 e.Handled = true;
@@ -93,6 +105,10 @@ namespace Pandora.Client.PandorasWallet
             if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
             {
                 e.Handled = true;
+            }
+            if (e.Handled && string.IsNullOrWhiteSpace(txtBoxAmount.Text))
+            {
+                (sender as TextBox).Text = "0";
             }
         }
 
@@ -108,11 +124,11 @@ namespace Pandora.Client.PandorasWallet
             foreach (var lPercentage in lPercentages)
             {
                 var lMenuItem = contextMenuDownArrow.Items[$"toolStripMenuItem{lPercentage}p"];
-                var lNewPrice = decimal.Round(Amount * Convert.ToDecimal(lMenuItem.Tag), FPrecision);                
+                var lNewPrice = decimal.Round(Amount * Convert.ToDecimal(lMenuItem.Tag), FPrecision);
                 lMenuItem.Text = $"{lPercentage}% ({lNewPrice})";
                 lMenuItem.Enabled = lNewPrice > 0;
             }
-            OnAmountChanged?.Invoke();            
+            OnAmountChanged?.Invoke();
         }
 
         private void paneltxtbox_EnabledChanged(object sender, EventArgs e)
@@ -125,7 +141,9 @@ namespace Pandora.Client.PandorasWallet
             pictureDownArrow.Visible = Enabled && UseOptionsMenu;
             AdjustTextBoxMargin();
         }
+
         private decimal FPreviousValue;
+
         private void txtBoxAmount_TextChanged(object sender, EventArgs e)
         {
             if (FPreviousValue != Amount)
@@ -133,6 +151,7 @@ namespace Pandora.Client.PandorasWallet
                 FPreviousValue = Amount;
                 OnAmountChanged?.Invoke();
             }
+            else if (Amount != 0) Amount = FPreviousValue;
         }
 
         private void txtBoxAmount_Leave(object sender, EventArgs e)

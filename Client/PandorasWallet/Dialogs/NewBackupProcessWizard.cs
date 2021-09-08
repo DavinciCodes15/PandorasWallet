@@ -77,7 +77,7 @@ namespace Pandora.Client.PandorasWallet.Dialogs
         public void SetRecoveryPhraseAutoCompleteWords(string[] aSetOfWords)
         {
             if (aSetOfWords == null || aSetOfWords.Length == 0) throw new Exception("Autocomplete list of words can not be empty");
-            autoCompleteMenu.Items = aSetOfWords;
+            autocompleteMenu.Items = aSetOfWords;
         }
 
         private void BtnNext_Click(object sender, EventArgs e)

@@ -257,7 +257,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 FPandoraObjectNotifier.OnUpgradeFileReady += PandoraObjectNotifier_OnUpgradeFileReady;
                 if (!NewAccount)
                 {
-                    FLocalCacheDB.ReadCurrencies(out List<CurrencyItem> lCurrencies);
+                    var lCurrencies = FLocalCacheDB.ReadCurrencies();
                     // adding currencies we own in the database
                     // if there is new ones beyond that we will be notified
                     foreach (var lCurrency in lCurrencies)
@@ -519,10 +519,10 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         /// and should be hooked before this request.
         /// </summary>
         /// <returns></returns>
-        public List<CurrencyItem> GetCurrencies()
+        public IEnumerable<CurrencyItem> GetCurrencies()
         {
             CheckConnected();
-            FLocalCacheDB.ReadCurrencies(out List<CurrencyItem> lReturningList);
+            var lReturningList = FLocalCacheDB.ReadCurrencies();
             return lReturningList;
         }
 
@@ -733,7 +733,13 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
 
         internal string GetCoinAddress(long aCurrencyID)
         {
-            return GetMonitoredAccounts(aCurrencyID).Last().Address;
+            //If currency Id is less than 0, it means that we encounter a token
+            if (aCurrencyID < 0)
+            {
+                var lToken = GetCurrencyToken(aCurrencyID);
+                aCurrencyID = lToken.ParentCurrencyID;
+            }
+            return GetMonitoredAccounts(aCurrencyID).LastOrDefault()?.Address;
         }
 
         internal TransactionUnit[] GetUnspentOutputs(long aCurrencyId)
