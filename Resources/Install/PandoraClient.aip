@@ -15,10 +15,10 @@
     <ROW Property="DialogBitmap" Value="dialog" MultiBuildValue="MsiBuild:PWInstallerDialogImage.jpg" Type="1" MsiKey="DialogBitmap"/>
     <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{8D71D08D-95AA-4B7A-A50E-688B681573DE} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{4954035E-0C22-428F-8356-F65CE09CC255} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet v1.1"/>
-    <ROW Property="ProductVersion" Value="1.1.47.2619" Type="32" TargetFile="PandorasWallet.exe_1"/>
+    <ROW Property="ProductVersion" Value="1.1.48.2621" Type="32" TargetFile="PandorasWallet.exe_1"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{15B4F25B-B7AD-4B1B-9D26-98A1319C788C}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -191,7 +191,7 @@
     <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Newtonsoft.Json.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FileDependencyOptionComponent">
-    <ROW File="PandorasWallet.exe_1" Exclude="mscorlib.dll|System.dll|netstandard.dll|System.Numerics.dll|System.Core.dll|System.Xml.dll|System.Xml.Linq.dll|System.Runtime.Serialization.dll|System.Data.dll|System.Windows.Forms.dll|System.Drawing.dll|System.Transactions.dll|System.Net.Http.dll|System.Net.Http.WebRequest.dll|Microsoft.CSharp.dll|System.Windows.Forms.DataVisualization.dll|System.ServiceModel.dll" Sha1="d764e2b54e8a9b9f789b03fa1330b843473cf76c"/>
+    <ROW File="PandorasWallet.exe_1" Exclude="mscorlib.dll|System.dll|netstandard.dll|System.Numerics.dll|System.Core.dll|System.Xml.dll|System.Xml.Linq.dll|System.Runtime.Serialization.dll|System.Data.dll|System.Windows.Forms.dll|System.Drawing.dll|System.Transactions.dll|System.Net.Http.dll|System.Net.Http.WebRequest.dll|Microsoft.CSharp.dll|System.Windows.Forms.DataVisualization.dll|System.ServiceModel.dll" Sha1="50b9fc25f61d823f278cb38843f1a44883bd4bf6"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
     <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
