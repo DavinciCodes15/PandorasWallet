@@ -227,19 +227,20 @@ namespace Pandora.Client.PandorasWallet
                 aAddress = lAdvocacy.GetAddress(1);
                 lResult = lAdvocacy.SignMessage(aMessage, aAddress);
             }
-
             return lResult;
         }
 
         private void AppMainForm_OnAddTokenBtnClick(object sender, EventArgs e)
         {
-            var lUserTokens = FServerConnection.GetCurrencyTokens();
+            var lCurrencies = FServerConnection.GetCurrencies();
+            var lUserTokens = FServerConnection.GetCurrencyTokens()
+                .Where(lToken => !lCurrencies.Any(lCurrency => string.Equals(lToken.Ticker, lCurrency.Ticker, StringComparison.OrdinalIgnoreCase)));
             var lVisibleTokens = FServerConnection.GetDisplayedCurrencyTokens().Select(lToken => lToken.Id);
             var lAddTokenDialog = new AddTokenDialog();
             lAddTokenDialog.OnTokenAddressChanged += AddTokenDialog_OnTokenAddressChanged;
 
             //We add all currencies that are ethereum like
-            foreach (var lEthereumCurrency in FServerConnection.GetCurrencies().Where(lCurrency => lCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol)))
+            foreach (var lEthereumCurrency in lCurrencies.Where(lCurrency => lCurrency.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol)))
                 lAddTokenDialog.AddParentCurrency(lEthereumCurrency);
 
             //Now we add all registered tokens, disabling those already at the main interface
@@ -275,9 +276,8 @@ namespace Pandora.Client.PandorasWallet
                             Icon = Globals.IconToBytes(lDialogToken.Icon),
                             Id = lMinTokenID - 3 //Token Ids are negatives
                         };
-                        var lCurrencies = FServerConnection.GetCurrencies();
-                        if (lCurrencies.Any(lCurrency => string.Equals(lCurrency.Ticker, lAddedTokenItem.Ticker) || string.Equals(lCurrency.Name, lAddedTokenItem.Name)))
-                            throw new Exception($"Can not add token {lAddedTokenItem.Name} ({lAddedTokenItem.Ticker}). There is already a currency register with this identification.");
+                        if (lCurrencies.Any(lCurrency => string.Equals(lCurrency.Ticker, lAddedTokenItem.Ticker, StringComparison.CurrentCultureIgnoreCase) || string.Equals(lCurrency.Name, lAddedTokenItem.Name, StringComparison.CurrentCultureIgnoreCase)))
+                            throw new Exception($"Can not add token {lAddedTokenItem.Name} ({lAddedTokenItem.Ticker}). There is already a currency register with this identity.");
                         FServerConnection.RegisterNewCurrencyToken(lAddedTokenItem);
                     }
                     FServerConnection.SetDisplayedCurrencyToken(lAddedTokenItem.Id, true);
@@ -285,7 +285,8 @@ namespace Pandora.Client.PandorasWallet
                 }
                 catch (Exception ex)
                 {
-                    AppMainForm.BeginInvoke(new DelegateDisplayCurrencyToken(Event_DisplayCurrencyToken), new object[] { null, ex, FCancellationTokenSource.Token });
+                    Log.Write(LogLevel.Error, ex.ToString());
+                    throw;
                 }
             }
         }
@@ -828,7 +829,13 @@ namespace Pandora.Client.PandorasWallet
             // send a message to do the rest of the currencies.
 
             var lItemsToDisplay = new List<object>();
+            var lCurrencyTickers = FServerConnection.GetCurrencies().Select(lCurrency => lCurrency.Ticker.ToLower());
             lItemsToDisplay.AddRange(FServerConnection.GetDisplayedCurrencies().Where(lCurrency => lCurrency.Id != lDefaultCurrency.Id));
+            var lInvalidTokens = FServerConnection.GetDisplayedCurrencyTokens().Where(lToken => lCurrencyTickers.Contains(lToken.Ticker.ToLower()));
+            //This extra step is done because one of our clients added an invalid token and with this we prevent it to load
+            if (lInvalidTokens.Any())
+                foreach (var lInvalidToken in lInvalidTokens)
+                    FServerConnection.SetDisplayedCurrencyToken(lInvalidToken.Id, false);
             lItemsToDisplay.AddRange(FServerConnection.GetDisplayedCurrencyTokens());
 
             var lArgs = new DisplayCurrenciesArgs

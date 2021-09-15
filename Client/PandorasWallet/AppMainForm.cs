@@ -248,7 +248,9 @@ namespace Pandora.Client.PandorasWallet
 
         public static string FormatedAmount(decimal aAmount, ushort aPrecision)
         {
-            string lFormatPattern = $"{{0:0.000{new string('#', aPrecision - 3)}}}";
+            string lFormatPattern = @"{0:0.000}";
+            if (aPrecision > 3)
+                lFormatPattern = $"{{0:0.000{new string('#', aPrecision - 3)}}}";
             return string.Format(lFormatPattern, aAmount);
         }
 
@@ -1599,7 +1601,7 @@ namespace Pandora.Client.PandorasWallet
             }
             catch (Exception ex)
             {
-                this.StandardExceptionMsgBox(ex);
+                this.StandardErrorMsgBox(ex.Message);
             }
         }
 
