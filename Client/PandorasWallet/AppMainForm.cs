@@ -177,12 +177,15 @@ namespace Pandora.Client.PandorasWallet
 
         public ListView TransactionView => listTransactions;
 
-        public Image CoinImage { get => picCoinImage.Image; set { picCoinImage.Image = value; picCoinImage.Visible = true; } }
+        public Image CoinImage
+        { get => picCoinImage.Image; set { picCoinImage.Image = value; picCoinImage.Visible = true; } }
 
         public GUITransaction SelectedTransaction { get; private set; }
 
         public IEnumerable<IGUICurrency> Currencies { get => FCurrencyLookup.Values; }
-        public string CoinStatus { get => lblStatus.Text; set { lblStatus.Text = value; } }
+
+        public string CoinStatus
+        { get => lblStatus.Text; set { lblStatus.Text = value; } }
 
         public IGUICurrency GetCurrency(long aCurrenyId)
         {
@@ -324,7 +327,7 @@ namespace Pandora.Client.PandorasWallet
             lListViewItem.SubItems.Add(aTransaction.Amount > 0 ? FormatedAmount(aTransaction.Amount, SelectedCurrency.Precision) : "-");
             lListViewItem.SubItems.Add(aTransaction.Confirmed.ToString());
             lListViewItem.Tag = aTransaction;
-            lListViewItem.ImageIndex = (int) aTransaction.TxType;
+            lListViewItem.ImageIndex = (int)aTransaction.TxType;
             TransactionView.Items.Add(lListViewItem);
         }
 
@@ -443,7 +446,7 @@ namespace Pandora.Client.PandorasWallet
             NotesBox = "";
             if (e.IsSelected)
             {
-                SelectedTransaction = (GUITransaction) e.Item.Tag;
+                SelectedTransaction = (GUITransaction)e.Item.Tag;
                 NotesBox = $"Transaction ID : {SelectedTransaction.TxId} - To Address: {SelectedTransaction.ToAddress}{Environment.NewLine}" +
                            $"Tx Block Number: {SelectedTransaction.BlockNumber} - Confirmations: {SelectedTransaction.Confirmations}{Environment.NewLine}" +
                            $"Transaction Fee: {FormatedAmount(SelectedTransaction.Fee, SelectedCurrency.Precision)}";
@@ -624,9 +627,9 @@ namespace Pandora.Client.PandorasWallet
                 {
                     // Parse the two objects passed as a parameter as a DateTime.
                     System.DateTime firstDate =
-                            DateTime.Parse(((ListViewItem) x).Text);
+                            DateTime.Parse(((ListViewItem)x).Text);
                     System.DateTime secondDate =
-                            DateTime.Parse(((ListViewItem) y).Text);
+                            DateTime.Parse(((ListViewItem)y).Text);
                     // Compare the two dates.
                     returnVal = DateTime.Compare(firstDate, secondDate);
                 }
@@ -635,8 +638,8 @@ namespace Pandora.Client.PandorasWallet
                 catch
                 {
                     // Compare the two items as a string.
-                    returnVal = string.Compare(((ListViewItem) x).Text,
-                                ((ListViewItem) y).Text);
+                    returnVal = string.Compare(((ListViewItem)x).Text,
+                                ((ListViewItem)y).Text);
                 }
                 // Determine whether the sort order is descending.
                 if (order == SortOrder.Descending)
@@ -682,12 +685,12 @@ namespace Pandora.Client.PandorasWallet
             {
                 System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"[^a-zA-Z0-9\s]");
                 e.Handled = regex.IsMatch(e.KeyChar.ToString());
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Backspace);
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Copy);
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Cut);
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Undo);
-                e.Handled &= (e.KeyChar != (int) CommandKeyCodes.Redo);
-                e.Handled |= (e.KeyChar == (int) CommandKeyCodes.Space);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Backspace);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Copy);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Cut);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Undo);
+                e.Handled &= (e.KeyChar != (int)CommandKeyCodes.Redo);
+                e.Handled |= (e.KeyChar == (int)CommandKeyCodes.Space);
             }
             catch (Exception ex)
             {
@@ -737,7 +740,7 @@ namespace Pandora.Client.PandorasWallet
 
         //-------------------------------------------------------------------------Exchanges and Trade History-------------------------------------------------------------------------
 
-        public ExchangeItem SelectedExchange { get => lstExchangers.GetItemText(lstExchangers.SelectedItem) == "--Select--" ? null : (ExchangeItem) lstExchangers.SelectedItem; }
+        public ExchangeItem SelectedExchange { get => lstExchangers.GetItemText(lstExchangers.SelectedItem) == "--Select--" ? null : (ExchangeItem)lstExchangers.SelectedItem; }
 
         public bool ExchangeSelectorEnabled { get => lstExchangers.Enabled; set => lstExchangers.Enabled = value; }
         public bool ExchangeMarketSelectorEnabled { get => lstExchangeMarket.Enabled; set => lstExchangeMarket.Enabled = value; }
@@ -1050,7 +1053,7 @@ namespace Pandora.Client.PandorasWallet
                 {
                     foreach (object lIt in lstExchangeMarket.Items)
                     {
-                        ListViewItem lListViewItem = (ListViewItem) lIt;
+                        ListViewItem lListViewItem = (ListViewItem)lIt;
                         if (aName.Contains(lListViewItem.Name))
                         {
                             lIndex = lListViewItem.Index;
@@ -1234,20 +1237,6 @@ namespace Pandora.Client.PandorasWallet
             try
             {
                 OnExchangeReceivedChanged?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                this.StandardExceptionMsgBox(ex);
-            }
-        }
-
-        public event EventHandler OnChangePassword;
-
-        private void changePasswordToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                OnChangePassword?.Invoke(sender, e);
             }
             catch (Exception ex)
             {
@@ -1639,6 +1628,8 @@ namespace Pandora.Client.PandorasWallet
 
         public event Action<string> OnExportTxsMenuClick;
 
+        public event Action<string> OnExportExchangeOrdersMenuClick;
+
         private void ExportTxtoolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -1649,6 +1640,24 @@ namespace Pandora.Client.PandorasWallet
                 {
                     OnExportTxsMenuClick?.Invoke(ExportTxFileSaveDialog.FileName);
                     this.StandardInfoMsgBox("Success", "Your wallet transaction report has been exported");
+                }
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void exportTradeOrdersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ExportTxFileSaveDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                ExportTxFileSaveDialog.FileName = $"{DateTime.Now.ToString("yyyyMMddHHmm")}_PWTradesReport";
+                if (ExportTxFileSaveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    OnExportExchangeOrdersMenuClick?.Invoke(ExportTxFileSaveDialog.FileName);
+                    this.StandardInfoMsgBox("Success", "Your wallet trade orders report has been exported");
                 }
             }
             catch (Exception ex)

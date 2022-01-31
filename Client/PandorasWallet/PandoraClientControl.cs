@@ -103,7 +103,6 @@ namespace Pandora.Client.PandorasWallet
             AppMainForm.OnAddTokenBtnClick += AppMainForm_OnAddTokenBtnClick;
             AppMainForm.OnBackupClick += MainForm_OnBackupClick;
             AppMainForm.OnSettingsMenuClick += MainForm_OnSettingsMenuClick;
-            AppMainForm.OnChangePassword += AppMainForm_OnChangePassword;
             AppMainForm.OnRemoveCurrencyRequested += AppMainForm_OnRemoveCurrencyRequested;
             AppMainForm.TickerQuantity = string.Empty;
             AppMainForm.TickerTotalReceived = string.Empty;
@@ -415,11 +414,11 @@ namespace Pandora.Client.PandorasWallet
 
         public bool FromUserDecryptWallet(bool aRequirePassword)
         {
-            if (!FKeyManager.IsPasswordSet || aRequirePassword)
+            if (!FKeyManager.Unlocked || aRequirePassword)
             {
                 string lPassword = FromUserGetPassword(new PasswordValidationDelegate(ValidatePasswordHash));
                 if (lPassword == null) return false;
-                FKeyManager.SetPassword(lPassword);
+                FKeyManager.TryUnlock(lPassword);
                 lPassword = null;
             }
             return true;
@@ -433,7 +432,7 @@ namespace Pandora.Client.PandorasWallet
             //If form id is less than 0, then it is a token
             if (lIsToken)
             {
-                lUnspent = FServerConnection.GetUnspentOutputs(((GUIToken) lSelectedCurrency).ParentCurrency.Id);
+                lUnspent = FServerConnection.GetUnspentOutputs(((GUIToken)lSelectedCurrency).ParentCurrency.Id);
             }
             else
             {
@@ -627,7 +626,7 @@ namespace Pandora.Client.PandorasWallet
             if (FServerConnection == null) return;
             var lDisplayedCurrencies = FServerConnection.GetDisplayedCurrencies();
             var lDefaultCurrecy = FServerConnection.GetDefaultCurrency();
-            var lFiat = (FiatCurrencies) Enum.Parse(typeof(FiatCurrencies), Settings.FiatCurrency.ToUpperInvariant());
+            var lFiat = (FiatCurrencies)Enum.Parse(typeof(FiatCurrencies), Settings.FiatCurrency.ToUpperInvariant());
             foreach (var lDisplayedCurrency in lDisplayedCurrencies)
             {
                 var lRelativePrice = aPriceSourceManager.GetPrice(lDisplayedCurrency.Id, lDefaultCurrecy.Id);
@@ -700,13 +699,13 @@ namespace Pandora.Client.PandorasWallet
                     foreach (var lTx in lTxRecords)
                         lFormCurrency.Transactions.AddTransaction(lTx);
                     lFormCurrency.Balances.UpdateBalance();
-                    AppMainForm.BeginInvoke((Action<long>) AppMainForm.RefreshTransactions, aCurrencyItem.Id);
+                    AppMainForm.BeginInvoke((Action<long>)AppMainForm.RefreshTransactions, aCurrencyItem.Id);
                     var lAppMainFormAccounts = new List<GUIAccount>();
                     int lIndex = 0;
                     foreach (var lAddress in lAddresses)
                         lAppMainFormAccounts.Add(GUIModelProducer.CreateFrom(lAddress, $"{lIndex++}"));
                     lFormCurrency.Addresses = lAppMainFormAccounts.ToArray();
-                    AppMainForm.BeginInvoke((Action) (() => AppMainForm.UpdateCurrency(lFormCurrency.Id)));
+                    AppMainForm.BeginInvoke((Action)(() => AppMainForm.UpdateCurrency(lFormCurrency.Id)));
                 }
             }
             catch (Exception ex)
@@ -720,7 +719,7 @@ namespace Pandora.Client.PandorasWallet
             List<CurrencyAccount> lResult = new List<CurrencyAccount>();
             if (FromUserDecryptWallet(Settings.RequestWalletPassword))
             {
-                var lAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrencyID, (ChainParams) aCurrencyChainParams);
+                var lAdvocacy = FKeyManager.GetCurrencyAdvocacy(aCurrencyID, (ChainParams)aCurrencyChainParams);
                 var lAddress1 = lAdvocacy.GetAddress(0);
                 var lAddress2 = lAdvocacy.GetAddress(1);
                 var lServerAddress = aServerMonitoresAccounts.FirstOrDefault();
@@ -747,7 +746,7 @@ namespace Pandora.Client.PandorasWallet
             if (lDisplayedCurrency != null)
             {
                 lDisplayedCurrency.CopyFrom(aCurrencyItem);
-                AppMainForm.BeginInvoke((Func<long, bool>) AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
+                AppMainForm.BeginInvoke((Func<long, bool>)AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
             }
         }
 
@@ -759,7 +758,7 @@ namespace Pandora.Client.PandorasWallet
                 lDisplayedCurrency.CurrentStatus = aCurrencyStatusItem.Status;
                 lDisplayedCurrency.StatusDetails.StatusMessage = aCurrencyStatusItem.ExtendedInfo;
                 lDisplayedCurrency.StatusDetails.StatusTime = aCurrencyStatusItem.StatusTime;
-                AppMainForm.BeginInvoke((Func<long, bool>) AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
+                AppMainForm.BeginInvoke((Func<long, bool>)AppMainForm.UpdateCurrency, lDisplayedCurrency.Id);
             }
         }
 
@@ -778,10 +777,14 @@ namespace Pandora.Client.PandorasWallet
         {
             if (FKeyManager == null)
             {
-                FKeyManager = new KeyManager(FServerConnection.ReadKeyValue("SALT"))
+                var lWalletEncryptedData = new KeyManager.WalletEncryptionContext(FServerConnection.ReadKeyValue("SALT"))
                 {
-                    EncryptedRootSeed = FServerConnection.ReadKeyValue("EncryptedRootSeed")
+                    EncryptedRootSeed = FServerConnection.ReadKeyValue("EncryptedRootSeed"),
+                    EncryptedMasterPassword = FServerConnection.ReadKeyValue("EncryptedPassword"),
+                    MasterPasswordHash = FServerConnection.ReadKeyValue("PasswordHash"),
+                    AlternatePasswordHash = FServerConnection.ReadKeyValue("AltPasswordHash")
                 };
+                FKeyManager = new KeyManager(lWalletEncryptedData);
             }
             //Pre-load possible currency prices
             FPriceSourceManager.AddCurrenciesToWatch(FServerConnection.GetCurrencies().Where(lCurrency => lCurrency.ChainParamaters.Network != ChainParams.NetworkType.TestNet));
@@ -871,23 +874,27 @@ namespace Pandora.Client.PandorasWallet
 #if DEBUG
             if (MessageBox.Show("You sure you want create this account?", "confirmation", MessageBoxButtons.YesNo) != DialogResult.Yes) throw new Exception("test new user setup");
 #endif
-            FKeyManager = new KeyManager(KeyManager.GenerateSalt());
-            FKeyManager.SetPassword(lPassword);
-            FKeyManager.SetRootSeed(KeyManager.GenerateRootSeed());
-            PostUserInfo(FKeyManager.EncryptedRootSeed, KeyManager.HashPassword(FKeyManager.GetPassword()), FKeyManager.GetSalt(), lDefaultCurrencyId);
+            FKeyManager = new KeyManager();
+            var lEncryptionData = FKeyManager.EncryptAndSetNewRootSeed(KeyManager.GenerateRootSeed(), lPassword);
+            PostUserInfo(lEncryptionData, lDefaultCurrencyId);
         }
 
-        public void PostUserInfo(string aEncryptedRootSeed, string aPasswordHash, string aSalt, long aDefaultCurrencyId)
+        public void PostUserInfo(IWalletEncryptionContext aEncryptionData, long aDefaultCurrencyId)
         {
-            var lDictionary = new Dictionary<string, string>
+            if (aEncryptionData == null || !aEncryptionData.IsWalletInitialized)
+                throw new ArgumentException(nameof(aEncryptionData), "Encrypted wallet data must be initialized before posting to database");
+            var lUserInfo = new Dictionary<string, string>
             {
-                { "SALT", aSalt },
-                { "EncryptedRootSeed", aEncryptedRootSeed },
-                { "PasswordHash", aPasswordHash },
+                { "SALT", aEncryptionData.GetSalt() },
+                { "EncryptedRootSeed", aEncryptionData.EncryptedRootSeed },
+                { "PasswordHash", aEncryptionData.MasterPasswordHash },
                 { "UserName", FServerConnection.UserName },
-                { "Email", FServerConnection.Email }
+                { "Email", FServerConnection.Email },
+                {"AltPasswordHash", aEncryptionData.AlternatePasswordHash ?? String.Empty },
+                {"EncryptedPassword", aEncryptionData.EncryptedMasterPassword ?? String.Empty }
             };
-            FServerConnection.WriteAtomicKeyValue(lDictionary);
+
+            FServerConnection.WriteAtomicKeyValue(lUserInfo);
             FServerConnection.SetDefaultCurrency(aDefaultCurrencyId);
         }
 
@@ -1058,12 +1065,12 @@ namespace Pandora.Client.PandorasWallet
             string lTicker = aSelectedCoin.Ticker;
             bool lIsEthereum = aSelectedCoin.ChainParamaters.Capabilities.HasFlag(CapablityFlags.EthereumProtocol);
             bool lIsToken = aSelectedCoin.Id < 0;
-            int lNonce = CalculateEthTransactionNonce(lIsToken ? ((ICurrencyToken) aSelectedCoin).ParentCurrencyID : aSelectedCoin.Id);
+            int lNonce = CalculateEthTransactionNonce(lIsToken ? ((ICurrencyToken)aSelectedCoin).ParentCurrencyID : aSelectedCoin.Id);
 
             var lSendTxDialogInfo = new SendTransactionDialog.SendTransactionInfo
             {
                 BalanceTicker = aSelectedCoin.Ticker,
-                FeeTicker = lIsToken ? FServerConnection.GetCurrency(((ICurrencyToken) aSelectedCoin).ParentCurrencyID).Ticker : aSelectedCoin.Ticker,
+                FeeTicker = lIsToken ? FServerConnection.GetCurrency(((ICurrencyToken)aSelectedCoin).ParentCurrencyID).Ticker : aSelectedCoin.Ticker,
                 AmountToSend = aAmount,
                 CurrentBalance = aBalance,
                 FeeRate = aFeePerKb,
@@ -1072,7 +1079,7 @@ namespace Pandora.Client.PandorasWallet
                 TotalFee = aTxFee,
                 IsSentAll = aSubtractFee,
                 Nonce = lNonce,
-                FiatPrice = FPriceSourceManager.GetPrice(aSelectedCoin.Id, (FiatCurrencies) Enum.Parse(typeof(FiatCurrencies), Settings.FiatCurrency)),
+                FiatPrice = FPriceSourceManager.GetPrice(aSelectedCoin.Id, (FiatCurrencies)Enum.Parse(typeof(FiatCurrencies), Settings.FiatCurrency)),
                 FiatSymbol = Settings.FiatCurrency
             };
 
@@ -1144,7 +1151,7 @@ namespace Pandora.Client.PandorasWallet
                     lGasLimit = 21000;
                     lAmountFormatter = aCurrency;
                 }
-                long lFeePerKb = FServerConnection.EstimateCurrencyTxFee(((ICurrencyIdentity) lAmountFormatter).Id);
+                long lFeePerKb = FServerConnection.EstimateCurrencyTxFee(((ICurrencyIdentity)lAmountFormatter).Id);
                 aFeePerKb = lAmountFormatter.AmountToDecimal(lFeePerKb);
                 lResult = lAmountFormatter.AmountToDecimal(lFeePerKb * lGasLimit);
             }
@@ -1535,7 +1542,7 @@ namespace Pandora.Client.PandorasWallet
         private string BackupController_OnRootSeedNeeded()
         {
             FromUserDecryptWallet(Settings.RequestWalletPassword);
-            return FKeyManager.GetSecretRootSeed();
+            return FKeyManager.GetStringRootSeed();
         }
 
         private void BackupController_OnSaveFile(byte[] aFile, string aPath)
@@ -1549,6 +1556,9 @@ namespace Pandora.Client.PandorasWallet
         {
             SettingsDialog SettingsDlg = new SettingsDialog();
             SettingsDlg.OnChangeDefaultCoinClick += SettingsDialog_OnChangeDefaultCoinClick;
+            SettingsDlg.OnChangeEncryptPassword += SettingsDialog_OnChangePassword;
+            SettingsDlg.OnSetAlternatePassword += SettingsDlg_OnSetAlternatePassword;
+            SettingsDlg.OnEncryptCheckBoxChanged += SettingsDlg_OnEncryptCheckBoxChanged;
             SettingsDlg.OnGetPrivateKey += SettingsDialog_OnGetPrivateKey;
             SettingsDlg.DataPath = Settings.DataPath;
             SettingsDlg.RequestWalletPassword = Settings.RequestWalletPassword;
@@ -1557,6 +1567,7 @@ namespace Pandora.Client.PandorasWallet
             SettingsDlg.SetActiveCurrency(AppMainForm.SelectedCurrencyId, AppMainForm.SelectedCurrency.Name, SystemUtils.BytesToIcon(AppMainForm.SelectedCurrency.Icon).ToBitmap());
             SettingsDlg.SetFiatCurrencies(Enum.GetNames(typeof(FiatCurrencies)));
             SettingsDlg.SelectedFiat = Settings.FiatCurrency.ToUpperInvariant();
+            SettingsDlg.AltPasswordSet = FKeyManager.GetCurrentEncryptionContext().IsAltPasswordSet;
             if (SettingsDlg.Execute())
             {
                 if (Settings.DataPath != SettingsDlg.DataPath)
@@ -1612,6 +1623,26 @@ namespace Pandora.Client.PandorasWallet
                     PriceSourceManager_OnPricesUpdated(FPriceSourceManager);
                 }
             }
+        }
+
+        private void SettingsDlg_OnSetAlternatePassword(object sender, EventArgs e)
+        {
+            var lSettingsDlg = (SettingsDialog)sender;
+            if (FromUserDecryptWallet(true))
+            {
+                var lNewAltPassword = FromUserGetNewPassword(new PasswordValidationDelegate(ValidateNewPassword));
+                if (!string.IsNullOrEmpty(lNewAltPassword))
+                {
+                    var lWalletEncryptionData = FKeyManager.SetAltenatePassword(lNewAltPassword);
+                    lSettingsDlg.IsAltPasswordSet = lWalletEncryptionData.IsAltPasswordSet;
+                    PostUserInfo(lWalletEncryptionData, FServerConnection.DefualtCurrencyItem.Id);
+                }
+            }
+        }
+
+        private void SettingsDlg_OnEncryptCheckBoxChanged(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         public void RemoveCurrency(long aCurrencyID)
@@ -1697,17 +1728,21 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private void AppMainForm_OnChangePassword(object sender, EventArgs e)
+        private void SettingsDialog_OnChangePassword(object sender, EventArgs e)
         {
+            var lSettingsDlg = (SettingsDialog)sender;
             if (FromUserDecryptWallet(true))
             {
+                IWalletEncryptionContext lWalletEncryptionData = FKeyManager.GetCurrentEncryptionContext();
+                if (lWalletEncryptionData.IsAltPasswordSet) AppMainForm.StandardInfoMsgBox("Please notice that changing your master password will reset you alternative password");
                 string lPassword = FromUserGetNewPassword(new PasswordValidationDelegate(ValidateNewPassword));
                 if (lPassword != null)
                 {
                     try
                     {
-                        FKeyManager.UpdatePassword(lPassword);
-                        PostUserInfo(FKeyManager.EncryptedRootSeed, KeyManager.HashPassword(lPassword), FKeyManager.GetSalt(), FServerConnection.DefualtCurrencyItem.Id);
+                        lWalletEncryptionData = FKeyManager.UpdatePassword(lPassword);
+                        lSettingsDlg.IsAltPasswordSet = lWalletEncryptionData.IsAltPasswordSet;
+                        PostUserInfo(lWalletEncryptionData, FServerConnection.DefualtCurrencyItem.Id);
                     }
                     catch (Exception ex)
                     {
@@ -1956,7 +1991,7 @@ namespace Pandora.Client.PandorasWallet
 
         private bool ValidatePasswordHash(string aPassword)
         {
-            return KeyManager.CheckPassword(aPassword, FServerConnection.ReadKeyValue("PasswordHash"));
+            return FKeyManager.CheckPassword(aPassword);
         }
 
         private void UpdateLoginHistory(string aEmail, string aUserName, string aPassword, bool aSavePassword)
@@ -2234,9 +2269,8 @@ namespace Pandora.Client.PandorasWallet
             string lPassword = (aPassword == null) ? FromUserGetNewPassword(new PasswordValidationDelegate(ValidateNewPassword)) : aPassword;
             if (lPassword == null) throw new Exception("You must provide a password.");
             Log.Write(LogLevel.Debug, "Generating key manager.");
-            var lKey = new KeyManager(KeyManager.GenerateSalt());
-            lKey.SetPassword(lPassword);
-            lKey.SetRootSeed(KeyManager.HexStringToByteArray(aPasscode));
+            var lKey = new KeyManager();
+            var lWalletEncryptionData = lKey.EncryptAndSetNewRootSeed(KeyManager.HexStringToByteArray(aPasscode), lPassword);
             Log.Write(LogLevel.Debug, "Loading bitcoin currency.");
             var lCurrency = this.FServerConnection.GetCurrency(1);
             if (lCurrency == null)
@@ -2263,7 +2297,7 @@ namespace Pandora.Client.PandorasWallet
 #endif
             FKeyManager = lKey;
             Log.Write(LogLevel.Info, "Saving the account info.");
-            PostUserInfo(FKeyManager.EncryptedRootSeed, KeyManager.HashPassword(FKeyManager.GetPassword()), FKeyManager.GetSalt(), lDefaultCurrencyId);
+            PostUserInfo(lWalletEncryptionData, lDefaultCurrencyId);
         }
 
         #endregion Restore Controller Methods

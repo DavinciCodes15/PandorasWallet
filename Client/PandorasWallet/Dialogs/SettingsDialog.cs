@@ -30,6 +30,13 @@ namespace Pandora.Client.PandorasWallet.Dialogs
     public partial class SettingsDialog : BaseDialog
     {
         public EventHandler OnChangeDefaultCoinClick;
+
+        public event EventHandler OnChangeEncryptPassword;
+
+        public event EventHandler OnSetAlternatePassword;
+
+        public event EventHandler OnEncryptCheckBoxChanged;
+
         public Func<long, IDictionary<string, string>> OnGetPrivateKey;
 
         public long DefaultCurrencyId { get; private set; }
@@ -42,11 +49,60 @@ namespace Pandora.Client.PandorasWallet.Dialogs
 
         public bool AutoUpdate { get => cbAutoUpdate.Checked; set => cbAutoUpdate.Checked = value; }
 
-        public string SelectedFiat { get => (string) cmboBoxFiatCurrency.SelectedItem; set => cmboBoxFiatCurrency.SelectedItem = value; }
+        public string SelectedFiat { get => (string)cmboBoxFiatCurrency.SelectedItem; set => cmboBoxFiatCurrency.SelectedItem = value; }
 
         public string PrivateKeyBtnText { get => btnPrivKey.Text; set => btnPrivKey.Text = $"View {FCurrencyName = value} private key..."; }
 
         private string FCurrencyName;
+
+        public bool AltPasswordSet { get => lblAltPassSet.Visible; set => lblAltPassSet.Visible = value; }
+
+        public bool IsWalletEncrypted
+        {
+            get => checkEncryptWallet.Checked;
+            set
+            {
+                checkEncryptWallet.Checked = value;
+                btnChangeMasterPassword.Enabled = value;
+                btnSetAlternatePassword.Enabled = value;
+            }
+        }
+
+        public bool IsAltPasswordSet
+        {
+            get => lblAltPassSet.Visible;
+            set => lblAltPassSet.Visible = value;
+        }
+
+        public SettingsDialog()
+        {
+            InitializeComponent();
+            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
+        }
+
+        private void btnChangeMasterPassword_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OnChangeEncryptPassword?.Invoke(this, new EventArgs());
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
+
+        private void btnSetAlternatePassword_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                OnSetAlternatePassword?.Invoke(this, new EventArgs());
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
+        }
 
         public void SetDefaultCurrency(long aCurrencyId, string aName, Image aImage)
         {
@@ -61,12 +117,6 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             lblSelectedCoin.Text = aName;
             PrivateKeyBtnText = aName;
             ActiveCurrencyId = aCurrencyId;
-        }
-
-        public SettingsDialog()
-        {
-            InitializeComponent();
-            Utils.ChangeFontUtil.ChangeDefaultFontFamily(this);
         }
 
         private void btnChangeDefaultCoin_Click(object sender, EventArgs e)
@@ -128,6 +178,18 @@ namespace Pandora.Client.PandorasWallet.Dialogs
             if (aFiatCurrencies == null || !aFiatCurrencies.Any()) throw new ArgumentException(nameof(aFiatCurrencies), "FiatCurrencies can not be empty or null");
             cmboBoxFiatCurrency.Items.Clear();
             cmboBoxFiatCurrency.Items.AddRange(aFiatCurrencies.ToArray());
+        }
+
+        private void checkEncryptWallet_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                OnEncryptCheckBoxChanged?.Invoke(this, e);
+            }
+            catch (Exception ex)
+            {
+                this.StandardExceptionMsgBox(ex);
+            }
         }
     }
 }

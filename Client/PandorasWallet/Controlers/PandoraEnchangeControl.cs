@@ -38,6 +38,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Pandora.Client.Exchangers.Contracts;
 using Pandora.Client.Exchange.Contracts;
+using System.Text;
 
 namespace Pandora.Client.PandorasWallet.Controlers
 {
@@ -274,12 +275,28 @@ namespace Pandora.Client.PandorasWallet.Controlers
             MainForm.OnPriceChanged += MainForm_OnPriceChanged;
             //MainForm.OnOrderHistorySelectionChanged += MainForm_OnOrderHistorySelectionChanged;
             MainForm.OnCancelBtnClick += MainForm_OnCancelBtnClick;
+            MainForm.OnExportExchangeOrdersMenuClick += MainForm_OnExportExchangeOrdersMenuClick;
 
             MainForm.OnExchangeReceivedChanged += MainForm_OnExchangeReceivedChanged;
             MainForm.OnCheckAllOrderHistory += MainForm_OnCheckAllOrderHistory;
             MainForm.OnExchangeChartIntervalChanged += MainForm_OnExchangeChartIntervalChanged;
 
             MainForm.LoadMarketIntervals(Enum.GetNames(typeof(ChartInterval)));
+        }
+
+        private void MainForm_OnExportExchangeOrdersMenuClick(string aSaveFilePath)
+        {
+            var lDisplayedCurrencies = FPandorasWalletConnection.GetDisplayedCurrencies().Cast<ICurrencyIdentity>();
+            var lDisplayedTokens = FPandorasWalletConnection.GetDisplayedCurrencyTokens().Cast<ICurrencyIdentity>();
+            var lReportContent = new StringBuilder();
+            lReportContent.Append("datetime,exchange, name, status, market, rate, stopprice, sentquantity" + Environment.NewLine);
+            foreach (ICurrencyIdentity lCurrency in lDisplayedCurrencies.Concat(lDisplayedTokens))
+            {
+                var lOrders = FOrderManager.GetOrdersByCurrencyID(lCurrency.Id);
+                foreach (var lOrder in lOrders)
+                    lReportContent.AppendLine($"{lOrder.OpenTime},{(AvailableExchangesList) lOrder.Market.ExchangeID},{lOrder.Name},{lOrder.Status},{lOrder.Market.SellingCurrencyInfo.Ticker}-{lOrder.Market.BuyingCurrencyInfo.Ticker},{lOrder.Rate},{lOrder.StopPrice},{lOrder.SentQuantity}");
+            }
+            File.WriteAllText(aSaveFilePath, lReportContent.ToString());
         }
 
         private void MainForm_OnExchangeChartIntervalChanged()
@@ -559,7 +576,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             SetExchangeCredentials(aSelectedExchange, aExchangeKey, aExchangeSecret);
             int lSelectedExchangeInt = (int) aSelectedExchange;
 
-            if (!aKeyManager.IsPasswordSet)
+            if (!aKeyManager.Unlocked)
                 SetKeyManagerPassword.Invoke();
             if (!aKeyValueObject.PublicKeys.ContainsKey(lSelectedExchangeInt))
                 aKeyValueObject.PublicKeys.Add(lSelectedExchangeInt, aKeyManager.EncryptText(aExchangeKey));
@@ -578,7 +595,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
         {
             string lExchangePublicKey = null;
             string lExchangeSecret = null;
-            bool lPasswordSet = aKeyManager.IsPasswordSet;
+            bool lPasswordSet = aKeyManager.Unlocked;
             if (!lPasswordSet)
                 lPasswordSet = SetKeyManagerPassword.Invoke();
             if (lPasswordSet)

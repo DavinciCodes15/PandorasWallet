@@ -134,7 +134,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAO
-        CgAAAk1TRnQBSQFMAgEBBAEAAcgBEgHIARIBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CgAAAk1TRnQBSQFMAgEBBAEAARABEwEQARMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -198,7 +198,7 @@
   <data name="pictureBox1.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAADL1t+KAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAL
-        EQAACxEBf2RfkQAARwFJREFUeF7t3WlwVGee5/uu6e64N6bnzcxUTNwX996I6ZmqmOiJmZ64E3Z5QYDE
+        DAAACwwBP0AiyAAARwFJREFUeF7t3WlwVGee5/uu6e64N6bnzcxUTNwX996I6ZmqmOiJmZ64E3Z5QYDE
         ZrOLfdeGQEhgsME2NqvZJAESO0K4XHa5bLOZfZOEAIGwEYtrr3JVd7lWr2VjwGCEtnzu809lmkQ8J8+R
         dDJ18pzvL+Iz1VNFpiWZPF+dXP9GKQUAAFKc8b8EAACpxfhfAgCA1GL8LwEAQGphjDHGWAquU0Efuuzq
         v+1fenF4RumlNf1KLy0HAACJ1bvk6rKiTceLz7+1Nj+SY+M6FfQ+669+u1/xxe8P2vgL1b/0EgAASCAd
@@ -507,7 +507,7 @@
   <data name="pictureBoxBalanceInfo.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAK
-        8AAACvABQqw0mAAAAAd0SU1FB9MIGwo4I1d5FyEAAAKsSURBVDhPrZHbT5JxGMffP0D7L1qtddNWtrWZ
+        6QAACukB/XXO0wAAAAd0SU1FB9MIGwo4I1d5FyEAAAKsSURBVDhPrZHbT5JxGMffP0D7L1qtddNWtrWZ
         onnTlcIy44LKeUBtoKgddEudRh5Q3MpcbSBapAZIHqZbA6EgdLBUVI4pB+UFCU8clixn38Rex9y8q8/1
         8/n+nu/zI/47gUAg1WAw8IxGo9a8sECajEZyampSK5fLq6RSaSo1djqHcrbNZg3Ef8YQi+zC7Q/BTYYQ
         2dlCMEBCqVT6D4OyqPGTJGSP233oRiHWePB4KorK8RiKZbtgDgTRObGCrdAGFHJ5XCQS0SjtL1ar9Yxl
@@ -534,17 +534,11 @@
   <metadata name="coinTooltip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1080, 17</value>
   </metadata>
-  <metadata name="toolTipHelp.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1193, 17</value>
-  </metadata>
   <metadata name="menuStripMain.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>305, 17</value>
   </metadata>
   <metadata name="ExportTxFileSaveDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>902, 17</value>
-  </metadata>
-  <metadata name="lstViewCurrencies.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
   </metadata>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

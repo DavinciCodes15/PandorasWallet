@@ -22,97 +22,119 @@
 using Pandora.Client.Crypto.Currencies;
 using Pandora.Client.Universal;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Pandora.Client.PandorasWallet.Wallet
 {
+    internal interface IWalletEncryptionContext
+    {
+        string MasterPasswordHash { get; }
+        string AlternatePasswordHash { get; }
+        string EncryptedRootSeed { get; }
+        string EncryptedMasterPassword { get; }
+        bool IsWalletInitialized { get; }
+        bool IsAltPasswordSet { get; }
+
+        string GetSalt();
+    }
+
     internal class KeyManager
     {
-        private string FEncryptedPassword;
-        private string FEncryptedSalt;
-        private string FEncryptedRootSeed;
+        private string FStoredMasterPassword; // This value is encrypted for security
+        private readonly WalletEncryptionContext FWalletEncryptionData;
+
+        public bool Unlocked => !string.IsNullOrEmpty(FStoredMasterPassword);
 
         /// <summary>
         /// This object manages all crypto fucntions and keeps the
         /// key data encrypted until needed for use.
         /// </summary>
         /// <param name="aSalt"></param>
-        public KeyManager(string aSalt)
+        public KeyManager(WalletEncryptionContext aEncryptionData = null)
         {
-            FEncryptedSalt = Encryption.EncryptText(aSalt);
+            FWalletEncryptionData = aEncryptionData ?? WalletEncryptionContext.GetNewInstance();
         }
 
-        public string GetSalt()
+        public IWalletEncryptionContext GetCurrentEncryptionContext()
         {
-            return Encryption.DecryptText(FEncryptedSalt);
+            return FWalletEncryptionData;
         }
 
-        public void SetPassword(string aPassword)
+        public bool TryUnlock(string aPassword)
         {
-            if (aPassword == null)
-                FEncryptedPassword = null;
-            else
-                FEncryptedPassword = Encryption.EncryptText(aPassword, GetSalt());
+            string lMasterPassword = aPassword;
+            if (FWalletEncryptionData.IsAltPasswordSet && ComparePasswordToHash(aPassword, FWalletEncryptionData.AlternatePasswordHash))
+                lMasterPassword = Encryption.DecryptText(FWalletEncryptionData.EncryptedMasterPassword, aPassword);
+            if (ComparePasswordToHash(lMasterPassword, FWalletEncryptionData.MasterPasswordHash))
+                FStoredMasterPassword = Encryption.EncryptText(lMasterPassword, FWalletEncryptionData.GetSalt());
+            return Unlocked;
         }
 
-        public bool IsPasswordSet { get => FEncryptedPassword != null; }
-
-        public string GetPassword()
+        private string GetStoredMasterPassword()
         {
-            if (!IsPasswordSet) throw new InvalidOperationException("Password not set.");
-            return Encryption.DecryptText(FEncryptedPassword, GetSalt());
+            if (!Unlocked) throw new InvalidOperationException("Key manager is not unlocked.");
+            return Encryption.DecryptText(FStoredMasterPassword, FWalletEncryptionData.GetSalt());
         }
 
-        public void SetRootSeed(byte[] aRootSeed)
+        public IWalletEncryptionContext EncryptAndSetNewRootSeed(byte[] aRootSeed, string aPassword)
         {
             if (aRootSeed == null || aRootSeed.Length != 32) throw new ArgumentException("Invalid root seed size.");
-            EncryptedRootSeed = Encryption.EncryptText(Convert.ToBase64String(aRootSeed), GetPassword() + GetSalt());
-            System.Diagnostics.Debug.Assert(GetSecretRootSeed() == BitConverter.ToString(aRootSeed).Replace("-", string.Empty).ToLower(), "Keys are not equal. (EC1023)");
+            if (string.IsNullOrEmpty(aPassword) || !ValidatePassword(aPassword)) throw new ArgumentException("Invalid password");
+            var lSalt = FWalletEncryptionData.GetSalt();
+            var lBase64RootSeed = Convert.ToBase64String(aRootSeed);
+            FWalletEncryptionData.EncryptedRootSeed = Encryption.EncryptText(lBase64RootSeed, string.Concat(aPassword, lSalt));
+            FWalletEncryptionData.EncryptedMasterPassword = null;
+            FWalletEncryptionData.MasterPasswordHash = HashPassword(aPassword);
+            FWalletEncryptionData.AlternatePasswordHash = null;
+
+            return FWalletEncryptionData;
         }
 
         public string EncryptText(string aText)
         {
-            return Encryption.EncryptText(aText, string.Concat(GetSalt(), GetPassword()));
+            return Encryption.EncryptText(aText, string.Concat(FWalletEncryptionData.GetSalt(), GetStoredMasterPassword()));
         }
 
         public string DecryptText(string aText)
         {
-            return Encryption.DecryptText(aText, string.Concat(GetSalt(), GetPassword()));
+            return Encryption.DecryptText(aText, string.Concat(FWalletEncryptionData.GetSalt(), GetStoredMasterPassword()));
         }
 
-        public string EncryptedRootSeed
+        private byte[] GetByteRootSeed()
         {
-            get
-            {
-                if (FEncryptedRootSeed == null) throw new InvalidOperationException("EncryptedEntropy not set.");
-                return FEncryptedRootSeed;
-            }
-            set => FEncryptedRootSeed = value;
+            var lDescryptedRootSeed = Encryption.DecryptText(FWalletEncryptionData.EncryptedRootSeed, string.Concat(GetStoredMasterPassword(), FWalletEncryptionData.GetSalt()));
+            return Convert.FromBase64String(lDescryptedRootSeed);
         }
 
-        internal byte[] GetRootSeed()
+        public IWalletEncryptionContext SetAltenatePassword(string aPassword)
         {
-            return Convert.FromBase64String(Encryption.DecryptText(EncryptedRootSeed, GetPassword() + GetSalt()));
+            if (string.IsNullOrEmpty(aPassword) || !ValidatePassword(aPassword)) throw new ArgumentException("Invalid password");
+            var lMasterPassword = GetStoredMasterPassword();
+            var lEncryptedMasterPassword = Encryption.EncryptText(lMasterPassword, aPassword);
+            var lAltPasswordHash = HashPassword(aPassword);
+            FWalletEncryptionData.AlternatePasswordHash = lAltPasswordHash;
+            FWalletEncryptionData.EncryptedMasterPassword = lEncryptedMasterPassword;
+            return FWalletEncryptionData;
         }
 
-        internal string GetSecretRootSeed()
+        public string GetStringRootSeed()
         {
-            return BitConverter.ToString(GetRootSeed()).Replace("-", string.Empty).ToLower();
+            return BitConverter.ToString(GetByteRootSeed()).Replace("-", string.Empty).ToLower();
         }
 
         public ICryptoCurrencyAdvocacy GetCurrencyAdvocacy(long aCurrencyId, ChainParams aChainParams)
         {
-            ICryptoCurrencyAdvocacy lAdvocacy = CurrencyControl.GetClientCurrencyAdvocacy(aCurrencyId, aChainParams, GetSecretRootSeed);
+            ICryptoCurrencyAdvocacy lAdvocacy = CurrencyControl.GetClientCurrencyAdvocacy(aCurrencyId, aChainParams, GetStringRootSeed);
             return lAdvocacy;
         }
 
-        internal void UpdatePassword(string lPassword)
+        internal IWalletEncryptionContext UpdatePassword(string lNewPassword)
         {
-            var lRootSeed = GetRootSeed();
-            SetPassword(lPassword);
-            SetRootSeed(lRootSeed);
+            var lRootSeed = GetByteRootSeed();
+            return EncryptAndSetNewRootSeed(lRootSeed, lNewPassword);
         }
 
         public static byte[] ConvertOldRootSeedToNew(byte[] aOldRootSeed)
@@ -154,9 +176,21 @@ namespace Pandora.Client.PandorasWallet.Wallet
             return CryptSharp.Crypter.Blowfish;
         }
 
-        public static bool CheckPassword(string aPassword, string aPasswordHash)
+        private bool ComparePasswordToHash(string aPassword, string aPasswordHash)
         {
             return CryptSharp.Crypter.CheckPassword(aPassword, aPasswordHash);
+        }
+
+        public bool CheckPassword(string aPassword)
+        {
+            return FWalletEncryptionData.IsWalletInitialized
+                && (ComparePasswordToHash(aPassword, FWalletEncryptionData.MasterPasswordHash)
+                || (FWalletEncryptionData.IsAltPasswordSet && ComparePasswordToHash(aPassword, FWalletEncryptionData.AlternatePasswordHash)));
+        }
+
+        public static bool ValidatePassword(string aPassword)
+        {
+            return !string.IsNullOrEmpty(aPassword) && aPassword.Length > 8;
         }
 
         public static string HashPassword(string aDataString)
@@ -173,6 +207,32 @@ namespace Pandora.Client.PandorasWallet.Wallet
         public static byte[] HexStringToByteArray(string aHex)
         {
             return CryptoCurrencyAdvocacy.HexStringToByteArray(aHex);
+        }
+
+        internal class WalletEncryptionContext : IWalletEncryptionContext
+        {
+            public string EncryptedSalt { get; }
+            public string MasterPasswordHash { get; set; }
+            public string AlternatePasswordHash { get; set; }
+            public string EncryptedRootSeed { get; set; }
+            public string EncryptedMasterPassword { get; set; }
+            public bool IsAltPasswordSet => !string.IsNullOrEmpty(AlternatePasswordHash) && !string.IsNullOrEmpty(EncryptedMasterPassword);
+            public bool IsWalletInitialized => !string.IsNullOrEmpty(MasterPasswordHash) && !string.IsNullOrEmpty(EncryptedRootSeed);
+
+            public WalletEncryptionContext(string aSalt)
+            {
+                EncryptedSalt = Encryption.EncryptText(aSalt);
+            }
+
+            public string GetSalt()
+            {
+                return Encryption.DecryptText(EncryptedSalt);
+            }
+
+            public static WalletEncryptionContext GetNewInstance()
+            {
+                return new WalletEncryptionContext(GenerateSalt());
+            }
         }
     }
 }
