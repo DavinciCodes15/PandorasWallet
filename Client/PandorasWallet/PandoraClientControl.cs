@@ -264,12 +264,12 @@ namespace Pandora.Client.PandorasWallet
                         long lMinTokenID = -1000;
                         if (lUserTokens.Any() && lUserTokens.Min(lToken => lToken.Id) < -1000)
                             lMinTokenID = lUserTokens.Min(lToken => lToken.Id);
-
+                        var lNameRepeatCount = lUserTokens.Count(lToken => lToken.Name == lDialogToken.Name);
                         lAddedTokenItem = new ClientCurrencyTokenItem()
                         {
                             ContractAddress = lDialogToken.ContractAddress,
                             ParentCurrencyID = lDialogToken.ParentCurrency.Id,
-                            Name = lDialogToken.Name,
+                            Name = lDialogToken.Name + (lNameRepeatCount > 0 ? $" ({lNameRepeatCount + 1})" : string.Empty),
                             Ticker = lDialogToken.Ticker,
                             Precision = lDialogToken.Precision,
                             Icon = Globals.IconToBytes(lDialogToken.Icon),

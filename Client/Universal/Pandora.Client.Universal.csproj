@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net48;netcoreapp3.1;</TargetFrameworks>
 		<SignAssembly>true</SignAssembly>
@@ -11,18 +11,19 @@
 		<SignAssembly>false</SignAssembly>
 		<AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
 		<DelaySign>false</DelaySign>
-		<AssemblyVersion>1.1.42.2492</AssemblyVersion>
-		<FileVersion>1.1.42.2492</FileVersion>
-		<Version>1.1.42.2492</Version>
-		<Authors>Davinci</Authors>
-		<Product>Pandora's Wallet</Product>
-		<Company>Davinci Codes SpA</Company>
-		<Copyright>Copyright � Davinci Codes Spa 2017</Copyright>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<Deterministic>false</Deterministic>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Include="..\..\VersionInfo.cs" Link="Properties\VersionInfo.cs" />
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="3.1.5" />
 		<PackageReference Include="System.Diagnostics.EventLog" Version="4.7.0" />
 		<PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Properties\" />
 	</ItemGroup>
 </Project>

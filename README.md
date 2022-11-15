@@ -1,26 +1,17 @@
-Pandora's Wallet 1.1.29
-======
+# Pandora's Wallet 1.1.49
 
 ## Introduction
 
 Pandora's Wallet is a new way to take control of your crypto coin trading portfolio. The software connects to an API provided by Davinci Codes to manage the transactional side of cryptocurrency operations. The private keys and all personal keys are only used by the client app and none of them are known by the server. You can have several cryptocurrency coins all stored on a single wallet that can be used to trade on coin exchangers. All is done in a single place, keeping your assets secured.
 
-
 ## Prerequisites and Dependencies
 
 In order to use the make changes or use the software code you will need:
 
- - .Net Framework 4.6.1
- - Visual Studio 2017 or greater.
+- .Net Framework 4.8
+- Visual Studio 2017 or greater.
 
-You will also the following NuGet packages:
-
-- Microsoft.AspNet.SignalR.Client 2.2.2
-- Newtonsoft.Json 11.0.1
-- System.Data.SQLite 1.0.109
-- WebSocket4Net 0.15.2
-
-Installation file is proven to work on Windows 8, 8.1 and 10.
+Installation file is proven to work on Windows 8, 8.1, 10 and 11.
 MacOS and Linux will support later versions of the software.
 
 ## Build and Test

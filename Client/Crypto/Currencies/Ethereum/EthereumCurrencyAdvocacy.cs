@@ -79,7 +79,7 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
         {
             var lKey = new Nethereum.Signer.EthECKey(GetIndexKey(aIndex)); // may need to fix this to support the new keygen
             var lWallet = new Nethereum.HdWallet.Wallet(HexStringToByteArray(GetIndexKey(0)));
-            var lAddress = lWallet.GetAccount((int) aIndex).Address; // do not lower case as it has checksum
+            var lAddress = lWallet.GetAccount((int)aIndex).Address; // do not lower case as it has checksum
             if (!FAddresses.ContainsKey(lAddress.ToLower())) // lowercase here for look up
                 FAddresses.Add(lAddress.ToLower(), aIndex);
             return lAddress;
@@ -95,7 +95,7 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
         private byte[] GetBinaryPrivateKey(long aIndex)
         {
             var lWallet = new Nethereum.HdWallet.Wallet(HexStringToByteArray(GetIndexKey(0)));
-            return lWallet.GetPrivateKey((int) aIndex);
+            return lWallet.GetPrivateKey((int)aIndex);
         }
 
         public static string ByteArrayToString(byte[] ba)
@@ -110,6 +110,32 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
             for (int i = 0; i < aHex.Length; i += 2)
                 lArray[i / 2] = Byte.Parse(aHex.Substring(i, 2), System.Globalization.NumberStyles.HexNumber);
             return lArray;
+        }
+
+        private int GetChainId(long aCurrencyId)
+        {
+            var lResult = -1;
+
+            switch (aCurrencyId)
+            {
+                case 10194: //Ethereum Main
+                    lResult = 1;
+                    break;
+
+                case 10196: //Ethereum Ropsten
+                    lResult = 3;
+                    break;
+
+                case 10198: //Binance Testnet
+                    lResult = 97;
+                    break;
+
+                case 10200: //Binance Main
+                    lResult = 56;
+                    break;
+            }
+
+            return lResult;
         }
 
         public virtual string SignTransaction(string aTxData, ICurrencyTransaction aValidationInfo)
@@ -127,8 +153,8 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
             var lNonce = BigInteger.Parse(lCleanHexNonce, System.Globalization.NumberStyles.HexNumber);
             var lGasLimit = lTokenData == null ? 21000 : 60000; // number of gass units you can use
             BigInteger lGasPrice = aValidationInfo.TxFee / lGasLimit;
-            var lChainID = aValidationInfo.CurrencyId == 10196 ? 3 : 1; //10196 is ropsten but this may be changed to a boolean into currency item
-            var lResult = (new TransactionSigner()).SignTransaction(GetBinaryPrivateKey((int) lKeyIndex), lChainID, lToAddress, lAmount, lNonce, lGasPrice, lGasLimit, lTokenData);
+            var lChainID = GetChainId(Id); //This may be moved as part of the chain params
+            var lResult = (new TransactionSigner()).SignTransaction(GetBinaryPrivateKey((int)lKeyIndex), lChainID, lToAddress, lAmount, lNonce, lGasPrice, lGasLimit, lTokenData);
             return lResult;
         }
 

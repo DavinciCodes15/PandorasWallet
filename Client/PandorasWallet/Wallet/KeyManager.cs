@@ -89,7 +89,8 @@ namespace Pandora.Client.PandorasWallet.Wallet
             FWalletEncryptionData.EncryptedMasterPassword = null;
             FWalletEncryptionData.MasterPasswordHash = HashPassword(aPassword);
             FWalletEncryptionData.AlternatePasswordHash = null;
-
+            if (!TryUnlock(aPassword))
+                throw new Exception("There was an error trying to set provided Root Seed. Please contact support");
             return FWalletEncryptionData;
         }
 

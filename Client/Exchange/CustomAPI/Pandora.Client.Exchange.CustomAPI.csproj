@@ -11,7 +11,7 @@
     <AssemblyName>Pandora.Client.Exchange.CustomAPI</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <Deterministic>false</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
@@ -48,6 +48,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\..\VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+    </Compile>
     <Compile Include="Poloniex.Net\Objects\IPoloniexErrorCapable.cs" />
     <Compile Include="Poloniex.Net\Objects\PoloniexCancelOrderResult.cs" />
     <Compile Include="Poloniex.Net\Objects\PoloniexChartData.cs" />

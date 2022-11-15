@@ -1,135 +1,135 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9DEE773E-3023-46FE-945B-AFF5974D1170}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Pandora.Client.ServerAccess</RootNamespace>
-    <AssemblyName>Pandora.Client.ServerAccess</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Deterministic>true</Deterministic>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
-    <DelaySign>false</DelaySign>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug32|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>$(SolutionDir)bin\DEBUG\</OutputPath>
-    <IntermediateOutputPath>$(SolutionDir)bin\obj\DEBUG\$(AssemblyName)\</IntermediateOutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'RemoteDebug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\RemoteDebug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Connected Services\PandoraWalletService1_2\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
-    <Compile Include="Defaults.cs" />
-    <Compile Include="PandoraWalletServiceAccess.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="$(SolutionDir)VersionInfo.cs">
-      <Link>Properties\VersionInfo.cs</Link>
-      <Visible>ture</Visible>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Client\Crypto\Pandora.Client.Crypto.csproj">
-      <Project>{74bf1128-0e40-4d89-814b-9b7565c211b8}</Project>
-      <Name>Pandora.Client.Crypto</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Client\ClientLib\Pandora.Client.ClientLib.csproj">
-      <Project>{196973bd-a463-4897-ac95-e537cc85ef33}</Project>
-      <Name>Pandora.Client.ClientLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Universal\Pandora.Client.Universal.csproj">
-      <Project>{35c5b2a3-428c-4664-a3e3-25678eb37ba3}</Project>
-      <Name>Pandora.Client.Universal</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\PandoraWalletService1_2\Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraLogonResult.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_2\Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Connected Services\PandoraWalletService1_2\PandoraWalletService1_2.wsdl" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Connected Services\PandoraWalletService1_2\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\PandoraWalletService1_2\PandoraWalletService1_2.disco" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\PandoraWalletService1_2\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\PandoraWalletService1_2\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Connected Services\PandoraWalletService1_2\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+	<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+	<PropertyGroup>
+		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+		<ProjectGuid>{9DEE773E-3023-46FE-945B-AFF5974D1170}</ProjectGuid>
+		<OutputType>Library</OutputType>
+		<AppDesignerFolder>Properties</AppDesignerFolder>
+		<RootNamespace>Pandora.Client.ServerAccess</RootNamespace>
+		<AssemblyName>Pandora.Client.ServerAccess</AssemblyName>
+		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+		<FileAlignment>512</FileAlignment>
+		<TargetFrameworkProfile />
+		<Deterministic>false</Deterministic>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<Optimize>false</Optimize>
+		<OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+		<IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<Deterministic>false</Deterministic>
+		<DebugType>pdbonly</DebugType>
+		<Optimize>true</Optimize>
+		<OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+		<IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
+		<DefineConstants>TRACE</DefineConstants>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+	<PropertyGroup>
+		<SignAssembly>false</SignAssembly>
+		<AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
+		<DelaySign>false</DelaySign>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug32|AnyCPU'">
+		<DebugSymbols>true</DebugSymbols>
+		<OutputPath>$(SolutionDir)bin\DEBUG\</OutputPath>
+		<IntermediateOutputPath>$(SolutionDir)bin\obj\DEBUG\$(AssemblyName)\</IntermediateOutputPath>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<DebugType>full</DebugType>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<LangVersion>7.3</LangVersion>
+		<ErrorReport>prompt</ErrorReport>
+		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'RemoteDebug|AnyCPU'">
+		<DebugSymbols>true</DebugSymbols>
+		<OutputPath>bin\RemoteDebug\</OutputPath>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<DebugType>full</DebugType>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<LangVersion>7.3</LangVersion>
+		<ErrorReport>prompt</ErrorReport>
+		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+		<Reference Include="System" />
+		<Reference Include="System.Core" />
+		<Reference Include="System.Runtime.Serialization" />
+		<Reference Include="System.ServiceModel" />
+		<Reference Include="System.Xml.Linq" />
+		<Reference Include="System.Data.DataSetExtensions" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="System.Data" />
+		<Reference Include="System.Xml" />
+	</ItemGroup>
+	<ItemGroup>
+		<Compile Include="Connected Services\PandoraWalletService1_2\Reference.cs">
+			<AutoGen>True</AutoGen>
+			<DesignTime>True</DesignTime>
+			<DependentUpon>Reference.svcmap</DependentUpon>
+		</Compile>
+		<Compile Include="Defaults.cs" />
+		<Compile Include="PandoraWalletServiceAccess.cs" />
+		<Compile Include="Properties\AssemblyInfo.cs" />
+		<Compile Include="$(SolutionDir)VersionInfo.cs">
+			<Link>Properties\VersionInfo.cs</Link>
+			<Visible>ture</Visible>
+		</Compile>
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Client\Crypto\Pandora.Client.Crypto.csproj">
+			<Project>{74bf1128-0e40-4d89-814b-9b7565c211b8}</Project>
+			<Name>Pandora.Client.Crypto</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\..\Client\ClientLib\Pandora.Client.ClientLib.csproj">
+			<Project>{196973bd-a463-4897-ac95-e537cc85ef33}</Project>
+			<Name>Pandora.Client.ClientLib</Name>
+		</ProjectReference>
+		<ProjectReference Include="..\Universal\Pandora.Client.Universal.csproj">
+			<Project>{35c5b2a3-428c-4664-a3e3-25678eb37ba3}</Project>
+			<Name>Pandora.Client.Universal</Name>
+		</ProjectReference>
+	</ItemGroup>
+	<ItemGroup>
+		<WCFMetadata Include="Connected Services\" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Connected Services\PandoraWalletService1_2\Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraLogonResult.datasource">
+			<DependentUpon>Reference.svcmap</DependentUpon>
+		</None>
+		<None Include="Connected Services\PandoraWalletService1_2\Pandora.Client.ServerAccess.PandoraWalletService1_2.PandoraResult.datasource">
+			<DependentUpon>Reference.svcmap</DependentUpon>
+		</None>
+		<None Include="Connected Services\PandoraWalletService1_2\PandoraWalletService1_2.wsdl" />
+		<None Include="packages.config" />
+	</ItemGroup>
+	<ItemGroup>
+		<WCFMetadataStorage Include="Connected Services\PandoraWalletService1_2\" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Connected Services\PandoraWalletService1_2\PandoraWalletService1_2.disco" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Connected Services\PandoraWalletService1_2\configuration91.svcinfo" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Connected Services\PandoraWalletService1_2\configuration.svcinfo" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Connected Services\PandoraWalletService1_2\Reference.svcmap">
+			<Generator>WCF Proxy Generator</Generator>
+			<LastGenOutput>Reference.cs</LastGenOutput>
+		</None>
+	</ItemGroup>
+	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

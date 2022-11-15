@@ -6,19 +6,15 @@
     <ROW Property="AI_UPGRADE" Value="YES"/>
     <ROW Property="ALLUSERS" Value="1"/>
     <ROW Property="ARPCOMMENTS" Value="This installer database contains the logic and data required to install [|ProductName]." ValueLocId="*"/>
+    <ROW Property="ARPNOMODIFY" MultiBuildValue="MsiBuild:1"/>
     <ROW Property="ARPPRODUCTICON" Value="PandorasWallet_1.exe" Type="8"/>
     <ROW Property="BannerBitmap" Value="banner" MultiBuildValue="MsiBuild:PWInstallerBannerImage.jpg" Type="1" MsiKey="BannerBitmap"/>
-    <ROW Property="DBName" Value="Pandora"/>
-    <ROW Property="DBPassword" Value="support"/>
-    <ROW Property="DBServer" Value="ontime\davinciaxosoft"/>
-    <ROW Property="DBUser" Value="cat"/>
     <ROW Property="DialogBitmap" Value="dialog" MultiBuildValue="MsiBuild:PWInstallerDialogImage.jpg" Type="1" MsiKey="DialogBitmap"/>
-    <ROW Property="InstanceId" Value="#0"/>
     <ROW Property="Manufacturer" Value="Davinci Codes SpA"/>
-    <ROW Property="ProductCode" Value="1033:{C26FAC11-D56F-4371-934C-9CDFA595D7A2} " Type="16"/>
+    <ROW Property="ProductCode" Value="1033:{5608B75A-AD90-4B80-B0BD-2C6EF7B7618D} " Type="16"/>
     <ROW Property="ProductLanguage" Value="1033"/>
     <ROW Property="ProductName" Value="Pandora&apos;s Wallet v1.1"/>
-    <ROW Property="ProductVersion" Value="1.1.48.2633" Type="32" TargetFile="PandorasWallet.exe_1"/>
+    <ROW Property="ProductVersion" Value="1.1.49.19238" Type="32" TargetFile="PandorasWallet.exe_1"/>
     <ROW Property="SecureCustomProperties" Value="OLDPRODUCTS;AI_NEWERPRODUCTFOUND"/>
     <ROW Property="UpgradeCode" Value="{15B4F25B-B7AD-4B1B-9D26-98A1319C788C}"/>
     <ROW Property="WindowsType9X" MultiBuildValue="MsiBuild:Windows 9x/ME" ValueLocId="-"/>
@@ -48,17 +44,17 @@
     <ROW Component="APPDIR" ComponentId="{96C46B93-6199-4A9B-AD08-B6A14B1E76DB}" Directory_="APPDIR" Attributes="0"/>
     <ROW Component="Assets" ComponentId="{F1D1FC4D-D54C-4931-AE5A-2718C17849EE}" Directory_="Assets" Attributes="0"/>
     <ROW Component="AutocompleteMenu.dll" ComponentId="{B50E45E3-5DE6-48E4-B581-8238962E2C28}" Directory_="APPDIR" Attributes="0" KeyPath="AutocompleteMenu.dll"/>
-    <ROW Component="Bitfinex.Net.dll" ComponentId="{E64CFB3C-7381-4D6C-ACD5-74A1498DE085}" Directory_="APPDIR" Attributes="0" KeyPath="Bitfinex.Net.dll"/>
-    <ROW Component="Bittrex.Net.dll" ComponentId="{4684F90E-6319-4E6C-AC1C-1869EBAB075E}" Directory_="APPDIR" Attributes="0" KeyPath="Bittrex.Net.dll"/>
+    <ROW Component="Bitfinex.Net.dll" ComponentId="{023467E0-25AD-44B2-B3B3-CEE5972E008E}" Directory_="APPDIR" Attributes="0" KeyPath="Bitfinex.Net.dll"/>
+    <ROW Component="Bittrex.Net.dll" ComponentId="{F95BF589-23A0-4BF8-A6E5-296D21A6A79A}" Directory_="APPDIR" Attributes="0" KeyPath="Bittrex.Net.dll"/>
     <ROW Component="BouncyCastle.Crypto.dll" ComponentId="{91116251-5E8C-48B6-8410-047FBFF23148}" Directory_="APPDIR" Attributes="0" KeyPath="BouncyCastle.Crypto.dll"/>
     <ROW Component="Common.Logging.Core.dll" ComponentId="{2A164A8C-FBD5-460B-9C06-288292DF9843}" Directory_="APPDIR" Attributes="0" KeyPath="Common.Logging.Core.dll"/>
-    <ROW Component="Crc32.NET.dll" ComponentId="{20A61CEF-0A0F-408E-BFF7-6C604E24E497}" Directory_="APPDIR" Attributes="0" KeyPath="Crc32.NET.dll"/>
+    <ROW Component="Crc32.NET.dll" ComponentId="{41E4F85F-12C9-4C6C-BC03-2AEF48DC995D}" Directory_="APPDIR" Attributes="0" KeyPath="Crc32.NET.dll"/>
     <ROW Component="CryptSharp.dll" ComponentId="{A68B0A6A-FE00-4955-A3E5-EC235B9E71EC}" Directory_="APPDIR" Attributes="0" KeyPath="CryptSharp.dll"/>
-    <ROW Component="CryptoExchange.Net.dll" ComponentId="{99BB6A0B-2814-4A73-A2C6-6A50BF1EB339}" Directory_="APPDIR" Attributes="0" KeyPath="CryptoExchange.Net.dll"/>
+    <ROW Component="CryptoExchange.Net.dll" ComponentId="{C6786A24-4D1A-4053-B153-327A035EFFF0}" Directory_="APPDIR" Attributes="0" KeyPath="CryptoExchange.Net.dll"/>
     <ROW Component="HashLib.dll" ComponentId="{A78E6042-EE0B-4B9F-A294-4578E51021A4}" Directory_="APPDIR" Attributes="0" KeyPath="HashLib.dll"/>
     <ROW Component="Log" ComponentId="{056457DC-DD09-4001-AF52-DF20D77F7E6A}" Directory_="Log_Dir" Attributes="0"/>
     <ROW Component="Microsoft.AspNet.SignalR.Client.dll" ComponentId="{FA1858C6-C03E-4512-9F46-815F53C60D49}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.AspNet.SignalR.Client.dll"/>
-    <ROW Component="Microsoft.Extensions.Logging.Abstractions.dll" ComponentId="{E210311F-AD62-4A5E-8F0E-9340CDA8D59C}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.Extensions.Logging.Abstractions.dll"/>
+    <ROW Component="Microsoft.Extensions.Logging.Abstractions.dll" ComponentId="{68D0ED10-F64A-441D-88A0-F3037915E877}" Directory_="APPDIR" Attributes="0" KeyPath="Microsoft.Extensions.Logging.Abstractions.dll"/>
     <ROW Component="Nethereum.ABI.dll" ComponentId="{995D137B-297D-452B-9A48-4546B8162306}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.ABI.dll"/>
     <ROW Component="Nethereum.Accounts.dll" ComponentId="{F2552DE1-09A7-4857-A70C-E46CFF3037EA}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.Accounts.dll"/>
     <ROW Component="Nethereum.BlockchainProcessing.dll" ComponentId="{8897A8AC-F54E-4107-847D-C91FDE9B11E8}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.BlockchainProcessing.dll"/>
@@ -73,13 +69,13 @@
     <ROW Component="Nethereum.Signer.dll" ComponentId="{D8AE5D67-0001-45B8-B827-B5BAF50F1EA5}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.Signer.dll"/>
     <ROW Component="Nethereum.Util.dll" ComponentId="{0439CB16-A5C9-4332-9972-F494076B1078}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.Util.dll"/>
     <ROW Component="Nethereum.Web3.dll" ComponentId="{4E235AA7-DC7A-40A9-9C58-3C762A117690}" Directory_="APPDIR" Attributes="0" KeyPath="Nethereum.Web3.dll"/>
-    <ROW Component="Newtonsoft.Json.dll" ComponentId="{90E1D167-B3AB-4EBF-A4C7-E8365EF46DA8}" Directory_="APPDIR" Attributes="0" KeyPath="Newtonsoft.Json.dll"/>
+    <ROW Component="Newtonsoft.Json.dll" ComponentId="{1417D69B-44F7-4E11-AA4D-8F46CF87EA97}" Directory_="APPDIR" Attributes="0" KeyPath="Newtonsoft.Json.dll"/>
     <ROW Component="Pandora.Client.ClientLib.dll" ComponentId="{09E42C15-D0E5-4115-A92D-8AF1DE219BA4}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.ClientLib.dll"/>
     <ROW Component="Pandora.Client.Crypto.Currencies.Ethereum.dll" ComponentId="{26E1536E-B343-4F5F-ADA9-54EB54F197D7}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Crypto.Currencies.Ethereum.dll"/>
     <ROW Component="Pandora.Client.Crypto.dll" ComponentId="{3E12F171-DC1D-4221-92D0-943845B0DF83}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Crypto.dll"/>
-    <ROW Component="Pandora.Client.Exchange.CustomAPI.dll" ComponentId="{20B2CE9F-167A-4B17-BBA6-E2A77C356300}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.CustomAPI.dll"/>
+    <ROW Component="Pandora.Client.Exchange.CustomAPI.dll" ComponentId="{A42DA383-6595-4E44-80A1-9344165532EE}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.CustomAPI.dll"/>
     <ROW Component="Pandora.Client.Exchange.dll" ComponentId="{5DF341F9-7D11-4FB7-8BD1-F4EDF8A7A439}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Exchange.dll"/>
-    <ROW Component="Pandora.Client.PriceSource.dll" ComponentId="{44A9B04A-48BD-41A7-9B29-2AECA4F75A83}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.PriceSource.dll"/>
+    <ROW Component="Pandora.Client.PriceSource.dll" ComponentId="{A7B7F6CC-42F0-4805-9484-8A0BE998D7A6}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.PriceSource.dll"/>
     <ROW Component="Pandora.Client.ServerAccess.dll" ComponentId="{9EABB609-B5C3-48B8-82FD-9602211E03AB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.ServerAccess.dll"/>
     <ROW Component="Pandora.Client.SystemBackup.dll" ComponentId="{DC2D064B-03C0-4F32-BD23-C5D34A8F66CB}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.SystemBackup.dll"/>
     <ROW Component="Pandora.Client.Universal.dll" ComponentId="{0A7F2746-683E-4F7E-A716-338FF00DACB2}" Directory_="APPDIR" Attributes="0" KeyPath="Pandora.Client.Universal.dll"/>
@@ -118,7 +114,6 @@
     <ROW File="upgrade.vbs" Component_="System.Data.SQLite.dll.config" FileName="upgrade.vbs" Attributes="0" SourcePath="..\..\bin\Release\upgrade.vbs" SelfReg="false"/>
     <ROW File="BouncyCastle.Crypto.dll" Component_="BouncyCastle.Crypto.dll" FileName="BOUNCY~1.DLL|BouncyCastle.Crypto.dll" Attributes="0" SourcePath="..\..\bin\Release\BouncyCastle.Crypto.dll" SelfReg="false"/>
     <ROW File="Common.Logging.Core.dll" Component_="Common.Logging.Core.dll" FileName="COMMON~1.DLL|Common.Logging.Core.dll" Attributes="0" SourcePath="..\..\bin\Release\Common.Logging.Core.dll" SelfReg="false"/>
-    <ROW File="Microsoft.Extensions.Logging.Abstractions.dll" Component_="Microsoft.Extensions.Logging.Abstractions.dll" FileName="MICROS~4.DLL|Microsoft.Extensions.Logging.Abstractions.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.Extensions.Logging.Abstractions.dll" SelfReg="false"/>
     <ROW File="Nethereum.ABI.dll" Component_="Nethereum.ABI.dll" FileName="NETHER~1.DLL|Nethereum.ABI.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.ABI.dll" SelfReg="false"/>
     <ROW File="Nethereum.Accounts.dll" Component_="Nethereum.Accounts.dll" FileName="NETHER~2.DLL|Nethereum.Accounts.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.Accounts.dll" SelfReg="false"/>
     <ROW File="Nethereum.BlockchainProcessing.dll" Component_="Nethereum.BlockchainProcessing.dll" FileName="NETHER~3.DLL|Nethereum.BlockchainProcessing.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.BlockchainProcessing.dll" SelfReg="false"/>
@@ -134,19 +129,14 @@
     <ROW File="Nethereum.Util.dll" Component_="Nethereum.Util.dll" FileName="NETHE~13.DLL|Nethereum.Util.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.Util.dll" SelfReg="false"/>
     <ROW File="Nethereum.Web3.dll" Component_="Nethereum.Web3.dll" FileName="NETHE~14.DLL|Nethereum.Web3.dll" Attributes="0" SourcePath="..\..\bin\Release\Nethereum.Web3.dll" SelfReg="false"/>
     <ROW File="Pandora.Client.Crypto.Currencies.Ethereum.dll" Component_="Pandora.Client.Crypto.Currencies.Ethereum.dll" FileName="PANDOR~8.DLL|Pandora.Client.Crypto.Currencies.Ethereum.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Crypto.Currencies.Ethereum.dll" SelfReg="false"/>
-    <ROW File="Pandora.Client.PriceSource.dll" Component_="Pandora.Client.PriceSource.dll" FileName="PANDO~10.DLL|Pandora.Client.PriceSource.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.PriceSource.dll" SelfReg="false"/>
+    <ROW File="Newtonsoft.Json.dll" Component_="Newtonsoft.Json.dll" FileName="NEWTON~1.DLL|Newtonsoft.Json.dll" Attributes="0" SourcePath="..\..\bin\Release\Newtonsoft.Json.dll" SelfReg="false"/>
     <ROW File="CryptoExchange.Net.dll" Component_="CryptoExchange.Net.dll" FileName="CRYPTO~1.DLL|CryptoExchange.Net.dll" Attributes="0" SourcePath="..\..\bin\Release\CryptoExchange.Net.dll" SelfReg="false"/>
+    <ROW File="Microsoft.Extensions.Logging.Abstractions.dll" Component_="Microsoft.Extensions.Logging.Abstractions.dll" FileName="MICROS~2.DLL|Microsoft.Extensions.Logging.Abstractions.dll" Attributes="0" SourcePath="..\..\bin\Release\Microsoft.Extensions.Logging.Abstractions.dll" SelfReg="false"/>
     <ROW File="Bitfinex.Net.dll" Component_="Bitfinex.Net.dll" FileName="BITFIN~1.DLL|Bitfinex.Net.dll" Attributes="0" SourcePath="..\..\bin\Release\Bitfinex.Net.dll" SelfReg="false"/>
     <ROW File="Crc32.NET.dll" Component_="Crc32.NET.dll" FileName="CRC32N~1.DLL|Crc32.NET.dll" Attributes="0" SourcePath="..\..\bin\Release\Crc32.NET.dll" SelfReg="false"/>
     <ROW File="Bittrex.Net.dll" Component_="Bittrex.Net.dll" FileName="BITTRE~1.DLL|Bittrex.Net.dll" Attributes="0" SourcePath="..\..\bin\Release\Bittrex.Net.dll" SelfReg="false"/>
-    <ROW File="Pandora.Client.Exchange.CustomAPI.dll" Component_="Pandora.Client.Exchange.CustomAPI.dll" FileName="PANDO~11.DLL|Pandora.Client.Exchange.CustomAPI.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.CustomAPI.dll" SelfReg="false"/>
-    <ROW File="Newtonsoft.Json.dll" Component_="Newtonsoft.Json.dll" FileName="NEWTON~1.DLL|Newtonsoft.Json.dll" Attributes="0" SourcePath="..\..\bin\Release\Newtonsoft.Json.dll" SelfReg="false"/>
-  </COMPONENT>
-  <COMPONENT cid="caphyon.advinst.custcomp.AiPropertyAliasComponent">
-    <ROW AliasRowId="DBServer" AliasRowOperation="1"/>
-    <ROW AliasRowId="DBUser" AliasRowOperation="1"/>
-    <ROW AliasRowId="DBPassword" AliasRowOperation="1"/>
-    <ROW AliasRowId="DBName" AliasRowOperation="1"/>
+    <ROW File="Pandora.Client.Exchange.CustomAPI.dll" Component_="Pandora.Client.Exchange.CustomAPI.dll" FileName="PANDOR~4.DLL|Pandora.Client.Exchange.CustomAPI.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.Exchange.CustomAPI.dll" SelfReg="false"/>
+    <ROW File="Pandora.Client.PriceSource.dll" Component_="Pandora.Client.PriceSource.dll" FileName="PANDOR~9.DLL|Pandora.Client.PriceSource.dll" Attributes="0" SourcePath="..\..\bin\Release\Pandora.Client.PriceSource.dll" SelfReg="false"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.BootstrOptComponent">
     <ROW BootstrOptKey="GlobalOptions" DownloadFolder="[AppDataFolder][|Manufacturer]\[|ProductName]\prerequisites" Options="2"/>
@@ -159,19 +149,20 @@
     <ROW Path="&lt;AI_DICTS&gt;ui_en.ail"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.DigCertStoreComponent">
-    <ROW TimeStampUrl="http://timestamp.digicert.com" SignerDescription="[|ProductName]" SignOptions="0" SignTool="0" UseSha256="1"/>
+    <ROW DigitalCertificate="..\Signing\Davinci Codes SpA signing.pfx" TimeStampUrl="http://timestamp.digicert.com" SignerDescription="[|ProductName]" SignOptions="7" SignTool="0" UseSha256="1" Password="0C99B7A4C593E9035280BA53AA42A611DFFB7E7AA38004008E9690076B68C122FC0A1CD0"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FileDependencyComponent">
-    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Pandora.Client.PriceSource.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Newtonsoft.Json.dll"/>
     <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="CryptoExchange.Net.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Microsoft.Extensions.Logging.Abstractions.dll"/>
     <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Bitfinex.Net.dll"/>
     <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Crc32.NET.dll"/>
     <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Bittrex.Net.dll"/>
     <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Pandora.Client.Exchange.CustomAPI.dll"/>
-    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Newtonsoft.Json.dll"/>
+    <ROW FilePath="APPDIR\Pandora&apos;s Wallet.exe" File="PandorasWallet.exe_1" FileDependency="Pandora.Client.PriceSource.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FileDependencyOptionComponent">
-    <ROW File="PandorasWallet.exe_1" Exclude="mscorlib.dll|System.dll|netstandard.dll|System.Numerics.dll|System.Core.dll|System.Xml.dll|System.Xml.Linq.dll|System.Runtime.Serialization.dll|System.Data.dll|System.Windows.Forms.dll|System.Drawing.dll|System.Transactions.dll|System.Net.Http.dll|System.Net.Http.WebRequest.dll|Microsoft.CSharp.dll|System.Windows.Forms.DataVisualization.dll|System.ServiceModel.dll" Sha1="5e445101110986e99ae7af0b37b275d1953a2388"/>
+    <ROW File="PandorasWallet.exe_1" Exclude="mscorlib.dll|System.dll|netstandard.dll|System.Numerics.dll|System.Core.dll|System.Xml.dll|System.Xml.Linq.dll|System.Runtime.Serialization.dll|System.Data.dll|System.Windows.Forms.dll|System.Drawing.dll|System.Transactions.dll|System.Net.Http.dll|System.Net.Http.WebRequest.dll|Microsoft.CSharp.dll|System.Windows.Forms.DataVisualization.dll|System.ServiceModel.dll|System.Runtime.dll|System.Resources.ResourceManager.dll|System.Diagnostics.Tracing.dll|System.Threading.dll|System.Diagnostics.Debug.dll" Sha1="f481caf3ccff3b9be2cd4e3d4bc856b4b5ef2d9c"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
     <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
@@ -350,7 +341,6 @@
     <ROW Feature_="ClientsFeature" Component_="SHORTCUTDIR"/>
     <ROW Feature_="ClientsFeature" Component_="BouncyCastle.Crypto.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Common.Logging.Core.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Microsoft.Extensions.Logging.Abstractions.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.ABI.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.Accounts.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.BlockchainProcessing.dll"/>
@@ -366,13 +356,14 @@
     <ROW Feature_="ClientsFeature" Component_="Nethereum.Util.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Nethereum.Web3.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Crypto.Currencies.Ethereum.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.PriceSource.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Newtonsoft.Json.dll"/>
     <ROW Feature_="ClientsFeature" Component_="CryptoExchange.Net.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Microsoft.Extensions.Logging.Abstractions.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Bitfinex.Net.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Crc32.NET.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Bittrex.Net.dll"/>
     <ROW Feature_="ClientsFeature" Component_="Pandora.Client.Exchange.CustomAPI.dll"/>
-    <ROW Feature_="ClientsFeature" Component_="Newtonsoft.Json.dll"/>
+    <ROW Feature_="ClientsFeature" Component_="Pandora.Client.PriceSource.dll"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiIconsComponent">
     <ROW Name="PandorasWallet_1.exe" SourcePath="..\Icons\Pandora&apos;s Wallet.ico" Index="0"/>
@@ -385,15 +376,15 @@
     <ROW Action="AI_ResolveLocalizedCredentials" Sequence="51"/>
     <ROW Action="AI_ConfigPermissions" Condition="REMOVE &lt;&gt; &quot;ALL&quot;" Sequence="5852"/>
     <ROW Action="AI_DATA_SETTER_3" Condition="REMOVE &lt;&gt; &quot;ALL&quot;" Sequence="5851"/>
-    <ROW Action="AI_XmlInstall" Condition="(REMOVE &lt;&gt; &quot;ALL&quot;)" Sequence="5102"/>
-    <ROW Action="AI_DATA_SETTER" Condition="(REMOVE &lt;&gt; &quot;ALL&quot;)" Sequence="5101"/>
-    <ROW Action="AI_XmlUninstall" Condition="(REMOVE)" Sequence="3102"/>
-    <ROW Action="AI_DATA_SETTER_1" Condition="(REMOVE)" Sequence="3101"/>
     <ROW Action="AI_AppSearchEx" Sequence="101"/>
     <ROW Action="AI_PrepareShortcutFlags" Condition="(VersionNT &gt; 501) AND ((NOT Installed) OR (Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;)))" Sequence="4501"/>
     <ROW Action="AI_PinShortcuts" Condition="(VersionNT &gt; 600) AND ((NOT Installed) OR (Installed AND (REMOVE&lt;&gt;&quot;ALL&quot;) AND (AI_INSTALL_MODE&lt;&gt;&quot;Remove&quot;)))" Sequence="6499"/>
     <ROW Action="AI_UnpinShortcuts" Condition="(VersionNT &gt; 600) AND (REMOVE = &quot;ALL&quot;)" Sequence="3199"/>
     <ROW Action="AI_DETECT_MODERNWIN" Condition="(VersionNT &gt;= 603)" Sequence="54" MsiKey="AI_DETECT_MODERNWIN"/>
+    <ROW Action="AI_XmlInstall" Condition="(REMOVE &lt;&gt; &quot;ALL&quot;)" Sequence="5102"/>
+    <ROW Action="AI_DATA_SETTER" Condition="(REMOVE &lt;&gt; &quot;ALL&quot;)" Sequence="5101"/>
+    <ROW Action="AI_XmlUninstall" Condition="(REMOVE)" Sequence="3102"/>
+    <ROW Action="AI_DATA_SETTER_1" Condition="(REMOVE)" Sequence="3101"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.MsiInstallUISequenceComponent">
     <ROW Action="AI_ResolveKnownFolders" Sequence="55"/>
@@ -446,6 +437,15 @@
     <ROW XmlAttribute="allowExeDefinition" XmlElement="section_1" Name="allowExeDefinition" Flags="14" Order="2" Value="MachineToLocalUser"/>
     <ROW XmlAttribute="allowExeDefinition_1" XmlElement="section_2" Name="allowExeDefinition" Flags="14" Order="2" Value="MachineToLocalUser"/>
     <ROW XmlAttribute="culture" XmlElement="assemblyIdentity" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_1" XmlElement="assemblyIdentity_1" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_2" XmlElement="assemblyIdentity_2" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_3" XmlElement="assemblyIdentity_3" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_4" XmlElement="assemblyIdentity_4" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_5" XmlElement="assemblyIdentity_5" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_6" XmlElement="assemblyIdentity_6" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_7" XmlElement="assemblyIdentity_7" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_8" XmlElement="assemblyIdentity_8" Name="culture" Flags="14" Order="2" Value="neutral"/>
+    <ROW XmlAttribute="culture_9" XmlElement="assemblyIdentity_9" Name="culture" Flags="14" Order="2" Value="neutral"/>
     <ROW XmlAttribute="description" XmlElement="add" Name="description" Flags="14" Order="2" Value=".NET Framework Data Provider for SQLite (Entity Framework 6)"/>
     <ROW XmlAttribute="description_1" XmlElement="add_1" Name="description" Flags="14" Order="2" Value=".NET Framework Data Provider for SQLite"/>
     <ROW XmlAttribute="invariant" XmlElement="remove" Name="invariant" Flags="14" Order="0" Value="System.Data.SQLite.EF6"/>
@@ -456,25 +456,66 @@
     <ROW XmlAttribute="invariant_3" XmlElement="add_1" Name="invariant" Flags="14" Order="1" Value="System.Data.SQLite"/>
     <ROW XmlAttribute="name" XmlElement="section" Name="name" Flags="15" Order="0" Value="entityFramework"/>
     <ROW XmlAttribute="name_1" XmlElement="sectionGroup" Name="name" Flags="15" Order="0" Value="userSettings"/>
-    <ROW XmlAttribute="name_10" XmlElement="setting_6" Name="name" Flags="15" Order="0" Value="Username"/>
-    <ROW XmlAttribute="name_11" XmlElement="setting_7" Name="name" Flags="15" Order="0" Value="ChosenCoins"/>
-    <ROW XmlAttribute="name_12" XmlElement="add" Name="name" Flags="15" Order="0" Value="SQLite Data Provider (Entity Framework 6)"/>
-    <ROW XmlAttribute="name_13" XmlElement="add_1" Name="name" Flags="15" Order="0" Value="SQLite Data Provider"/>
-    <ROW XmlAttribute="name_14" XmlElement="assemblyIdentity" Name="name" Flags="15" Order="0" Value="Newtonsoft.Json"/>
+    <ROW XmlAttribute="name_10" XmlElement="setting_4" Name="name" Flags="15" Order="0" Value="ChosenCoins"/>
+    <ROW XmlAttribute="name_11" XmlElement="setting_5" Name="name" Flags="15" Order="0" Value="FontFamily"/>
+    <ROW XmlAttribute="name_12" XmlElement="setting_6" Name="name" Flags="15" Order="0" Value="EncyptedConnection"/>
+    <ROW XmlAttribute="name_13" XmlElement="setting_7" Name="name" Flags="15" Order="0" Value="Port"/>
+    <ROW XmlAttribute="name_14" XmlElement="setting_8" Name="name" Flags="15" Order="0" Value="ServerName"/>
+    <ROW XmlAttribute="name_15" XmlElement="add" Name="name" Flags="15" Order="0" Value="SQLite Data Provider (Entity Framework 6)"/>
+    <ROW XmlAttribute="name_16" XmlElement="add_1" Name="name" Flags="15" Order="0" Value="SQLite Data Provider"/>
+    <ROW XmlAttribute="name_17" XmlElement="assemblyIdentity" Name="name" Flags="15" Order="0" Value="Newtonsoft.Json"/>
+    <ROW XmlAttribute="name_18" XmlElement="assemblyIdentity_1" Name="name" Flags="15" Order="0" Value="Microsoft.Extensions.Configuration.Abstractions"/>
+    <ROW XmlAttribute="name_19" XmlElement="assemblyIdentity_2" Name="name" Flags="15" Order="0" Value="Microsoft.Extensions.DependencyInjection"/>
     <ROW XmlAttribute="name_2" XmlElement="section_1" Name="name" Flags="15" Order="0" Value="Pandora.Client.PandorasWallet.Properties.Settings"/>
+    <ROW XmlAttribute="name_20" XmlElement="assemblyIdentity_3" Name="name" Flags="15" Order="0" Value="Microsoft.Extensions.DependencyInjection.Abstractions"/>
+    <ROW XmlAttribute="name_21" XmlElement="assemblyIdentity_4" Name="name" Flags="15" Order="0" Value="Microsoft.Extensions.Logging.Abstractions"/>
+    <ROW XmlAttribute="name_22" XmlElement="assemblyIdentity_5" Name="name" Flags="15" Order="0" Value="Microsoft.Extensions.Options"/>
+    <ROW XmlAttribute="name_23" XmlElement="assemblyIdentity_6" Name="name" Flags="15" Order="0" Value="Microsoft.Extensions.Primitives"/>
+    <ROW XmlAttribute="name_24" XmlElement="assemblyIdentity_7" Name="name" Flags="15" Order="0" Value="System.Buffers"/>
+    <ROW XmlAttribute="name_25" XmlElement="assemblyIdentity_8" Name="name" Flags="15" Order="0" Value="System.Runtime.CompilerServices.Unsafe"/>
+    <ROW XmlAttribute="name_26" XmlElement="assemblyIdentity_9" Name="name" Flags="15" Order="0" Value="System.Threading.Tasks.Extensions"/>
+    <ROW XmlAttribute="name_27" XmlElement="setting_9" Name="name" Flags="15" Order="0" Value="LogFileName"/>
     <ROW XmlAttribute="name_3" XmlElement="section_2" Name="name" Flags="15" Order="0" Value="Pandora.Client.Properties.Settings"/>
-    <ROW XmlAttribute="name_4" XmlElement="setting" Name="name" Flags="15" Order="0" Value="Port"/>
-    <ROW XmlAttribute="name_5" XmlElement="setting_1" Name="name" Flags="15" Order="0" Value="ServerName"/>
-    <ROW XmlAttribute="name_6" XmlElement="setting_2" Name="name" Flags="15" Order="0" Value="DataPath"/>
-    <ROW XmlAttribute="name_7" XmlElement="setting_3" Name="name" Flags="15" Order="0" Value="EncyptedConnection"/>
-    <ROW XmlAttribute="name_8" XmlElement="setting_4" Name="name" Flags="15" Order="0" Value="Coin"/>
-    <ROW XmlAttribute="name_9" XmlElement="setting_5" Name="name" Flags="15" Order="0" Value="Email"/>
-    <ROW XmlAttribute="newVersion" XmlElement="bindingRedirect" Name="newVersion" Flags="14" Order="1" Value="11.0.0.0"/>
-    <ROW XmlAttribute="oldVersion" XmlElement="bindingRedirect" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-11.0.0.0"/>
+    <ROW XmlAttribute="name_4" XmlElement="sectionGroup_1" Name="name" Flags="15" Order="0" Value="applicationSettings"/>
+    <ROW XmlAttribute="name_5" XmlElement="section_3" Name="name" Flags="15" Order="0" Value="Pandora.Client.PandorasWallet.Properties.Settings"/>
+    <ROW XmlAttribute="name_6" XmlElement="setting" Name="name" Flags="15" Order="0" Value="DataPath"/>
+    <ROW XmlAttribute="name_7" XmlElement="setting_1" Name="name" Flags="15" Order="0" Value="Coin"/>
+    <ROW XmlAttribute="name_8" XmlElement="setting_2" Name="name" Flags="15" Order="0" Value="Email"/>
+    <ROW XmlAttribute="name_9" XmlElement="setting_3" Name="name" Flags="15" Order="0" Value="Username"/>
+    <ROW XmlAttribute="newVersion" XmlElement="bindingRedirect" Name="newVersion" Flags="14" Order="1" Value="12.0.0.0"/>
+    <ROW XmlAttribute="newVersion_1" XmlElement="bindingRedirect_1" Name="newVersion" Flags="14" Order="1" Value="3.1.5.0"/>
+    <ROW XmlAttribute="newVersion_2" XmlElement="bindingRedirect_2" Name="newVersion" Flags="14" Order="1" Value="3.1.5.0"/>
+    <ROW XmlAttribute="newVersion_3" XmlElement="bindingRedirect_3" Name="newVersion" Flags="14" Order="1" Value="3.1.5.0"/>
+    <ROW XmlAttribute="newVersion_4" XmlElement="bindingRedirect_4" Name="newVersion" Flags="14" Order="1" Value="3.1.5.0"/>
+    <ROW XmlAttribute="newVersion_5" XmlElement="bindingRedirect_5" Name="newVersion" Flags="14" Order="1" Value="3.1.5.0"/>
+    <ROW XmlAttribute="newVersion_6" XmlElement="bindingRedirect_6" Name="newVersion" Flags="14" Order="1" Value="3.1.5.0"/>
+    <ROW XmlAttribute="newVersion_7" XmlElement="bindingRedirect_7" Name="newVersion" Flags="14" Order="1" Value="4.0.2.0"/>
+    <ROW XmlAttribute="newVersion_8" XmlElement="bindingRedirect_8" Name="newVersion" Flags="14" Order="1" Value="4.0.6.0"/>
+    <ROW XmlAttribute="newVersion_9" XmlElement="bindingRedirect_9" Name="newVersion" Flags="14" Order="1" Value="4.2.0.1"/>
+    <ROW XmlAttribute="oldVersion" XmlElement="bindingRedirect" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-12.0.0.0"/>
+    <ROW XmlAttribute="oldVersion_1" XmlElement="bindingRedirect_1" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-3.1.5.0"/>
+    <ROW XmlAttribute="oldVersion_2" XmlElement="bindingRedirect_2" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-3.1.5.0"/>
+    <ROW XmlAttribute="oldVersion_3" XmlElement="bindingRedirect_3" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-3.1.5.0"/>
+    <ROW XmlAttribute="oldVersion_4" XmlElement="bindingRedirect_4" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-3.1.5.0"/>
+    <ROW XmlAttribute="oldVersion_5" XmlElement="bindingRedirect_5" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-3.1.5.0"/>
+    <ROW XmlAttribute="oldVersion_6" XmlElement="bindingRedirect_6" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-3.1.5.0"/>
+    <ROW XmlAttribute="oldVersion_7" XmlElement="bindingRedirect_7" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-4.0.2.0"/>
+    <ROW XmlAttribute="oldVersion_8" XmlElement="bindingRedirect_8" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-4.0.6.0"/>
+    <ROW XmlAttribute="oldVersion_9" XmlElement="bindingRedirect_9" Name="oldVersion" Flags="14" Order="0" Value="0.0.0.0-4.2.0.1"/>
     <ROW XmlAttribute="publicKeyToken" XmlElement="assemblyIdentity" Name="publicKeyToken" Flags="14" Order="1" Value="30ad4fe6b2a6aeed"/>
+    <ROW XmlAttribute="publicKeyToken_1" XmlElement="assemblyIdentity_1" Name="publicKeyToken" Flags="14" Order="1" Value="adb9793829ddae60"/>
+    <ROW XmlAttribute="publicKeyToken_2" XmlElement="assemblyIdentity_2" Name="publicKeyToken" Flags="14" Order="1" Value="adb9793829ddae60"/>
+    <ROW XmlAttribute="publicKeyToken_3" XmlElement="assemblyIdentity_3" Name="publicKeyToken" Flags="14" Order="1" Value="adb9793829ddae60"/>
+    <ROW XmlAttribute="publicKeyToken_4" XmlElement="assemblyIdentity_4" Name="publicKeyToken" Flags="14" Order="1" Value="adb9793829ddae60"/>
+    <ROW XmlAttribute="publicKeyToken_5" XmlElement="assemblyIdentity_5" Name="publicKeyToken" Flags="14" Order="1" Value="adb9793829ddae60"/>
+    <ROW XmlAttribute="publicKeyToken_6" XmlElement="assemblyIdentity_6" Name="publicKeyToken" Flags="14" Order="1" Value="adb9793829ddae60"/>
+    <ROW XmlAttribute="publicKeyToken_7" XmlElement="assemblyIdentity_7" Name="publicKeyToken" Flags="14" Order="1" Value="cc7b13ffcd2ddd51"/>
+    <ROW XmlAttribute="publicKeyToken_8" XmlElement="assemblyIdentity_8" Name="publicKeyToken" Flags="14" Order="1" Value="b03f5f7f11d50a3a"/>
+    <ROW XmlAttribute="publicKeyToken_9" XmlElement="assemblyIdentity_9" Name="publicKeyToken" Flags="14" Order="1" Value="cc7b13ffcd2ddd51"/>
     <ROW XmlAttribute="requirePermission" XmlElement="section" Name="requirePermission" Flags="14" Order="2" Value="false"/>
     <ROW XmlAttribute="requirePermission_1" XmlElement="section_1" Name="requirePermission" Flags="14" Order="3" Value="false"/>
     <ROW XmlAttribute="requirePermission_2" XmlElement="section_2" Name="requirePermission" Flags="14" Order="3" Value="false"/>
+    <ROW XmlAttribute="requirePermission_3" XmlElement="section_3" Name="requirePermission" Flags="14" Order="2" Value="false"/>
     <ROW XmlAttribute="serializeAs" XmlElement="setting" Name="serializeAs" Flags="14" Order="1" Value="String"/>
     <ROW XmlAttribute="serializeAs_1" XmlElement="setting_1" Name="serializeAs" Flags="14" Order="1" Value="String"/>
     <ROW XmlAttribute="serializeAs_2" XmlElement="setting_2" Name="serializeAs" Flags="14" Order="1" Value="String"/>
@@ -483,35 +524,86 @@
     <ROW XmlAttribute="serializeAs_5" XmlElement="setting_5" Name="serializeAs" Flags="14" Order="1" Value="String"/>
     <ROW XmlAttribute="serializeAs_6" XmlElement="setting_6" Name="serializeAs" Flags="14" Order="1" Value="String"/>
     <ROW XmlAttribute="serializeAs_7" XmlElement="setting_7" Name="serializeAs" Flags="14" Order="1" Value="String"/>
-    <ROW XmlAttribute="sku" XmlElement="supportedRuntime" Name="sku" Flags="14" Order="1" Value=".NETFramework,Version=v4.6.1"/>
+    <ROW XmlAttribute="serializeAs_8" XmlElement="setting_8" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="serializeAs_9" XmlElement="setting_9" Name="serializeAs" Flags="14" Order="1" Value="String"/>
+    <ROW XmlAttribute="sku" XmlElement="supportedRuntime" Name="sku" Flags="14" Order="1" Value=".NETFramework,Version=v4.8"/>
     <ROW XmlAttribute="type" XmlElement="section" Name="type" Flags="14" Order="1" Value="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
     <ROW XmlAttribute="type_1" XmlElement="sectionGroup" Name="type" Flags="14" Order="1" Value="System.Configuration.UserSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
+    <ROW XmlAttribute="type_10" XmlElement="add_1" Name="type" Flags="14" Order="3" Value="System.Data.SQLite.SQLiteFactory, System.Data.SQLite"/>
     <ROW XmlAttribute="type_2" XmlElement="section_1" Name="type" Flags="14" Order="1" Value="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
     <ROW XmlAttribute="type_3" XmlElement="section_2" Name="type" Flags="14" Order="1" Value="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
-    <ROW XmlAttribute="type_4" XmlElement="defaultConnectionFactory" Name="type" Flags="14" Order="0" Value="System.Data.Entity.Infrastructure.LocalDbConnectionFactory, EntityFramework"/>
-    <ROW XmlAttribute="type_5" XmlElement="provider" Name="type" Flags="14" Order="1" Value="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer"/>
-    <ROW XmlAttribute="type_6" XmlElement="provider_1" Name="type" Flags="14" Order="1" Value="System.Data.SQLite.EF6.SQLiteProviderServices, System.Data.SQLite.EF6"/>
-    <ROW XmlAttribute="type_7" XmlElement="add" Name="type" Flags="14" Order="3" Value="System.Data.SQLite.EF6.SQLiteProviderFactory, System.Data.SQLite.EF6"/>
-    <ROW XmlAttribute="type_8" XmlElement="add_1" Name="type" Flags="14" Order="3" Value="System.Data.SQLite.SQLiteFactory, System.Data.SQLite"/>
+    <ROW XmlAttribute="type_4" XmlElement="sectionGroup_1" Name="type" Flags="14" Order="1" Value="System.Configuration.ApplicationSettingsGroup, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
+    <ROW XmlAttribute="type_5" XmlElement="section_3" Name="type" Flags="14" Order="1" Value="System.Configuration.ClientSettingsSection, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"/>
+    <ROW XmlAttribute="type_6" XmlElement="defaultConnectionFactory" Name="type" Flags="14" Order="0" Value="System.Data.Entity.Infrastructure.LocalDbConnectionFactory, EntityFramework"/>
+    <ROW XmlAttribute="type_7" XmlElement="provider" Name="type" Flags="14" Order="1" Value="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer"/>
+    <ROW XmlAttribute="type_8" XmlElement="provider_1" Name="type" Flags="14" Order="1" Value="System.Data.SQLite.EF6.SQLiteProviderServices, System.Data.SQLite.EF6"/>
+    <ROW XmlAttribute="type_9" XmlElement="add" Name="type" Flags="14" Order="3" Value="System.Data.SQLite.EF6.SQLiteProviderFactory, System.Data.SQLite.EF6"/>
     <ROW XmlAttribute="value" XmlElement="parameter" Name="value" Flags="14" Order="0" Value="v13.0"/>
     <ROW XmlAttribute="version" XmlElement="supportedRuntime" Name="version" Flags="14" Order="0" Value="v4.0"/>
     <ROW XmlAttribute="xmlns" XmlElement="assemblyBinding" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_1" XmlElement="assemblyBinding_1" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_2" XmlElement="assemblyBinding_2" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_3" XmlElement="assemblyBinding_3" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_4" XmlElement="assemblyBinding_4" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_5" XmlElement="assemblyBinding_5" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_6" XmlElement="assemblyBinding_6" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_7" XmlElement="assemblyBinding_7" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_8" XmlElement="assemblyBinding_8" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
+    <ROW XmlAttribute="xmlns_9" XmlElement="assemblyBinding_9" Name="xmlns" Flags="14" Order="0" Value="urn:schemas-microsoft-com:asm.v1"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlElementComponent">
     <ROW XmlElement="Comment" ParentElement="configSections" Name="Comment" Condition="1" Order="2" Flags="1" Text=" For more information on Entity Framework configuration, visit http://go.microsoft.com/fwlink/?LinkID=237468 "/>
     <ROW XmlElement="DbProviderFactories" ParentElement="system.data" Name="DbProviderFactories" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="Pandora.Client.PandorasWallet.Pro_1" ParentElement="applicationSettings" Name="Pandora.Client.PandorasWallet.Properties.Settings" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="Pandora.Client.PandorasWallet.Prope" ParentElement="userSettings" Name="Pandora.Client.PandorasWallet.Properties.Settings" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="add" ParentElement="DbProviderFactories" Name="add" Condition="1" Order="1" Flags="14"/>
     <ROW XmlElement="add_1" ParentElement="DbProviderFactories" Name="add" Condition="1" Order="3" Flags="14"/>
+    <ROW XmlElement="applicationSettings" ParentElement="configuration" Name="applicationSettings" Condition="1" Order="7" Flags="14"/>
     <ROW XmlElement="assemblyBinding" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_1" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_2" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="2" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_3" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="3" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_4" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="4" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_5" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="5" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_6" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="6" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_7" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="7" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_8" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="8" Flags="14"/>
+    <ROW XmlElement="assemblyBinding_9" ParentElement="runtime" Name="assemblyBinding" Condition="1" Order="9" Flags="14"/>
     <ROW XmlElement="assemblyIdentity" ParentElement="dependentAssembly" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_1" ParentElement="dependentAssembly_1" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_2" ParentElement="dependentAssembly_2" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_3" ParentElement="dependentAssembly_3" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_4" ParentElement="dependentAssembly_4" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_5" ParentElement="dependentAssembly_5" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_6" ParentElement="dependentAssembly_6" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_7" ParentElement="dependentAssembly_7" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_8" ParentElement="dependentAssembly_8" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="assemblyIdentity_9" ParentElement="dependentAssembly_9" Name="assemblyIdentity" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="bindingRedirect" ParentElement="dependentAssembly" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_1" ParentElement="dependentAssembly_1" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_2" ParentElement="dependentAssembly_2" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_3" ParentElement="dependentAssembly_3" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_4" ParentElement="dependentAssembly_4" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_5" ParentElement="dependentAssembly_5" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_6" ParentElement="dependentAssembly_6" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_7" ParentElement="dependentAssembly_7" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_8" ParentElement="dependentAssembly_8" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="bindingRedirect_9" ParentElement="dependentAssembly_9" Name="bindingRedirect" Condition="1" Order="1" Flags="14"/>
     <ROW XmlElement="bindings" ParentElement="system.serviceModel" Name="bindings" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="client" ParentElement="system.serviceModel" Name="client" Condition="1" Order="1" Flags="14"/>
     <ROW XmlElement="configSections" ParentElement="configuration" Name="configSections" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="configuration" Name="configuration" Condition="1" Order="0" Flags="30"/>
     <ROW XmlElement="defaultConnectionFactory" ParentElement="entityFramework" Name="defaultConnectionFactory" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="dependentAssembly" ParentElement="assemblyBinding" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_1" ParentElement="assemblyBinding_1" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_2" ParentElement="assemblyBinding_2" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_3" ParentElement="assemblyBinding_3" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_4" ParentElement="assemblyBinding_4" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_5" ParentElement="assemblyBinding_5" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_6" ParentElement="assemblyBinding_6" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_7" ParentElement="assemblyBinding_7" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_8" ParentElement="assemblyBinding_8" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="dependentAssembly_9" ParentElement="assemblyBinding_9" Name="dependentAssembly" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="entityFramework" ParentElement="configuration" Name="entityFramework" Condition="1" Order="3" Flags="14"/>
     <ROW XmlElement="parameter" ParentElement="parameters" Name="parameter" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="parameters" ParentElement="defaultConnectionFactory" Name="parameters" Condition="1" Order="0" Flags="14"/>
@@ -523,8 +615,10 @@
     <ROW XmlElement="runtime" ParentElement="configuration" Name="runtime" Condition="1" Order="6" Flags="14"/>
     <ROW XmlElement="section" ParentElement="configSections" Name="section" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="sectionGroup" ParentElement="configSections" Name="sectionGroup" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="sectionGroup_1" ParentElement="configSections" Name="sectionGroup" Condition="1" Order="3" Flags="14"/>
     <ROW XmlElement="section_1" ParentElement="sectionGroup" Name="section" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="section_2" ParentElement="sectionGroup" Name="section" Condition="1" Order="1" Flags="14"/>
+    <ROW XmlElement="section_3" ParentElement="sectionGroup_1" Name="section" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="setting" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="setting_1" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="1" Flags="14"/>
     <ROW XmlElement="setting_2" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="2" Flags="14"/>
@@ -533,21 +627,25 @@
     <ROW XmlElement="setting_5" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="5" Flags="14"/>
     <ROW XmlElement="setting_6" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="6" Flags="14"/>
     <ROW XmlElement="setting_7" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="7" Flags="14"/>
+    <ROW XmlElement="setting_8" ParentElement="Pandora.Client.PandorasWallet.Prope" Name="setting" Condition="1" Order="8" Flags="14"/>
+    <ROW XmlElement="setting_9" ParentElement="Pandora.Client.PandorasWallet.Pro_1" Name="setting" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="startup" ParentElement="configuration" Name="startup" Condition="1" Order="1" Flags="14"/>
     <ROW XmlElement="supportedRuntime" ParentElement="startup" Name="supportedRuntime" Condition="1" Order="0" Flags="14"/>
     <ROW XmlElement="system.data" ParentElement="configuration" Name="system.data" Condition="1" Order="5" Flags="14"/>
     <ROW XmlElement="system.serviceModel" ParentElement="configuration" Name="system.serviceModel" Condition="1" Order="2" Flags="14"/>
     <ROW XmlElement="userSettings" ParentElement="configuration" Name="userSettings" Condition="1" Order="4" Flags="14"/>
-    <ROW XmlElement="value" ParentElement="setting" Name="value" Condition="1" Order="0" Flags="14" Text="443"/>
-    <ROW XmlElement="value_1" ParentElement="setting_1" Name="value" Condition="1" Order="0" Flags="14" Text="api.pandoraswallet.com"/>
+    <ROW XmlElement="value" ParentElement="setting" Name="value" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="value_1" ParentElement="setting_1" Name="value" Condition="1" Order="0" Flags="14" Text="0"/>
     <ROW XmlElement="value_2" ParentElement="setting_2" Name="value" Condition="1" Order="0" Flags="14"/>
-    <ROW XmlElement="value_3" ParentElement="setting_3" Name="value" Condition="1" Order="0" Flags="14" Text="True"/>
-    <ROW XmlElement="value_4" ParentElement="setting_4" Name="value" Condition="1" Order="0" Flags="14" Text="0"/>
-    <ROW XmlElement="value_5" ParentElement="setting_5" Name="value" Condition="1" Order="0" Flags="14"/>
-    <ROW XmlElement="value_6" ParentElement="setting_6" Name="value" Condition="1" Order="0" Flags="14"/>
-    <ROW XmlElement="value_7" ParentElement="setting_7" Name="value" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="value_3" ParentElement="setting_3" Name="value" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="value_4" ParentElement="setting_4" Name="value" Condition="1" Order="0" Flags="14"/>
+    <ROW XmlElement="value_5" ParentElement="setting_5" Name="value" Condition="1" Order="0" Flags="14" Text="Tahoma"/>
+    <ROW XmlElement="value_6" ParentElement="setting_6" Name="value" Condition="1" Order="0" Flags="14" Text="True"/>
+    <ROW XmlElement="value_7" ParentElement="setting_7" Name="value" Condition="1" Order="0" Flags="14" Text="443"/>
+    <ROW XmlElement="value_8" ParentElement="setting_8" Name="value" Condition="1" Order="0" Flags="14" Text="api.pandoraswallet.com"/>
+    <ROW XmlElement="value_9" ParentElement="setting_9" Name="value" Condition="1" Order="0" Flags="14" Text="./Client.log"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.XmlFileComponent">
-    <ROW XmlFile="PandorasWallet.exe.config" FileName="PANDOR~2.CON|Pandora&apos;s Wallet.exe.config" DirProperty="APPDIR" Component="System.Buffers.dll" RootElement="configuration" Flags="89" Version="1.0" Encoding="UTF-8" IndentUnits="2"/>
+    <ROW XmlFile="PandorasWallet.exe.config" FileName="PANDOR~1.CON|Pandora&apos;s Wallet.exe.config" DirProperty="APPDIR" Component="Nethereum.Model.dll" RootElement="configuration" Flags="89" Version="1.0" Encoding="utf-8" IndentUnits="2"/>
   </COMPONENT>
 </DOCUMENT>

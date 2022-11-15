@@ -2,17 +2,8 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Pandora.Client.PandorasWallet.Properties" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="Port" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">20159</Value>
-    </Setting>
-    <Setting Name="ServerName" Type="System.String" Scope="User">
-      <Value Profile="(Default)">localhost</Value>
-    </Setting>
     <Setting Name="DataPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="EncyptedConnection" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="Coin" Type="System.UInt32" Scope="User">
       <Value Profile="(Default)">0</Value>
@@ -31,6 +22,15 @@
     </Setting>
     <Setting Name="FontFamily" Type="System.String" Scope="User">
       <Value Profile="(Default)">Tahoma</Value>
+    </Setting>
+    <Setting Name="EncyptedConnection" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Port" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">443</Value>
+    </Setting>
+    <Setting Name="ServerName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">api.pandoraswallet.com</Value>
     </Setting>
   </Settings>
 </SettingsFile>

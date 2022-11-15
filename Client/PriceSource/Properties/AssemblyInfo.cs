@@ -7,11 +7,6 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("Pandora.Client.PriceSource")]
 [assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Pandora.Client.PriceSource")]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
-[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -21,17 +16,4 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("1a9ea64b-881a-4bf2-ad75-2760f7aff5ff")]
-
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: InternalsVisibleTo("Pandora.Client.PriceSource.Test, PublicKey=0024000004800000940000000602000000240000525341310004000001000100f54eb1bf4cce384dc3f0196b77e40a7202f18193b7ff5919ef4ae922bb684bde412f6f8335249af0f807eca236b8d323728850afca1e5fe3bbeddf3ae1f26e632eb84a0103107b37e0544ce33641a18029954f24ad8b078e74c0c8bbe44bfaa9cea0b8052b3b46aa22bbd7de3b27180450146b1d7e910448562d95b5f00792c6")]

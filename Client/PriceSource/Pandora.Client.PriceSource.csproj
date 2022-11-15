@@ -11,7 +11,7 @@
     <AssemblyName>Pandora.Client.PriceSource</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
+    <Deterministic>false</Deterministic>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FiatCurrencies.cs" />
+    <Compile Include="Properties\VersionInfo.cs" />
     <Compile Include="SourceAPIs\APIFactory.cs" />
     <Compile Include="SourceAPIs\Entities\CoinGeckoAPI.cs" />
     <Compile Include="SourceAPIs\Entities\CoinMarketCapAPI.cs" />
