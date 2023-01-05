@@ -1,425 +1,425 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-	<PropertyGroup>
-		<Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-		<Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-		<ProjectGuid>{74BF1128-0E40-4D89-814B-9B7565C211B8}</ProjectGuid>
-		<OutputType>Library</OutputType>
-		<AppDesignerFolder>Properties</AppDesignerFolder>
-		<RootNamespace>Pandora.Client.Crypto</RootNamespace>
-		<AssemblyName>Pandora.Client.Crypto</AssemblyName>
-		<TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-		<FileAlignment>512</FileAlignment>
-		<Deterministic>false</Deterministic>
-		<TargetFrameworkProfile />
-	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-		<DebugSymbols>true</DebugSymbols>
-		<DebugType>full</DebugType>
-		<Optimize>false</Optimize>
-		<OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
-		<IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
-		<DefineConstants>DEBUG;TRACE</DefineConstants>
-		<ErrorReport>prompt</ErrorReport>
-		<WarningLevel>4</WarningLevel>
-		<Prefer32Bit>false</Prefer32Bit>
-	</PropertyGroup>
-	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-		<Deterministic>false</Deterministic>
-		<DebugType>pdbonly</DebugType>
-		<Optimize>true</Optimize>
-		<OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
-		<IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
-		<DefineConstants>TRACE</DefineConstants>
-		<ErrorReport>prompt</ErrorReport>
-		<WarningLevel>4</WarningLevel>
-		<Prefer32Bit>false</Prefer32Bit>
-	</PropertyGroup>
-	<PropertyGroup>
-		<SignAssembly>false</SignAssembly>
-		<AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
-		<DelaySign>false</DelaySign>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug32|AnyCPU'">
-		<DebugSymbols>true</DebugSymbols>
-		<OutputPath>$(SolutionDir)bin\DEBUG\</OutputPath>
-		<IntermediateOutputPath>$(SolutionDir)bin\obj\DEBUG\$(AssemblyName)\</IntermediateOutputPath>
-		<DefineConstants>DEBUG;TRACE</DefineConstants>
-		<DebugType>full</DebugType>
-		<PlatformTarget>AnyCPU</PlatformTarget>
-		<LangVersion>7.3</LangVersion>
-		<ErrorReport>prompt</ErrorReport>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'RemoteDebug|AnyCPU'">
-		<DebugSymbols>true</DebugSymbols>
-		<OutputPath>bin\RemoteDebug\</OutputPath>
-		<DefineConstants>DEBUG;TRACE</DefineConstants>
-		<DebugType>full</DebugType>
-		<PlatformTarget>AnyCPU</PlatformTarget>
-		<LangVersion>7.3</LangVersion>
-		<ErrorReport>prompt</ErrorReport>
-		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-	</PropertyGroup>
-	<ItemGroup>
-		<PackageReference Include="HashLib" Version="2.0.1" />
-		<PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-		<PackageReference Include="System.Buffers" Version="4.0.0.0" />
-		<Reference Include="System" />
-		<Reference Include="System.Core" />
-		<Reference Include="System.Drawing" />
-		<Reference Include="System.Numerics" />
-		<Reference Include="System.Windows.Forms" />
-		<Reference Include="System.Xml.Linq" />
-		<Reference Include="System.Data.DataSetExtensions" />
-		<Reference Include="Microsoft.CSharp" />
-		<Reference Include="System.Data" />
-		<Reference Include="System.Xml" />
-	</ItemGroup>
-	<ItemGroup>
-		<Compile Include="BouncyCastle\asn1\Asn1Encodable.cs" />
-		<Compile Include="BouncyCastle\asn1\Asn1EncodableVector.cs" />
-		<Compile Include="BouncyCastle\asn1\Asn1Exception.cs" />
-		<Compile Include="BouncyCastle\asn1\ASN1Generator.cs" />
-		<Compile Include="BouncyCastle\asn1\Asn1InputStream.cs" />
-		<Compile Include="BouncyCastle\asn1\Asn1Null.cs" />
-		<Compile Include="BouncyCastle\asn1\Asn1Object.cs" />
-		<Compile Include="BouncyCastle\asn1\Asn1OctetString.cs" />
-		<Compile Include="BouncyCastle\asn1\ASN1OctetStringParser.cs" />
-		<Compile Include="BouncyCastle\asn1\Asn1Sequence.cs" />
-		<Compile Include="BouncyCastle\asn1\ASN1SequenceParser.cs" />
-		<Compile Include="BouncyCastle\asn1\Asn1Tags.cs" />
-		<Compile Include="BouncyCastle\asn1\DefiniteLengthInputStream.cs" />
-		<Compile Include="BouncyCastle\asn1\DERGenerator.cs" />
-		<Compile Include="BouncyCastle\asn1\DerInteger.cs" />
-		<Compile Include="BouncyCastle\asn1\DerNull.cs" />
-		<Compile Include="BouncyCastle\asn1\DerObjectIdentifier.cs" />
-		<Compile Include="BouncyCastle\asn1\DerOctetString.cs" />
-		<Compile Include="BouncyCastle\asn1\DerOutputStream.cs" />
-		<Compile Include="BouncyCastle\asn1\DerSequence.cs" />
-		<Compile Include="BouncyCastle\asn1\DERSequenceGenerator.cs" />
-		<Compile Include="BouncyCastle\asn1\IAsn1Convertible.cs" />
-		<Compile Include="BouncyCastle\asn1\LimitedInputStream.cs" />
-		<Compile Include="BouncyCastle\asn1\sec\SECNamedCurves.cs" />
-		<Compile Include="BouncyCastle\asn1\sec\SECObjectIdentifiers.cs" />
-		<Compile Include="BouncyCastle\asn1\x9\X9Curve.cs" />
-		<Compile Include="BouncyCastle\asn1\x9\X9ECParameters.cs" />
-		<Compile Include="BouncyCastle\asn1\x9\X9ECParametersHolder.cs" />
-		<Compile Include="BouncyCastle\asn1\x9\X9ECPoint.cs" />
-		<Compile Include="BouncyCastle\asn1\x9\X9FieldElement.cs" />
-		<Compile Include="BouncyCastle\asn1\x9\X9FieldID.cs" />
-		<Compile Include="BouncyCastle\asn1\x9\X9IntegerConverter.cs" />
-		<Compile Include="BouncyCastle\asn1\x9\X9ObjectIdentifiers.cs" />
-		<Compile Include="BouncyCastle\crypto\AsymmetricKeyParameter.cs" />
-		<Compile Include="BouncyCastle\crypto\BufferedBlockCipher.cs" />
-		<Compile Include="BouncyCastle\crypto\BufferedCipherBase.cs" />
-		<Compile Include="BouncyCastle\crypto\Check.cs" />
-		<Compile Include="BouncyCastle\crypto\CryptoException.cs" />
-		<Compile Include="BouncyCastle\crypto\DataLengthException.cs" />
-		<Compile Include="Currencies\BIP32\BitcoinExtKey.cs" />
-		<Compile Include="Currencies\BIP32\ExtKey.cs" />
-		<Compile Include="Currencies\BIP32\ExtPubKey.cs" />
-		<Compile Include="Currencies\BIP32\HDFingerPrint.cs" />
-		<Compile Include="Currencies\BIP32\HDFingerPrintExtentions.cs" />
-		<Compile Include="Currencies\BIP32\IHDKey.cs" />
-		<Compile Include="Currencies\BIP32\IHDScriptPubKey.cs" />
-		<Compile Include="Currencies\BIP32\KeyPath.cs" />
-		<Compile Include="Currencies\BIP32\RootedKeyPath.cs" />
-		<Compile Include="Currencies\BIP39\IWordlistSource.cs" />
-		<Compile Include="Currencies\BIP39\KDTable.cs" />
-		<Compile Include="Currencies\BIP39\Language.cs" />
-		<Compile Include="Currencies\BIP39\Mnemonic.cs" />
-		<Compile Include="Currencies\BIP39\Wordlist.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\BaseConsensusFactory.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\IChainParams.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\IServerChainParams.cs" />
-		<Compile Include="Currencies\BitWriter.cs" />
-		<Compile Include="Currencies\Block.cs" />
-		<Compile Include="Currencies\BlockLocator.cs" />
-		<Compile Include="Currencies\BloomFilter.cs" />
-		<Compile Include="Currencies\BuilderExtensions\BuilderExtension.cs" />
-		<Compile Include="Currencies\BuilderExtensions\OPTrueExtension.cs" />
-		<Compile Include="Currencies\BuilderExtensions\P2MultiSigBuilderExtension.cs" />
-		<Compile Include="Currencies\BuilderExtensions\P2PKBuilderExtension.cs" />
-		<Compile Include="Currencies\BuilderExtensions\P2PKHBuilderExtension.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\ChainParams.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\CryptoCurrencyAdvocacy.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\IClientCurrencyAdvocacy.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\IConsensusFactory.cs" />
-		<Compile Include="Currencies\HashStream.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Blake.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\BlueMidnightWish.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\CubeHash.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Echo.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Fugue.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Groestl.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Hamsi.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\JH.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Keccak.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Luffa.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Shabal.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\SHAvite3.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\SHAvite3Custom.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\SIMD.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\Skein.cs" />
-		<Compile Include="Currencies\HashX11\Crypto\SHA3\SkeinCustom.cs" />
-		<Compile Include="Currencies\HashX11\Extensions\ArrayExtensions.cs" />
-		<Compile Include="Currencies\HashX11\Extensions\Converters.cs" />
-		<Compile Include="Currencies\HashX11\Hash.cs" />
-		<Compile Include="Currencies\HashX11\Hash9.cs" />
-		<Compile Include="Currencies\HashX11\HashBuffer.cs" />
-		<Compile Include="Currencies\HashX11\HashCryptoNotBuildIn.cs" />
-		<Compile Include="Currencies\HashX11\HashFactory.cs" />
-		<Compile Include="Currencies\HashX11\HashResult.cs" />
-		<Compile Include="Currencies\HashX11\HashSize.cs" />
-		<Compile Include="Currencies\HashX11\IHash.cs" />
-		<Compile Include="Currencies\HashX11\IHashInfo.cs" />
-		<Compile Include="Currencies\HashX11\Quark.cs" />
-		<Compile Include="Currencies\HashX11\X11.cs" />
-		<Compile Include="Currencies\HashX11\Xevan.cs" />
-		<Compile Include="Currencies\IpExtensions.cs" />
-		<Compile Include="Currencies\MerkleBlock.cs" />
-		<Compile Include="Currencies\MerkleNode.cs" />
-		<Compile Include="Currencies\PartialMerkleTree.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\ProtocolData.cs" />
-		<Compile Include="Currencies\Coin.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\ICurrencyTransaction.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\ITransactionUnit.cs" />
-		<Compile Include="Currencies\Crypto\DeterministicECDSA.cs" />
-		<Compile Include="BouncyCastle\crypto\digests\GeneralDigest.cs" />
-		<Compile Include="BouncyCastle\crypto\digests\LongDigest.cs" />
-		<Compile Include="BouncyCastle\crypto\digests\RipeMD160Digest.cs" />
-		<Compile Include="BouncyCastle\crypto\digests\Sha1Digest.cs" />
-		<Compile Include="BouncyCastle\crypto\digests\Sha224Digest.cs" />
-		<Compile Include="BouncyCastle\crypto\digests\Sha256Digest.cs" />
-		<Compile Include="BouncyCastle\crypto\digests\Sha384Digest.cs" />
-		<Compile Include="BouncyCastle\crypto\digests\Sha512Digest.cs" />
-		<Compile Include="BouncyCastle\crypto\ec\CustomNamedCurves.cs" />
-		<Compile Include="BouncyCastle\crypto\engines\AesEngine.cs" />
-		<Compile Include="BouncyCastle\crypto\engines\AesFastEngine.cs" />
-		<Compile Include="BouncyCastle\crypto\IAsymmetricBlockCipher.cs" />
-		<Compile Include="BouncyCastle\crypto\IBlockCipher.cs" />
-		<Compile Include="BouncyCastle\crypto\IBufferedCipher.cs" />
-		<Compile Include="BouncyCastle\crypto\ICipherParameters.cs" />
-		<Compile Include="BouncyCastle\crypto\IDigest.cs" />
-		<Compile Include="BouncyCastle\crypto\IDSA.cs" />
-		<Compile Include="BouncyCastle\crypto\IMac.cs" />
-		<Compile Include="BouncyCastle\crypto\InvalidCipherTextException.cs" />
-		<Compile Include="BouncyCastle\crypto\ISigner.cs" />
-		<Compile Include="BouncyCastle\crypto\macs\HMac.cs" />
-		<Compile Include="BouncyCastle\crypto\OutputLengthException.cs" />
-		<Compile Include="BouncyCastle\crypto\paddings\BlockCipherPadding.cs" />
-		<Compile Include="BouncyCastle\crypto\paddings\PaddedBufferedBlockCipher.cs" />
-		<Compile Include="BouncyCastle\crypto\paddings\Pkcs7Padding.cs" />
-		<Compile Include="BouncyCastle\crypto\parameters\ECDomainParameters.cs" />
-		<Compile Include="BouncyCastle\crypto\parameters\ECKeyParameters.cs" />
-		<Compile Include="BouncyCastle\crypto\parameters\ECPrivateKeyParameters.cs" />
-		<Compile Include="BouncyCastle\crypto\parameters\ECPublicKeyParameters.cs" />
-		<Compile Include="BouncyCastle\crypto\parameters\KeyParameter.cs" />
-		<Compile Include="BouncyCastle\crypto\signers\ECDsaSigner.cs" />
-		<Compile Include="BouncyCastle\crypto\signers\HMacDsaKCalculator.cs" />
-		<Compile Include="BouncyCastle\crypto\signers\IDsaKCalculator.cs" />
-		<Compile Include="BouncyCastle\crypto\signers\RandomDsaKCalculator.cs" />
-		<Compile Include="BouncyCastle\crypto\util\Pack.cs" />
-		<Compile Include="BouncyCastle\math\BigInteger.cs" />
-		<Compile Include="BouncyCastle\math\ec\abc\SimpleBigDecimal.cs" />
-		<Compile Include="BouncyCastle\math\ec\abc\Tnaf.cs" />
-		<Compile Include="BouncyCastle\math\ec\abc\ZTauElement.cs" />
-		<Compile Include="BouncyCastle\math\ec\custom\sec\SecP256K1Curve.cs" />
-		<Compile Include="BouncyCastle\math\ec\custom\sec\SecP256K1Field.cs" />
-		<Compile Include="BouncyCastle\math\ec\custom\sec\SecP256K1FieldElement.cs" />
-		<Compile Include="BouncyCastle\math\ec\custom\sec\SecP256K1Point.cs" />
-		<Compile Include="BouncyCastle\math\ec\ECAlgorithms.cs" />
-		<Compile Include="BouncyCastle\math\ec\ECCurve.cs" />
-		<Compile Include="BouncyCastle\math\ec\ECFieldElement.cs" />
-		<Compile Include="BouncyCastle\math\ec\ECPoint.cs" />
-		<Compile Include="BouncyCastle\math\ec\ECPointMap.cs" />
-		<Compile Include="BouncyCastle\math\ec\endo\ECEndomorphism.cs" />
-		<Compile Include="BouncyCastle\math\ec\endo\GlvEndomorphism.cs" />
-		<Compile Include="BouncyCastle\math\ec\endo\GlvTypeBEndomorphism.cs" />
-		<Compile Include="BouncyCastle\math\ec\endo\GlvTypeBParameters.cs" />
-		<Compile Include="BouncyCastle\math\ec\LongArray.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\AbstractECMultiplier.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\DoubleAddMultiplier.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\ECMultiplier.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\FixedPointCombMultiplier.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\FixedPointPreCompInfo.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\FixedPointUtilities.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\GlvMultiplier.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\PreCompInfo.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\WNafL2RMultiplier.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\WNafPreCompInfo.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\WNafUtilities.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\WTauNafMultiplier.cs" />
-		<Compile Include="BouncyCastle\math\ec\multiplier\WTauNafPreCompInfo.cs" />
-		<Compile Include="BouncyCastle\math\ec\ScaleXPointMap.cs" />
-		<Compile Include="BouncyCastle\math\field\FiniteFields.cs" />
-		<Compile Include="BouncyCastle\math\field\GenericPolynomialExtensionField.cs" />
-		<Compile Include="BouncyCastle\math\field\GF2Polynomial.cs" />
-		<Compile Include="BouncyCastle\math\field\IExtensionField.cs" />
-		<Compile Include="BouncyCastle\math\field\IFiniteField.cs" />
-		<Compile Include="BouncyCastle\math\field\IPolynomial.cs" />
-		<Compile Include="BouncyCastle\math\field\IPolynomialExtensionField.cs" />
-		<Compile Include="BouncyCastle\math\field\PrimeField.cs" />
-		<Compile Include="BouncyCastle\math\raw\Mod.cs" />
-		<Compile Include="BouncyCastle\math\raw\Nat.cs" />
-		<Compile Include="BouncyCastle\math\raw\Nat256.cs" />
-		<Compile Include="BouncyCastle\security\GeneralSecurityException.cs" />
-		<Compile Include="BouncyCastle\security\InvalidKeyException.cs" />
-		<Compile Include="BouncyCastle\security\KeyException.cs" />
-		<Compile Include="BouncyCastle\security\SecureRandom.cs" />
-		<Compile Include="BouncyCastle\util\Arrays.cs" />
-		<Compile Include="BouncyCastle\util\BigIntegers.cs" />
-		<Compile Include="BouncyCastle\util\encoders\Hex.cs" />
-		<Compile Include="BouncyCastle\util\encoders\HexEncoder.cs" />
-		<Compile Include="BouncyCastle\util\encoders\IEncoder.cs" />
-		<Compile Include="BouncyCastle\util\IMemoable.cs" />
-		<Compile Include="BouncyCastle\util\io\BaseInputStream.cs" />
-		<Compile Include="BouncyCastle\util\io\FilterStream.cs" />
-		<Compile Include="BouncyCastle\util\io\StreamOverflowException.cs" />
-		<Compile Include="BouncyCastle\util\io\Streams.cs" />
-		<Compile Include="BouncyCastle\util\Platform.cs" />
-		<Compile Include="Currencies\AbstractNetwork.cs" />
-		<Compile Include="Currencies\Base58Data.cs" />
-		<Compile Include="Currencies\NetworkStringParser.cs" />
-		<Compile Include="Currencies\Policy\ITransactionPolicy.cs" />
-		<Compile Include="Currencies\Policy\StandardTransactionPolicy.cs" />
-		<Compile Include="Currencies\ScriptEvaluationContext.cs" />
-		<Compile Include="Currencies\CoinAddress.cs" />
-		<Compile Include="Currencies\CoinEncryptedSecret.cs" />
-		<Compile Include="Currencies\CoinPassphraseCode.cs" />
-		<Compile Include="Currencies\CoinPubKeyAddress.cs" />
-		<Compile Include="Currencies\CoinSecret.cs" />
-		<Compile Include="Currencies\CoinSegwitAddress.cs" />
-		<Compile Include="Currencies\CoinStream.cs" />
-		<Compile Include="Currencies\Bitcoin\BitcoinNetwork.cs" />
-		<Compile Include="Currencies\CCKey.cs" />
-		<Compile Include="Currencies\Cryptsharp\BitMath.cs" />
-		<Compile Include="Currencies\Cryptsharp\BitPacking.cs" />
-		<Compile Include="Currencies\Cryptsharp\Check.cs" />
-		<Compile Include="Currencies\Cryptsharp\Exceptions.cs" />
-		<Compile Include="Currencies\Cryptsharp\Pbkdf2.cs" />
-		<Compile Include="Currencies\Cryptsharp\Salsa20Core.cs" />
-		<Compile Include="Currencies\Cryptsharp\SCrypt.cs" />
-		<Compile Include="Currencies\Cryptsharp\Security.cs" />
-		<Compile Include="Currencies\CurrencyTypeIds.cs" />
-		<Compile Include="Currencies\DataEncoders\ASCIIEncoder.cs" />
-		<Compile Include="Currencies\DataEncoders\Base58Encoder.cs" />
-		<Compile Include="Currencies\DataEncoders\Base64Encoder.cs" />
-		<Compile Include="Currencies\DataEncoders\Bech32Encoder.cs" />
-		<Compile Include="Currencies\DataEncoders\Encoders.cs" />
-		<Compile Include="Currencies\DataEncoders\HexEncoder.cs" />
-		<Compile Include="Currencies\Crypto\ECDSASignature.cs" />
-		<Compile Include="Currencies\Crypto\ECKey.cs" />
-		<Compile Include="Currencies\Hashes.cs" />
-		<Compile Include="Currencies\ICoinSerializable.cs" />
-		<Compile Include="Currencies\ICryptoCurrency.cs" />
-		<Compile Include="Currencies\ICryptoCurrencyKey.cs" />
-		<Compile Include="Currencies\Interfaces.cs" />
-		<Compile Include="Currencies\KeyId.cs" />
-		<Compile Include="Currencies\LockTime.cs" />
-		<Compile Include="Currencies\Money.cs" />
-		<Compile Include="Currencies\OutPoint.cs" />
-		<Compile Include="Currencies\PerformanceCounter.cs" />
-		<Compile Include="Currencies\PubKey.cs" />
-		<Compile Include="Currencies\RandomUtils.cs" />
-		<Compile Include="Currencies\RandomUtils.partial.cs" />
-		<Compile Include="Currencies\RPC\BlockExplorerFormatter.cs" />
-		<Compile Include="Currencies\RPC\RawFormatter.cs" />
-		<Compile Include="Currencies\RPC\SatoshiFormatter.cs" />
-		<Compile Include="Currencies\Script.cs" />
-		<Compile Include="Currencies\ScriptError.cs" />
-		<Compile Include="Currencies\ScriptReader.cs" />
-		<Compile Include="Currencies\Sequence.cs" />
-		<Compile Include="Currencies\StandardScripts.cs" />
-		<Compile Include="Currencies\StandardScriptTemplate.cs" />
-		<Compile Include="Currencies\Target.cs" />
-		<Compile Include="Currencies\TraceCorrelationScope.cs" />
-		<Compile Include="Currencies\Transaction.cs" />
-		<Compile Include="Currencies\TransactionBuilder.cs" />
-		<Compile Include="Currencies\TransactionNotFoundException.cs" />
-		<Compile Include="Currencies\TransactionSignature.cs" />
-		<Compile Include="Currencies\UInt2561.cs" />
-		<Compile Include="Currencies\Utils\ActionDisposable.cs" />
-		<Compile Include="Currencies\Utils\BoundedDictionary.cs" />
-		<Compile Include="Currencies\Utils\ThreadSafeCollection.cs" />
-		<Compile Include="Currencies\Utils\Utils.cs" />
-		<Compile Include="Currencies\Utils\VarInt.cs" />
-		<Compile Include="Currencies\Utils\VarString.cs" />
-		<Compile Include="Currencies\PandoraCustomObjs\CurrencyControl.cs" />
-		<Compile Include="Properties\AssemblyInfo.cs" />
-		<Compile Include="Protocol\AddressManager.cs" />
-		<Compile Include="Protocol\Behaviors\AddressManagerBehavior.cs" />
-		<Compile Include="Protocol\Behaviors\BroadcastTransactionBehavior.cs" />
-		<Compile Include="Protocol\Behaviors\NodeBehavior.cs" />
-		<Compile Include="Protocol\Behaviors\NodeBehaviorsCollection.cs" />
-		<Compile Include="Protocol\Behaviors\PingPongBehavior.cs" />
-		<Compile Include="Protocol\BitcoinSerializablePayload.cs" />
-		<Compile Include="Currencies\CustomTransaction.cs" />
-		<Compile Include="Protocol\Filters\ActionFilter.cs" />
-		<Compile Include="Protocol\Filters\NodeFilter.cs" />
-		<Compile Include="Protocol\Filters\NodeFiltersCollection.cs" />
-		<Compile Include="Protocol\IMessageProducer.cs" />
-		<Compile Include="Protocol\IncomingMessage.cs" />
-		<Compile Include="Protocol\InventoryVector.cs" />
-		<Compile Include="Protocol\Message.cs" />
-		<Compile Include="Protocol\MessageListener.cs" />
-		<Compile Include="Protocol\NetworkAddress.cs" />
-		<Compile Include="Protocol\Node.cs" />
-		<Compile Include="Protocol\NodeConnectionParameters.cs" />
-		<Compile Include="Protocol\NodeListener.cs" />
-		<Compile Include="Protocol\NodesCollection.cs" />
-		<Compile Include="Protocol\Payload.cs" />
-		<Compile Include="Protocol\Payloads\PayloadAttribute.cs" />
-		<Compile Include="Protocol\Payloads\AddrPayload.cs" />
-		<Compile Include="Protocol\Payloads\AlertPayload.cs" />
-		<Compile Include="Protocol\Payloads\BlockPayload.cs" />
-		<Compile Include="Protocol\Payloads\BlockTxnPayload.cs" />
-		<Compile Include="Protocol\Payloads\CmpctBlockPayload.cs" />
-		<Compile Include="Protocol\Payloads\FilterAddPayload.cs" />
-		<Compile Include="Protocol\Payloads\FilterLoadPayload.cs" />
-		<Compile Include="Protocol\Payloads\GetAddrPayload.cs" />
-		<Compile Include="Protocol\Payloads\GetBlocksPayload.cs" />
-		<Compile Include="Protocol\Payloads\GetBlockTxnPayload.cs" />
-		<Compile Include="Protocol\Payloads\GetDataPayload.cs" />
-		<Compile Include="Protocol\Payloads\GetHeadersPayload.cs" />
-		<Compile Include="Protocol\Payloads\HaveWitnessPayload.cs" />
-		<Compile Include="Protocol\Payloads\HeadersPayload.cs" />
-		<Compile Include="Protocol\Payloads\InvPayload.cs" />
-		<Compile Include="Protocol\Payloads\MempoolPayload.cs" />
-		<Compile Include="Protocol\Payloads\MerkleBlockPayload.cs" />
-		<Compile Include="Protocol\Payloads\NotFoundPayload.cs" />
-		<Compile Include="Protocol\Payloads\PingPayload.cs" />
-		<Compile Include="Protocol\Payloads\PongPayload.cs" />
-		<Compile Include="Protocol\Payloads\RejectPayload.cs" />
-		<Compile Include="Protocol\Payloads\SendCmpctPayload.cs" />
-		<Compile Include="Protocol\Payloads\SendHeadersPayload.cs" />
-		<Compile Include="Protocol\Payloads\TxPayload.cs" />
-		<Compile Include="Protocol\Payloads\UTxOutputPayload.cs" />
-		<Compile Include="Protocol\Payloads\VerAckPayload.cs" />
-		<Compile Include="Protocol\Payloads\VersionPayload.cs" />
-		<Compile Include="Protocol\PerformanceCounter.cs" />
-		<Compile Include="Protocol\ProtocolException.cs" />
-		<Compile Include="Protocol\UnknowPayload.cs" />
-		<Compile Include="Protocol\VarInt.cs" />
-		<Compile Include="Protocol\VarString.cs" />
-		<Compile Include="Protocol\Versions.cs" />
-		<Compile Include="$(SolutionDir)VersionInfo.cs">
-			<Link>Properties\VersionInfo.cs</Link>
-			<Visible>ture</Visible>
-		</Compile>
-		<Compile Include="uint512.cs" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="..\..\.editorconfig">
-			<Link>.editorconfig</Link>
-		</None>
-		<None Include="packages.config" />
-	</ItemGroup>
-	<ItemGroup />
-	<Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-	<!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{74BF1128-0E40-4D89-814B-9B7565C211B8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Pandora.Client.Crypto</RootNamespace>
+    <AssemblyName>Pandora.Client.Crypto</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>false</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Deterministic>false</Deterministic>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)bin\obj\$(Configuration)\$(AssemblyName)\</IntermediateOutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(SolutionDir)Resources\Signing\PandoraTempKey.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug32|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>$(SolutionDir)bin\DEBUG\</OutputPath>
+    <IntermediateOutputPath>$(SolutionDir)bin\obj\DEBUG\$(AssemblyName)\</IntermediateOutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'RemoteDebug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\RemoteDebug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="HashLib" Version="2.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BouncyCastle\asn1\Asn1Encodable.cs" />
+    <Compile Include="BouncyCastle\asn1\Asn1EncodableVector.cs" />
+    <Compile Include="BouncyCastle\asn1\Asn1Exception.cs" />
+    <Compile Include="BouncyCastle\asn1\ASN1Generator.cs" />
+    <Compile Include="BouncyCastle\asn1\Asn1InputStream.cs" />
+    <Compile Include="BouncyCastle\asn1\Asn1Null.cs" />
+    <Compile Include="BouncyCastle\asn1\Asn1Object.cs" />
+    <Compile Include="BouncyCastle\asn1\Asn1OctetString.cs" />
+    <Compile Include="BouncyCastle\asn1\ASN1OctetStringParser.cs" />
+    <Compile Include="BouncyCastle\asn1\Asn1Sequence.cs" />
+    <Compile Include="BouncyCastle\asn1\ASN1SequenceParser.cs" />
+    <Compile Include="BouncyCastle\asn1\Asn1Tags.cs" />
+    <Compile Include="BouncyCastle\asn1\DefiniteLengthInputStream.cs" />
+    <Compile Include="BouncyCastle\asn1\DERGenerator.cs" />
+    <Compile Include="BouncyCastle\asn1\DerInteger.cs" />
+    <Compile Include="BouncyCastle\asn1\DerNull.cs" />
+    <Compile Include="BouncyCastle\asn1\DerObjectIdentifier.cs" />
+    <Compile Include="BouncyCastle\asn1\DerOctetString.cs" />
+    <Compile Include="BouncyCastle\asn1\DerOutputStream.cs" />
+    <Compile Include="BouncyCastle\asn1\DerSequence.cs" />
+    <Compile Include="BouncyCastle\asn1\DERSequenceGenerator.cs" />
+    <Compile Include="BouncyCastle\asn1\IAsn1Convertible.cs" />
+    <Compile Include="BouncyCastle\asn1\LimitedInputStream.cs" />
+    <Compile Include="BouncyCastle\asn1\sec\SECNamedCurves.cs" />
+    <Compile Include="BouncyCastle\asn1\sec\SECObjectIdentifiers.cs" />
+    <Compile Include="BouncyCastle\asn1\x9\X9Curve.cs" />
+    <Compile Include="BouncyCastle\asn1\x9\X9ECParameters.cs" />
+    <Compile Include="BouncyCastle\asn1\x9\X9ECParametersHolder.cs" />
+    <Compile Include="BouncyCastle\asn1\x9\X9ECPoint.cs" />
+    <Compile Include="BouncyCastle\asn1\x9\X9FieldElement.cs" />
+    <Compile Include="BouncyCastle\asn1\x9\X9FieldID.cs" />
+    <Compile Include="BouncyCastle\asn1\x9\X9IntegerConverter.cs" />
+    <Compile Include="BouncyCastle\asn1\x9\X9ObjectIdentifiers.cs" />
+    <Compile Include="BouncyCastle\crypto\AsymmetricKeyParameter.cs" />
+    <Compile Include="BouncyCastle\crypto\BufferedBlockCipher.cs" />
+    <Compile Include="BouncyCastle\crypto\BufferedCipherBase.cs" />
+    <Compile Include="BouncyCastle\crypto\Check.cs" />
+    <Compile Include="BouncyCastle\crypto\CryptoException.cs" />
+    <Compile Include="BouncyCastle\crypto\DataLengthException.cs" />
+    <Compile Include="Currencies\BIP32\BitcoinExtKey.cs" />
+    <Compile Include="Currencies\BIP32\ExtKey.cs" />
+    <Compile Include="Currencies\BIP32\ExtPubKey.cs" />
+    <Compile Include="Currencies\BIP32\HDFingerPrint.cs" />
+    <Compile Include="Currencies\BIP32\HDFingerPrintExtentions.cs" />
+    <Compile Include="Currencies\BIP32\IHDKey.cs" />
+    <Compile Include="Currencies\BIP32\IHDScriptPubKey.cs" />
+    <Compile Include="Currencies\BIP32\KeyPath.cs" />
+    <Compile Include="Currencies\BIP32\RootedKeyPath.cs" />
+    <Compile Include="Currencies\BIP39\IWordlistSource.cs" />
+    <Compile Include="Currencies\BIP39\KDTable.cs" />
+    <Compile Include="Currencies\BIP39\Language.cs" />
+    <Compile Include="Currencies\BIP39\Mnemonic.cs" />
+    <Compile Include="Currencies\BIP39\Wordlist.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\BaseConsensusFactory.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\IChainParams.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\IServerChainParams.cs" />
+    <Compile Include="Currencies\BitWriter.cs" />
+    <Compile Include="Currencies\Block.cs" />
+    <Compile Include="Currencies\BlockLocator.cs" />
+    <Compile Include="Currencies\BloomFilter.cs" />
+    <Compile Include="Currencies\BuilderExtensions\BuilderExtension.cs" />
+    <Compile Include="Currencies\BuilderExtensions\OPTrueExtension.cs" />
+    <Compile Include="Currencies\BuilderExtensions\P2MultiSigBuilderExtension.cs" />
+    <Compile Include="Currencies\BuilderExtensions\P2PKBuilderExtension.cs" />
+    <Compile Include="Currencies\BuilderExtensions\P2PKHBuilderExtension.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\ChainParams.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\CryptoCurrencyAdvocacy.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\IClientCurrencyAdvocacy.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\IConsensusFactory.cs" />
+    <Compile Include="Currencies\HashStream.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Blake.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\BlueMidnightWish.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\CubeHash.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Echo.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Fugue.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Groestl.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Hamsi.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\JH.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Keccak.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Luffa.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Shabal.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\SHAvite3.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\SHAvite3Custom.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\SIMD.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\Skein.cs" />
+    <Compile Include="Currencies\HashX11\Crypto\SHA3\SkeinCustom.cs" />
+    <Compile Include="Currencies\HashX11\Extensions\ArrayExtensions.cs" />
+    <Compile Include="Currencies\HashX11\Extensions\Converters.cs" />
+    <Compile Include="Currencies\HashX11\Hash.cs" />
+    <Compile Include="Currencies\HashX11\Hash9.cs" />
+    <Compile Include="Currencies\HashX11\HashBuffer.cs" />
+    <Compile Include="Currencies\HashX11\HashCryptoNotBuildIn.cs" />
+    <Compile Include="Currencies\HashX11\HashFactory.cs" />
+    <Compile Include="Currencies\HashX11\HashResult.cs" />
+    <Compile Include="Currencies\HashX11\HashSize.cs" />
+    <Compile Include="Currencies\HashX11\IHash.cs" />
+    <Compile Include="Currencies\HashX11\IHashInfo.cs" />
+    <Compile Include="Currencies\HashX11\Quark.cs" />
+    <Compile Include="Currencies\HashX11\X11.cs" />
+    <Compile Include="Currencies\HashX11\Xevan.cs" />
+    <Compile Include="Currencies\IpExtensions.cs" />
+    <Compile Include="Currencies\MerkleBlock.cs" />
+    <Compile Include="Currencies\MerkleNode.cs" />
+    <Compile Include="Currencies\PartialMerkleTree.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\ProtocolData.cs" />
+    <Compile Include="Currencies\Coin.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\ICurrencyTransaction.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\ITransactionUnit.cs" />
+    <Compile Include="Currencies\Crypto\DeterministicECDSA.cs" />
+    <Compile Include="BouncyCastle\crypto\digests\GeneralDigest.cs" />
+    <Compile Include="BouncyCastle\crypto\digests\LongDigest.cs" />
+    <Compile Include="BouncyCastle\crypto\digests\RipeMD160Digest.cs" />
+    <Compile Include="BouncyCastle\crypto\digests\Sha1Digest.cs" />
+    <Compile Include="BouncyCastle\crypto\digests\Sha224Digest.cs" />
+    <Compile Include="BouncyCastle\crypto\digests\Sha256Digest.cs" />
+    <Compile Include="BouncyCastle\crypto\digests\Sha384Digest.cs" />
+    <Compile Include="BouncyCastle\crypto\digests\Sha512Digest.cs" />
+    <Compile Include="BouncyCastle\crypto\ec\CustomNamedCurves.cs" />
+    <Compile Include="BouncyCastle\crypto\engines\AesEngine.cs" />
+    <Compile Include="BouncyCastle\crypto\engines\AesFastEngine.cs" />
+    <Compile Include="BouncyCastle\crypto\IAsymmetricBlockCipher.cs" />
+    <Compile Include="BouncyCastle\crypto\IBlockCipher.cs" />
+    <Compile Include="BouncyCastle\crypto\IBufferedCipher.cs" />
+    <Compile Include="BouncyCastle\crypto\ICipherParameters.cs" />
+    <Compile Include="BouncyCastle\crypto\IDigest.cs" />
+    <Compile Include="BouncyCastle\crypto\IDSA.cs" />
+    <Compile Include="BouncyCastle\crypto\IMac.cs" />
+    <Compile Include="BouncyCastle\crypto\InvalidCipherTextException.cs" />
+    <Compile Include="BouncyCastle\crypto\ISigner.cs" />
+    <Compile Include="BouncyCastle\crypto\macs\HMac.cs" />
+    <Compile Include="BouncyCastle\crypto\OutputLengthException.cs" />
+    <Compile Include="BouncyCastle\crypto\paddings\BlockCipherPadding.cs" />
+    <Compile Include="BouncyCastle\crypto\paddings\PaddedBufferedBlockCipher.cs" />
+    <Compile Include="BouncyCastle\crypto\paddings\Pkcs7Padding.cs" />
+    <Compile Include="BouncyCastle\crypto\parameters\ECDomainParameters.cs" />
+    <Compile Include="BouncyCastle\crypto\parameters\ECKeyParameters.cs" />
+    <Compile Include="BouncyCastle\crypto\parameters\ECPrivateKeyParameters.cs" />
+    <Compile Include="BouncyCastle\crypto\parameters\ECPublicKeyParameters.cs" />
+    <Compile Include="BouncyCastle\crypto\parameters\KeyParameter.cs" />
+    <Compile Include="BouncyCastle\crypto\signers\ECDsaSigner.cs" />
+    <Compile Include="BouncyCastle\crypto\signers\HMacDsaKCalculator.cs" />
+    <Compile Include="BouncyCastle\crypto\signers\IDsaKCalculator.cs" />
+    <Compile Include="BouncyCastle\crypto\signers\RandomDsaKCalculator.cs" />
+    <Compile Include="BouncyCastle\crypto\util\Pack.cs" />
+    <Compile Include="BouncyCastle\math\BigInteger.cs" />
+    <Compile Include="BouncyCastle\math\ec\abc\SimpleBigDecimal.cs" />
+    <Compile Include="BouncyCastle\math\ec\abc\Tnaf.cs" />
+    <Compile Include="BouncyCastle\math\ec\abc\ZTauElement.cs" />
+    <Compile Include="BouncyCastle\math\ec\custom\sec\SecP256K1Curve.cs" />
+    <Compile Include="BouncyCastle\math\ec\custom\sec\SecP256K1Field.cs" />
+    <Compile Include="BouncyCastle\math\ec\custom\sec\SecP256K1FieldElement.cs" />
+    <Compile Include="BouncyCastle\math\ec\custom\sec\SecP256K1Point.cs" />
+    <Compile Include="BouncyCastle\math\ec\ECAlgorithms.cs" />
+    <Compile Include="BouncyCastle\math\ec\ECCurve.cs" />
+    <Compile Include="BouncyCastle\math\ec\ECFieldElement.cs" />
+    <Compile Include="BouncyCastle\math\ec\ECPoint.cs" />
+    <Compile Include="BouncyCastle\math\ec\ECPointMap.cs" />
+    <Compile Include="BouncyCastle\math\ec\endo\ECEndomorphism.cs" />
+    <Compile Include="BouncyCastle\math\ec\endo\GlvEndomorphism.cs" />
+    <Compile Include="BouncyCastle\math\ec\endo\GlvTypeBEndomorphism.cs" />
+    <Compile Include="BouncyCastle\math\ec\endo\GlvTypeBParameters.cs" />
+    <Compile Include="BouncyCastle\math\ec\LongArray.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\AbstractECMultiplier.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\DoubleAddMultiplier.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\ECMultiplier.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\FixedPointCombMultiplier.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\FixedPointPreCompInfo.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\FixedPointUtilities.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\GlvMultiplier.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\PreCompInfo.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\WNafL2RMultiplier.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\WNafPreCompInfo.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\WNafUtilities.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\WTauNafMultiplier.cs" />
+    <Compile Include="BouncyCastle\math\ec\multiplier\WTauNafPreCompInfo.cs" />
+    <Compile Include="BouncyCastle\math\ec\ScaleXPointMap.cs" />
+    <Compile Include="BouncyCastle\math\field\FiniteFields.cs" />
+    <Compile Include="BouncyCastle\math\field\GenericPolynomialExtensionField.cs" />
+    <Compile Include="BouncyCastle\math\field\GF2Polynomial.cs" />
+    <Compile Include="BouncyCastle\math\field\IExtensionField.cs" />
+    <Compile Include="BouncyCastle\math\field\IFiniteField.cs" />
+    <Compile Include="BouncyCastle\math\field\IPolynomial.cs" />
+    <Compile Include="BouncyCastle\math\field\IPolynomialExtensionField.cs" />
+    <Compile Include="BouncyCastle\math\field\PrimeField.cs" />
+    <Compile Include="BouncyCastle\math\raw\Mod.cs" />
+    <Compile Include="BouncyCastle\math\raw\Nat.cs" />
+    <Compile Include="BouncyCastle\math\raw\Nat256.cs" />
+    <Compile Include="BouncyCastle\security\GeneralSecurityException.cs" />
+    <Compile Include="BouncyCastle\security\InvalidKeyException.cs" />
+    <Compile Include="BouncyCastle\security\KeyException.cs" />
+    <Compile Include="BouncyCastle\security\SecureRandom.cs" />
+    <Compile Include="BouncyCastle\util\Arrays.cs" />
+    <Compile Include="BouncyCastle\util\BigIntegers.cs" />
+    <Compile Include="BouncyCastle\util\encoders\Hex.cs" />
+    <Compile Include="BouncyCastle\util\encoders\HexEncoder.cs" />
+    <Compile Include="BouncyCastle\util\encoders\IEncoder.cs" />
+    <Compile Include="BouncyCastle\util\IMemoable.cs" />
+    <Compile Include="BouncyCastle\util\io\BaseInputStream.cs" />
+    <Compile Include="BouncyCastle\util\io\FilterStream.cs" />
+    <Compile Include="BouncyCastle\util\io\StreamOverflowException.cs" />
+    <Compile Include="BouncyCastle\util\io\Streams.cs" />
+    <Compile Include="BouncyCastle\util\Platform.cs" />
+    <Compile Include="Currencies\AbstractNetwork.cs" />
+    <Compile Include="Currencies\Base58Data.cs" />
+    <Compile Include="Currencies\NetworkStringParser.cs" />
+    <Compile Include="Currencies\Policy\ITransactionPolicy.cs" />
+    <Compile Include="Currencies\Policy\StandardTransactionPolicy.cs" />
+    <Compile Include="Currencies\ScriptEvaluationContext.cs" />
+    <Compile Include="Currencies\CoinAddress.cs" />
+    <Compile Include="Currencies\CoinEncryptedSecret.cs" />
+    <Compile Include="Currencies\CoinPassphraseCode.cs" />
+    <Compile Include="Currencies\CoinPubKeyAddress.cs" />
+    <Compile Include="Currencies\CoinSecret.cs" />
+    <Compile Include="Currencies\CoinSegwitAddress.cs" />
+    <Compile Include="Currencies\CoinStream.cs" />
+    <Compile Include="Currencies\Bitcoin\BitcoinNetwork.cs" />
+    <Compile Include="Currencies\CCKey.cs" />
+    <Compile Include="Currencies\Cryptsharp\BitMath.cs" />
+    <Compile Include="Currencies\Cryptsharp\BitPacking.cs" />
+    <Compile Include="Currencies\Cryptsharp\Check.cs" />
+    <Compile Include="Currencies\Cryptsharp\Exceptions.cs" />
+    <Compile Include="Currencies\Cryptsharp\Pbkdf2.cs" />
+    <Compile Include="Currencies\Cryptsharp\Salsa20Core.cs" />
+    <Compile Include="Currencies\Cryptsharp\SCrypt.cs" />
+    <Compile Include="Currencies\Cryptsharp\Security.cs" />
+    <Compile Include="Currencies\CurrencyTypeIds.cs" />
+    <Compile Include="Currencies\DataEncoders\ASCIIEncoder.cs" />
+    <Compile Include="Currencies\DataEncoders\Base58Encoder.cs" />
+    <Compile Include="Currencies\DataEncoders\Base64Encoder.cs" />
+    <Compile Include="Currencies\DataEncoders\Bech32Encoder.cs" />
+    <Compile Include="Currencies\DataEncoders\Encoders.cs" />
+    <Compile Include="Currencies\DataEncoders\HexEncoder.cs" />
+    <Compile Include="Currencies\Crypto\ECDSASignature.cs" />
+    <Compile Include="Currencies\Crypto\ECKey.cs" />
+    <Compile Include="Currencies\Hashes.cs" />
+    <Compile Include="Currencies\ICoinSerializable.cs" />
+    <Compile Include="Currencies\ICryptoCurrency.cs" />
+    <Compile Include="Currencies\ICryptoCurrencyKey.cs" />
+    <Compile Include="Currencies\Interfaces.cs" />
+    <Compile Include="Currencies\KeyId.cs" />
+    <Compile Include="Currencies\LockTime.cs" />
+    <Compile Include="Currencies\Money.cs" />
+    <Compile Include="Currencies\OutPoint.cs" />
+    <Compile Include="Currencies\PerformanceCounter.cs" />
+    <Compile Include="Currencies\PubKey.cs" />
+    <Compile Include="Currencies\RandomUtils.cs" />
+    <Compile Include="Currencies\RandomUtils.partial.cs" />
+    <Compile Include="Currencies\RPC\BlockExplorerFormatter.cs" />
+    <Compile Include="Currencies\RPC\RawFormatter.cs" />
+    <Compile Include="Currencies\RPC\SatoshiFormatter.cs" />
+    <Compile Include="Currencies\Script.cs" />
+    <Compile Include="Currencies\ScriptError.cs" />
+    <Compile Include="Currencies\ScriptReader.cs" />
+    <Compile Include="Currencies\Sequence.cs" />
+    <Compile Include="Currencies\StandardScripts.cs" />
+    <Compile Include="Currencies\StandardScriptTemplate.cs" />
+    <Compile Include="Currencies\Target.cs" />
+    <Compile Include="Currencies\TraceCorrelationScope.cs" />
+    <Compile Include="Currencies\Transaction.cs" />
+    <Compile Include="Currencies\TransactionBuilder.cs" />
+    <Compile Include="Currencies\TransactionNotFoundException.cs" />
+    <Compile Include="Currencies\TransactionSignature.cs" />
+    <Compile Include="Currencies\UInt2561.cs" />
+    <Compile Include="Currencies\Utils\ActionDisposable.cs" />
+    <Compile Include="Currencies\Utils\BoundedDictionary.cs" />
+    <Compile Include="Currencies\Utils\ThreadSafeCollection.cs" />
+    <Compile Include="Currencies\Utils\Utils.cs" />
+    <Compile Include="Currencies\Utils\VarInt.cs" />
+    <Compile Include="Currencies\Utils\VarString.cs" />
+    <Compile Include="Currencies\PandoraCustomObjs\CurrencyControl.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Protocol\AddressManager.cs" />
+    <Compile Include="Protocol\Behaviors\AddressManagerBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\BroadcastTransactionBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\NodeBehavior.cs" />
+    <Compile Include="Protocol\Behaviors\NodeBehaviorsCollection.cs" />
+    <Compile Include="Protocol\Behaviors\PingPongBehavior.cs" />
+    <Compile Include="Protocol\BitcoinSerializablePayload.cs" />
+    <Compile Include="Currencies\CustomTransaction.cs" />
+    <Compile Include="Protocol\Filters\ActionFilter.cs" />
+    <Compile Include="Protocol\Filters\NodeFilter.cs" />
+    <Compile Include="Protocol\Filters\NodeFiltersCollection.cs" />
+    <Compile Include="Protocol\IMessageProducer.cs" />
+    <Compile Include="Protocol\IncomingMessage.cs" />
+    <Compile Include="Protocol\InventoryVector.cs" />
+    <Compile Include="Protocol\Message.cs" />
+    <Compile Include="Protocol\MessageListener.cs" />
+    <Compile Include="Protocol\NetworkAddress.cs" />
+    <Compile Include="Protocol\Node.cs" />
+    <Compile Include="Protocol\NodeConnectionParameters.cs" />
+    <Compile Include="Protocol\NodeListener.cs" />
+    <Compile Include="Protocol\NodesCollection.cs" />
+    <Compile Include="Protocol\Payload.cs" />
+    <Compile Include="Protocol\Payloads\PayloadAttribute.cs" />
+    <Compile Include="Protocol\Payloads\AddrPayload.cs" />
+    <Compile Include="Protocol\Payloads\AlertPayload.cs" />
+    <Compile Include="Protocol\Payloads\BlockPayload.cs" />
+    <Compile Include="Protocol\Payloads\BlockTxnPayload.cs" />
+    <Compile Include="Protocol\Payloads\CmpctBlockPayload.cs" />
+    <Compile Include="Protocol\Payloads\FilterAddPayload.cs" />
+    <Compile Include="Protocol\Payloads\FilterLoadPayload.cs" />
+    <Compile Include="Protocol\Payloads\GetAddrPayload.cs" />
+    <Compile Include="Protocol\Payloads\GetBlocksPayload.cs" />
+    <Compile Include="Protocol\Payloads\GetBlockTxnPayload.cs" />
+    <Compile Include="Protocol\Payloads\GetDataPayload.cs" />
+    <Compile Include="Protocol\Payloads\GetHeadersPayload.cs" />
+    <Compile Include="Protocol\Payloads\HaveWitnessPayload.cs" />
+    <Compile Include="Protocol\Payloads\HeadersPayload.cs" />
+    <Compile Include="Protocol\Payloads\InvPayload.cs" />
+    <Compile Include="Protocol\Payloads\MempoolPayload.cs" />
+    <Compile Include="Protocol\Payloads\MerkleBlockPayload.cs" />
+    <Compile Include="Protocol\Payloads\NotFoundPayload.cs" />
+    <Compile Include="Protocol\Payloads\PingPayload.cs" />
+    <Compile Include="Protocol\Payloads\PongPayload.cs" />
+    <Compile Include="Protocol\Payloads\RejectPayload.cs" />
+    <Compile Include="Protocol\Payloads\SendCmpctPayload.cs" />
+    <Compile Include="Protocol\Payloads\SendHeadersPayload.cs" />
+    <Compile Include="Protocol\Payloads\TxPayload.cs" />
+    <Compile Include="Protocol\Payloads\UTxOutputPayload.cs" />
+    <Compile Include="Protocol\Payloads\VerAckPayload.cs" />
+    <Compile Include="Protocol\Payloads\VersionPayload.cs" />
+    <Compile Include="Protocol\PerformanceCounter.cs" />
+    <Compile Include="Protocol\ProtocolException.cs" />
+    <Compile Include="Protocol\UnknowPayload.cs" />
+    <Compile Include="Protocol\VarInt.cs" />
+    <Compile Include="Protocol\VarString.cs" />
+    <Compile Include="Protocol\Versions.cs" />
+    <Compile Include="$(SolutionDir)VersionInfo.cs">
+      <Link>Properties\VersionInfo.cs</Link>
+      <Visible>ture</Visible>
+    </Compile>
+    <Compile Include="uint512.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

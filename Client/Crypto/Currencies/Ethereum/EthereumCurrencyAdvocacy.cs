@@ -133,6 +133,10 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
                 case 10200: //Binance Main
                     lResult = 56;
                     break;
+
+                case 10202: //Ethereum Goerli
+                    lResult = 5;
+                    break;
             }
 
             return lResult;
@@ -151,10 +155,10 @@ namespace Pandora.Client.Crypto.Currencies.Ethereum
             //var lNonceStr = Encoding.Default.GetString(HexStringToByteArray(aTxData)); //I removed this line because biginteger already accepts hex
             string lCleanHexNonce = string.Concat("0", aTxData.Replace("0x", string.Empty));
             var lNonce = BigInteger.Parse(lCleanHexNonce, System.Globalization.NumberStyles.HexNumber);
-            var lGasLimit = lTokenData == null ? 21000 : 60000; // number of gass units you can use
+            var lGasLimit = lTokenData == null ? 21000 : 120000; // number of gass units you can use
             BigInteger lGasPrice = aValidationInfo.TxFee / lGasLimit;
             var lChainID = GetChainId(Id); //This may be moved as part of the chain params
-            var lResult = (new TransactionSigner()).SignTransaction(GetBinaryPrivateKey((int)lKeyIndex), lChainID, lToAddress, lAmount, lNonce, lGasPrice, lGasLimit, lTokenData);
+            var lResult = (new LegacyTransactionSigner()).SignTransaction(GetBinaryPrivateKey((int)lKeyIndex), lChainID, lToAddress, lAmount, lNonce, lGasPrice, lGasLimit, lTokenData);
             return lResult;
         }
 
