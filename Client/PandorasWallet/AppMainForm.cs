@@ -116,6 +116,8 @@ namespace Pandora.Client.PandorasWallet
 
             TransactionView.ListViewItemSorter = new PandoraListViewItemSorter(0, SortOrder.Descending);
 
+            lstOrderHistory.ListViewItemSorter = new PandoraListViewItemSorter(1, SortOrder.Descending);
+
             lstExchangeMarket.LargeImageList = lstViewCurrencies.ImageList;
             lstExchangeMarket.SmallImageList = lstViewCurrencies.ImageList;
         }
@@ -627,9 +629,9 @@ namespace Pandora.Client.PandorasWallet
                 {
                     // Parse the two objects passed as a parameter as a DateTime.
                     System.DateTime firstDate =
-                            DateTime.Parse(((ListViewItem)x).Text);
+                            DateTime.Parse(((ListViewItem)x).SubItems[col].Text);
                     System.DateTime secondDate =
-                            DateTime.Parse(((ListViewItem)y).Text);
+                            DateTime.Parse(((ListViewItem)y).SubItems[col].Text);
                     // Compare the two dates.
                     returnVal = DateTime.Compare(firstDate, secondDate);
                 }
@@ -638,8 +640,8 @@ namespace Pandora.Client.PandorasWallet
                 catch
                 {
                     // Compare the two items as a string.
-                    returnVal = string.Compare(((ListViewItem)x).Text,
-                                ((ListViewItem)y).Text);
+                    returnVal = string.Compare(((ListViewItem)x).SubItems[col].Text,
+                                ((ListViewItem)y).SubItems[col].Text);
                 }
                 // Determine whether the sort order is descending.
                 if (order == SortOrder.Descending)
@@ -938,6 +940,7 @@ namespace Pandora.Client.PandorasWallet
                 if ((SelectedCurrencyId == aCurrencyID || AllOrderHistoryChecked) && aUpdateListView)
                     lstOrderHistory.Items.Add(lOrderLstViewItem);
             }
+            lstOrderHistory.Sort();
         }
 
         public ExchangeOrderViewModel GetOrderViewModel(int aOrderId)
@@ -955,12 +958,12 @@ namespace Pandora.Client.PandorasWallet
                 Text = aOrder.Name,
                 Name = aOrder.ID.ToString()
             };
+            lResult.SubItems.Add(aOrder.Time);
             lResult.SubItems.Add(aOrder.Sold);
             lResult.SubItems.Add(aOrder.Received);
             lResult.SubItems.Add(aOrder.Price);
             lResult.SubItems.Add(aOrder.Stop);
             lResult.SubItems.Add(aOrder.Exchange);
-            lResult.SubItems.Add(aOrder.Time);
             lResult.SubItems.Add(aOrder.Status);
             return lResult;
         }
@@ -1032,6 +1035,7 @@ namespace Pandora.Client.PandorasWallet
             if (lIndexLstViewModel >= 0)
                 lstOrderHistory.Items.RemoveAt(lIndexLstViewModel);
             lstOrderHistory.Items.Add(aItem);
+            lstOrderHistory.Sort();
             lstOrderHistory.EndUpdate();
             if (lSelectedOrder != null)
             {

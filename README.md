@@ -1,4 +1,4 @@
-# Pandora's Wallet 1.1.49
+# Pandora's Wallet 1.1.52
 
 ## Introduction
 

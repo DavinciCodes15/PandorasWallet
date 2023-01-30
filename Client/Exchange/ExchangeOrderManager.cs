@@ -96,7 +96,7 @@ namespace Pandora.Client.Exchange
                             break;
                     }
 
-                    var lExchanger = lExchangeFactory.GetPandoraExchange((AvailableExchangesList) lDBOrder.ExchangeID);
+                    var lExchanger = lExchangeFactory.GetPandoraExchange((AvailableExchangesList)lDBOrder.ExchangeID);
                     if (!lMarketCache.TryGetValue(lDBOrder.ExchangeID, out IEnumerable<IExchangeMarket> lMarkets))
                     {
                         lMarkets = lExchanger.GetMarketCoins(aCurrency, aGetWalletIDFunction);
@@ -170,7 +170,7 @@ namespace Pandora.Client.Exchange
                 switch (aOrder.Status)
                 {
                     case OrderStatus.Initial:
-                        FSaveManager.WriteOrderLog(aOrder.InternalID, "Starting transaction process.", OrderMessage.OrderMessageLevel.Info);
+                        FSaveManager.WriteOrderLog(aOrder.InternalID, $"Starting exchange order {aOrder.Name}.", OrderMessage.OrderMessageLevel.Info);
                         FSaveManager.WriteOrderLog(aOrder.InternalID, "Waiting for market stop price to place order.", OrderMessage.OrderMessageLevel.StageChange);
                         break;
 
