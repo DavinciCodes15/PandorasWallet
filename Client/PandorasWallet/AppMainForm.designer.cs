@@ -40,10 +40,16 @@ namespace Pandora.Client.PandorasWallet
             "39sbRRh2qwRwjA5ABrFLFbYP5fToXkB5Ab"}, -1);
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            this.lblCurrencyValue = new Pandora.Client.PandorasWallet.CoinAmountLabel();
             this.lblMarketTickerValue = new System.Windows.Forms.Label();
+            this.lblUnconfirmed = new Pandora.Client.PandorasWallet.CoinAmountLabel();
+            this.lblFiatValue = new Pandora.Client.PandorasWallet.CoinAmountLabel();
             this.lblFiatTickerValue = new System.Windows.Forms.Label();
+            this.lblTotal = new Pandora.Client.PandorasWallet.CoinAmountLabel();
             this.grpPrices = new System.Windows.Forms.GroupBox();
+            this.lblCurrencyPrice = new Pandora.Client.PandorasWallet.CoinAmountLabel();
             this.lblMarketTickerPrice = new System.Windows.Forms.Label();
+            this.lblFiatPrice = new Pandora.Client.PandorasWallet.CoinAmountLabel();
             this.lblFiatTickerPrice = new System.Windows.Forms.Label();
             this.imageListTx = new System.Windows.Forms.ImageList(this.components);
             this.TxtBoxSendToAddress = new System.Windows.Forms.TextBox();
@@ -58,6 +64,7 @@ namespace Pandora.Client.PandorasWallet
             this.panel3 = new System.Windows.Forms.Panel();
             this.iconSearch = new System.Windows.Forms.PictureBox();
             this.txtBoxSearchCoin = new System.Windows.Forms.TextBox();
+            this.lstViewCurrencies = new Pandora.Client.PandorasWallet.CurrencyView();
             this.contextMenuCurrency = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.btnAddToken = new System.Windows.Forms.Button();
@@ -77,7 +84,11 @@ namespace Pandora.Client.PandorasWallet
             this.lblChartTitle = new System.Windows.Forms.Label();
             this.cmboBoxChartInterval = new System.Windows.Forms.ComboBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.txtExchangeTargetPrice = new Pandora.Client.PandorasWallet.TickerTextBox();
+            this.txtTotalReceived = new Pandora.Client.PandorasWallet.TickerTextBox();
+            this.txtQuantity = new Pandora.Client.PandorasWallet.TickerTextBox();
             this.txtTransactionName = new System.Windows.Forms.TextBox();
+            this.txtStopPrice = new Pandora.Client.PandorasWallet.TickerTextBox();
             this.label11 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
@@ -89,6 +100,7 @@ namespace Pandora.Client.PandorasWallet
             this.lblEstimatePrice = new System.Windows.Forms.Label();
             this.lblEstimatePriceCoin = new System.Windows.Forms.Label();
             this.btnExchangeKeys = new System.Windows.Forms.Button();
+            this.statsctrlExchage = new Pandora.Client.PandorasWallet.StatusControl();
             this.lstExchangeMarket = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -97,22 +109,25 @@ namespace Pandora.Client.PandorasWallet
             this.lblExchange = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.tabTradeHistory = new System.Windows.Forms.TabPage();
+            this.statscntrlTradeHistory = new Pandora.Client.PandorasWallet.StatusControl();
             this.chckOrderHistory = new System.Windows.Forms.CheckBox();
             this.label18 = new System.Windows.Forms.Label();
             this.lstOrderHistory = new System.Windows.Forms.ListView();
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader11 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader10 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.label8 = new System.Windows.Forms.Label();
             this.txtBoxReceiveAddress = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.grpBoxWalletTotals = new System.Windows.Forms.GroupBox();
+            this.lblCurrencyTotal = new Pandora.Client.PandorasWallet.CoinAmountLabel();
             this.lblTickerCurrencyTotal = new System.Windows.Forms.Label();
+            this.lblFiatTotal = new Pandora.Client.PandorasWallet.CoinAmountLabel();
             this.lblTickerFiatTotal = new System.Windows.Forms.Label();
             this.picCoinImage = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -128,6 +143,7 @@ namespace Pandora.Client.PandorasWallet
             this.menuItemCancel = new System.Windows.Forms.ToolStripMenuItem();
             this.menuItemSellHalf = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.QuickSendButton = new Pandora.Client.PandorasWallet.MenuButton();
             this.coinTooltip = new System.Windows.Forms.ToolTip(this.components);
             this.toolTipHelp = new System.Windows.Forms.ToolTip(this.components);
             this.menuStripMain = new System.Windows.Forms.MenuStrip();
@@ -149,22 +165,6 @@ namespace Pandora.Client.PandorasWallet
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ExportTxFileSaveDialog = new System.Windows.Forms.SaveFileDialog();
-            this.QuickSendButton = new Pandora.Client.PandorasWallet.MenuButton();
-            this.lblCurrencyTotal = new Pandora.Client.PandorasWallet.CoinAmountLabel();
-            this.lblFiatTotal = new Pandora.Client.PandorasWallet.CoinAmountLabel();
-            this.lblCurrencyPrice = new Pandora.Client.PandorasWallet.CoinAmountLabel();
-            this.lblFiatPrice = new Pandora.Client.PandorasWallet.CoinAmountLabel();
-            this.lblCurrencyValue = new Pandora.Client.PandorasWallet.CoinAmountLabel();
-            this.lblUnconfirmed = new Pandora.Client.PandorasWallet.CoinAmountLabel();
-            this.lblFiatValue = new Pandora.Client.PandorasWallet.CoinAmountLabel();
-            this.lblTotal = new Pandora.Client.PandorasWallet.CoinAmountLabel();
-            this.lstViewCurrencies = new Pandora.Client.PandorasWallet.CurrencyView();
-            this.txtExchangeTargetPrice = new Pandora.Client.PandorasWallet.TickerTextBox();
-            this.txtTotalReceived = new Pandora.Client.PandorasWallet.TickerTextBox();
-            this.txtQuantity = new Pandora.Client.PandorasWallet.TickerTextBox();
-            this.txtStopPrice = new Pandora.Client.PandorasWallet.TickerTextBox();
-            this.statsctrlExchage = new Pandora.Client.PandorasWallet.StatusControl();
-            this.statscntrlTradeHistory = new Pandora.Client.PandorasWallet.StatusControl();
             labelTotal = new System.Windows.Forms.Label();
             label14 = new System.Windows.Forms.Label();
             grpBalance = new System.Windows.Forms.GroupBox();
@@ -237,6 +237,17 @@ namespace Pandora.Client.PandorasWallet
             grpBalance.TabStop = false;
             grpBalance.Text = "Balance Info";
             // 
+            // lblCurrencyValue
+            // 
+            this.lblCurrencyValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblCurrencyValue.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblCurrencyValue.Location = new System.Drawing.Point(118, 81);
+            this.lblCurrencyValue.Name = "lblCurrencyValue";
+            this.lblCurrencyValue.Size = new System.Drawing.Size(114, 18);
+            this.lblCurrencyValue.TabIndex = 29;
+            this.lblCurrencyValue.Text = "0.000";
+            this.lblCurrencyValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // lblMarketTickerValue
             // 
             this.lblMarketTickerValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -249,6 +260,28 @@ namespace Pandora.Client.PandorasWallet
             this.lblMarketTickerValue.Text = "BTC Value :";
             this.lblMarketTickerValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
+            // lblUnconfirmed
+            // 
+            this.lblUnconfirmed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblUnconfirmed.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblUnconfirmed.Location = new System.Drawing.Point(117, 26);
+            this.lblUnconfirmed.Name = "lblUnconfirmed";
+            this.lblUnconfirmed.Size = new System.Drawing.Size(110, 18);
+            this.lblUnconfirmed.TabIndex = 29;
+            this.lblUnconfirmed.Text = "0.000";
+            this.lblUnconfirmed.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lblFiatValue
+            // 
+            this.lblFiatValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblFiatValue.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblFiatValue.Location = new System.Drawing.Point(118, 103);
+            this.lblFiatValue.Name = "lblFiatValue";
+            this.lblFiatValue.Size = new System.Drawing.Size(109, 18);
+            this.lblFiatValue.TabIndex = 29;
+            this.lblFiatValue.Text = "0.000";
+            this.lblFiatValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // lblFiatTickerValue
             // 
             this.lblFiatTickerValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -259,6 +292,17 @@ namespace Pandora.Client.PandorasWallet
             this.lblFiatTickerValue.TabIndex = 27;
             this.lblFiatTickerValue.Text = "USD Value :";
             this.lblFiatTickerValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblTotal
+            // 
+            this.lblTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTotal.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblTotal.Location = new System.Drawing.Point(117, 48);
+            this.lblTotal.Name = "lblTotal";
+            this.lblTotal.Size = new System.Drawing.Size(110, 18);
+            this.lblTotal.TabIndex = 29;
+            this.lblTotal.Text = "0.000";
+            this.lblTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // grpPrices
             // 
@@ -275,6 +319,17 @@ namespace Pandora.Client.PandorasWallet
             this.grpPrices.TabStop = false;
             this.grpPrices.Text = "Market Prices";
             // 
+            // lblCurrencyPrice
+            // 
+            this.lblCurrencyPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblCurrencyPrice.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblCurrencyPrice.Location = new System.Drawing.Point(104, 21);
+            this.lblCurrencyPrice.Name = "lblCurrencyPrice";
+            this.lblCurrencyPrice.Size = new System.Drawing.Size(96, 18);
+            this.lblCurrencyPrice.TabIndex = 29;
+            this.lblCurrencyPrice.Text = "0.000";
+            this.lblCurrencyPrice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // lblMarketTickerPrice
             // 
             this.lblMarketTickerPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -286,6 +341,17 @@ namespace Pandora.Client.PandorasWallet
             this.lblMarketTickerPrice.TabIndex = 27;
             this.lblMarketTickerPrice.Text = "BTC Price :";
             this.lblMarketTickerPrice.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblFiatPrice
+            // 
+            this.lblFiatPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblFiatPrice.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblFiatPrice.Location = new System.Drawing.Point(103, 43);
+            this.lblFiatPrice.Name = "lblFiatPrice";
+            this.lblFiatPrice.Size = new System.Drawing.Size(96, 18);
+            this.lblFiatPrice.TabIndex = 29;
+            this.lblFiatPrice.Text = "0.000";
+            this.lblFiatPrice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblFiatTickerPrice
             // 
@@ -437,6 +503,21 @@ namespace Pandora.Client.PandorasWallet
             this.txtBoxSearchCoin.Size = new System.Drawing.Size(206, 20);
             this.txtBoxSearchCoin.TabIndex = 16;
             this.txtBoxSearchCoin.TextChanged += new System.EventHandler(this.txtBoxSearchCoin_TextChanged);
+            // 
+            // lstViewCurrencies
+            // 
+            this.lstViewCurrencies.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstViewCurrencies.ContextMenuStrip = this.contextMenuCurrency;
+            this.lstViewCurrencies.CurrencyIds = new long[0];
+            this.lstViewCurrencies.Location = new System.Drawing.Point(3, 35);
+            this.lstViewCurrencies.Name = "lstViewCurrencies";
+            this.lstViewCurrencies.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.lstViewCurrencies.SelectedCurrencyId = ((long)(0));
+            this.lstViewCurrencies.Size = new System.Drawing.Size(1292, 504);
+            this.lstViewCurrencies.TabIndex = 20;
+            this.lstViewCurrencies.OnSelectedIndexChanged += new System.EventHandler(this.CurrencyListView_OnSelectedIndexChanged);
             // 
             // contextMenuCurrency
             // 
@@ -649,6 +730,66 @@ namespace Pandora.Client.PandorasWallet
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "3. Set your order";
             // 
+            // txtExchangeTargetPrice
+            // 
+            this.txtExchangeTargetPrice.Amount = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.txtExchangeTargetPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.txtExchangeTargetPrice.BackColor = System.Drawing.Color.Transparent;
+            this.txtExchangeTargetPrice.CurrencyTicker = "BTC";
+            this.txtExchangeTargetPrice.Location = new System.Drawing.Point(109, 33);
+            this.txtExchangeTargetPrice.Margin = new System.Windows.Forms.Padding(0);
+            this.txtExchangeTargetPrice.MaximumSize = new System.Drawing.Size(1000, 20);
+            this.txtExchangeTargetPrice.Name = "txtExchangeTargetPrice";
+            this.txtExchangeTargetPrice.Precision = ((uint)(8u));
+            this.txtExchangeTargetPrice.Size = new System.Drawing.Size(221, 20);
+            this.txtExchangeTargetPrice.TabIndex = 83;
+            this.txtExchangeTargetPrice.UseOptionsMenu = false;
+            this.txtExchangeTargetPrice.OnAmountChanged += new System.Action(this.txtTargetPrice_OnAmountChanged);
+            // 
+            // txtTotalReceived
+            // 
+            this.txtTotalReceived.Amount = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.txtTotalReceived.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.txtTotalReceived.BackColor = System.Drawing.Color.Transparent;
+            this.txtTotalReceived.CurrencyTicker = "BTC";
+            this.txtTotalReceived.Location = new System.Drawing.Point(109, 123);
+            this.txtTotalReceived.Margin = new System.Windows.Forms.Padding(0);
+            this.txtTotalReceived.MaximumSize = new System.Drawing.Size(1000, 20);
+            this.txtTotalReceived.Name = "txtTotalReceived";
+            this.txtTotalReceived.Precision = ((uint)(8u));
+            this.txtTotalReceived.Size = new System.Drawing.Size(221, 20);
+            this.txtTotalReceived.TabIndex = 80;
+            this.txtTotalReceived.UseOptionsMenu = false;
+            this.txtTotalReceived.OnAmountChanged += new System.Action(this.txtReceived_OnAmountChanged);
+            // 
+            // txtQuantity
+            // 
+            this.txtQuantity.Amount = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.txtQuantity.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.txtQuantity.BackColor = System.Drawing.Color.Transparent;
+            this.txtQuantity.CurrencyTicker = "BTC";
+            this.txtQuantity.Location = new System.Drawing.Point(109, 92);
+            this.txtQuantity.Margin = new System.Windows.Forms.Padding(0);
+            this.txtQuantity.MaximumSize = new System.Drawing.Size(1000, 20);
+            this.txtQuantity.Name = "txtQuantity";
+            this.txtQuantity.Precision = ((uint)(8u));
+            this.txtQuantity.Size = new System.Drawing.Size(221, 20);
+            this.txtQuantity.TabIndex = 81;
+            this.txtQuantity.UseOptionsMenu = true;
+            this.txtQuantity.OnAmountChanged += new System.Action(this.txtQuantity_OnAmountChanged);
+            // 
             // txtTransactionName
             // 
             this.txtTransactionName.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -657,6 +798,26 @@ namespace Pandora.Client.PandorasWallet
             this.txtTransactionName.Size = new System.Drawing.Size(320, 20);
             this.txtTransactionName.TabIndex = 77;
             this.txtTransactionName.TextChanged += new System.EventHandler(this.txtTransactionName_TextChanged);
+            // 
+            // txtStopPrice
+            // 
+            this.txtStopPrice.Amount = new decimal(new int[] {
+            0,
+            0,
+            0,
+            0});
+            this.txtStopPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.txtStopPrice.BackColor = System.Drawing.Color.Transparent;
+            this.txtStopPrice.CurrencyTicker = "BTC";
+            this.txtStopPrice.Location = new System.Drawing.Point(109, 63);
+            this.txtStopPrice.Margin = new System.Windows.Forms.Padding(0);
+            this.txtStopPrice.MaximumSize = new System.Drawing.Size(1000, 20);
+            this.txtStopPrice.Name = "txtStopPrice";
+            this.txtStopPrice.Precision = ((uint)(8u));
+            this.txtStopPrice.Size = new System.Drawing.Size(221, 20);
+            this.txtStopPrice.TabIndex = 82;
+            this.txtStopPrice.UseOptionsMenu = false;
+            this.txtStopPrice.OnAmountChanged += new System.Action(this.txtStopPrice_OnAmountChanged);
             // 
             // label11
             // 
@@ -713,11 +874,11 @@ namespace Pandora.Client.PandorasWallet
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(9, 35);
+            this.label3.Location = new System.Drawing.Point(35, 36);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(98, 13);
+            this.label3.Size = new System.Drawing.Size(68, 13);
             this.label3.TabIndex = 73;
-            this.label3.Text = "Target Price (BTC):";
+            this.label3.Text = "Target Price:";
             // 
             // marketPriceChart
             // 
@@ -786,6 +947,16 @@ namespace Pandora.Client.PandorasWallet
             this.toolTipHelp.SetToolTip(this.btnExchangeKeys, "Change exchange keys");
             this.btnExchangeKeys.UseVisualStyleBackColor = true;
             this.btnExchangeKeys.Click += new System.EventHandler(this.btnExchangeKeys_Click);
+            // 
+            // statsctrlExchage
+            // 
+            this.statsctrlExchage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.statsctrlExchage.Location = new System.Drawing.Point(750, 295);
+            this.statsctrlExchage.Name = "statsctrlExchage";
+            this.statsctrlExchage.Size = new System.Drawing.Size(505, 236);
+            this.statsctrlExchage.StatusName = "No orders";
+            this.statsctrlExchage.TabIndex = 78;
             // 
             // lstExchangeMarket
             // 
@@ -865,6 +1036,16 @@ namespace Pandora.Client.PandorasWallet
             this.tabTradeHistory.Text = "Trade History";
             this.tabTradeHistory.UseVisualStyleBackColor = true;
             // 
+            // statscntrlTradeHistory
+            // 
+            this.statscntrlTradeHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.statscntrlTradeHistory.Location = new System.Drawing.Point(3, 404);
+            this.statscntrlTradeHistory.Name = "statscntrlTradeHistory";
+            this.statscntrlTradeHistory.Size = new System.Drawing.Size(1289, 132);
+            this.statscntrlTradeHistory.StatusName = "";
+            this.statscntrlTradeHistory.TabIndex = 44;
+            // 
             // chckOrderHistory
             // 
             this.chckOrderHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -895,12 +1076,12 @@ namespace Pandora.Client.PandorasWallet
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lstOrderHistory.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader4,
+            this.columnHeader9,
             this.columnHeader5,
             this.columnHeader6,
             this.columnHeader7,
             this.columnHeader11,
             this.columnHeader8,
-            this.columnHeader9,
             this.columnHeader10});
             this.lstOrderHistory.FullRowSelect = true;
             this.lstOrderHistory.HideSelection = false;
@@ -916,8 +1097,15 @@ namespace Pandora.Client.PandorasWallet
             // 
             // columnHeader4
             // 
+            this.columnHeader4.DisplayIndex = 1;
             this.columnHeader4.Text = "Transaction Name";
             this.columnHeader4.Width = 196;
+            // 
+            // columnHeader9
+            // 
+            this.columnHeader9.DisplayIndex = 0;
+            this.columnHeader9.Text = "Time";
+            this.columnHeader9.Width = 116;
             // 
             // columnHeader5
             // 
@@ -927,7 +1115,7 @@ namespace Pandora.Client.PandorasWallet
             // columnHeader6
             // 
             this.columnHeader6.Text = "Estimated to Receive";
-            this.columnHeader6.Width = 115;
+            this.columnHeader6.Width = 114;
             // 
             // columnHeader7
             // 
@@ -943,11 +1131,6 @@ namespace Pandora.Client.PandorasWallet
             // 
             this.columnHeader8.Text = "Exchange";
             this.columnHeader8.Width = 112;
-            // 
-            // columnHeader9
-            // 
-            this.columnHeader9.Text = "Time";
-            this.columnHeader9.Width = 116;
             // 
             // columnHeader10
             // 
@@ -1012,6 +1195,17 @@ namespace Pandora.Client.PandorasWallet
             this.grpBoxWalletTotals.TabStop = false;
             this.grpBoxWalletTotals.Text = "Wallet Summary";
             // 
+            // lblCurrencyTotal
+            // 
+            this.lblCurrencyTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblCurrencyTotal.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblCurrencyTotal.Location = new System.Drawing.Point(104, 21);
+            this.lblCurrencyTotal.Name = "lblCurrencyTotal";
+            this.lblCurrencyTotal.Size = new System.Drawing.Size(96, 18);
+            this.lblCurrencyTotal.TabIndex = 29;
+            this.lblCurrencyTotal.Text = "0.000";
+            this.lblCurrencyTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // lblTickerCurrencyTotal
             // 
             this.lblTickerCurrencyTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -1023,6 +1217,17 @@ namespace Pandora.Client.PandorasWallet
             this.lblTickerCurrencyTotal.TabIndex = 27;
             this.lblTickerCurrencyTotal.Text = "BTC Total :";
             this.lblTickerCurrencyTotal.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lblFiatTotal
+            // 
+            this.lblFiatTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblFiatTotal.Font = new System.Drawing.Font("Calibri", 10F);
+            this.lblFiatTotal.Location = new System.Drawing.Point(103, 43);
+            this.lblFiatTotal.Name = "lblFiatTotal";
+            this.lblFiatTotal.Size = new System.Drawing.Size(96, 18);
+            this.lblFiatTotal.TabIndex = 29;
+            this.lblFiatTotal.Text = "0.000";
+            this.lblFiatTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // lblTickerFiatTotal
             // 
@@ -1090,7 +1295,7 @@ namespace Pandora.Client.PandorasWallet
             this.toolStripConnectionStatus.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.toolStripConnectionStatus.Name = "toolStripConnectionStatus";
             this.toolStripConnectionStatus.Padding = new System.Windows.Forms.Padding(0, 0, 3, 0);
-            this.toolStripConnectionStatus.Size = new System.Drawing.Size(54, 15);
+            this.toolStripConnectionStatus.Size = new System.Drawing.Size(52, 15);
             this.toolStripConnectionStatus.Text = "STATUS";
             // 
             // toolStripStatusLabel1
@@ -1163,6 +1368,17 @@ namespace Pandora.Client.PandorasWallet
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Quick Send";
             // 
+            // QuickSendButton
+            // 
+            this.QuickSendButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
+            this.QuickSendButton.Location = new System.Drawing.Point(273, 82);
+            this.QuickSendButton.Name = "QuickSendButton";
+            this.QuickSendButton.Size = new System.Drawing.Size(109, 23);
+            this.QuickSendButton.TabIndex = 33;
+            this.QuickSendButton.Text = "Send";
+            this.QuickSendButton.UseVisualStyleBackColor = true;
+            this.QuickSendButton.Click += new System.EventHandler(this.QuickSendButton_Click);
+            // 
             // menuStripMain
             // 
             this.menuStripMain.BackColor = System.Drawing.Color.Transparent;
@@ -1228,7 +1444,7 @@ namespace Pandora.Client.PandorasWallet
             this.toolStripSeparator4,
             this.settingsToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.optionsToolStripMenuItem.Text = "Tools";
             // 
             // ExportTxtoolStripMenuItem
@@ -1309,220 +1525,6 @@ namespace Pandora.Client.PandorasWallet
             // 
             this.ExportTxFileSaveDialog.DefaultExt = "csv";
             this.ExportTxFileSaveDialog.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*";
-            // 
-            // QuickSendButton
-            // 
-            this.QuickSendButton.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Bold);
-            this.QuickSendButton.Location = new System.Drawing.Point(273, 82);
-            this.QuickSendButton.Name = "QuickSendButton";
-            this.QuickSendButton.Size = new System.Drawing.Size(109, 23);
-            this.QuickSendButton.TabIndex = 33;
-            this.QuickSendButton.Text = "Send";
-            this.QuickSendButton.UseVisualStyleBackColor = true;
-            this.QuickSendButton.Click += new System.EventHandler(this.QuickSendButton_Click);
-            // 
-            // lblCurrencyTotal
-            // 
-            this.lblCurrencyTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCurrencyTotal.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblCurrencyTotal.Location = new System.Drawing.Point(104, 21);
-            this.lblCurrencyTotal.Name = "lblCurrencyTotal";
-            this.lblCurrencyTotal.Size = new System.Drawing.Size(96, 18);
-            this.lblCurrencyTotal.TabIndex = 29;
-            this.lblCurrencyTotal.Text = "0.000";
-            this.lblCurrencyTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblFiatTotal
-            // 
-            this.lblFiatTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblFiatTotal.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblFiatTotal.Location = new System.Drawing.Point(103, 43);
-            this.lblFiatTotal.Name = "lblFiatTotal";
-            this.lblFiatTotal.Size = new System.Drawing.Size(96, 18);
-            this.lblFiatTotal.TabIndex = 29;
-            this.lblFiatTotal.Text = "0.000";
-            this.lblFiatTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblCurrencyPrice
-            // 
-            this.lblCurrencyPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCurrencyPrice.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblCurrencyPrice.Location = new System.Drawing.Point(104, 21);
-            this.lblCurrencyPrice.Name = "lblCurrencyPrice";
-            this.lblCurrencyPrice.Size = new System.Drawing.Size(96, 18);
-            this.lblCurrencyPrice.TabIndex = 29;
-            this.lblCurrencyPrice.Text = "0.000";
-            this.lblCurrencyPrice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblFiatPrice
-            // 
-            this.lblFiatPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblFiatPrice.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblFiatPrice.Location = new System.Drawing.Point(103, 43);
-            this.lblFiatPrice.Name = "lblFiatPrice";
-            this.lblFiatPrice.Size = new System.Drawing.Size(96, 18);
-            this.lblFiatPrice.TabIndex = 29;
-            this.lblFiatPrice.Text = "0.000";
-            this.lblFiatPrice.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblCurrencyValue
-            // 
-            this.lblCurrencyValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblCurrencyValue.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblCurrencyValue.Location = new System.Drawing.Point(118, 81);
-            this.lblCurrencyValue.Name = "lblCurrencyValue";
-            this.lblCurrencyValue.Size = new System.Drawing.Size(114, 18);
-            this.lblCurrencyValue.TabIndex = 29;
-            this.lblCurrencyValue.Text = "0.000";
-            this.lblCurrencyValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblUnconfirmed
-            // 
-            this.lblUnconfirmed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblUnconfirmed.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblUnconfirmed.Location = new System.Drawing.Point(117, 26);
-            this.lblUnconfirmed.Name = "lblUnconfirmed";
-            this.lblUnconfirmed.Size = new System.Drawing.Size(110, 18);
-            this.lblUnconfirmed.TabIndex = 29;
-            this.lblUnconfirmed.Text = "0.000";
-            this.lblUnconfirmed.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblFiatValue
-            // 
-            this.lblFiatValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblFiatValue.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblFiatValue.Location = new System.Drawing.Point(118, 103);
-            this.lblFiatValue.Name = "lblFiatValue";
-            this.lblFiatValue.Size = new System.Drawing.Size(109, 18);
-            this.lblFiatValue.TabIndex = 29;
-            this.lblFiatValue.Text = "0.000";
-            this.lblFiatValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lblTotal
-            // 
-            this.lblTotal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblTotal.Font = new System.Drawing.Font("Calibri", 10F);
-            this.lblTotal.Location = new System.Drawing.Point(117, 48);
-            this.lblTotal.Name = "lblTotal";
-            this.lblTotal.Size = new System.Drawing.Size(110, 18);
-            this.lblTotal.TabIndex = 29;
-            this.lblTotal.Text = "0.000";
-            this.lblTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // lstViewCurrencies
-            // 
-            this.lstViewCurrencies.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lstViewCurrencies.ContextMenuStrip = this.contextMenuCurrency;
-            this.lstViewCurrencies.CurrencyIds = new long[0];
-            this.lstViewCurrencies.Location = new System.Drawing.Point(3, 35);
-            this.lstViewCurrencies.Name = "lstViewCurrencies";
-            this.lstViewCurrencies.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.lstViewCurrencies.SelectedCurrencyId = ((long)(0));
-            this.lstViewCurrencies.Size = new System.Drawing.Size(1292, 504);
-            this.lstViewCurrencies.TabIndex = 20;
-            this.lstViewCurrencies.OnSelectedIndexChanged += new System.EventHandler(this.CurrencyListView_OnSelectedIndexChanged);
-            // 
-            // txtExchangeTargetPrice
-            // 
-            this.txtExchangeTargetPrice.Amount = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-            this.txtExchangeTargetPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtExchangeTargetPrice.BackColor = System.Drawing.Color.Transparent;
-            this.txtExchangeTargetPrice.CurrencyTicker = "BTC";
-            this.txtExchangeTargetPrice.Location = new System.Drawing.Point(109, 33);
-            this.txtExchangeTargetPrice.Margin = new System.Windows.Forms.Padding(0);
-            this.txtExchangeTargetPrice.MaximumSize = new System.Drawing.Size(1000, 20);
-            this.txtExchangeTargetPrice.Name = "txtExchangeTargetPrice";
-            this.txtExchangeTargetPrice.Precision = ((uint)(8u));
-            this.txtExchangeTargetPrice.Size = new System.Drawing.Size(221, 20);
-            this.txtExchangeTargetPrice.TabIndex = 83;
-            this.txtExchangeTargetPrice.UseOptionsMenu = false;
-            this.txtExchangeTargetPrice.OnAmountChanged += new System.Action(this.txtTargetPrice_OnAmountChanged);
-            // 
-            // txtTotalReceived
-            // 
-            this.txtTotalReceived.Amount = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-            this.txtTotalReceived.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtTotalReceived.BackColor = System.Drawing.Color.Transparent;
-            this.txtTotalReceived.CurrencyTicker = "BTC";
-            this.txtTotalReceived.Location = new System.Drawing.Point(109, 123);
-            this.txtTotalReceived.Margin = new System.Windows.Forms.Padding(0);
-            this.txtTotalReceived.MaximumSize = new System.Drawing.Size(1000, 20);
-            this.txtTotalReceived.Name = "txtTotalReceived";
-            this.txtTotalReceived.Precision = ((uint)(8u));
-            this.txtTotalReceived.Size = new System.Drawing.Size(221, 20);
-            this.txtTotalReceived.TabIndex = 80;
-            this.txtTotalReceived.UseOptionsMenu = false;
-            this.txtTotalReceived.OnAmountChanged += new System.Action(this.txtReceived_OnAmountChanged);
-            // 
-            // txtQuantity
-            // 
-            this.txtQuantity.Amount = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-            this.txtQuantity.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtQuantity.BackColor = System.Drawing.Color.Transparent;
-            this.txtQuantity.CurrencyTicker = "BTC";
-            this.txtQuantity.Location = new System.Drawing.Point(109, 92);
-            this.txtQuantity.Margin = new System.Windows.Forms.Padding(0);
-            this.txtQuantity.MaximumSize = new System.Drawing.Size(1000, 20);
-            this.txtQuantity.Name = "txtQuantity";
-            this.txtQuantity.Precision = ((uint)(8u));
-            this.txtQuantity.Size = new System.Drawing.Size(221, 20);
-            this.txtQuantity.TabIndex = 81;
-            this.txtQuantity.UseOptionsMenu = true;
-            this.txtQuantity.OnAmountChanged += new System.Action(this.txtQuantity_OnAmountChanged);
-            // 
-            // txtStopPrice
-            // 
-            this.txtStopPrice.Amount = new decimal(new int[] {
-            0,
-            0,
-            0,
-            0});
-            this.txtStopPrice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.txtStopPrice.BackColor = System.Drawing.Color.Transparent;
-            this.txtStopPrice.CurrencyTicker = "BTC";
-            this.txtStopPrice.Location = new System.Drawing.Point(109, 63);
-            this.txtStopPrice.Margin = new System.Windows.Forms.Padding(0);
-            this.txtStopPrice.MaximumSize = new System.Drawing.Size(1000, 20);
-            this.txtStopPrice.Name = "txtStopPrice";
-            this.txtStopPrice.Precision = ((uint)(8u));
-            this.txtStopPrice.Size = new System.Drawing.Size(221, 20);
-            this.txtStopPrice.TabIndex = 82;
-            this.txtStopPrice.UseOptionsMenu = false;
-            this.txtStopPrice.OnAmountChanged += new System.Action(this.txtStopPrice_OnAmountChanged);
-            // 
-            // statsctrlExchage
-            // 
-            this.statsctrlExchage.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.statsctrlExchage.Location = new System.Drawing.Point(750, 295);
-            this.statsctrlExchage.Name = "statsctrlExchage";
-            this.statsctrlExchage.Size = new System.Drawing.Size(505, 236);
-            this.statsctrlExchage.StatusName = "No orders";
-            this.statsctrlExchage.TabIndex = 78;
-            // 
-            // statscntrlTradeHistory
-            // 
-            this.statscntrlTradeHistory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.statscntrlTradeHistory.Location = new System.Drawing.Point(3, 404);
-            this.statscntrlTradeHistory.Name = "statscntrlTradeHistory";
-            this.statscntrlTradeHistory.Size = new System.Drawing.Size(1289, 132);
-            this.statscntrlTradeHistory.StatusName = "";
-            this.statscntrlTradeHistory.TabIndex = 44;
             // 
             // AppMainForm
             // 

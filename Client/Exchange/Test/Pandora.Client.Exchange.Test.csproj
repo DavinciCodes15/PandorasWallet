@@ -82,10 +82,10 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>1.3.2</Version>
+      <Version>2.2.10</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>1.3.2</Version>
+      <Version>2.2.8</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

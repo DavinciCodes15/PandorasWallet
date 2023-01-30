@@ -44,7 +44,7 @@ namespace Pandora.Client.Exchange.Exchangers.Providers
 
         public override string Name => Identifier.ToString();
 
-        public override int ID => (int) Identifier;
+        public override int ID => (int)Identifier;
 
         public event Action<IEnumerable<IExchangeMarket>> OnMarketPricesChanging;
 
@@ -144,7 +144,8 @@ namespace Pandora.Client.Exchange.Exchangers.Providers
 
         private class BitfinexPair
         {
-            public enum MarketType { Trade, Founding }
+            public enum MarketType
+            { Trade, Founding }
 
             public static IEnumerable<BitfinexCurrency> ExchangeCurrencies { get; set; }
             public BitfinexSymbolDetails MarketDetails { get; private set; }
@@ -166,11 +167,11 @@ namespace Pandora.Client.Exchange.Exchangers.Providers
             {
                 SymbolType = ExchangeSymbol.First() == 't' ? MarketType.Trade : MarketType.Founding;
                 var lSymbolWithoutType = ExchangeSymbol.Remove(0, 1);
-                BaseCurrency = ExchangeCurrencies.Where(lCurrency => lSymbolWithoutType.IndexOf(lCurrency.Name) == 0).FirstOrDefault();
-                if (BaseCurrency != null)
+                DestinationCurrency = ExchangeCurrencies.Where(lCurrency => lSymbolWithoutType.IndexOf(lCurrency.Name) == 0).FirstOrDefault();
+                if (DestinationCurrency != null)
                 {
-                    var lSymbolWithoutBase = lSymbolWithoutType.Replace(BaseCurrency.Name, string.Empty);
-                    DestinationCurrency = ExchangeCurrencies.Where(lCurrency => lSymbolWithoutBase == lCurrency.Name).FirstOrDefault();
+                    var lSymbolWithoutDest = lSymbolWithoutType.Replace(DestinationCurrency.Name, string.Empty);
+                    BaseCurrency = ExchangeCurrencies.Where(lCurrency => lSymbolWithoutDest == lCurrency.Name).FirstOrDefault();
                 }
             }
         }
