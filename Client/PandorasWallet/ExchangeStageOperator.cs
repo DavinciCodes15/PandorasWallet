@@ -427,9 +427,9 @@ namespace Pandora.Client.PandorasWallet
                 if (aOrder.CoinTxID == lAlreadyProcessingFlag) return;
                 FExchangeOrderManager.WriteTransactionLogEntry(aOrder, OrderMessage.OrderMessageLevel.Info, string.Format("Stop price reached, trying to send coins to exchange.", FExchanger.GetConfirmations(aOrder.Market.SellingCurrencyInfo)));
                 string lExchangeAddress = FExchanger.GetDepositAddress(aOrder.Market);
-                decimal lAmount = aOrder.Market.MarketDirection == MarketDirection.Sell ? aOrder.SentQuantity : aOrder.SentQuantity + (aOrder.SentQuantity * (decimal) 0.025);
+                decimal lAmount = aOrder.Market.MarketDirection == MarketDirection.Sell ? aOrder.SentQuantity : aOrder.SentQuantity + (aOrder.SentQuantity * (decimal)0.025);
                 aOrder.CoinTxID = lAlreadyProcessingFlag;
-                string lTxID = await Task.Run(() => OnTransferCoinsNeeded?.Invoke(lAmount, lExchangeAddress, aOrder.Market.SellingCurrencyInfo.Id, aOrder.CoinSendingTxFee));
+                string lTxID = await Task.Run(() => OnTransferCoinsNeeded?.Invoke(lAmount, lExchangeAddress, aOrder.Market.SellingCurrencyInfo.Id, null));
                 if (string.IsNullOrEmpty(lTxID)) throw new Exception("Unable to broadcast transaction.");
                 aOrder.CoinTxID = lTxID;
                 FExchangeOrderManager.UpdateOrder(aOrder, OrderStatus.Waiting);

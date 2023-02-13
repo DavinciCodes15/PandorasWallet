@@ -403,7 +403,6 @@ namespace Pandora.Client.PandorasWallet.Controlers
             FLastExchangeSelectedCurrency = string.Empty;
             MainForm.BeginInvoke(new Action(() =>
             {
-                MainForm.TickerQuantity = MainForm.SelectedCurrency.Ticker;
                 MainForm.ExchangeLoadingHidden = true;
             }));
         }
@@ -457,7 +456,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
                     if (!lWarningAccepted)
                         return;
                 }
-                TryToCreateNewExchangeTransaction(MainForm.ExchangeTargetPrice, MainForm.ExchangeStopPrice, MainForm.ExchangeQuantity, lTxFee);
+                TryToCreateNewExchangeTransaction(MainForm.ExchangeTargetPrice, MainForm.ExchangeStopPrice, MainForm.ExchangeQuantity);
             }
             finally
             {
@@ -502,10 +501,10 @@ namespace Pandora.Client.PandorasWallet.Controlers
             FUpdatingGUIPrices = true;
             try
             {
-                var lFormCurrency = GetFormCurrency(FExchangeSelectedMarket.SellingCurrencyInfo.Id);
-                decimal lTotal = Math.Round(MainForm.ExchangeQuantity / (FExchangeSelectedMarket.MarketDirection == MarketDirection.Sell ? 1 / MainForm.ExchangeTargetPrice : MainForm.ExchangeTargetPrice), lFormCurrency.Precision);
+                var lReceivedCurrency = GetFormCurrency(FExchangeSelectedMarket.BuyingCurrencyInfo.Id);
+                decimal lTotal = Math.Round(MainForm.ExchangeQuantity / (FExchangeSelectedMarket.MarketDirection == MarketDirection.Sell ? 1 / MainForm.ExchangeTargetPrice : MainForm.ExchangeTargetPrice), lReceivedCurrency.Precision);
                 decimal lComision = lTotal * FExchangeTradeFeePercent;
-                MainForm.ExchangeTotalReceived = Math.Round(lTotal - lComision, lFormCurrency.Precision);
+                MainForm.ExchangeTotalReceived = Math.Round(lTotal - lComision, lReceivedCurrency.Precision);
                 FLastExchangeQuantity = MainForm.ExchangeQuantity;
                 FLastExchangePrice = MainForm.ExchangeTargetPrice;
             }
@@ -763,10 +762,22 @@ namespace Pandora.Client.PandorasWallet.Controlers
                 var lSelectedMarket = FExchangeUserMarkets.Values.FirstOrDefault(lMarket => MainForm.SelectedExchangeMarket.Name == lMarket.BuyingCurrencyInfo.Id.ToString());
                 if (lSelectedMarket == null) throw new Exception("Invalid market selected. Please try restarting the application.");
                 Interlocked.Exchange(ref FExchangeSelectedMarket, lSelectedMarket);
+
                 MainForm.EstimatePrice = FExchangeSelectedMarket.MarketDirection == MarketDirection.Sell ? FExchangeSelectedMarket.Prices.Bid : FExchangeSelectedMarket.Prices.Ask;
                 MainForm.LabelPriceInCoin = FExchangeSelectedMarket.MarketBaseCurrencyInfo.Ticker;
-                MainForm.TickerTotalReceived = MainForm.SelectedExchangeMarket.SubItems[1].Text;
+
+                var lBuyingCurrencyPrecision = GetFormCurrency(FExchangeSelectedMarket.BuyingCurrencyInfo.Id).Precision;
+                var lSellingCurrencyPrecision = GetFormCurrency(FExchangeSelectedMarket.SellingCurrencyInfo.Id).Precision;
+                var lMarketCurrencyPrecision = GetFormCurrency(FExchangeSelectedMarket.MarketBaseCurrencyInfo.Id).Precision;
+
+                MainForm.TickerTotalReceived = FExchangeSelectedMarket.BuyingCurrencyInfo.Ticker;
                 MainForm.TickerPrices = FExchangeSelectedMarket.MarketBaseCurrencyInfo.Ticker;
+                MainForm.TickerQuantity = FExchangeSelectedMarket.SellingCurrencyInfo.Ticker;
+
+                MainForm.TotalReceivedPrecision = Convert.ToUInt32(lBuyingCurrencyPrecision > 8 ? 8 : lBuyingCurrencyPrecision);
+                MainForm.QuantityPrecision = Convert.ToUInt32(lSellingCurrencyPrecision > 8 ? 8 : lSellingCurrencyPrecision);
+                MainForm.PricesPrecision = Convert.ToUInt32(lMarketCurrencyPrecision > 8 ? 8 : lMarketCurrencyPrecision);
+
                 if (!string.IsNullOrEmpty(FLastExchangeSelectedCurrency) && FLastExchangeSelectedCurrency == MainForm.SelectedExchangeMarket.SubItems[1].Text)
                     return;
                 MainForm.ExchangeTargetPrice = FExchangeSelectedMarket.MarketDirection == MarketDirection.Sell ? FExchangeSelectedMarket.Prices.Bid : FExchangeSelectedMarket.Prices.Ask;
@@ -1004,7 +1015,7 @@ namespace Pandora.Client.PandorasWallet.Controlers
             lExchange.SetCredentials(aKey, aSecret);
         }
 
-        private string TryToTransferMoneyToExchange(decimal aAmount, string aAddress, long aCurrencyID, decimal? aTxFee)
+        private string TryToTransferMoneyToExchange(decimal aAmount, string aAddress, long aCurrencyID, decimal? aTxFee = null)
         {
             decimal lBalance = PandoraClientControl.GetInstance().GetBalance(aCurrencyID);
             var lTxFee = aTxFee ?? GetCurrencyTxFeeFromWallet(aCurrencyID);

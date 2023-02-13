@@ -724,15 +724,15 @@ namespace Pandora.Client.PandorasWallet
                 {
                     (sender as TextBox).Text = "0";
                 }
-                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(@"^([0-9]*[.]{0,1})([0-9]*)$");
+                var lAmountInputRegex = $"^([0-9]*[.]{{0,{(SelectedCurrency.Precision > 0 ? "1" : "0")}}})([0-9]{{0,{SelectedCurrency.Precision}}})$";
+                System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(lAmountInputRegex);
                 if (!regex.IsMatch((sender as TextBox).Text))
                 {
                     (sender as TextBox).Text = FPreviousSendAmount;
+                    (sender as TextBox).SelectionStart = (sender as TextBox).Text.Length;
                 }
                 else
-                {
                     FPreviousSendAmount = (sender as TextBox).Text;
-                }
             }
             catch (Exception ex)
             {
@@ -755,6 +755,15 @@ namespace Pandora.Client.PandorasWallet
 
         public string TickerQuantity { get => txtQuantity.CurrencyTicker; set => txtQuantity.CurrencyTicker = value; }
 
+        public uint QuantityPrecision
+        {
+            get => txtQuantity.Precision;
+            set
+            {
+                txtQuantity.Precision = value;
+            }
+        }
+
         public string TickerPrices
         {
             get => txtExchangeTargetPrice.CurrencyTicker;
@@ -765,7 +774,19 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
+        public uint PricesPrecision
+        {
+            get => txtExchangeTargetPrice.Precision;
+            set
+            {
+                txtExchangeTargetPrice.Precision = value;
+                txtStopPrice.Precision = value;
+            }
+        }
+
         public string TickerTotalReceived { get => txtTotalReceived.CurrencyTicker; set => txtTotalReceived.CurrencyTicker = value; }
+
+        public uint TotalReceivedPrecision { get => txtTotalReceived.Precision; set => txtTotalReceived.Precision = value; }
 
         public string LabelPriceInCoin { set => lblEstimatePriceCoin.Text = string.Format("Estimated Current price in ({0}):", value); }
 

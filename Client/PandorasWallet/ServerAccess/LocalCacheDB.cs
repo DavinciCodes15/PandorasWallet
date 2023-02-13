@@ -401,7 +401,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                         lExAmount = lAmounts.Item2.Value;
                 }
                 else
-                    lAmount = (long) aTokenTx.Amount;
+                    lAmount = (long)aTokenTx.Amount;
 
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("amount", lAmount));
                 lSQLiteCommand.Parameters.Add(new SQLiteParameter("examount", lExAmount));
@@ -598,7 +598,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                                 lExAmount = lAmounts.Item2.Value;
                         }
                         else
-                            lAmount = (long) lTransactionUnit.Amount;
+                            lAmount = (long)lTransactionUnit.Amount;
 
                         lSQLiteCommand.Parameters.Add(new SQLiteParameter("ammount", lAmount));
                         lSQLiteCommand.Parameters.Add(new SQLiteParameter("ExAmount", lExAmount));
@@ -623,7 +623,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                             lExAmount = lAmounts.Item2.Value;
                     }
                     else
-                        lAmount = (long) lTransactionUnit.Amount;
+                        lAmount = (long)lTransactionUnit.Amount;
 
                     lSQLiteCommand.Parameters.Add(new SQLiteParameter("ammount", lAmount));
                     lSQLiteCommand.Parameters.Add(new SQLiteParameter("ExAmount", lExAmount));
@@ -785,7 +785,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
         internal CurrencyItem ReadCurrency(long aCurrencyId)
         {
             var lCurrencies = ReadCurrencies(aCurrencyId);
-            if (lCurrencies.Count() > 0)
+            if (lCurrencies.Count() > 1)
                 Universal.Log.Write(LogLevel.Error, $"Duplicated currency with id {aCurrencyId} found"); // I will leave this error message as a precaution
             return lCurrencies.FirstOrDefault();
         }
@@ -802,7 +802,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             {
                 BinaryFormatter lBf = new BinaryFormatter();
                 lBf.Binder = DBChainParams.GetSerializationBinder();
-                lChainParamsObject = (DBChainParams) lBf.Deserialize(ms);
+                lChainParamsObject = (DBChainParams)lBf.Deserialize(ms);
             }
 
             aSQLiteDataReader.GetBytes(6, 0, lIcon, 0, aSQLiteDataReader.GetInt32(7));
@@ -821,7 +821,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
                 Icon = lIcon,
                 FeePerKb = aSQLiteDataReader.GetInt64(8),
                 ChainParamaters = lParams,
-                CurrentStatus = (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus), aSQLiteDataReader.GetString(10))
+                CurrentStatus = (CurrencyStatus)Enum.Parse(typeof(CurrencyStatus), aSQLiteDataReader.GetString(10))
             });
         }
 
@@ -853,7 +853,7 @@ namespace Pandora.Client.PandorasWallet.ServerAccess
             using (SQLiteCommand lSQLiteCommand = new SQLiteCommand(lQuery, FSQLiteConnection))
             using (SQLiteDataReader lSQLiteDataReader = lSQLiteCommand.ExecuteReader())
                 if (lSQLiteDataReader.Read())
-                    return new CurrencyStatusItem(lSQLiteDataReader.GetInt64(0), lSQLiteDataReader.GetInt32(1), lSQLiteDataReader.GetDateTime(2), (CurrencyStatus) Enum.Parse(typeof(CurrencyStatus), lSQLiteDataReader.GetString(3)), lSQLiteDataReader.GetString(4), lSQLiteDataReader.GetInt64(5));
+                    return new CurrencyStatusItem(lSQLiteDataReader.GetInt64(0), lSQLiteDataReader.GetInt32(1), lSQLiteDataReader.GetDateTime(2), (CurrencyStatus)Enum.Parse(typeof(CurrencyStatus), lSQLiteDataReader.GetString(3)), lSQLiteDataReader.GetString(4), lSQLiteDataReader.GetInt64(5));
                 else
                     return null;
         }

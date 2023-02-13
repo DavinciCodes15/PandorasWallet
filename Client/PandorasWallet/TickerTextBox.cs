@@ -13,11 +13,13 @@ namespace Pandora.Client.PandorasWallet
     public partial class TickerTextBox : UserControl
     {
         private bool FOptionsMenuEnabled;
+        private int FPrecision = 8;
 
         public TickerTextBox()
         {
             InitializeComponent();
             AdjustTextBoxMargin();
+            SetPlaceHolder();
         }
 
         [Browsable(true)]
@@ -36,6 +38,18 @@ namespace Pandora.Client.PandorasWallet
 
         [Description("Enable or disable dropdown menu"), Category("Appearance")]
         public bool UseOptionsMenu { get => FOptionsMenuEnabled; set => FOptionsMenuEnabled = pictureDownArrow.Visible = value; }
+
+        private void SetPlaceHolder()
+        {
+            StringBuilder lPlaceHolder = new StringBuilder("0");
+            if (FPrecision > 0)
+            {
+                lPlaceHolder.Append(".");
+                for (var i = 0; i < FPrecision; i++)
+                    lPlaceHolder.Append(0);
+            }
+            txtBoxAmount.Text = lPlaceHolder.ToString();
+        }
 
         private void AdjustTextBoxMargin()
         {
@@ -74,10 +88,8 @@ namespace Pandora.Client.PandorasWallet
             }
         }
 
-        private int FPrecision = 8;
-
         [Description("Amount decimal precision"), Category("Appearance")]
-        public uint Precision { get => Convert.ToUInt32(FPrecision); set => FPrecision = Convert.ToInt32((value > 0) ? value : 1); }
+        public uint Precision { get => Convert.ToUInt32(FPrecision); set => FPrecision = Convert.ToInt32(value); }
 
         [Description("Amount shown"), Category("Data")]
         private decimal FAmount;
@@ -90,25 +102,23 @@ namespace Pandora.Client.PandorasWallet
                     FAmount = 0;
                 else if (Decimal.TryParse(txtBoxAmount.Text, out decimal lValue))
                     FAmount = lValue;
-                return FAmount;
+                return Math.Round(FAmount, FPrecision);
             }
-            set => txtBoxAmount.Text = value.ToString();
+            set => txtBoxAmount.Text = String.Format($"{{0:F{FPrecision}}}", value);
         }
 
         private void txtBoxAmount_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
-            {
-                e.Handled = true;
-            }
-
-            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
-            {
-                e.Handled = true;
-            }
+            e.Handled = (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+                || ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1));
             if (e.Handled && string.IsNullOrWhiteSpace(txtBoxAmount.Text))
-            {
                 (sender as TextBox).Text = "0";
+            if (!e.Handled && txtBoxAmount.Text == "0")
+            {
+                e.Handled = true;
+                var lTypedChar = e.KeyChar.ToString();
+                (sender as TextBox).Text = e.KeyChar != '.' ? lTypedChar : "0.";
+                (sender as TextBox).SelectionStart = (sender as TextBox).Text.Length;
             }
         }
 
@@ -142,25 +152,48 @@ namespace Pandora.Client.PandorasWallet
             AdjustTextBoxMargin();
         }
 
-        private decimal FPreviousValue;
+        private string FPreviousValue = "0";
 
         private void txtBoxAmount_TextChanged(object sender, EventArgs e)
         {
-            if (FPreviousValue != Amount)
+            if (string.IsNullOrWhiteSpace((sender as TextBox).Text))
             {
-                FPreviousValue = Amount;
+                (sender as TextBox).Text = "0";
+            }
+            var lAmountInputRegex = $"^([0-9]*[.]{{0,{(FPrecision > 0 ? "1" : "0")}}})([0-9]{{0,{FPrecision}}})$";
+            System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(lAmountInputRegex);
+            if (regex.IsMatch((sender as TextBox).Text))
+            {
+                FPreviousValue = (sender as TextBox).Text;
                 OnAmountChanged?.Invoke();
             }
-            else if (Amount != 0) Amount = FPreviousValue;
+            else
+            {
+                (sender as TextBox).Text = FPreviousValue;
+                (sender as TextBox).SelectionStart = (sender as TextBox).Text.Length;
+            }
         }
 
-        private void txtBoxAmount_Leave(object sender, EventArgs e)
-        {
-            if (FPreviousValue != Amount)
-            {
-                FPreviousValue = Amount;
-                OnAmountChanged?.Invoke();
-            }
-        }
+        //private void txtBoxAmount_TextChanged(object sender, EventArgs e)
+        //{
+        //    var lAmountInputRegex = $"^([0-9]*[.]{{0,{(FPrecision > 0 ? "1" : "0")}}})([0-9]{{0,{FPrecision}}})$";
+        //    System.Text.RegularExpressions.Regex regex = new System.Text.RegularExpressions.Regex(lAmountInputRegex);
+        //    if (!regex.IsMatch((sender as TextBox).Text) || Amount == FPreviousValue)
+        //        Amount = FPreviousValue;
+        //    else
+        //    {
+        //        FPreviousValue = Amount;
+        //        OnAmountChanged?.Invoke();
+        //    }
+        //}
+
+        //private void txtBoxAmount_Leave(object sender, EventArgs e)
+        //{
+        //    if (FPreviousValue != (sender as TextBox).Text)
+        //    {
+        //        FPreviousValue = Amount;
+        //        OnAmountChanged?.Invoke();
+        //    }
+        //}
     }
 }

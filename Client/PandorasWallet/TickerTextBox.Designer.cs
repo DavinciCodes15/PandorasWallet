@@ -60,7 +60,6 @@
             this.txtBoxAmount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.txtBoxAmount.TextChanged += new System.EventHandler(this.txtBoxAmount_TextChanged);
             this.txtBoxAmount.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txtBoxAmount_KeyPress);
-            this.txtBoxAmount.Leave += new System.EventHandler(this.txtBoxAmount_Leave);
             // 
             // lblTicker
             // 
